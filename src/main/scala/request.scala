@@ -15,11 +15,11 @@ class Method(method: String) {
     else None
 }
 
-class GET(request: HttpServletRequest)
 object GET extends Method("GET")
-
-class POST(request: HttpServletRequest)
 object POST extends Method("POST")
+object PUT extends Method("PUT")
+object DELETE extends Method("DELETE")
+object HEAD extends Method("HEAD")
 
 
 class Path(path: String, req: HttpServletRequest)
