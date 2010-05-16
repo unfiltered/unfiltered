@@ -1,20 +1,20 @@
-package unfiltered.test
+package unfiltered.server
 
 import org.eclipse.jetty.server.{Server => JettyServer, Connector}
 import org.eclipse.jetty.server.handler.ContextHandlerCollection
 import org.eclipse.jetty.servlet.{FilterHolder, ServletContextHandler}
 import org.eclipse.jetty.server.bio.SocketConnector
 
-object Server {
-  def main(args: Array[String]) {
+object Http {
+  def apply[T <: javax.servlet.Filter](port: Int)(filter: javax.servlet.Filter) {
     val server = new JettyServer()
 
     val conn = new SocketConnector()
-    conn.setPort(8080)
+    conn.setPort(port)
     server.addConnector(conn)
 
     val context = new ServletContextHandler(server,"/")
-    context.addFilter(classOf[unfiltered.test.Test], "/*", 
+    context.addFilter(new FilterHolder(filter), "/*", 
       ServletContextHandler.NO_SESSIONS|ServletContextHandler.NO_SECURITY)
     context.addServlet(classOf[org.eclipse.jetty.servlet.DefaultServlet], "/")
     server.setHandler(context)
