@@ -9,5 +9,5 @@ object AId extends scala.util.matching.Regex(
 
 class Test extends unfiltered.Handler ({
   case GET(Path(req, AId(id))) => println(id); Pass
-  case GET(Segs(req, "b", id)) => println(id); Pass
+  case GET(Path(Seg("b", id), req)) => println(id); Pass
 })

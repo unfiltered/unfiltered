@@ -23,9 +23,9 @@ object HEAD extends Method("HEAD")
 
 
 object Path {
-  def unapply(req: HttpServletRequest) = Some((req, req.getRequestURI))
+  def unapply(req: HttpServletRequest) = Some((req.getRequestURI, req))
 }
-object Segs {
-  def unapplySeq(req: HttpServletRequest): Option[(HttpServletRequest, Seq[String])] = 
-    Some((req, req.getRequestURI.split("/").drop(1)))
+object Seg {
+  def unapplySeq(path: String): Option[Seq[String]] = 
+    Some(path.split("/").drop(1))
 }
