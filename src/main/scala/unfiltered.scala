@@ -1,6 +1,7 @@
 package unfiltered
 
 import javax.servlet.{Filter, FilterConfig, FilterChain, ServletRequest, ServletResponse}
+import javax.servlet.http.HttpServletRequest
 import unfiltered.response._
 
 trait InittedFilter extends Filter {
