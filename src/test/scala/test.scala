@@ -1,10 +1,13 @@
+package unfiltered.test
+
 import unfiltered.request._
 import unfiltered.response._
 
-object AdminId extends scala.util.matching.Regex(
-  "/admin/(%d)+"
+object AId extends scala.util.matching.Regex(
+  """/a/(\d+)"""
 )
 
 class Test extends unfiltered.Handler ({
-  case HTTPS(GET(Path(AdminId(id), req))) => Pass
+  case GET(Path(req, AId(id))) => println(id); Pass
+  case GET(Segs(req, "b", id)) => println(id); Pass
 })

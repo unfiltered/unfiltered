@@ -22,7 +22,10 @@ object DELETE extends Method("DELETE")
 object HEAD extends Method("HEAD")
 
 
-class Path(path: String, req: HttpServletRequest)
 object Path {
-  def unapply(req: HttpServletRequest) = Some((req.getPathTranslated, req))
+  def unapply(req: HttpServletRequest) = Some((req, req.getRequestURI))
+}
+object Segs {
+  def unapplySeq(req: HttpServletRequest): Option[(HttpServletRequest, Seq[String])] = 
+    Some((req, req.getRequestURI.split("/").drop(1)))
 }
