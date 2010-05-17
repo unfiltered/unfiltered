@@ -7,13 +7,22 @@ trait Response
 object Pass extends Response
 
 trait Responder extends Response {
-  def respond(res: HttpServletResponse): Unit
+  def status = HttpServletResponse.SC_OK
+  def respond(res: HttpServletResponse) {
+    res.setStatus(status)
+    header(res)
+    body(res)
+  }
+  def header(res: HttpServletResponse): Unit
+  def body(res: HttpServletResponse): Unit
 }
 trait Writer extends Responder {
-  def respond(res: HttpServletResponse) {
+  def header(res: HttpServletResponse) {
     res.setContentType("%s; charset=%s".format(content_type, charset))
+  }
+  def body(res: HttpServletResponse) {
     val writer = res.getWriter()
-    try { write(writer) } 
+    try { write(writer) }
     finally { writer.close() }
   }
   def content_type: String
