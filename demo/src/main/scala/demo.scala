@@ -18,7 +18,8 @@ object Demo {
 class Demo extends unfiltered.Handler ({
   case GET(Path("/", req)) => Demo.print("hello world")
   case GET(Path(AId(id), req)) => Demo.print(id)
-  case GET(Path("b" / Id(id), req)) => Demo.print(id.toString)
+  case GET(Path(Seg("b" :: Id(id) :: Nil), req)) => Demo.print(id.toString)
+  case GET(Path(Seg("c" :: "d" :: what :: Nil), req)) => Demo.print(what)
 })
 
 object DemoServer {
