@@ -25,7 +25,10 @@ object HEAD extends Method("HEAD")
 object Path {
   def unapply(req: HttpServletRequest) = Some((req.getRequestURI, req))
 }
-object Seg {
-  def unapplySeq(path: String): Option[Seq[String]] = 
-    Some(path.split("/").drop(1))
+object / {
+  def unapply(path: String): Option[(String, String)] = path.split("/", 2) match {
+    case Array("", a) => unapply(a) // skip a leading slash
+    case Array(a, b) => Some((a, b))
+    case _ => None
+  }
 }
