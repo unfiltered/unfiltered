@@ -1,7 +1,7 @@
 package unfiltered
 
 import javax.servlet.{Filter, FilterConfig, FilterChain, ServletRequest, ServletResponse}
-import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import unfiltered.response._
 
 trait InittedFilter extends Filter {
@@ -17,9 +17,12 @@ class Handler(val filter: PartialFunction[ServletRequest, Response]) extends Ini
     case _ => Pass
   }
   def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
-    complete_filter(request) match {
-      case Pass => chain.doFilter(request, response)
-      case _ => //
+    (request, response) match {
+      case (request: HttpServletRequest, response: HttpServletResponse) => 
+        complete_filter(request) match {
+          case Pass => chain.doFilter(request, response)
+          case r: Responder => r.respond(response)
+        }
     }
   }
 }
