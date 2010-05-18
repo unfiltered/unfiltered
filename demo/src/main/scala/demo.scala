@@ -24,6 +24,6 @@ class Demo extends unfiltered.Handler ({
 
 object DemoServer {
   def main(args: Array[String]) {
-    unfiltered.server.Http(8080)(new Demo)
+    unfiltered.server.Http(8080).filter(new Demo).start()
   }
 }

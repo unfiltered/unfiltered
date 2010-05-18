@@ -16,7 +16,7 @@ trait Responder extends Response {
   def header(res: HttpServletResponse): Unit
   def body(res: HttpServletResponse): Unit
 }
-trait Writer extends Responder {
+trait ContentResponder extends Responder {
   def header(res: HttpServletResponse) {
     res.setContentType("%s; charset=%s".format(content_type, charset))
   }
@@ -30,9 +30,17 @@ trait Writer extends Responder {
   def write(writer: PrintWriter): Unit
 }
 
-case class Html(nodes: scala.xml.NodeSeq) extends Writer {
+abstract class StringResponder(content: String) extends ContentResponder {
   def write(writer: PrintWriter) {
-    writer.write(nodes.toString)
+    writer.write(content)
   }
+}
+
+trait CssContent extends ContentResponder {
+  def content_type = "text/css"
+}
+
+trait HtmlContent extends ContentResponder {
   def content_type = "text/html"
 }
+case class Html(nodes: scala.xml.NodeSeq) extends StringResponder(nodes.toString) with HtmlContent

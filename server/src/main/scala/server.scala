@@ -1,24 +1,42 @@
 package unfiltered.server
 
-import org.eclipse.jetty.server.{Server => JettyServer, Connector}
-import org.eclipse.jetty.server.handler.ContextHandlerCollection
+import org.eclipse.jetty.server.{Server => JettyServer, Connector, Handler}
+import org.eclipse.jetty.server.handler.{HandlerCollection, ResourceHandler}
 import org.eclipse.jetty.servlet.{FilterHolder, ServletContextHandler}
 import org.eclipse.jetty.server.bio.SocketConnector
+import org.eclipse.jetty.util.resource.Resource
 
-object Http {
-  def apply[T <: javax.servlet.Filter](port: Int)(filter: javax.servlet.Filter) {
-    val server = new JettyServer()
+case class Http(port: Int) {
+  val server = new JettyServer()
 
-    val conn = new SocketConnector()
-    conn.setPort(port)
-    server.addConnector(conn)
+  val conn = new SocketConnector()
+  conn.setPort(port)
+  server.addConnector(conn)
+  
+  val handlers = new HandlerCollection
+  server.setHandler(handlers)
+  
+  def handler(block: HandlerCollection => Handler) = {
+    handlers.addHandler(block(handlers))
+    this
+  }
 
-    val context = new ServletContextHandler(server,"/")
-    context.addFilter(new FilterHolder(filter), "/*", 
+  def filter(filt: javax.servlet.Filter) = handler { handlers =>
+    val context = new ServletContextHandler(handlers, "/")
+    context.addFilter(new FilterHolder(filt), "/*", 
       ServletContextHandler.NO_SESSIONS|ServletContextHandler.NO_SECURITY)
     context.addServlet(classOf[org.eclipse.jetty.servlet.DefaultServlet], "/")
-    server.setHandler(context)
-
+    context
+  }
+  
+  def resources(marker: java.net.URL) = handler { container =>
+    val s = marker.toString
+    val resource_handler = new ResourceHandler
+    resource_handler.setBaseResource(Resource.newResource(s.toString.substring(0, s.lastIndexOf("/"))))
+    resource_handler
+  }
+  
+  def start() {
     // enter wait loop if not in main thread, e.g. running inside sbt
     Thread.currentThread.getName match {
       case "main" => 
