@@ -6,13 +6,14 @@ import org.eclipse.jetty.servlet.{FilterHolder, ServletContextHandler}
 import org.eclipse.jetty.server.bio.SocketConnector
 import org.eclipse.jetty.util.resource.Resource
 
-case class Http(port: Int) {
-  val server = new JettyServer()
-
+case class Http(port: Int) extends Server {
   val conn = new SocketConnector()
   conn.setPort(port)
   server.addConnector(conn)
-  
+}
+
+trait Server {
+  val server = new JettyServer()
   val handlers = new HandlerCollection
   server.setHandler(handlers)
   

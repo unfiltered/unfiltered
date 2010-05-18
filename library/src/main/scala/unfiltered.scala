@@ -6,7 +6,7 @@ import unfiltered.response._
 
 trait InittedFilter extends Filter {
   private var config_var: FilterConfig = _
-  def init(config: FilterConfig) { config_var = config; println("bothered to init") }
+  def init(config: FilterConfig) { config_var = config; }
   def config = config_var
 
   def destroy { }
