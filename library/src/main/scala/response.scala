@@ -7,16 +7,20 @@ trait Response
 object Pass extends Response
 
 trait Responder extends Response {
+  def respond(res: HttpServletResponse): Unit
+}
+
+case class Redirect(loc: String) extends Responder{
+  def respond(res: HttpServletResponse) { res.sendRedirect(loc) }
+}
+
+trait ContentResponder extends Responder {
   def status = HttpServletResponse.SC_OK
   def respond(res: HttpServletResponse) {
     res.setStatus(status)
     header(res)
     body(res)
   }
-  def header(res: HttpServletResponse): Unit
-  def body(res: HttpServletResponse): Unit
-}
-trait ContentResponder extends Responder {
   def header(res: HttpServletResponse) {
     res.setContentType("%s; charset=%s".format(content_type, charset))
   }
