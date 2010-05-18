@@ -15,7 +15,7 @@ object Demo {
   )
 }
 
-class Demo extends unfiltered.Handler ({
+class Demo extends unfiltered.Plan ({
   case GET(Path("/", req)) => Demo.print("hello world")
   case GET(Path(AId(id), req)) => Demo.print(id)
   case GET(Path(Seg("b" :: Id(id) :: Nil), req)) => Demo.print(id.toString)

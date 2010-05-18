@@ -12,7 +12,7 @@ trait InittedFilter extends Filter {
   def destroy { }
 }
 
-class Handler(val filter: PartialFunction[ServletRequest, Response]) extends InittedFilter {
+class Plan(val filter: PartialFunction[ServletRequest, Response]) extends InittedFilter {
   val complete_filter = filter.orElse[ServletRequest, Response] {
     case _ => Pass
   }
