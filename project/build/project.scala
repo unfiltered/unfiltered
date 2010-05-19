@@ -12,4 +12,8 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
     val jetty7 = "org.eclipse.jetty" % "jetty-ajp" % jetty_version
   }, server)
   lazy val demo = project("demo", "Unfiltered Demo", new DefaultProject(_), server)
+
+  override def managedStyle = ManagedStyle.Maven
+  val publishTo = "Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"
+  Credentials(Path.userHome / ".ivy2" / ".credentials", log)
 }
