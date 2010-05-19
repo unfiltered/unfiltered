@@ -13,6 +13,9 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
   }, server)
   lazy val demo = project("demo", "Unfiltered Demo", new DefaultProject(_), server)
 
+  /** Exclude demo from publish, all other actions run from parent */
+  override def dependencies = super.dependencies.filter { d => !(d eq demo) }
+
   override def managedStyle = ManagedStyle.Maven
   val publishTo = "Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"
   Credentials(Path.userHome / ".ivy2" / ".credentials", log)
