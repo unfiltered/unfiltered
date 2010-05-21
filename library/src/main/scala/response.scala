@@ -38,12 +38,6 @@ case class ContentType(content_type: String) extends Responder {
 object CssContent extends ContentType("text/css")
 object HtmlContent extends ContentType("text/html")
 
-class Header(name: String, value: String) extends Responder {
-  def respond(res: HttpServletResponse) { res.setHeader(name, value) }
-}
-case class ETag(value: String) extends Header("ETag", value)
-case class CacheControl(value: String) extends Header("Cache-Control", value)
-
 trait ResponseWriter extends Responder {
   def respond(res: HttpServletResponse) {
     val writer = res.getWriter()
