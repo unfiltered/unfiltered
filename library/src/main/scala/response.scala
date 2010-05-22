@@ -1,6 +1,6 @@
 package unfiltered.response
 
-import Unfiltered.Handler
+import unfiltered.Unfiltered.Handler
 
 import java.io.PrintWriter
 import javax.servlet.http.HttpServletResponse
