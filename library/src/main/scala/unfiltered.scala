@@ -2,12 +2,8 @@ package unfiltered
 
 import javax.servlet.{Filter, FilterConfig, FilterChain, ServletRequest, ServletResponse}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import unfiltered.response._
-
-object Unfiltered {
-  type Handler = HttpServletResponse => HttpServletResponse
-}
-import Unfiltered.Handler
+import unfiltered.response.{ResponsePackage, Pass}
+import ResponsePackage.ResponseFunction
 
 trait InittedFilter extends Filter {
   private var config_var: FilterConfig = _
@@ -17,8 +13,8 @@ trait InittedFilter extends Filter {
   def destroy { }
 }
 
-class Plan(val filter: PartialFunction[ServletRequest, Handler]) extends InittedFilter {
-  val complete_filter = filter.orElse[ServletRequest, Handler] {
+class Plan(val filter: PartialFunction[ServletRequest, ResponseFunction]) extends InittedFilter {
+  val complete_filter = filter.orElse[ServletRequest, ResponseFunction] {
     case _ => Pass
   }
   def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
@@ -26,7 +22,7 @@ class Plan(val filter: PartialFunction[ServletRequest, Handler]) extends Initted
       case (request: HttpServletRequest, response: HttpServletResponse) => 
         complete_filter(request) match {
           case Pass => chain.doFilter(request, response)
-          case r: Responder => r.respond(response)
+          case response_function => response_function(response)
         }
     }
   }

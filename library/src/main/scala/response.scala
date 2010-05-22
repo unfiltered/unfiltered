@@ -1,23 +1,28 @@
 package unfiltered.response
 
-import unfiltered.Unfiltered.Handler
-
 import java.io.PrintWriter
 import javax.servlet.http.HttpServletResponse
 
-object Pass extends Handler {
+object ResponsePackage {
+  // make a package object when 2.7 support is dropped
+  type ResponseFunction = HttpServletResponse => HttpServletResponse
+}
+import ResponsePackage.ResponseFunction
+
+/** Pass on to the next servlet filter */
+object Pass extends ResponseFunction {
   def apply(res: HttpServletResponse) = res
 }
 
-trait Responder extends Handler {
+trait Responder extends ResponseFunction {
   def apply(res: HttpServletResponse) = { 
     respond(res)
     res
   }
   def respond(res: HttpServletResponse)
-  def ~> (that: Handler) = new ResponderF(this andThen that)
+  def ~> (that: ResponseFunction) = new ChainResponse(this andThen that)
 }
-class ResponderF(f: Handler) extends Responder {
+class ChainResponse(f: ResponseFunction) extends Responder {
   def respond(res: HttpServletResponse) = f(res)
 }
 
@@ -52,4 +57,4 @@ case class ResponseString(content: String) extends ResponseWriter {
   def write(writer: PrintWriter) { writer.write(content) }
 }
 
-case class Html(nodes: scala.xml.NodeSeq) extends ResponderF(HtmlContent ~> ResponseString(nodes.toString))
+case class Html(nodes: scala.xml.NodeSeq) extends ChainResponse(HtmlContent ~> ResponseString(nodes.toString))
