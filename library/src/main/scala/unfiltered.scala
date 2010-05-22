@@ -4,6 +4,11 @@ import javax.servlet.{Filter, FilterConfig, FilterChain, ServletRequest, Servlet
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import unfiltered.response._
 
+object Unfiltered {
+  type Handler = HttpServletResponse => HttpServletResponse
+}
+import Unfiltered.Handler
+
 trait InittedFilter extends Filter {
   private var config_var: FilterConfig = _
   def init(config: FilterConfig) { config_var = config; }
@@ -12,8 +17,8 @@ trait InittedFilter extends Filter {
   def destroy { }
 }
 
-class Plan(val filter: PartialFunction[ServletRequest, Function1[HttpServletResponse, HttpServletResponse]]) extends InittedFilter {
-  val complete_filter = filter.orElse[ServletRequest, Function1[HttpServletResponse, HttpServletResponse]] {
+class Plan(val filter: PartialFunction[ServletRequest, Handler]) extends InittedFilter {
+  val complete_filter = filter.orElse[ServletRequest, Handler] {
     case _ => Pass
   }
   def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {

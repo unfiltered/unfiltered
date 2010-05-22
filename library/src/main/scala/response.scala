@@ -1,21 +1,23 @@
 package unfiltered.response
 
+import Unfiltered.Handler
+
 import java.io.PrintWriter
 import javax.servlet.http.HttpServletResponse
 
-object Pass extends Function1[HttpServletResponse, HttpServletResponse] {
+object Pass extends Handler {
   def apply(res: HttpServletResponse) = res
 }
 
-trait Responder extends Function1[HttpServletResponse, HttpServletResponse] {
+trait Responder extends Handler {
   def apply(res: HttpServletResponse) = { 
     respond(res)
     res
   }
   def respond(res: HttpServletResponse)
-  def ~> (that: Function1[HttpServletResponse, HttpServletResponse]) = new ResponderF(this andThen that)
+  def ~> (that: Handler) = new ResponderF(this andThen that)
 }
-class ResponderF(f: Function1[HttpServletResponse, HttpServletResponse]) extends Responder {
+class ResponderF(f: Handler) extends Responder {
   def respond(res: HttpServletResponse) = f(res)
 }
 
