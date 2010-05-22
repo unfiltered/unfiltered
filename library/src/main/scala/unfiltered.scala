@@ -13,7 +13,8 @@ trait InittedFilter extends Filter {
   def destroy { }
 }
 
-class Plan(val filter: PartialFunction[ServletRequest, ResponseFunction]) extends InittedFilter {
+trait Plan extends InittedFilter {
+  def filter: PartialFunction[ServletRequest, ResponseFunction]
   val complete_filter = filter.orElse[ServletRequest, ResponseFunction] {
     case _ => Pass
   }
@@ -27,3 +28,5 @@ class Plan(val filter: PartialFunction[ServletRequest, ResponseFunction]) extend
     }
   }
 }
+
+class Planned(val filter: PartialFunction[ServletRequest, ResponseFunction]) extends Plan

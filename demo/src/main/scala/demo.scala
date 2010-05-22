@@ -15,15 +15,21 @@ object Demo {
   )
 }
 
-class Demo extends unfiltered.Plan ({
-  case GET(Path("/", req)) => Demo.print("hello world")
+class PlannedDemo extends unfiltered.Planned ({
+  case GET(Path("/", req)) => Status(201) ~> ContentType("text/plain") ~> ResponseString("hello world")
   case GET(Path(AId(id), req)) => Demo.print(id)
   case GET(Path(Seg("b" :: Id(id) :: Nil), req)) => Demo.print(id.toString)
   case GET(Path(Seg("c" :: "d" :: what :: Nil), req)) => Demo.print(what)
 })
 
+class PlanDemo extends unfiltered.Plan {
+  def filter = {
+    case GET(Path(Seg("e" :: what :: Nil), req)) => Demo.print(what)
+  }
+}
+
 object DemoServer {
   def main(args: Array[String]) {
-    unfiltered.server.Http(8080).filter(new Demo).start()
+    unfiltered.server.Http(8080).filter(new PlannedDemo).filter(new PlanDemo).start()
   }
 }
