@@ -43,3 +43,11 @@ class RequestHeader(name: String) {
 }
 object IfNoneMatch extends RequestHeader("If-None-Match")
 
+
+object RequestStream {
+  def unapply(req: HttpServletRequest) = Some(req.getInputStream, req)
+}
+
+object RequestReader {
+  def unapply(req: HttpServletRequest) = Some(req.getReader, req)
+}
