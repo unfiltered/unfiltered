@@ -36,6 +36,19 @@ case class Status(code: Int) extends Responder {
 object NotModified extends Status(HttpServletResponse.SC_NOT_MODIFIED)
 object NotFound extends Status(HttpServletResponse.SC_NOT_FOUND)
 
+case class ResponseHeader(name: String, values: Iterable[String]) extends unfiltered.response.Responder {
+  def respond(res: HttpServletResponse) { 
+    values.foreach { v => res.addHeader(name, v) } 
+  }
+}
+class HeaderName(name: String) {
+  def apply(value: String*) = ResponseHeader(name, value)
+}
+
+object CacheControl extends HeaderName("Cache-Control")
+object ETag extends HeaderName("ETag")
+
+
 case class ContentType(content_type: String) extends Responder {
   def respond(res: HttpServletResponse) {
     res.setContentType("%s; charset=%s".format(content_type, charset))

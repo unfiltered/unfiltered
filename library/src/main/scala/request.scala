@@ -30,3 +30,16 @@ object Seg {
     case all => Some(all)
   }
 }
+
+class RequestHeader(name: String) {
+  def unapplySeq(req: HttpServletRequest): Option[Seq[String]] = { 
+    def headers(e: java.util.Enumeration[_]): List[String] =
+      if (e.hasMoreElements) e.nextElement match {
+        case v: String => v :: headers(e)
+        case _ => headers(e)
+      } else Nil
+    Some(headers(req.getHeaders(name)))
+  }
+}
+object IfNoneMatch extends RequestHeader("If-None-Match")
+
