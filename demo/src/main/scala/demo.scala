@@ -15,7 +15,7 @@ object Demo {
   )
 }
 
-class PlannedDemo extends unfiltered.Planned ({
+class PlannedDemo extends unfiltered.Planify ({
   case GET(Path("/", req)) => Status(201) ~> ContentType("text/plain") ~> ResponseString("hello world")
   case GET(Path(AId(id), req)) => Demo.print(id)
   case GET(Path(Seg("b" :: Id(id) :: Nil), req)) => Demo.print(id.toString)
