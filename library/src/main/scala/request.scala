@@ -66,7 +66,7 @@ object Bytes {
     in.close
     bos.toByteArray match {
       case Array() => None
-      case ba => Some(ba)
+      case ba => Some(ba, req)
     }
   }
 }
