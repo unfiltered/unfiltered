@@ -70,3 +70,27 @@ object Bytes {
     }
   }
 }
+
+object Params {
+  /** Convenience wrapper for parameter map */
+  class Params(val pmap: Map[String, Seq[String]]) {
+    def apply(name: String) = pmap.get(name)
+    def first(name: String) = apply(name) match {
+      case Some(values) => Some(values.first)
+      case _ => None
+    }
+    def isDefinedAt(name: String) = pmap.isDefinedAt(name)
+  }
+  /** Dress a Java Enumeration in Scala Iterator clothing */
+  case class JEnumerationIterator[T](e: java.util.Enumeration[T]) extends Iterator[T] {
+    def hasNext: Boolean =  e.hasMoreElements()
+    def next: T = e.nextElement()
+  }
+  /** Given a req, extract the request params into a (Params, req) tuple */
+  def unapply(req: HttpServletRequest) = {
+    val names = JEnumerationIterator[String](req.getParameterNames.asInstanceOf[java.util.Enumeration[String]])
+    Some((new Params((Map.empty[String, Seq[String]] /: names) ((m, n) => 
+        m + (n -> Seq(req.getParameterValues(n): _*)
+      ))), req))
+  }
+}
