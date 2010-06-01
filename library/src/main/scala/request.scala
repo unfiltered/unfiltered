@@ -90,7 +90,7 @@ object Params {
   def unapply(req: HttpServletRequest) = {
     val names = JEnumerationIterator[String](req.getParameterNames.asInstanceOf[java.util.Enumeration[String]])
     Some((new Params((Map.empty[String, Seq[String]] /: names) ((m, n) => 
-        m + (n -> Seq(req.getParameterValues(n): _*)
-      ))), req))
+        m + (n -> req.getParameterValues(n))
+      )), req))
   }
 }
