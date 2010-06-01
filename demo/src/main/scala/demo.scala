@@ -11,9 +11,8 @@ object Id {
 }
 
 trait Rendering {
-  def render(body: String) = template(body)
-  def render(body: scala.xml.NodeSeq) = template(body.toString)
-  private def template(body: String) = Html(
+  def render(body: String): Html = render(scala.xml.Text(body))
+  def render(body: scala.xml.NodeSeq): Html = Html(
     <html><head><title>unfiltered demo</title></head><body> { body } </body></html>
   )
 }
