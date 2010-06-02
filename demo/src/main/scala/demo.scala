@@ -25,14 +25,15 @@ class PlannedDemo extends unfiltered.Planify ({
   case GET(Path(Seg("b" :: Id(id) :: Nil), req)) => Demo.render(id.toString)
   case GET(Path(Seg("c" :: "d" :: what :: Nil), req)) => Demo.render(what)
   case GET(Path(Seg("e" :: Nil), Params(params, req))) => params("what") match {
-    case Some(whats) => Demo.render("""%s values of `what` the first being %s """ format(whats.size, params.first("what").get))
+    case whats @ Seq(f, _*) => 
+      Demo.render("""%s values of `what` the first being '%s' """ format(whats.size, f))
     case _ => Demo.render(
       <p>enter a value for <strong>what</strong></p>
       <form action="/e" method="get"><input type="text" name="what"/></form>
     )
   }
   case GET(Path(Seg("f" :: Nil), Params(params, req))) => Demo.render(
-    "what => %s" format(params.first("what").getOrElse("default"))
+    "what => %s" format(params("what").headOption.getOrElse("default"))
   )
 })
 
