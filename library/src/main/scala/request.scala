@@ -89,3 +89,31 @@ object Params {
       )).withDefaultValue(Nil), req)
   }
 }
+
+abstract class NamedParameter[T](name: String) {
+  def unapply(params: Map[String, Seq[String]]) = accept(params(name)) map {
+    (_, params)
+  }
+  def accept(values: Seq[String]): Option[T]
+}
+
+class StringParameter(name: String, f: Option[String] => Option[String]) extends NamedParameter[String](name) {
+  def this(name: String) = this(name, identity[Option[String]])
+  def accept(values: Seq[String]) = values.headOption
+}
+object T2 extends Function1[Option[String], Option[String]] {
+  def apply(s: Option[String]) = s.map { _.trim }
+}
+object NE2 extends Function1[Option[String], Option[String]] {
+  def apply(s: Option[String]) = s.filter { ! _.isEmpty }
+}
+object Name2 extends StringParameter("name", T2 andThen { os => os.filter { ! _.isEmpty } })
+trait Trimmed extends StringParameter {
+  override def accept(values: Seq[String]) = super.accept(values) map { _.trim }
+}
+
+trait NotEmpty extends StringParameter {
+  override def accept(values: Seq[String]) = super.accept(values) filter { ! _.isEmpty }
+}
+
+object Name extends StringParameter("name") with Trimmed with NotEmpty
