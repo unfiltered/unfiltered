@@ -88,32 +88,26 @@ object Params {
         m + (n -> req.getParameterValues(n))
       )).withDefaultValue(Nil), req)
   }
-}
 
-abstract class NamedParameter[T](name: String) {
-  def unapply(params: Map[String, Seq[String]]) = accept(params(name)) map {
-    (_, params)
+  abstract class Named[T](name: String, f: Seq[String] => Option[T]) {
+    def unapply(params: Map[String, Seq[String]]) = f(params(name)) map {
+      (_, params)
+    }
   }
-  def accept(values: Seq[String]): Option[T]
+
+  class Chained[T, R](f: T => R) extends (T => R) {
+    def apply(t: T) = f(t)
+    def ~> [Then] (that: R => Then) = new Chained(this andThen that)
+  }
+
+  val first = new Chained( { seq: Seq[String] => seq.headOption } )
+
+  val trimmed = { (_: Option[String]) map { _.trim } }
+  val nonempty = { (_: Option[String]) filter { ! _.isEmpty  } }
+
+  val int = { s: Option[String] =>
+    try { s map { _.toInt } } catch { case _ => None }
+  }
+    
 }
 
-class StringParameter(name: String, f: Option[String] => Option[String]) extends NamedParameter[String](name) {
-  def this(name: String) = this(name, identity[Option[String]])
-  def accept(values: Seq[String]) = values.headOption
-}
-object T2 extends Function1[Option[String], Option[String]] {
-  def apply(s: Option[String]) = s.map { _.trim }
-}
-object NE2 extends Function1[Option[String], Option[String]] {
-  def apply(s: Option[String]) = s.filter { ! _.isEmpty }
-}
-object Name2 extends StringParameter("name", T2 andThen { os => os.filter { ! _.isEmpty } })
-trait Trimmed extends StringParameter {
-  override def accept(values: Seq[String]) = super.accept(values) map { _.trim }
-}
-
-trait NotEmpty extends StringParameter {
-  override def accept(values: Seq[String]) = super.accept(values) filter { ! _.isEmpty }
-}
-
-object Name extends StringParameter("name") with Trimmed with NotEmpty
