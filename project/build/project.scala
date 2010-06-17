@@ -1,10 +1,21 @@
 import sbt._
 
 class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
-  class UnfilteredModule(info: ProjectInfo) extends DefaultProject(info) with sxr.Publish
+  
+  class UnfilteredModule(info: ProjectInfo) extends DefaultProject(info) with sxr.Publish {
+    // testing
+    lazy val specs = "org.scala-tools.testing" % "specs" % "1.6.2.1" % "test"
+    lazy val databinderNet = "databinder.net repository" at "http://databinder.net/repo"
+    lazy val dpVersion = "0.7.4"
+    lazy val dispatchLiftJson = "net.databinder" %% "dispatch-lift-json" % dpVersion % "test"
+    lazy val dispatchJson = "net.databinder" %% "dispatch-json" % dpVersion % "test"
+  }
   
   lazy val library = project("library", "Unfiltered", new UnfilteredModule(_) {
     val servlet_api = "javax.servlet" % "servlet-api" % "2.3" % "provided"
+    val codec = "commons-codec" % "commons-codec" % "1.4"
+    // trying to avoid a cyclic dependency between library <-> server
+    lazy val testServer = "net.databinder" %% "unfiltered-server" % "0.1.1-SNAPSHOT" % "test"
   })
   val jetty_version = "7.0.2.v20100331"
   lazy val server = project("server", "Unfiltered Server", new UnfilteredModule(_) {
