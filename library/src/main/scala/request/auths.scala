@@ -1,6 +1,4 @@
-package unfiltered.request.auth
-
-import unfiltered.request.Authorization
+package unfiltered.request
 
 /** Basic HTTP Authentication extractor */
 object BasicAuth {
