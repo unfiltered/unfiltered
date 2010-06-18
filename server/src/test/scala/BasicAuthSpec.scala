@@ -10,7 +10,7 @@ object BasicAuthSpec extends Specification {
   import dispatch._
   
   class TestPlan extends unfiltered.Planify({
-    case GET(UFPath("/secret", auth.BasicAuth(creds, _))) => creds match {
+    case GET(UFPath("/secret", BasicAuth(creds, _))) => creds match {
       case ("test", "secret") => ResponseString("pass")
       case _ => ResponseString("fail")
     }
