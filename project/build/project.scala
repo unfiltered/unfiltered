@@ -4,7 +4,8 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
   
   class UnfilteredModule(info: ProjectInfo) extends DefaultProject(info) with sxr.Publish {
     // testing
-    lazy val specs = "org.scala-tools.testing" % "specs" % "1.6.2.1" % "test"
+    lazy val snapshots = "scala-tools snapshots :(" at "http://scala-tools.org/repo-snapshots/"
+    lazy val specs = "org.scala-tools.testing" %% "specs" % "1.6.5-SNAPSHOT" % "test"
     lazy val databinderNet = "databinder.net repository" at "http://databinder.net/repo"
     lazy val dpVersion = "0.7.4"
     lazy val dispatchLiftJson = "net.databinder" %% "dispatch-lift-json" % dpVersion % "test"
