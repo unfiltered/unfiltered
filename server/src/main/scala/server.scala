@@ -57,24 +57,11 @@ trait Server {
     }
   }
   /** programatic way to start server in the background */
-  def daemonize = server.isRunning match {
-    case false => {
-      val d = new Thread(new Runnable() {
-        def run() {
-          server.setStopAtShutdown(true)
-          server.start()
-          server.join()
-        }
-      })
-      d.setDaemon(true)
-      d.setName("unfiltered-daemon")
-      d.start
-      Some(d)
-    }
-    case _ => None
+  def daemonize() {
+    server.start()
   }
     
   def stop() {
-    server.stop()
+    server.stop() 
   }
 }

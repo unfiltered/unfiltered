@@ -15,7 +15,7 @@ object ServerSpec extends Specification {
   val server = unfiltered.server.Http(8083).filter(new TestPlan)
   val host = :/("localhost", 8083)
   
-  doBeforeSpec { server.daemonize }
+  doBeforeSpec { server.daemonize() }
   
   "A Server" should {
     "respond to requests" in {
@@ -23,5 +23,5 @@ object ServerSpec extends Specification {
     }
   }
   
-  doAfterSpec { server.stop }
+  doAfterSpec { server.stop() }
 }

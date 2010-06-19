@@ -23,7 +23,7 @@ object ParamsSpec extends Specification {
   val server = unfiltered.server.Http(8081).filter(new TestPlan)
   val host = :/("localhost", 8081)
   
-  doBeforeSpec { server.daemonize }
+  doBeforeSpec { server.daemonize() }
   
   "Params" should {
     "extract query params" in {
@@ -34,5 +34,5 @@ object ParamsSpec extends Specification {
     }
   }
   
-  doAfterSpec { server.stop }
+  doAfterSpec { server.stop() }
 }
