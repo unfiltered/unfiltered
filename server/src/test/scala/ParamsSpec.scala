@@ -2,7 +2,7 @@ package unfiltered.request
 
 import org.specs._
 
-object ParamsSpec extends Specification {
+object ParamsSpec extends Specification with unfiltered.spec.Served {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
@@ -20,10 +20,7 @@ object ParamsSpec extends Specification {
     }
   })
   
-  val server = unfiltered.server.Http(8081).filter(new TestPlan)
-  val host = :/("localhost", 8081)
-  
-  doBeforeSpec { server.daemonize() }
+  def setup = { _.filter(new TestPlan) }
   
   "Params" should {
     shareVariables()
@@ -34,6 +31,4 @@ object ParamsSpec extends Specification {
       Http(host / "pp" << Map("foo" -> "bar") as_str) must_=="foo is bar"
     }
   }
-  
-  doAfterSpec { server.stop() }
 }

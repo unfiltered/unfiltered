@@ -2,7 +2,7 @@ package unfiltered.request
 
 import org.specs._
 
-object BasicAuthSpec extends Specification {
+object BasicAuthSpec extends Specification  with unfiltered.spec.Served {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
@@ -15,10 +15,7 @@ object BasicAuthSpec extends Specification {
       case _ => ResponseString("fail")
     }
   })
-  val server = unfiltered.server.Http(8080).filter(new TestPlan)
-  val host = :/("localhost", 8080)
-  
-  doBeforeSpec { server.daemonize() }
+  def setup = { _.filter(new TestPlan) }
   
   "Basic Auth" should {
     shareVariables()
@@ -31,6 +28,4 @@ object BasicAuthSpec extends Specification {
       resp must_=="fail"
     }
   }
-  
-  doAfterSpec { server.stop() }
 }
