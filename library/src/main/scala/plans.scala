@@ -30,5 +30,9 @@ trait Plan extends InittedFilter {
   }
 }
 
-/** To define a filter with an independent function */
+/** To define a filter class with an independent function */
 class Planify(val filter: PartialFunction[ServletRequest, ResponseFunction]) extends Plan
+/** To create a filter instance with an independent function */
+object Planify {
+  def apply(filter: PartialFunction[ServletRequest, ResponseFunction]) = new Planify(filter)
+}

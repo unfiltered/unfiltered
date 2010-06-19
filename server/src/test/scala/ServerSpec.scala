@@ -9,9 +9,9 @@ object ServerSpec extends Specification with unfiltered.spec.Served {
   
   import dispatch._
   
-  def setup = { _.filter(new unfiltered.Planify({
+  def setup = { _.filter(unfiltered.Planify {
     case GET(UFPath("/", _)) => ResponseString("test") ~> Ok
-  }))}
+  })}
   
   "A Server" should {
     "respond to requests" in {
