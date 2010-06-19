@@ -26,6 +26,7 @@ object ParamsSpec extends Specification {
   doBeforeSpec { server.daemonize() }
   
   "Params" should {
+    shareVariables()
     "extract query params" in {
       Http(host / "qp" <<? Map("foo" -> "bar") as_str) must_=="foo is bar"
     }

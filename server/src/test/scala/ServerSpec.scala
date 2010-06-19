@@ -18,6 +18,7 @@ object ServerSpec extends Specification {
   doBeforeSpec { server.daemonize() }
   
   "A Server" should {
+    shareVariables()
     "respond to requests" in {
       Http(host as_str) must_=="test"
     }

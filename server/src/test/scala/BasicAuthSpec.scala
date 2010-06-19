@@ -21,6 +21,7 @@ object BasicAuthSpec extends Specification {
   doBeforeSpec { server.daemonize() }
   
   "Basic Auth" should {
+    shareVariables()
     "authenticate a valid user" in {
       val resp = Http(host / "secret" as_!("test", "secret") as_str)
       resp must_=="pass"
