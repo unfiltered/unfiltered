@@ -12,6 +12,6 @@ trait Served extends Specification {
   lazy val server = setup(new Http(port))
   val host = :/("localhost", port)
   
-  doBeforeSpec { server.daemonize() }
+  doBeforeSpec { server.start() }
   doAfterSpec { server.stop() }
 }

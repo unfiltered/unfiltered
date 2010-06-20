@@ -54,6 +54,6 @@ class PlanDemo extends unfiltered.Plan with Rendering {
 
 object DemoServer {
   def main(args: Array[String]) {
-    unfiltered.server.Http(8080).filter(new PlannedDemo).filter(new PlanDemo).start()
+    unfiltered.server.Http(8080).filter(new PlannedDemo).filter(new PlanDemo).run()
   }
 }

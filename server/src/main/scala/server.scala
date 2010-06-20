@@ -22,8 +22,11 @@ trait Server {
     this
   }
 
-  def filter(filt: javax.servlet.Filter) = handler { handlers =>
-    val context = new ServletContextHandler(handlers, "/")
+  /** Attach a filter at the root context */
+  val filter = filterAt("/")_
+  /** Attach a filter at contextPath  */
+  def filterAt(contextPath: String)(filt: javax.servlet.Filter) = handler { handlers =>
+    val context = new ServletContextHandler(handlers, contextPath)
     context.addFilter(new FilterHolder(filt), "/*", 
       ServletContextHandler.NO_SESSIONS|ServletContextHandler.NO_SECURITY)
     context.addServlet(classOf[org.eclipse.jetty.servlet.DefaultServlet], "/")
@@ -37,7 +40,9 @@ trait Server {
     resource_handler
   }
   
-  def start() {
+  /** Runs the server and joins its controlling thread. If the current thread is not the main thread, 
+      e.g. if running in sbt, waits for input in a loop and stops the server as soon as any key is pressed.  */
+  def run() {
     // enter wait loop if not in main thread, e.g. running inside sbt
     Thread.currentThread.getName match {
       case "main" => 
@@ -56,11 +61,11 @@ trait Server {
         stop()
     }
   }
-  /** programatic way to start server in the background */
-  def daemonize() {
+  /** Starts server in the background */
+  def start() {
     server.start()
   }
-    
+  /** Stops server running in the background */
   def stop() {
     server.stop() 
   }
