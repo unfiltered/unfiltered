@@ -3,13 +3,13 @@ package unfiltered.request
 import javax.servlet.http.HttpServletRequest
 
 class RequestHeader(name: String) {
-  def unapplySeq(req: HttpServletRequest): Option[Seq[String]] = { 
+  def unapply(req: HttpServletRequest) = { 
     def headers(e: java.util.Enumeration[_]): List[String] =
       if (e.hasMoreElements) e.nextElement match {
         case v: String => v :: headers(e)
         case _ => headers(e)
       } else Nil
-    Some(headers(req.getHeaders(name)))
+    Some((headers(req.getHeaders(name)), req))
   }
 }
 
@@ -21,6 +21,7 @@ object AcceptEncoding extends RequestHeader("Accept-Encoding")
 object AcceptLanguage extends RequestHeader("Accept-Language")
 object Authorization extends RequestHeader("Authorization")
 object Connection extends RequestHeader("Connection")
+object RequestContentType extends RequestHeader("Content-Type")
 object Expect extends RequestHeader("Expect")
 object From extends RequestHeader("From")
 object Host extends RequestHeader("Host")

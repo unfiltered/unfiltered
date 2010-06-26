@@ -7,7 +7,7 @@ object BasicAuth {
   
   /** @return Some(((user, pass), req)) or None */
   def unapply(r: Req) = r match {
-    case Authorization(auth) => {
+    case Authorization(Seq(auth, _), _) => {
       val tok = new java.util.StringTokenizer(auth)
       tok.nextToken match {
         case "Basic" =>
