@@ -1,7 +1,7 @@
 package unfiltered.server
 
 import org.eclipse.jetty.server.{Server => JettyServer, Connector, Handler}
-import org.eclipse.jetty.server.handler.{ContextHandler, HandlerCollection, ResourceHandler}
+import org.eclipse.jetty.server.handler.{HandlerCollection, ResourceHandler}
 import org.eclipse.jetty.servlet.{FilterHolder, ServletContextHandler}
 import org.eclipse.jetty.server.bio.SocketConnector
 import org.eclipse.jetty.util.resource.Resource
