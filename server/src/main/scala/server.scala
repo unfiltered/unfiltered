@@ -1,7 +1,7 @@
 package unfiltered.server
 
 import org.eclipse.jetty.server.{Server => JettyServer, Connector, Handler}
-import org.eclipse.jetty.server.handler.{HandlerCollection, ResourceHandler}
+import org.eclipse.jetty.server.handler.{ContextHandler, HandlerCollection, ResourceHandler}
 import org.eclipse.jetty.servlet.{FilterHolder, ServletContextHandler}
 import org.eclipse.jetty.server.bio.SocketConnector
 import org.eclipse.jetty.util.resource.Resource
@@ -25,14 +25,12 @@ trait Server {
   /** Attach a filter at the root context */
   val filter = filterAt("/")_
   /** Attach a filter at contextPath  */
-  def filterAt(contextPath: String)(filt: javax.servlet.Filter) = handler { handlers =>
-    val context = new ServletContextHandler(handlers, contextPath)
+  def filterAt(contextPath: String)(filt: javax.servlet.Filter) = at(contextPath) { context =>
     context.addFilter(new FilterHolder(filt), "/*", 
       ServletContextHandler.NO_SESSIONS|ServletContextHandler.NO_SECURITY)
-    context.addServlet(classOf[org.eclipse.jetty.servlet.DefaultServlet], "/")
     context
   }
-  
+  /** create a new resource handler at marker */  
   def resources(marker: java.net.URL) = handler { container =>
     val s = marker.toString
     val resource_handler = new ResourceHandler
@@ -69,4 +67,21 @@ trait Server {
   def stop() {
     server.stop() 
   }
+  /** get or create a new context for a given contextPath  */
+  private def at(contextPath: String)(f: ServletContextHandler => ServletContextHandler) =
+    handler { handlers =>
+      def newContext = {
+        val context = new ServletContextHandler(handlers, contextPath)
+        context.addServlet(classOf[org.eclipse.jetty.servlet.DefaultServlet], "/")
+        context
+      }
+      f(handlers.getHandlers match {
+        case null => newContext
+        case arr => arr.toList.filter(_.isInstanceOf[ServletContextHandler])
+                              .filter(_.asInstanceOf[ServletContextHandler].getContextPath == contextPath) match {
+          case c :: _ => c.asInstanceOf[ServletContextHandler]
+          case _ => newContext
+        }
+      })
+    }
 }
