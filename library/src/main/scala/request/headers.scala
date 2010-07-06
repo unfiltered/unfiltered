@@ -2,7 +2,7 @@ package unfiltered.request
 
 import javax.servlet.http.HttpServletRequest
 
-class RequestHeader(name: String) {
+class RequestHeader(val name: String) {
   def unapply(req: HttpServletRequest) = { 
     def headers(e: java.util.Enumeration[_]): List[String] =
       if (e.hasMoreElements) e.nextElement match {
