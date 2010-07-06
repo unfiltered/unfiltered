@@ -3,7 +3,7 @@ package unfiltered.request
 import javax.servlet.http.HttpServletRequest
 
 object Path {
-  def unapply(req: HttpServletRequest) = Some((req.getRequestURI, req))
+  def unapply(req: HttpServletRequest) = Some((req.getRequestURI.substring(req.getContextPath.length), req))
 }
 object Seg {
   def unapply(path: String): Option[List[String]] = path.split("/").toList match {

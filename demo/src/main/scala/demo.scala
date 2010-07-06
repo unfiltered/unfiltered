@@ -48,12 +48,12 @@ class PlannedDemo extends unfiltered.Planify ({
 
 class PlanDemo extends unfiltered.Plan with Rendering {
   def filter = {
-    case GET(Path(Seg("e" :: what :: Nil), req)) => render(what)
+    case GET(Path(Seg(what :: Nil), req)) => render(what)
   }
 }
 
 object DemoServer {
   def main(args: Array[String]) {
-    unfiltered.server.Http(8080).filter(new PlannedDemo).filter(new PlanDemo).run()
+    unfiltered.server.Http(8080).filter(new PlannedDemo).context("/2") { _.filter(new PlanDemo) }.run()
   }
 }
