@@ -5,6 +5,13 @@ import javax.servlet.http.HttpServletResponse
 object ResponsePackage {
   // make a package object when 2.7 support is dropped
   type ResponseFunction = HttpServletResponse => HttpServletResponse
+  
+  implicit def crf2rf(cf: unfiltered.response.Contents[ResponseFunction]): ResponseFunction =
+     cf match {
+       case a: Addressed[ResponseFunction] => a.handler
+       case p: Present[ResponseFunction] => p.get
+       case Absent => BadRequest
+     }
 }
 import ResponsePackage.ResponseFunction
 
