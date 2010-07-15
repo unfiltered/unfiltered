@@ -1,6 +1,6 @@
 package unfiltered.response
 
-/** An Option-like Monad with 3 statess
+/** An Option-like Monad with 3 states
  * Present - notion of an expected value being present
  * Absent - notion of an expected value being absent
  * Addressed - notion of a absent value, recognized and addressed
@@ -84,7 +84,7 @@ case class Addressed[T](handler: T) extends Contents[Nothing] {
 }
 
 object Contents {
-  /** @return Absent if x is a seq of strings or null, Present otherwise */
+  /** @return Absent if x is a, empty seq of strings or null, Present otherwise */
   def apply[A](x: A): Contents[A] = x match {
     case s: Seq[String] => if(s.isEmpty) Absent else Present(x) 
     case _ => if(x == null) Absent else Present(x) 
