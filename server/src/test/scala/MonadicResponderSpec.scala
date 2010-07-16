@@ -53,8 +53,8 @@ object MonadicResponderSpec extends Specification with unfiltered.spec.Served {
       resp must_== "no even number was supplied"   
     }
     "yield to successful pattern matches" in {
-      val resp = Http(host / "test" <<? Map("name" -> "n8", "even" -> 2) as_str)
-      resp must_== "missing y" 
+      val resp = Http(host / "single" <<? Map("name" -> "n8", "even" -> 2) as_str)
+      resp must_== "we got n8 and 2" 
     }
   }
 }
