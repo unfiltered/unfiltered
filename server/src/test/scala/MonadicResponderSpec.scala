@@ -22,7 +22,7 @@ object MonadicResponderSpec extends Specification with unfiltered.spec.Served {
   def setup = { _.filter(unfiltered.Planify {  
     case GET(UFPath("/multi", Params(p, _))) => 
       for {
-         name <- Name(params) withFail: ("we need a name")
+         name <- Name(params) withFail ("we need a name")
          even <- Even(even) withFail ("no even number was supplied")
       } yield {
          ResponseString("we got %s and %s" format (name, even))
