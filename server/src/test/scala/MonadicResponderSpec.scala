@@ -10,20 +10,31 @@ object MonadicResponderSpec extends Specification with unfiltered.spec.Served {
   import dispatch._
   
   // Response package is needed for implicit conversion of Contents -> ResponseFunction
-  //import ResponsePackage._
+  import ResponsePackage._
   
   object Name extends Params.Named(
     "name", Params.first ~> Params.trimmed ~> Params.nonempty
-  )
+  ) { 
+    def apply(params: Map[String, Seq[String]]) = params match {
+      case Name(n, _) => Some(n)
+      case _ => None
+    }
+  }
+  
   object Even extends Params.Named(
     "even", Params.first ~> Params.int ~> { _ filter { _ % 2 == 0 } }
-  )
+  ) { 
+    def apply(params: Map[String, Seq[String]]) = params match {
+      case Even(n, _) => Some(n)
+      case _ => None
+    }
+  }
   
   def setup = { _.filter(unfiltered.Planify {  
     case GET(UFPath("/multi", Params(p, _))) => 
       for {
-         name <- Name(params) withFail ("we need a name")
-         even <- Even(even) withFail ("no even number was supplied")
+         name <- Name(p) withFail ("we need a name")
+         even <- Even(p) withFail ("no even number was supplied")
       } yield {
          ResponseString("we got %s and %s" format (name, even))
       } orFail { errors: List[String] =>
@@ -31,8 +42,8 @@ object MonadicResponderSpec extends Specification with unfiltered.spec.Served {
       }
     case GET(UFPath("/single", Params(p, _))) =>
       for {
-         name <- Name(params) orFail { ResponseString("we need a name") }
-         even <- Even(even) orFail { ResponseString("no even number was supplied") }
+         name <- Name(p) orFail { ResponseString("we need a name") }
+         even <- Even(p) orFail { ResponseString("no even number was supplied") }
       } yield {
          ResponseString("we got %s and %s" format (name, even))
       }
