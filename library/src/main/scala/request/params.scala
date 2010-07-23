@@ -8,6 +8,7 @@ object Params {
     def hasNext: Boolean =  e.hasMoreElements()
     def next: T = e.nextElement()
   }
+  type ParamMap = Map[String, Seq[String]]
   /**
     Given a req, extract the request params into a (Map[String, Seq[String]], request).
     The Map is assigned a default value of Nil, so param("p") would return Nil if there
@@ -21,7 +22,7 @@ object Params {
   }
 
   abstract class Named[T](name: String, f: Seq[String] => Option[T]) {
-    def unapply(params: Map[String, Seq[String]]) = f(params(name)) map {
+    def unapply(params: ParamMap) = f(params(name)) map {
       (_, params)
     }
   }
