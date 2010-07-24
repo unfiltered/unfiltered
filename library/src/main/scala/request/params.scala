@@ -21,16 +21,21 @@ object Params {
       )).withDefaultValue(Nil), req)
   }
 
-  abstract class Extract[T](name: String, f: Seq[String] => Option[T]) {
-    def unapply(params: Map) = f(params(name)) map {
+  abstract class Extract[T](f: Map => Option[T]) {
+    def this(name: String, f: Seq[String] => Option[T]) = 
+      this({ params: Map => f(params(name)) })
+    def unapply(params: Map) = f(params) map {
       (_, params)
     }
   }
 
   object Query {
     class Builder(params: Map) {
-      def apply[T](name: String, f: Seq[String] => Option[T]) =
-       new Query(f(params(name)), f(params(name)).isEmpty)
+      def apply[T](f: Map => Option[T]): Query[Option[T]] =
+        new Query(f(params), f(params).isEmpty)
+
+      def apply[T](name: String, f: Seq[String] => Option[T]): Query[Option[T]] =
+        apply { params: Map => f(params(name)) }
     }
     def unapply(req: HttpServletRequest) = Params.unapply(req) map { case (params, req) =>
       (new Builder(params), req)
@@ -43,7 +48,7 @@ object Params {
     def ~> [Then] (that: R => Then) = new Chained(this andThen that)
   }
 
-  val first = new Chained( { seq: Seq[String] => seq.headOption } )
+  val first = new Chained({ seq: Seq[String] => seq.headOption })
 
   val trimmed = { (_: Option[String]) map { _.trim } }
   val nonempty = { (_: Option[String]) filter { ! _.isEmpty  } }
@@ -65,15 +70,5 @@ object Params {
     def orElse(f: => E) =
       if (complete) value
       else f
-  }
-}
-object Test {
-  import unfiltered.response.{ResponsePackage,ResponseString}
-  val q = new Params.Query.Builder(Map.empty)
-  val r: ResponsePackage.ResponseFunction = ( for {
-    name <- q("name", Params.first ~> Params.trimmed ~> Params.nonempty)
-    even <- q("even", Params.first ~> Params.int ~> { _ filter { _ % 2 == 0 } })
-  } yield ResponseString(name.get) ) orElse {
-    ResponseString("oops")
   }
 }
