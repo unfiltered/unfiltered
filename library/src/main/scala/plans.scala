@@ -19,17 +19,18 @@ trait Plan extends InittedFilter {
   val complete_filter = filter.orElse[ServletRequest, ResponseFunction] {
     case _ => Pass
   }
+  
   def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     (request, response) match {
       case (request: HttpServletRequest, response: HttpServletResponse) => 
         complete_filter(request) match {
-          case after: PassAndThen[_] =>
+          case after: PassAndThen =>
             chain.doFilter(request, response)
-            after.then(request, response)
+            after.then(request)(response)
           case Pass => chain.doFilter(request, response)
           case response_function => response_function(response)
         }
-    }
+     }
   }
 }
 
