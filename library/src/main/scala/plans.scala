@@ -2,7 +2,7 @@ package unfiltered
 
 import javax.servlet.{Filter, FilterConfig, FilterChain, ServletRequest, ServletResponse}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import unfiltered.response.{ResponsePackage, Pass}
+import unfiltered.response.{ResponsePackage, Pass, PassAndThen}
 import ResponsePackage.ResponseFunction
 
 trait InittedFilter extends Filter {
@@ -23,6 +23,9 @@ trait Plan extends InittedFilter {
     (request, response) match {
       case (request: HttpServletRequest, response: HttpServletResponse) => 
         complete_filter(request) match {
+          case after: PassAndThen[_] =>
+            chain.doFilter(request, response)
+            after.then(request, response)
           case Pass => chain.doFilter(request, response)
           case response_function => response_function(response)
         }
