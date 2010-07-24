@@ -38,5 +38,14 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     "return even number" in {
       Http(host / "even" <<? Map("number" -> "8") as_str) must_=="8"
     }
+    "fail on non-number" in {
+      Http.when(_ == 400)(host / "even" <<? Map("number" -> "eight") as_str) must_=="fail"
+    }
+    "fail on odd number" in {
+      Http.when(_ == 400)(host / "even" <<? Map("number" -> "7") as_str) must_=="fail"
+    }
+    "fail on not present" in {
+      Http.when(_ == 400)(host / "even" as_str) must_=="fail"
+    }
   }
 }

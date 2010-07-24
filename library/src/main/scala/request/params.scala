@@ -67,11 +67,7 @@ object Params {
       new Query(q.value, complete && q.complete)
     }
     def map(f: E => unfiltered.response.ResponsePackage.ResponseFunction) = 
-      flatMap(v => new Query(
-        {() => f(value())},
-        //if (complete) f
-        //else { v => unfiltered.response.Pass }
-        complete))
+      flatMap(v => new Query({ () => f(value()) }, complete))
     def orElse(f: => E) =
       if (complete) value()
       else f
