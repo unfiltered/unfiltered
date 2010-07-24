@@ -32,7 +32,11 @@ object Params {
   object Query {
     class Builder(params: Map) {
       def apply[T](f: Map => Option[T]): Query[Option[T]] =
-        new Query(f(params), f(params).isEmpty)
+        {
+          val value = f(params)
+          new Query(() => value, !value.isEmpty)
+        }
+        
 
       def apply[T](name: String, f: Seq[String] => Option[T]): Query[Option[T]] =
         apply { params: Map => f(params(name)) }
@@ -57,18 +61,19 @@ object Params {
     try { s map { _.toInt } } catch { case _ => None }
   }
   
-  class Query[E](val value: E, val complete: Boolean) {
-    def flatMap[F](f: E => Query[F]) = {
+  class Query[E](val value: () => E, val complete: Boolean) {
+    def flatMap[F](f: (() => E) => Query[F]) = {
       val q = f(value)
       new Query(q.value, complete && q.complete)
     }
-    def map[F <: unfiltered.response.ResponsePackage.ResponseFunction](f: E => F) = 
+    def map(f: E => unfiltered.response.ResponsePackage.ResponseFunction) = 
       flatMap(v => new Query(
-        if (complete) f(value)
-        else unfiltered.response.Pass, 
+        {() => f(value())},
+        //if (complete) f
+        //else { v => unfiltered.response.Pass }
         complete))
     def orElse(f: => E) =
-      if (complete) value
+      if (complete) value()
       else f
   }
 }
