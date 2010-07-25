@@ -17,9 +17,16 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
 
     case GET(UFPath("/even", Params.Query(q, _))) => 
       (for {
-        even <- q("number", Params.first ~> Params.int ~> { _ filter { _ % 2 == 0 } })
-      } yield ResponseString(even.get.toString)) orElse BadRequest ~> ResponseString("fail")
+        even <- q("number", 
+          Params.first ~> Params.int ~> { _.right.map { _.filter { _ % 2 == 0 } } } ~> Params.require("missing")
+        )
+      } yield ResponseString(even.right.get.toString)) orElse BadRequest ~> ResponseString("fail")
     
+      case GET(UFPath("/str", Params.Query(q, _))) => 
+        (for {
+          str <- q[Nothing, Option[String]]("param", Params.first)
+        } yield ResponseString(str.right.get.getOrElse(""))) orElse BadRequest ~> ResponseString("fail")
+
       case POST(UFPath("/pp", Params(params, _))) => params("foo") match {
       case Seq(foo) => ResponseString("foo is %s" format foo)
       case _ =>  ResponseString("what's foo?")
@@ -45,7 +52,10 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
       Http.when(_ == 400)(host / "even" <<? Map("number" -> "7") as_str) must_=="fail"
     }
     "fail on not present" in {
-      Http.when(_ == 400)(host / "even" as_str) must_=="fail"
+      Http.when(_ == 400)(host / "even" as_str) must_=="missing"
+    }
+    "return empty on not present" in {
+      Http(host / "str" as_str) must_==""
     }
   }
 }
