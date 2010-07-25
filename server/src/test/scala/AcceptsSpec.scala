@@ -26,7 +26,7 @@ object AcceptSpec extends Specification  with unfiltered.spec.Served {
       val resp = Http(host / "test.json" <:< Map("Accept" -> "*/*") as_str)
       resp must_=="json"
     }
-    "match an text/xml accepts request as xml" in {
+    "match a text/xml accepts request as xml" in {
       val resp = Http(host / "test" <:< Map("Accept" -> "text/xml")  as_str)
       resp must_=="xml"
     }
