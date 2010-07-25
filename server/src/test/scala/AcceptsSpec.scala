@@ -34,5 +34,21 @@ object AcceptSpec extends Specification  with unfiltered.spec.Served {
       val resp = Http(host / "test.xml" <:< Map("Accept" -> "*/*")  as_str)
       resp must_=="xml"
     }
+    "match a text/html accepts request as html" in {
+      val resp = Http(host / "test" <:< Map("Accept" -> "text/html")  as_str)
+      resp must_=="html"
+    }
+    "match a .html file extension as html when accepts is empty or contains a wildcard" in {
+      val resp = Http(host / "test.html" <:< Map("Accept" -> "*/*")  as_str)
+      resp must_=="html"
+    }
+    "match a text/csv accepts request as csv" in {
+      val resp = Http(host / "test" <:< Map("Accept" -> "text/csv")  as_str)
+      resp must_=="csv"
+    }
+    "match a .csv file extension as csv when accepts is empty or contains a wildcard" in {
+      val resp = Http(host / "test.csv" <:< Map("Accept" -> "*/*")  as_str)
+      resp must_=="csv"
+    }
   }
 }

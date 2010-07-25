@@ -34,10 +34,24 @@ object Accepts {
     val ext = "xml"
     val sym = 'xml
   }
+  
+  case object AcceptingHtml extends Accepting {
+    val contentType = "text/html"
+    val ext = "html"
+    val sym = 'html
+  }
+  
+  case object AcceptingCsv extends Accepting {
+    val contentType = "text/csv"
+    val ext = "csv"
+    val sym = 'csv
+  }
 
   def unapply(r: javax.servlet.http.HttpServletRequest) = r match {
     case AcceptingJson(sym) => Some((sym, r))
     case AcceptingXml(sym) => Some((sym, r))
+    case AcceptingHtml(sym) => Some((sym, r))
+    case AcceptingCsv(sym) => Some((sym, r))
     case _ => None
   }
 }
