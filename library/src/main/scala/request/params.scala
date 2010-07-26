@@ -1,5 +1,6 @@
 package unfiltered.request
 
+import unfiltered.response.ResponsePackage.ResponseFunction
 import javax.servlet.http.HttpServletRequest
 
 object Params {
@@ -29,21 +30,25 @@ object Params {
     }
   }
 
+  type QueryValue[E,T] = Either[E, () => T]
   object Query {
-    class Builder(params: Map) {
-      def apply[E,T](f: Map => Either[E, T]): Query[Either[E, T]] =
-        {
-          val value = f(params)
-          new Query(() => value, value.isRight)
+    class Builder1(params: Map) {
+      def errors[E] = new {
+        def apply[R](f: Builder2[E] => Query[E,R]) = new {
+          def orElse(ef: E => R) =
+            f(new Builder2[E](params)).value.fold(ef, v => v())
         }
-
-      def apply[E,T](name: String, f: Seq[String] => Either[E,T]): Query[Either[E,T]] =
+      }
+    }
+    class Builder2[E](params: Map){
+      def apply[T](f: Map => Either[E, T]): Query[E,T] =
+        new Query(f(params).right.map { v => () => v })
+      def apply[T](name: String, f: Seq[String] => Either[E,T]): Query[E,T] =
         apply { params: Map => f(params(name)) }
     }
     def unapply(req: HttpServletRequest) = Params.unapply(req) map { case (params, req) =>
-      (new Builder(params), req)
+      (new Builder1(params), req)
     }
-    
   }
   
   class Chained[T, R](f: T => R) extends (T => R) {
@@ -52,30 +57,32 @@ object Params {
   }
 
   val first = new Chained({ seq: Seq[String] => Right(seq.headOption) })
-
+  
   def trimmed[E](in: Either[E,Option[String]]) = in.right map { _.map { _.trim } }
   def nonempty[E](in: Either[E,Option[String]]) = in.right map { _.filter { ! _.isEmpty  } }
 
-  def int[E](in: Either[E,Option[String]]) = in match {
-    case Left(error) => Left(error)
-    case Right(value) => 
-      Right(try { value.map { _.toInt } } catch { case _ => None })
-  }
+  def int0(in: Option[String]) =
+    try { in.map { _.toInt } } catch { case _ => None }
+  def int[E](msg: E) = error(int0, msg)_
+
+  def error[E,A,B](f: Option[A]=> Option[B], msg: E)(in: Either[E,Option[A]]) =
+    in.right.flatMap { prev =>
+      f(prev) match {
+        case None => if (prev.isEmpty) Right(None) else Left(msg)
+        case value => Right(value)
+      }
+    }
   
   def require[E,T](error: E)(in: Either[E,Option[T]]) = in.right flatMap {
     case None => Left(error)
     case Some(value) => Right(value)
   }
-  
-  class Query[A](val value: () => A, val accept: Boolean) {
-    def flatMap[B](f: (() => A) => Query[B]) = {
-      val q = f(value)
-      new Query(q.value, accept && q.accept)
-    }
-    def map(f: A => unfiltered.response.ResponsePackage.ResponseFunction) = 
-      flatMap(v => new Query({ () => f(value()) }, accept))
-    def orElse(f: => A) =
-      if (accept) value()
-      else f
+
+  class Query[E,A](val value: QueryValue[E,A]) {
+    def flatMap[B](f: QueryValue[E,A] => Query[E,B]) = 
+      f(value)
+      
+    def map(f: A => ResponseFunction) = 
+      new Query(value.right.map{ v => () => f(v()) })
   }
 }

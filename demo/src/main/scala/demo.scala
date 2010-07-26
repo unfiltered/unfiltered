@@ -11,7 +11,7 @@ object Id {
 }
 
 object Name extends Params.Extract("name", Params.first ~> Params.trimmed ~> Params.nonempty)
-object Even extends Params.Extract("even", Params.first ~> Params.int ~> { _.right.map { _ filter { _ % 2 == 0 } } })
+object Even extends Params.Extract("even", Params.first ~> Params.int("nonint") ~> { _.right.map { _ filter { _ % 2 == 0 } } })
 
 trait Rendering {
   def render(body: String): Html = render(scala.xml.Text(body))

@@ -15,19 +15,34 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
       case _ =>  ResponseString("what's foo?")
     }
 
-    case GET(UFPath("/even", Params.Query(q, _))) => 
-      (for {
-        even <- q("number", 
-          Params.first ~> Params.int ~> { _.right.map { _.filter { _ % 2 == 0 } } } ~> Params.require("missing")
-        )
-      } yield ResponseString(even.right.get.toString)) orElse BadRequest ~> ResponseString("fail")
-    
-      case GET(UFPath("/str", Params.Query(q, _))) => 
-        (for {
-          str <- q[Nothing, Option[String]]("param", Params.first)
-        } yield ResponseString(str.right.get.getOrElse(""))) orElse BadRequest ~> ResponseString("fail")
+    case GET(UFPath("/int", Params.Query(query, _))) => 
+      query.errors[String] { q => for {
+        even <- q("number",
+          Params.first ~> Params.int("missing") ~> Params.require("missing"))
+      } yield ResponseString(even.toString) } orElse { error =>
+        BadRequest ~> ResponseString(error)
+      }
 
-      case POST(UFPath("/pp", Params(params, _))) => params("foo") match {
+    case GET(UFPath("/even", Params.Query(query, _))) => 
+      query.errors[String] { q => for {
+        even <- q("number",
+          Params.first ~> Params.int("nonnumber") ~> Params.error(
+            _.filter(_ % 2 == 0), "odd"
+          ) ~> Params.require("missing"))
+      } yield ResponseString(even.toString) } orElse { error =>
+        BadRequest ~> ResponseString(error)
+      }
+    
+    case GET(UFPath("/str", Params.Query(query, _))) => 
+      query.errors[String] { q =>
+        for {
+          str <- q("param", Params.first)
+        } yield ResponseString(str.getOrElse(""))
+      } orElse { error =>
+        BadRequest ~> ResponseString("fail")
+      }
+
+    case POST(UFPath("/pp", Params(params, _))) => params("foo") match {
       case Seq(foo) => ResponseString("foo is %s" format foo)
       case _ =>  ResponseString("what's foo?")
     }
@@ -42,14 +57,20 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     "extract post params" in {
       Http(host / "pp" << Map("foo" -> "bar") as_str) must_=="foo is bar"
     }
+    "return a number" in {
+      Http(host / "int" <<? Map("number" -> "8") as_str) must_=="8"
+    }
+    "fail on non-number" in {
+      Http.when(_ == 400)(host / "int" <<? Map("number" -> "8a") as_str) must_=="missing"
+    }
     "return even number" in {
       Http(host / "even" <<? Map("number" -> "8") as_str) must_=="8"
     }
     "fail on non-number" in {
-      Http.when(_ == 400)(host / "even" <<? Map("number" -> "eight") as_str) must_=="fail"
+      Http.when(_ == 400)(host / "even" <<? Map("number" -> "eight") as_str) must_=="nonnumber"
     }
     "fail on odd number" in {
-      Http.when(_ == 400)(host / "even" <<? Map("number" -> "7") as_str) must_=="fail"
+      Http.when(_ == 400)(host / "even" <<? Map("number" -> "7") as_str) must_=="odd"
     }
     "fail on not present" in {
       Http.when(_ == 400)(host / "even" as_str) must_=="missing"
