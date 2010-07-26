@@ -30,20 +30,20 @@ object Params {
     }
   }
 
-  type QueryValue[E,T] = Either[E, () => T]
+  type QueryValue[E,T] = Either[E, T]
   object Query {
     class Builder1(params: Map) {
       def errors[E] = new {
         def apply[R](f: Builder2[E] => Query[E,R]) = new {
           def orElse(ef: E => R) =
-            f(new Builder2[E](params)).value.fold(ef, v => v())
+            f(new Builder2[E](params)).value.fold(ef, identity[R])
         }
       }
     }
     class Builder2[E](params: Map){
       val first = new EitherChained({ seq: Seq[String] => Right[E,Option[String]](seq.headOption) })
       def apply[T](f: Map => Either[E, T]): Query[E,T] =
-        new Query(f(params).right.map { v => () => v })
+        new Query(f(params))
       def apply[T](name: String, f: Seq[String] => Either[E,T]): Query[E,T] =
         apply { params: Map => f(params(name)) }
     }
@@ -87,6 +87,6 @@ object Params {
       f(value)
       
     def map(f: A => ResponseFunction) = 
-      new Query(value.right.map{ v => () => f(v()) })
+      new Query(value.right.map(f))
   }
 }
