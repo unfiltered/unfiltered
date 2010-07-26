@@ -5,8 +5,8 @@ object Accepts {
   
   trait Accepting {
     val contentType: String
-    val ext: String
     val sym: Symbol
+    lazy val ext = sym.name
    
     def unapply(r: javax.servlet.http.HttpServletRequest) = {
       val pathSuffix = r.getRequestURI.substring(r.getContextPath.length).split("[.]").lastOption
@@ -25,25 +25,21 @@ object Accepts {
 
   case object AcceptingJson extends Accepting {
     val contentType = "application/json"
-    val ext = "json"
     val sym = 'json
   }
 
   case object AcceptingXml extends Accepting {
     val contentType = "text/xml"
-    val ext = "xml"
     val sym = 'xml
   }
   
   case object AcceptingHtml extends Accepting {
     val contentType = "text/html"
-    val ext = "html"
     val sym = 'html
   }
   
   case object AcceptingCsv extends Accepting {
     val contentType = "text/csv"
-    val ext = "csv"
     val sym = 'csv
   }
 
