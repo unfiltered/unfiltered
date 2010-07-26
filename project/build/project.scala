@@ -3,12 +3,9 @@ import sbt._
 class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
   
   class UnfilteredModule(info: ProjectInfo) extends DefaultProject(info) with sxr.Publish {
-    // testing
-    lazy val snapshots = "scala-tools snapshots :(" at "http://scala-tools.org/repo-snapshots/"
-    lazy val specs = "org.scala-tools.testing" % "specs_2.8.0.RC6" % "1.6.5-SNAPSHOT" % "test"
-    lazy val databinderNet = "databinder.net repository" at "http://databinder.net/repo"
-    lazy val dpVersion = "0.7.4"
-    lazy val dispatchLiftJson = "net.databinder" %% "dispatch-lift-json" % dpVersion % "test"
+    lazy val unfilteredSpec =  "net.databinder" %% "unfiltered-spec" % "0.1.3-SNAPSHOT" % "test"
+    lazy val specs = specsDependency % "test" // transitive dependencies not picked up for local dep
+    lazy val dispatch = dispatchDependency % "test"
   }
   
   lazy val library = project("library", "Unfiltered", new UnfilteredModule(_) {
@@ -23,7 +20,18 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
     val jetty7 = "org.eclipse.jetty" % "jetty-ajp" % jetty_version
   }, server)
   lazy val demo = project("demo", "Unfiltered Demo", new UnfilteredModule(_), server)
-
+  lazy val spec = project("spec", "Unfiltered Spec", new DefaultProject(_) with sxr.Publish {
+    lazy val specs = specsDependency
+    lazy val dispatch = dispatchDependency
+  }, server)
+  
+  def specsDependency = 
+    if (buildScalaVersion startsWith "2.7.") 
+      "org.scala-tools.testing" % "specs" % "1.6.2.2"
+    else
+      "org.scala-tools.testing" %% "specs" % "1.6.5"
+  def dispatchDependency = "net.databinder" %% "dispatch-http" % "0.7.4"
+  
   /** Exclude demo from publish, all other actions run from parent */
   override def dependencies = super.dependencies.filter { d => !(d eq demo) }
 
