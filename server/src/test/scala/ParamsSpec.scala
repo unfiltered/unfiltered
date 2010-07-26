@@ -26,7 +26,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     case GET(UFPath("/even", Params.Query(query, _))) => 
       query.errors[String] { q => for {
         even <- q("number",
-          q.first error(Params.int, "nonnumber") error(
+          q.first err(Params.int, "nonnumber") err(
             _.filter(_ % 2 == 0), "odd"
           ) orError "missing"
         )
