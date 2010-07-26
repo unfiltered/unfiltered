@@ -10,8 +10,8 @@ object Id {
     catch { case _ => None }
 }
 
-object Name extends Params.Extract("name", Params.first ~> Params.trimmed ~> Params.nonempty)
-object Even extends Params.Extract("even", Params.first ~> Params.opt(Params.int) ~> { _.right.map { _ filter { _ % 2 == 0 } } })
+object Name extends Params.Extract("name", Params.firstOption ~> Params.trimmed ~> Params.nonempty)
+object Even extends Params.Extract("even", Params.firstOption ~> Params.int ~> { _ filter { _ % 2 == 0 } })
 
 trait Rendering {
   def render(body: String): Html = render(scala.xml.Text(body))
