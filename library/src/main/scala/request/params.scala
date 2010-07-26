@@ -61,11 +61,10 @@ object Params {
   def trimmed[E](in: Either[E,Option[String]]) = in.right map { _.map { _.trim } }
   def nonempty[E](in: Either[E,Option[String]]) = in.right map { _.filter { ! _.isEmpty  } }
 
-  def int0(in: Option[String]) =
+  def int(in: Option[String]) =
     try { in.map { _.toInt } } catch { case _ => None }
-  def int[E](msg: E) = error(int0, msg)_
 
-  def error[E,A,B](f: Option[A]=> Option[B], msg: E)(in: Either[E,Option[A]]) =
+  def err[E,A,B](f: Option[A]=> Option[B], msg: E)(in: Either[E,Option[A]]) =
     in.right.flatMap { prev =>
       f(prev) match {
         case None => if (prev.isEmpty) Right(None) else Left(msg)
@@ -73,6 +72,9 @@ object Params {
       }
     }
   
+  def opt[E,A,B](f: Option[A]=> Option[B])(in: Either[E,Option[A]]) =
+    in.right.map(f)
+
   def require[E,T](error: E)(in: Either[E,Option[T]]) = in.right flatMap {
     case None => Left(error)
     case Some(value) => Right(value)
