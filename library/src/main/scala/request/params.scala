@@ -73,8 +73,7 @@ object Params {
     } }
   }
 
-  val first = new EitherChained({ seq: Seq[String] => Right(seq.headOption) })
-  val firstOption = new Chained({ seq: Seq[String] => seq.headOption })
+  val first = new Chained({ seq: Seq[String] => seq.headOption })
 
   def trimmed(in: Option[String]) = in.map { _.trim }
   def nonempty(in: Option[String]) = in.filter { ! _.isEmpty  }

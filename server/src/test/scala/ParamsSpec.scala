@@ -37,7 +37,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     case GET(UFPath("/str", Params.Query(query, _))) => 
       query.errors[String] { q =>
         for {
-          str <- q("param", Params.first)
+          str <- q("param", q.first)
         } yield ResponseString(str.getOrElse(""))
       } orElse { error =>
         BadRequest ~> ResponseString("fail")
