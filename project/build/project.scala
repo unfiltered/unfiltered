@@ -3,8 +3,8 @@ import sbt._
 class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
   
   class UnfilteredModule(info: ProjectInfo) extends DefaultProject(info) with sxr.Publish {
-    lazy val unfilteredSpec =  "net.databinder" %% "unfiltered-spec" % "0.1.3" % "test"
-    lazy val specs = specsDependency % "test" // transitive dependencies not picked up for local dep
+    lazy val unfilteredSpec =  "net.databinder" %% "unfiltered-spec" % "0.1.3" % "test" intransitive()
+    lazy val specs = specsDependency % "test"
     lazy val dispatch = dispatchDependency % "test"
   }
   
