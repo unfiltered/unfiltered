@@ -14,10 +14,26 @@ object Params {
     is no such parameter, or (as normal for servlets) a single empty string if the
     parameter was supplied without a value. */
   def unapply(req: HttpServletRequest) = {
-    val names = JEnumerationIterator[String](req.getParameterNames.asInstanceOf[java.util.Enumeration[String]])
-    Some(((Map.empty[String, Seq[String]] /: names) ((m, n) => 
-        m + (n -> req.getParameterValues(n))
-      )).withDefaultValue(Nil), req)
+    import org.apache.commons.fileupload.{FileItem, FileItemFactory}
+    import org.apache.commons.fileupload.disk.{DiskFileItemFactory}
+    import org.apache.commons.fileupload.servlet.{ServletFileUpload}
+    
+    if (ServletFileUpload.isMultipartContent(req)) {
+      val factory = new DiskFileItemFactory(Int.MaxValue, new java.io.File("."))
+      val upload = new ServletFileUpload(factory)
+      val items = upload.parseRequest(req).toArray.toList collect {
+        case x: FileItem => (x.getFieldName, x.getString) }
+      val names = (items map { item => item._1 }).distinct
+      
+      Some((((Map.empty[String, Seq[String]] /: names) ((m, n) => 
+          m + (n -> (items filter { _._1 == n } map { _._2 }) )
+        )).withDefaultValue(Nil), req))
+    } else {
+      val names = JEnumerationIterator[String](req.getParameterNames.asInstanceOf[java.util.Enumeration[String]])
+      Some(((Map.empty[String, Seq[String]] /: names) ((m, n) => 
+          m + (n -> req.getParameterValues(n))
+        )).withDefaultValue(Nil), req)     
+    }
   }
 
   abstract class Named[T](name: String, f: Seq[String] => Option[T]) {
