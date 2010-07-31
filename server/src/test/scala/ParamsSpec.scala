@@ -10,11 +10,11 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
   import dispatch._
   
   class TestPlan extends unfiltered.Planify({
-    case GET(UFPath("/qp", Params(params, _))) => params("foo") match {
+    case GET(UFPath("/qp", Params(params, _, _))) => params("foo") match {
       case Seq(foo) => ResponseString("foo is %s" format foo)
       case _ =>  ResponseString("what's foo?")
     }
-    case POST(UFPath("/pp", Params(params, _))) => params("foo") match {
+    case POST(UFPath("/pp", Params(params, _,_))) => params("foo") match {
       case Seq(foo) => ResponseString("foo is %s" format foo)
       case _ =>  ResponseString("what's foo?")
     }
