@@ -57,15 +57,15 @@ object MultiPartParams {
         )
         Some(params, files, req)
       } else None
-      
-      private def withStreamedFile[T](fstm: FileItemStream)(f: java.io.InputStream => T): T = {
-        val stm = fstm.openStream
-        try { f(stm) } finally { stm.close }
-      }
+    
+    private def withStreamedFile[T](fstm: FileItemStream)(f: java.io.InputStream => T): T = {
+      val stm = fstm.openStream
+      try { f(stm) } finally { stm.close }
+    }
 
-      private def extractStr(fstm: FileItemStream) = withStreamedFile[String](fstm) { stm =>
-        Streams.asString(stm)
-      }
+    private def extractStr(fstm: FileItemStream) = withStreamedFile[String](fstm) { stm =>
+      Streams.asString(stm)
+    }
   }
   
   /** Configuration info for multi part form data processing */

@@ -15,30 +15,22 @@ object UploadsSpec extends Specification with unfiltered.spec.Served {
   import java.io.{File => JFile}
  
   class TestPlan extends unfiltered.Planify({
-    
-    // !IMPORTANT! MultiPartParams can not be used in first case
-    // it will get called twice but will only parse out the request
-    // body the first time
-    case POST(UFPath("/disk-upload", r)) => r match { 
-      case MultiPartParams.Disk(params, files, _) => files("f") match {
-        case Seq(f, _*) =>
-          f.write(new JFile("upload-test-out.txt")) match {
-            case Some(outFile) => {
-              if(new String(Source.fromFile(outFile).toArray) == new String(f.bytes)) ResponseString(
-                "wrote disk read file f named %s with content type %s with correct contents" format(f.name, f.contentType)
-              )
-              else ResponseString("wrote disk read file f named %s with content type %s, with differing contents" format(f.name, f.contentType))
-            }
-            case None => ResponseString("could not read disk read file f named %s with content type %s" format(f.name, f.contentType))
+    case POST(UFPath("/disk-upload", MultiPartParams.Disk(params, files, _))) => files("f") match { 
+      case Seq(f, _*) =>
+        f.write(new JFile("upload-test-out.txt")) match {
+          case Some(outFile) => {
+            if(new String(Source.fromFile(outFile).toArray) == new String(f.bytes)) ResponseString(
+              "wrote disk read file f named %s with content type %s with correct contents" format(f.name, f.contentType)
+            )
+            else ResponseString("wrote disk read file f named %s with content type %s, with differing contents" format(f.name, f.contentType))
           }
-        case _ =>  ResponseString("what's f?")
-      }
+          case None => ResponseString("could not read disk read file f named %s with content type %s" format(f.name, f.contentType))
+        }
+      case _ =>  ResponseString("what's f?")
     }
-    case POST(UFPath("/stream-upload", r)) => r match { 
-      case MultiPartParams.Streamed(params, files, _) =>  files("f") match {
-        case Seq(f, _*) => ResponseString("stream read file f is named %s with content type %s" format(f.name, f.contentType))
-        case _ =>  ResponseString("what's f?")
-      }
+    case POST(UFPath("/stream-upload", MultiPartParams.Streamed(params, files, _))) => files("f") match {
+      case Seq(f, _*) => ResponseString("stream read file f is named %s with content type %s" format(f.name, f.contentType))
+      case _ =>  ResponseString("what's f?")
     }
   })
   
