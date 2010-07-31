@@ -79,7 +79,6 @@ object MultiPartParams {
       parameter was supplied without a value. */
       def unapply(req: HttpServletRequest) =
         if (ServletFileUpload.isMultipartContent(req)) {
-          // TODO move max file size and tmp store path to a configured object
           val fact = new DiskFileItemFactory(maxfileSize, tempDir)
           val items =  new ServletFileUpload(fact).parseRequest(req).iterator.asInstanceOf[JIterator[ACFileItem]]
           val (params, files) = genTuple[String, FileItem, ACFileItem](items) ((maps, item) =>
