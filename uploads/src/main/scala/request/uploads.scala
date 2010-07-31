@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletRequest
 
 import org.apache.commons.{fileupload => fu}
 
+/** Represents an uploaded file loaded into memory (and possibly written to disk) */
 class DiskFileWraper(item: fu.FileItem) {
   def write(out: java.io.File): Option[java.io.File] = try {
     item.write(out)
@@ -19,8 +20,6 @@ class DiskFileWraper(item: fu.FileItem) {
   val contentType = item.getContentType
 }
 
-/** Represents an uploaded file loaded into memory */
-// case class ByteFileItem(name: String, content: Array[Byte], contentType: String)
 
 /** Represents an uploaded file exposing a stream to read its contents */
 class StreamedFileItem(val name: String, val stream: (java.io.InputStream => Unit) => Unit, val contentType: String)
@@ -70,7 +69,7 @@ object MultiPartParams {
   
   /** Configuration info for multi part form data processing */
   object Disk extends AbstractDisk {
-    // TODO come up with sensibl default
+    // TODO come up with sensible default
     val memLimit = Int.MaxValue
     val tempDir = new java.io.File(".")
   }
