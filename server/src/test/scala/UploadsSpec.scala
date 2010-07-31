@@ -18,13 +18,13 @@ object UploadsSpec extends Specification with unfiltered.spec.Served {
     // body the first time
     case POST(UFPath("/disk-upload", r)) => r match { 
       case MultiPartParams.Disk(params, files, _) =>  files("f") match {
-        case Seq(f, _*) => ResponseString("disk read file f is named %s" format f.name)
+        case Seq(f, _*) => ResponseString("disk read file f is named %s with content type %s" format(f.name, f.contentType))
         case _ =>  ResponseString("what's f?")
       }
     }
     case POST(UFPath("/stream-upload", r)) => r match { 
       case MultiPartParams.Streamed(params, files, _) =>  files("f") match {
-        case Seq(f, _*) => ResponseString("stream read file f is named %s" format f.name)
+        case Seq(f, _*) => ResponseString("stream read file f is named %s with content type %s" format(f.name, f.contentType))
         case _ =>  ResponseString("what's f?")
       }
     }
@@ -37,12 +37,12 @@ object UploadsSpec extends Specification with unfiltered.spec.Served {
     "handle file uploads written to disk" in {
       val file = new JFile(getClass.getResource("upload-test.txt").toURI)
       file.exists must_==true
-      Http(host / "disk-upload" << ("f", file, "text/plain") as_str) must_=="disk read file f is named upload-test.txt"
+      Http(host / "disk-upload" << ("f", file, "text/plain") as_str) must_=="disk read file f is named upload-test.txt with content type text/plain"
     }
     "handle file uploads streamed" in {
       val file = new JFile(getClass.getResource("upload-test.txt").toURI)
       file.exists must_==true
-      Http(host / "stream-upload" << ("f", file, "text/plain") as_str) must_=="stream read file f is named upload-test.txt"
+      Http(host / "stream-upload" << ("f", file, "text/plain") as_str) must_=="stream read file f is named upload-test.txt with content type text/plain"
     }
   }
 }
