@@ -12,8 +12,6 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
   lazy val library = project("library", "Unfiltered", new UnfilteredModule(_) {
     lazy val servlet_api = servletApiDependency
     val codec = "commons-codec" % "commons-codec" % "1.4"
-    val io = "commons-io" % "commons-io" % "1.4"
-    val fileupload = "commons-fileupload" % "commons-fileupload" % "1.2.1"
   })
   /** file uploads */
   lazy val uploads = project("uploads", "Unfiltered Uploads", new UnfilteredModule(_) {
