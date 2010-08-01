@@ -16,19 +16,22 @@ trait InittedFilter extends Filter {
 /** To ecapsulate a filter in a class definition */
 trait Plan extends InittedFilter {
   def filter: PartialFunction[ServletRequest, ResponseFunction]
-  val complete_filter = filter.orElse[ServletRequest, ResponseFunction] {
-    case _ => Pass
-  }
   
   def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     (request, response) match {
       case (request: HttpServletRequest, response: HttpServletResponse) => 
-        complete_filter(request) match {
+        (try {
+          filter(request)
+        } catch {
+          case m: MatchError => 
+            m.printStackTrace
+            Pass
+        }) match {
           case after: PassAndThen =>
             chain.doFilter(request, response)
             after.then(request)(response)
           case Pass => chain.doFilter(request, response)
-          case response_function => response_function(response)
+          case response_function => response_function(response) 
         }
      }
   }

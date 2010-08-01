@@ -43,7 +43,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
         BadRequest ~> ResponseString("fail")
       }
 
-    case POST(UFPath("/pp", Params(params, _))) => params("foo") match {
+    case POST(UFPath("/pp", Params(params,_))) => params("foo") match {
       case Seq(foo) => ResponseString("foo is %s" format foo)
       case _ =>  ResponseString("what's foo?")
     }
