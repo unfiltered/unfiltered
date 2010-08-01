@@ -69,7 +69,7 @@ An example of a fictional restful api for a given resource might look something 
         case _ => BadRequest
       }
       case PUT(Path(Seg("resource" :: id :: Nil), Bytes(body, _))) => Store(id, body) match {
-        case Some(id) => Created ~> ResponseString("resource updated")
+        case Some(id) => Ok ~> ResponseString("resource updated")
         case _ => BadRequest
       }
       case DELETE(Path(Seg("resource" :: id :: Nil),_)) => Store.delete(id) match {
