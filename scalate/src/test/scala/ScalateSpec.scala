@@ -25,8 +25,6 @@ class ScalateSpec extends FlatSpec with MustMatchers {
     
     it should "accept different engines" in {
         implicit val myEngine = new TemplateEngine
-        println("MyEngine: " + myEngine)
-        //println("Engine: " + Scalate.engine)
         myEngine.resourceLoader = new FileResourceLoader(Some(new File("./scalate/src/test/resources/alternate/")))
         val scalate = Scalate("another_test_template.ssp")
         
