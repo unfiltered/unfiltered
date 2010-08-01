@@ -34,4 +34,5 @@ class ScalateSpec extends FlatSpec with MustMatchers {
         
         buffer.toString must equal ("<h1>Another Template!</h1>")
     }
+
 }

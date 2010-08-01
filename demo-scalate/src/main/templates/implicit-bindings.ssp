@@ -1,0 +1,23 @@
+#import(unfiltered.demo.User)
+<%@ val user: User %>
+<%@ val quote: String %>
+<% log("we're logging with implicit bindings!") %>
+<h1>${quote}</h1>
+<table>
+    <tr>
+        <td>username:</td>
+        <td>${user.username}</td>
+    </tr>
+    <tr>
+        <td>first name:</td>
+        <td>${user.firstName}</td>
+    </tr>
+    <tr>
+        <td>last name:</td>
+        <td>${user.lastName}</td>
+    </tr>
+    <tr>
+        <td>age:</td>
+        <td>${user.age}</td>
+    </tr>    
+</table>

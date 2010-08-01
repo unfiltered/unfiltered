@@ -30,6 +30,12 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
   }, server)
   /** demo project */
   lazy val demo = project("demo", "Unfiltered Demo", new UnfilteredModule(_), server)
+
+
+  lazy val scalateDemo = project("demo-scalate", "Unfiltered Scalate Demo", new UnfilteredModule(_){
+      val slf4j = "org.slf4j" % "slf4j-simple" % "1.6.0"
+  }, server, scalate)
+
   /** specs  helper */
   lazy val spec = project("spec", "Unfiltered Spec", new DefaultProject(_) with sxr.Publish {
     lazy val specs = specsDependency
@@ -39,6 +45,8 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
   def servletApiDependency = "javax.servlet" % "servlet-api" % "2.3" % "provided"
 
   lazy val scalate = project("scalate", "Scalate Integration", new UnfilteredModule(_){
+
+  lazy val scalate = project("scalate", "Unfiltered Scalate Integration", new UnfilteredModule(_){
       val scalateLibs = "org.fusesource.scalate" % "scalate-core" % "1.2"
       val scalaTest = "org.scalatest" % "scalatest" % "1.2-for-scala-2.8.0.final-SNAPSHOT" % "test"
       val scalaCompiler = "org.scala-lang" % "scala-compiler" % "2.8.0" % "test"
