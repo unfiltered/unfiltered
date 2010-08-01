@@ -18,25 +18,28 @@ object UploadsSpec extends Specification with unfiltered.spec.Served {
     case POST(UFPath("/disk-upload", MultiPartParams.Disk(params, files, _))) => files("f") match { 
       case Seq(f, _*) =>
         f.write(new JFile("upload-test-out.txt")) match {
-          case Some(outFile) => {
+          case Some(outFile) =>
             if(new String(Source.fromFile(outFile).toArray) == new String(f.bytes)) ResponseString(
               "wrote disk read file f named %s with content type %s with correct contents" format(f.name, f.contentType)
             )
             else ResponseString("wrote disk read file f named %s with content type %s, with differing contents" format(f.name, f.contentType))
-          }
           case None => ResponseString("could not read disk read file f named %s with content type %s" format(f.name, f.contentType))
         }
       case _ =>  ResponseString("what's f?")
     }
     case POST(UFPath("/stream-upload", MultiPartParams.Streamed(params, files, _))) => files("f") match {
-      case Seq(f, _*) => ResponseString("stream read file f is named %s with content type %s" format(f.name, f.contentType))
+      case Seq(f, _*) => ResponseString("stream read file f is named %s with content type %s" format(f.name, f.contentType))  
+      case _ =>  ResponseString("what's f?")
+    }
+    case POST(UFPath("/mem-upload", MultiPartParams.Memory(params, files, _))) => files("f") match {
+      case Seq(f, _*) => ResponseString("memory read file f is named %s with content type %s" format(f.name, f.contentType))
       case _ =>  ResponseString("what's f?")
     }
   })
   
   def setup = { _.filter(new TestPlan) }
   
-  "MultiPartParams.Disk" should {
+  "MultiPartParams" should {
     shareVariables()
     doAfter { 
       val out = new JFile("upload-test-out.txt")
@@ -51,6 +54,11 @@ object UploadsSpec extends Specification with unfiltered.spec.Served {
       val file = new JFile(getClass.getResource("upload-test.txt").toURI)
       file.exists must_==true
       Http(host / "stream-upload" << ("f", file, "text/plain") as_str) must_=="stream read file f is named upload-test.txt with content type text/plain"
+    }
+    "handle file uploads all in memory" in {
+      val file = new JFile(getClass.getResource("upload-test.txt").toURI)
+      file.exists must_==true
+      Http(host / "mem-upload" << ("f", file, "text/plain") as_str) must_=="memory read file f is named upload-test.txt with content type text/plain"
     }
   }
 }
