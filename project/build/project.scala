@@ -43,7 +43,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
       val scalaTest = "org.scalatest" % "scalatest" % "1.2-for-scala-2.8.0.final-SNAPSHOT" % "test"
       val scalaCompiler = "org.scala-lang" % "scala-compiler" % "2.8.0" % "test"
       override def repositories = Set(ScalaToolsSnapshots)
-  })
+  }, library)
   
   def specsDependency = 
     if (buildScalaVersion startsWith "2.7.") 
