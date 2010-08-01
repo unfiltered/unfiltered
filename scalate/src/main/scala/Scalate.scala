@@ -14,7 +14,6 @@ case class Scalate(template: String)(implicit engine: TemplateEngine = ScalateEn
     import java.io.PrintWriter
     import org.fusesource.scalate.DefaultRenderContext
     def write(writer: PrintWriter): Unit = {
-        println("Engine: " + engine)
         val scalateTemplate = engine.load(template)
         val context = new DefaultRenderContext(engine, writer)
         scalateTemplate.render(context)
