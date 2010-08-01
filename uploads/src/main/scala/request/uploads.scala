@@ -5,8 +5,14 @@ import javax.servlet.http.HttpServletRequest
 import org.apache.commons.{fileupload => fu}
 import java.io.{File => JFile}
 
+trait FileWrapper {
+  val name: String
+  val contentType: String
+  def write(out: JFile): Option[JFile]
+}
+
 /** Represents an uploaded file loaded into memory (and possibly written to disk) */
-class DiskFileWraper(item: fu.FileItem) {
+class DiskFileWrapper(item: fu.FileItem) extends FileWrapper {
   def write(out: JFile): Option[JFile] = try {
     item.write(out)
     Some(out)
@@ -22,7 +28,23 @@ class DiskFileWraper(item: fu.FileItem) {
 }
 
 /** Represents an uploaded file exposing a stream to read its contents */
-class StreamedFileItem(val name: String, val stream: (java.io.InputStream => Unit) => Unit, val contentType: String)
+class StreamedFileWrapper(fstm: fu.FileItemStream) extends FileWrapper with unfiltered.request.io.FileIO {
+  
+  def write(out: JFile): Option[JFile] = try {
+    MultiPartParams.Streamed.withStreamedFile[Option[JFile]](fstm) { stm =>
+      toFile(stm)(out)
+      Some(out)
+    }
+  } catch {
+    case e =>
+      e.printStackTrace
+      None
+  }
+  
+  def stream: (java.io.InputStream => Unit) => Unit = MultiPartParams.Streamed.withStreamedFile[Unit](fstm)_
+  val name = fstm.getName
+  val contentType = fstm.getContentType
+}
 
 /** Extactors for multi-part form param processing
   * @note a request can go through one pass of this extractor
@@ -46,18 +68,32 @@ object MultiPartParams {
     
     /**
       Provides extraction similar to MultiPartParams.Disk, except the second map will 
-      contain Map[String, Seq[StreamedFileItem]] rather than  Map[String, Seq[FileItem]] */
+      contain Map[String, Seq[StreamedFileWrapper]] rather than  Map[String, Seq[DiskFileWrapper]].
+      @note the seq returned by keys will only return the `first` named value. This is a limitation
+      on apache commons file upload streaming interface. To read from the stream iterator,
+      you must read before #next is called or the stream read will fail. */
     def unapply(req: HttpServletRequest) =
       if (ServletFileUpload.isMultipartContent(req)) {
-        val items =  new ServletFileUpload().getItemIterator(req).asInstanceOf[FileItemIterator]
-        val (params, files) = genTuple[String, StreamedFileItem, FileItemStream](items)((maps, item) =>
-          if(item.isFormField) (maps._1 + (item.getFieldName -> (extractStr(item) :: maps._1(item.getName))), maps._2)
-          else (maps._1, maps._2 + (item.getFieldName -> (new StreamedFileItem(item.getName, withStreamedFile[Unit](item)_, item.getContentType) :: maps._2(item.getFieldName))))
-        )
-        Some(params, files, req)
+        def items = new ServletFileUpload().getItemIterator(req).asInstanceOf[FileItemIterator]
+        /** attempt to extract the first named param from the stream */
+        def extractParam(name: String): Seq[String] = {
+           items.find(f => f.getFieldName == name && f.isFormField) match {
+             case Some(p) => Seq(extractStr(p))
+             case _ => Nil
+           }
+        }
+        /** attempt to extract the first named file from the stream */
+        def extractFile(name: String): Seq[StreamedFileWrapper] = {
+           items.find(f => f.getFieldName == name && !f.isFormField) match {
+             case Some(f) => Seq(new StreamedFileWrapper(f))
+             case _ => Nil
+           }
+        }
+       
+        Some((extractParam)_, (extractFile)_, req)
       } else None
     
-    private def withStreamedFile[T](fstm: FileItemStream)(f: java.io.InputStream => T): T = {
+    def withStreamedFile[T](fstm: FileItemStream)(f: java.io.InputStream => T): T = {
       val stm = fstm.openStream
       try { f(stm) } finally { stm.close }
     }
@@ -79,7 +115,7 @@ object MultiPartParams {
   
   /** All in memory multi-part form data extractor.
       This exposes a very specific class of file references
-      intendented for use in environments such as GAE where writing 
+      intended for use in environments such as GAE where writing 
       to disk is prohibited.
       */
   object Memory extends AbstractDisk {
@@ -157,9 +193,9 @@ object MultiPartParams {
     def unapply(req: HttpServletRequest) =
       if (ServletFileUpload.isMultipartContent(req)) {
         val items =  new ServletFileUpload(factory(memLimit, tempDir)).parseRequest(req).iterator.asInstanceOf[JIterator[ACFileItem]]
-        val (params, files) = genTuple[String, DiskFileWraper, ACFileItem](items) ((maps, item) =>
+        val (params, files) = genTuple[String, DiskFileWrapper, ACFileItem](items) ((maps, item) =>
           if(item.isFormField) (maps._1 + (item.getFieldName -> (item.getString :: maps._1(item.getFieldName))), maps._2)
-          else (maps._1, maps._2 + (item.getFieldName -> (new DiskFileWraper(item) :: maps._2(item.getFieldName))))
+          else (maps._1, maps._2 + (item.getFieldName -> (new DiskFileWrapper(item) :: maps._2(item.getFieldName))))
         )
         Some(params, files, req)
       } else None
