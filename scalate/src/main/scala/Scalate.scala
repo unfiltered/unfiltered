@@ -10,6 +10,11 @@ private[scalate] object ScalateDefaults{
 }
 
 import unfiltered.response.ResponseWriter
+/**
+This class will render the given template with the given attributes.
+An implicit Engine and Bindings can be passed to the constructor via
+its alternate parameters set.  This is described further in demo-scalate
+**/
 case class Scalate
         (
             template: String, 
