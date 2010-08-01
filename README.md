@@ -128,3 +128,22 @@ To specify individual modules, do so by specifying the module name in the depend
     }
     
 See the [demo](http://github.com/n8han/Unfiltered/tree/master/demo/) application for an example of a basic Unfiltered application.
+
+## Troubleshooting
+
+### overly complex extractors 
+    
+If you design your partially applied functions in such a way that they become overly complex you might run into the following exception
+    
+    Exception in thread "main" java.lang.Error: ch.epfl.lamp.fjbg.JCode$OffsetTooBigException: offset to
+    o big to fit in 16 bits
+      
+This is an open [ticket](https://lampsvn.epfl.ch/trac/scala/ticket/1133) the the Scala library but this is not really a limitation of Scala so much as the jvm. 
+  
+As paulp put it
+> Yes.  Like it says in the ticket, exponential space.  It is not the
+> compiler which is angry, it is the jvm, which sets a hard limit on the
+> size of a method.  The compiler's emotional state at that moment would
+> be better characterized as pollyanna-esque.
+
+The work around is good software design. Break up your problems into parts and put them in separate filters. Don't give one `unfiltered.Plan` too much responsibility.
