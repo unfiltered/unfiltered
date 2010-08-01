@@ -16,7 +16,7 @@ The request response cycle distills to a pattern match clause much like the Scal
       }
     }
 
-This will start an embedded web server at [http://localhost:8080](http://localhost:8080) and respond to all requests with a "Hello there message" and can also be run as a standard java main application. No extra container is required.
+This will start an embedded web server at [http://localhost:8080](http://localhost:8080) and respond to all requests with a "Hello there" message and can also be run as a standard java main application. No extra container is required.
 
 ## Plans
 
