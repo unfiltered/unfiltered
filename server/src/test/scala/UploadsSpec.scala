@@ -23,7 +23,7 @@ object UploadsSpec extends Specification with unfiltered.spec.Served {
               "wrote disk read file f named %s with content type %s with correct contents" format(f.name, f.contentType)
             )
             else ResponseString("wrote disk read file f named %s with content type %s, with differing contents" format(f.name, f.contentType))
-          case None => ResponseString("could not read disk read file f named %s with content type %s" format(f.name, f.contentType))
+          case None => ResponseString("did not write disk read file f named %s with content type %s" format(f.name, f.contentType))
         }
       case _ =>  ResponseString("what's f?")
     }
@@ -33,6 +33,14 @@ object UploadsSpec extends Specification with unfiltered.spec.Served {
     }
     case POST(UFPath("/mem-upload", MultiPartParams.Memory(params, files, _))) => files("f") match {
       case Seq(f, _*) => ResponseString("memory read file f is named %s with content type %s" format(f.name, f.contentType))
+      case _ =>  ResponseString("what's f?")
+    }
+    case POST(UFPath("/mem-upload/write", MultiPartParams.Memory(params, files, _))) => files("f") match {
+      case Seq(f, _*) =>
+        f.write(new JFile("upload-test-out.txt")) match {
+          case Some(outFile) => ResponseString("wrote memory read file f is named %s with content type %s" format(f.name, f.contentType))
+          case None =>  ResponseString("did not write memory read file f is named %s with content type %s" format(f.name, f.contentType))
+        }
       case _ =>  ResponseString("what's f?")
     }
   })
@@ -59,6 +67,11 @@ object UploadsSpec extends Specification with unfiltered.spec.Served {
       val file = new JFile(getClass.getResource("upload-test.txt").toURI)
       file.exists must_==true
       Http(host / "mem-upload" << ("f", file, "text/plain") as_str) must_=="memory read file f is named upload-test.txt with content type text/plain"
+    }
+    "not write memory read files" in {
+      val file = new JFile(getClass.getResource("upload-test.txt").toURI)
+      file.exists must_==true
+      Http(host / "mem-upload" / "write" << ("f", file, "text/plain") as_str) must_=="did not write memory read file f is named upload-test.txt with content type text/plain"
     }
   }
 }

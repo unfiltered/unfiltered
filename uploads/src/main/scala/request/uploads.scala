@@ -10,8 +10,8 @@ class DiskFileWraper(item: fu.FileItem) {
   def write(out: JFile): Option[JFile] = try {
     item.write(out)
     Some(out)
-  } finally {
-    None
+  } catch {
+    case _ => None
   }
   
   def isInMemory = item.isInMemory
@@ -77,7 +77,11 @@ object MultiPartParams {
     def factory(writeAfter: Int, writeDir: JFile) = new DiskFileItemFactory(writeAfter, writeDir)
   }
   
-  /** All in memory multi-part form data extractor */
+  /** All in memory multi-part form data extractor.
+      This exposes a very specific class of file references
+      intendented for use in environments such as GAE where writing 
+      to disk is prohibited.
+      */
   object Memory extends AbstractDisk {
     
     class ByteArrayFileItem(var fieldName: String,
@@ -110,7 +114,7 @@ object MultiPartParams {
         override def isInMemory = true
         override def setFieldName(value: String) { fieldName = value }
         override def setFormField(state: Boolean) { formField = state }
-        override def write(file: JFile) { error("Writing is not permitted") }
+        override def write(file: JFile) { error("File writing is not permitted") }
     }
     
     class ByteArrayFileItemFactory extends fu.FileItemFactory {
