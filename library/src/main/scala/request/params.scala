@@ -32,13 +32,13 @@ object Params {
 
   object Query {
     type ParamBind[E] = String => QueryBuilder[E,String]
-    class MappedQuery[E,R](params:Map, f: ParamBind[E] => Query[E,R]) {
-      def orElse(ef: E => R) = 
-        f(n => new QueryBuilder(Right(params(n)))).value.fold(ef, identity[R])
+    class MappedQuery[E,R](params:Map, f: ParamBind[E] => Query[E,()=>R]) {
+      def orElse(ef: Seq[E] => R) = 
+        f(n => new QueryBuilder(Right(params(n)))).value.fold(ef, _())
     }
     def apply[E](params: Map) = new {
       // not curried so that E can be explicit, R implicit
-      def apply[R](f: Query.ParamBind[E] => Query[E,R]) =
+      def apply[R](f: Query.ParamBind[E] => Query[E,()=>R]) =
         new MappedQuery(params, f)
     }
   }
@@ -63,11 +63,18 @@ object Params {
         }
       }
     )
-    def required(msg: E) = new Query(value.right.flatMap {
-      _.firstOption.map { v => Right(v) } getOrElse Left(msg)
-    })
-    def optional = new Query(value.right.map { _.firstOption })
-    def multiple = new Query(value)
+    def required(msg: E) = new Query(value.fold(
+      msg => Left(msg :: Nil),
+      v => v.firstOption.map { v => Right(v) } getOrElse Left(msg :: Nil)
+    ))
+    def optional = new Query(value.fold(
+      msg => Left(msg :: Nil),
+      v => Right(v.firstOption)
+    ))
+    def multiple = new Query(value.fold(
+      msg => Left(msg :: Nil),
+      v => Right(v)
+    ))
   }
 
   val first = new Chained({ seq: Seq[String] => seq.headOption })
@@ -78,12 +85,16 @@ object Params {
   def int(in: String) =
     try { Some(in) map { _.toInt } } catch { case _ => None }
 
-  class Query[E,A](val value: Either[E,A]) {
+  class Query[E,A](val value: Either[List[E],A]) {
     def flatMap[B](f: Query[E,A] => Query[E,B]) = 
-      new Query(value.right.flatMap { _ => f(this).value })
+      new Query(value.fold(
+        l => Left(f(this).value.left.getOrElse(Nil) ::: l),
+        _ => f(this).value 
+      ))
       
     def map(f: Query[E,A] => ResponseFunction) = 
-      new Query(value.right.map { v => f(this) })
+      new Query(value.right.map { _ => () => f(this) })
+
     def get = value.right.get
   }
 }

@@ -19,7 +19,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
       Params.Query[String](params) { q => for {
         even <- q("number") is Params.int required("missing")
       } yield ResponseString(even.get.toString) } orElse { error =>
-        BadRequest ~> ResponseString(error)
+        BadRequest ~> ResponseString(error.mkString(","))
       }
 
     case GET(UFPath("/even", Params(params, _))) => 
@@ -28,7 +28,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
           (Some(_).filter(_ % 2 == 0), "odd") required "missing"
         whatever <- q("what") optional
       } yield ResponseString(even.get.toString) } orElse { error =>
-        BadRequest ~> ResponseString(error)
+        BadRequest ~> ResponseString(error.mkString(","))
       }
     
     case GET(UFPath("/str", Params(params, _))) => 
