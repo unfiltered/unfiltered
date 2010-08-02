@@ -38,7 +38,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
           req <- q("req") required(400)
         } yield ResponseString(str.get.getOrElse(0).toString)
       } orElse { error =>
-        BadRequest ~> Status(error.head) ~> ResponseString("fail")
+        BadRequest ~> Status(error.first) ~> ResponseString("fail")
       }
 
     case POST(UFPath("/pp", Params(params,_))) => params("foo") match {
