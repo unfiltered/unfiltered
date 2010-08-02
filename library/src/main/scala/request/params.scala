@@ -36,6 +36,7 @@ object Params {
       def orElse(ef: Seq[E] => R) = 
         f(n => new QueryBuilder(Right(params(n)))).value.fold(ef, _())
     }
+    /** @return a query binding function for the given parameters */
     def apply[E](params: Map) = new {
       // not curried so that E can be explicit, R implicit
       def apply[R](f: Query.ParamBind[E] => Query[E,()=>R]) =
