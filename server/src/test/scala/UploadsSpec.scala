@@ -4,7 +4,8 @@ import org.specs._
 
 // TODO ask nathan about adding a StringPart request to dispatch
 object UploadsSpec extends Specification with unfiltered.spec.Served {
-  import java.io.{File => JFile}
+  import java.io.{File => JFile,FileInputStream => FIS}
+  import org.apache.commons.io.{IOUtils => IOU}
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
@@ -23,7 +24,7 @@ object UploadsSpec extends Specification with unfiltered.spec.Served {
       case Seq(f, _*) =>
         f.write(new JFile("upload-test-out.txt")) match {
           case Some(outFile) =>
-            if(new String(Source.fromFile(outFile).toArray) == new String(f.bytes)) ResponseString(
+            if(IOU.toString(new FIS(outFile)) == new String(f.bytes)) ResponseString(
               "wrote disk read file f named %s with content type %s with correct contents" format(f.name, f.contentType)
             )
             else ResponseString("wrote disk read file f named %s with content type %s, with differing contents" format(f.name, f.contentType))
@@ -37,10 +38,10 @@ object UploadsSpec extends Specification with unfiltered.spec.Served {
     }
     case POST(UFPath("/stream-upload/write", MultiPartParams.Streamed(params, files, _))) => files("f") match {
        case Seq(f, _*) =>
-          val src = new String(Source.fromFile(new JFile(getClass.getResource("upload-test.txt").toURI)).toArray)
+          val src = IOU.toString(getClass.getResourceAsStream("upload-test.txt"))
           f.write(new JFile("upload-test-out.txt")) match {
             case Some(outFile) =>
-              if(new String(Source.fromFile(outFile).toArray) == src) ResponseString(
+              if(IOU.toString(new FIS(outFile)) == src) ResponseString(
                 "wrote stream read file f named %s with content type %s with correct contents" format(f.name, f.contentType)
               )
               else ResponseString("wrote stream read file f named %s with content type %s, with differing contents" format(f.name, f.contentType))
