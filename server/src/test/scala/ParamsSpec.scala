@@ -16,14 +16,14 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     }
 
     case GET(UFPath("/int", Params(params, _))) => 
-      Params.query[String](params) { q => for {
+      Params.Query[String](params) { q => for {
         even <- q("number") is Params.int required("missing")
       } yield ResponseString(even.get.toString) } orElse { error =>
         BadRequest ~> ResponseString(error)
       }
 
     case GET(UFPath("/even", Params(params, _))) => 
-      Params.query[String](params) { q => for {
+      Params.Query[String](params) { q => for {
         even <- q("number") is (Params.int, "nonnumber") is
           (Some(_).filter(_ % 2 == 0), "odd") required "missing"
         whatever <- q("what") optional
@@ -32,7 +32,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
       }
     
     case GET(UFPath("/str", Params(params, _))) => 
-      Params.query[String](params) { q =>
+      Params.Query[String](params) { q =>
         for {
           str <- q("param") optional
         } yield ResponseString(str.get.getOrElse(""))

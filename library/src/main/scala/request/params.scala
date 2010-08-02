@@ -33,15 +33,15 @@ object Params {
   object Query {
     class Builder[E](params: Map) {
       def apply(name: String) =
-        new EitherChained[E,String](Right(params(name)))
+        new QueryBuilder[E,String](Right(params(name)))
     }
-  }
-  def query[E](params: Map) = new {
-    def apply[R](f: Query.Builder[E] => Query[E,R]) =
-      new {
-        def orElse(ef: E => R) = 
-          f(new Query.Builder(params)).value.fold(ef, identity[R])
-      }
+    def apply[E](params: Map) = new {
+      def apply[R](f: Query.Builder[E] => Query[E,R]) =
+        new {
+          def orElse(ef: E => R) = 
+            f(new Query.Builder(params)).value.fold(ef, identity[R])
+        }
+    }
   }
   
   class Chained[A, B](f: A => B) extends (A => B) {
@@ -50,11 +50,11 @@ object Params {
   }
 
   type Condition[A,B] = A => Option[B]
-  class EitherChained[E, A](value: Either[E,Seq[A]]) extends {
-    def is [B](cond: Condition[A,B]) = new EitherChained(
+  class QueryBuilder[E, A](value: Either[E,Seq[A]]) extends {
+    def is [B](cond: Condition[A,B]) = new QueryBuilder(
       value.right.map { _.flatMap { i => cond(i).toList } }
     )
-    def is [B](cond: Condition[A,B], msg: E) = new EitherChained(
+    def is [B](cond: Condition[A,B], msg: E) = new QueryBuilder(
       value.right.flatMap { seq =>
         val s: Either[E, List[B]] = Right(List.empty[B])
         (s /: seq) { (either, item) =>
