@@ -56,7 +56,7 @@ object Params {
     )
     def is [B](cond: Condition[A,B], msg: E) = new QueryBuilder(
       value.right.flatMap { seq =>
-        val s: Either[E, List[B]] = Right(List.empty[B])
+        val s: Either[E, List[B]] = Right(Nil)
         (s /: seq) { (either, item) =>
           either.right.flatMap { l =>
             cond(item).map { i => Right(i :: l) } getOrElse Left(msg)
