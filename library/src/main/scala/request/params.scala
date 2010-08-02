@@ -73,8 +73,8 @@ object Params {
 
   val first = new Chained({ seq: Seq[String] => seq.headOption })
 
-  def trimmed(in: Option[String]) = in map { _.trim }
-  def nonempty(in: Option[String]) = in filter { ! _.isEmpty  }
+  def trimmed(in: String) = Some(in) map { _.trim }
+  def nonempty(in: String) = Some(in) filter { ! _.isEmpty  }
 
   def int(in: String) =
     try { Some(in) map { _.toInt } } catch { case _ => None }
