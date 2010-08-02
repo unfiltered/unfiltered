@@ -31,16 +31,15 @@ object Params {
   }
 
   object Query {
-    class Builder[E](params: Map) {
-      def apply(name: String) =
-        new QueryBuilder[E,String](Right(params(name)))
+    type ParamBind[E] = String => QueryBuilder[E,String]
+    class MappedQuery[E,R](params:Map, f: ParamBind[E] => Query[E,R]) {
+      def orElse(ef: E => R) = 
+        f(n => new QueryBuilder(Right(params(n)))).value.fold(ef, identity[R])
     }
     def apply[E](params: Map) = new {
-      def apply[R](f: Query.Builder[E] => Query[E,R]) =
-        new {
-          def orElse(ef: E => R) = 
-            f(new Query.Builder(params)).value.fold(ef, identity[R])
-        }
+      // not curried so that E can be explicit, R implicit
+      def apply[R](f: Query.ParamBind[E] => Query[E,R]) =
+        new MappedQuery(params, f)
     }
   }
   
