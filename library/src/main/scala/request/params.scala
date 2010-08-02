@@ -86,15 +86,21 @@ object Params {
     try { Some(in) map { _.toInt } } catch { case _ => None }
 
   class Query[E,A](val value: Either[List[E],A]) {
+    /**
+     * Joins errors into a list on the way *out* of a for exp.
+     */
     def flatMap[B](f: Query[E,A] => Query[E,B]) = 
       new Query(value.fold(
         l => Left(f(this).value.left.getOrElse(Nil) ::: l),
         _ => f(this).value 
       ))
-      
+    /**
+     * Maps the yield into a function, that won't be evaluated
+     * unless the top Either is still a Right.
+     */
     def map(f: Query[E,A] => ResponseFunction) = 
       new Query(value.right.map { _ => () => f(this) })
-
+    /** Shortcut to getting the Right value, safe to use in yield. */
     def get = value.right.get
   }
 }
