@@ -26,7 +26,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
       Params.Query[String](params) { q => for {
         even <- q("number") is (Params.int, "nonnumber") is
           (Some(_).filter(_ % 2 == 0), "odd") required "missing"
-        whatever <- q("what") optional
+        whatever <- q("what") required("bad")
       } yield ResponseString(even.get.toString) } orElse { error =>
         BadRequest ~> ResponseString(error.mkString(","))
       }
@@ -62,16 +62,16 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
       Http.when(_ == 400)(host / "int" <<? Map("number" -> "8a") as_str) must_=="missing"
     }
     "return even number" in {
-      Http(host / "even" <<? Map("number" -> "8") as_str) must_=="8"
+      Http(host / "even" <<? Map("number"->"8","what"->"foo") as_str) must_=="8"
     }
     "fail on non-number" in {
-      Http.when(_ == 400)(host / "even" <<? Map("number" -> "eight") as_str) must_=="nonnumber"
+      Http.when(_ == 400)(host / "even" <<? Map("number" -> "eight", "what"->"") as_str) must_=="nonnumber"
     }
     "fail on odd number" in {
-      Http.when(_ == 400)(host / "even" <<? Map("number" -> "7") as_str) must_=="odd"
+      Http.when(_ == 400)(host / "even" <<? Map("number" -> "7") as_str) must_=="odd,bad"
     }
     "fail on not present" in {
-      Http.when(_ == 400)(host / "even" as_str) must_=="missing"
+      Http.when(_ == 400)(host / "even" as_str) must_=="missing,bad"
     }
     "return empty on not present" in {
       Http(host / "str" as_str) must_==""

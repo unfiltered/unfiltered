@@ -91,7 +91,7 @@ object Params {
      */
     def flatMap[B](f: Query[E,A] => Query[E,B]) = 
       new Query(value.fold(
-        l => Left(f(this).value.left.getOrElse(Nil) ::: l),
+        l => Left(l ::: f(this).value.left.getOrElse(Nil)),
         _ => f(this).value 
       ))
     /**
