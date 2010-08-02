@@ -30,62 +30,61 @@ object Params {
     }
   }
 
-  type QueryValue[E,T] = Either[E, T]
   object Query {
-    class Builder1(params: Map) {
-      def errors[E] = new {
-        def apply[R](f: Builder2[E] => Query[E,R]) = new {
-          def orElse(ef: E => R) =
-            f(new Builder2[E](params)).value.fold(ef, identity[R])
-        }
+    class Builder[E](params: Map) {
+      def apply(name: String) =
+        new EitherChained[E,String](Right(params(name)))
+    }
+  }
+  def query[E](params: Map) = new {
+    def apply[R](f: Query.Builder[E] => Query[E,R]) =
+      new {
+        def orElse(ef: E => R) = 
+          f(new Query.Builder(params)).value.fold(ef, identity[R])
       }
-    }
-    class Builder2[E](params: Map){
-      val first = new EitherChained({ seq: Seq[String] => Right[E,Option[String]](seq.headOption) })
-      def apply[T](f: Map => Either[E, T]): Query[E,T] =
-        new Query(f(params))
-      def apply[T](name: String, f: Seq[String] => Either[E,T]): Query[E,T] =
-        apply { params: Map => f(params(name)) }
-    }
-    def unapply(req: HttpServletRequest) = Params.unapply(req) map { case (params, req) =>
-      (new Builder1(params), req)
-    }
   }
   
   class Chained[A, B](f: A => B) extends (A => B) {
     def apply(a: A) = f(a)
     def ~> [C](that: B => C) = new Chained(this andThen that)
   }
-  class EitherChained[E, A, B](f: A => Either[E,Option[B]]) extends (A => Either[E,Option[B]]) {
-    def apply(a: A) = f(a)
-    def opt [C] (that: Option[B] => Option[C]) =
-      new EitherChained(this andThen { _.right map that })
-    def err[C](that: Option[B]=> Option[C], msg: E) =
-      new EitherChained(this andThen { _.right.flatMap { prev =>
-        that(prev) match {
-          case None => if (prev.isEmpty) Right(None) else Left(msg)
-          case value => Right(value)
+
+  type Condition[A,B] = A => Option[B]
+  class EitherChained[E, A](value: Either[E,Seq[A]]) extends {
+    def is [B](cond: Condition[A,B]) = new EitherChained(
+      value.right.map { _.flatMap { i => cond(i).toList } }
+    )
+    def is [B](cond: Condition[A,B], msg: E) = new EitherChained(
+      value.right.flatMap { seq =>
+        val s: Either[E, List[B]] = Right(List.empty[B])
+        (s /: seq) { (either, item) =>
+          either.right.flatMap { l =>
+            cond(item).map { i => Right(i :: l) } getOrElse Left(msg)
+          }
         }
-      } })
-    def orError (msg: E) = this andThen { _.right.flatMap {
-      case None => Left(msg)
-      case Some(value) => Right(value)
-    } }
+      }
+    )
+    def required(msg: E) = new Query(value.right.flatMap {
+      _.firstOption.map { v => Right(v) } getOrElse Left(msg)
+    })
+    def optional = new Query(value.right.map { _.firstOption })
+    def multiple = new Query(value)
   }
 
   val first = new Chained({ seq: Seq[String] => seq.headOption })
 
-  def trimmed(in: Option[String]) = in.map { _.trim }
-  def nonempty(in: Option[String]) = in.filter { ! _.isEmpty  }
+  def trimmed(in: Option[String]) = in map { _.trim }
+  def nonempty(in: Option[String]) = in filter { ! _.isEmpty  }
 
-  def int(in: Option[String]) =
-    try { in.map { _.toInt } } catch { case _ => None }
+  def int(in: String) =
+    try { Some(in) map { _.toInt } } catch { case _ => None }
 
-  class Query[E,A](val value: QueryValue[E,A]) {
-    def flatMap[B](f: QueryValue[E,A] => Query[E,B]) = 
-      f(value)
+  class Query[E,A](val value: Either[E,A]) {
+    def flatMap[B](f: Query[E,A] => Query[E,B]) = 
+      new Query(value.right.flatMap { _ => f(this).value })
       
-    def map(f: A => ResponseFunction) = 
-      new Query(value.right.map(f))
+    def map(f: Query[E,A] => ResponseFunction) = 
+      new Query(value.right.map { v => f(this) })
+    def get = value.right.get
   }
 }

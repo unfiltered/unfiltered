@@ -8,37 +8,34 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
   import unfiltered.request.{Path => UFPath}
   
   import dispatch._
-  
+
   class TestPlan extends unfiltered.Planify({
     case GET(UFPath("/qp", Params(params, _))) => params("foo") match {
       case Seq(foo) => ResponseString("foo is %s" format foo)
       case _ =>  ResponseString("what's foo?")
     }
 
-    case GET(UFPath("/int", Params.Query(query, _))) => 
-      query.errors[String] { q => for {
-        even <- q("number",
-          q.first opt Params.int orError "missing")
-      } yield ResponseString(even.toString) } orElse { error =>
+    case GET(UFPath("/int", Params(params, _))) => 
+      Params.query[String](params) { q => for {
+        even <- q("number") is Params.int required("missing")
+      } yield ResponseString(even.get.toString) } orElse { error =>
         BadRequest ~> ResponseString(error)
       }
 
-    case GET(UFPath("/even", Params.Query(query, _))) => 
-      query.errors[String] { q => for {
-        even <- q("number",
-          q.first err(Params.int, "nonnumber") err(
-            _.filter(_ % 2 == 0), "odd"
-          ) orError "missing"
-        )
-      } yield ResponseString(even.toString) } orElse { error =>
+    case GET(UFPath("/even", Params(params, _))) => 
+      Params.query[String](params) { q => for {
+        even <- q("number") is (Params.int, "nonnumber") is
+          (Some(_).filter(_ % 2 == 0), "odd") required "missing"
+        whatever <- q("what") optional
+      } yield ResponseString(even.get.toString) } orElse { error =>
         BadRequest ~> ResponseString(error)
       }
     
-    case GET(UFPath("/str", Params.Query(query, _))) => 
-      query.errors[String] { q =>
+    case GET(UFPath("/str", Params(params, _))) => 
+      Params.query[String](params) { q =>
         for {
-          str <- q("param", q.first)
-        } yield ResponseString(str.getOrElse(""))
+          str <- q("param") optional
+        } yield ResponseString(str.get.getOrElse(""))
       } orElse { error =>
         BadRequest ~> ResponseString("fail")
       }
