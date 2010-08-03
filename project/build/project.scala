@@ -23,7 +23,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
   /** embedded server*/
   lazy val server = project("server", "Unfiltered Server", new UnfilteredModule(_) {
     val jetty7 = "org.eclipse.jetty" % "jetty-webapp" % jetty_version
-  }, library, uploads, json)
+  }, library, uploads)
   /** AJP protocol server */
   lazy val ajp_server = project("ajp-server", "Unfiltered AJP Server", new UnfilteredModule(_) {
     val jetty7 = "org.eclipse.jetty" % "jetty-ajp" % jetty_version
@@ -38,6 +38,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
   /** json extractors */
   lazy val json = project("json", "Unfiltered Json", new DefaultProject(_) with sxr.Publish {
     val dispatch_json = "net.databinder" %% "dispatch-json" % "0.7.4"
+    val test_server = "net.databinder" %% "unfiltered-server" % "0.1.3"
   }, library)
   
   def servletApiDependency = "javax.servlet" % "servlet-api" % "2.3" % "provided"
