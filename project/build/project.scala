@@ -49,7 +49,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
     val slf4j = "org.slf4j" % "slf4j-simple" % "1.6.0"
   }, server, scalate)
 
-  lazy val scalate = project("scalate", "Unfiltered Scalate Integration", 
+  lazy val scalate = project("scalate", "Unfiltered Scalate", 
       new UnfilteredModule(_) with Demo with Only28 {
     val scalateLibs = "org.fusesource.scalate" % "scalate-core" % "1.2"
     val scalaTest = "org.scalatest" % "scalatest" % "1.2-for-scala-2.8.0.final-SNAPSHOT" % "test"
