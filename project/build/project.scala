@@ -35,7 +35,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
     lazy val specs = specsDependency
     lazy val dispatch = dispatchDependency
   }, server)
-  /** specs  helper */
+  /** json extractors */
   lazy val json = project("json", "Unfiltered Json", new DefaultProject(_) with sxr.Publish {
     val dispatch_json = "net.databinder" %% "dispatch-json" % "0.7.4"
   }, library)
