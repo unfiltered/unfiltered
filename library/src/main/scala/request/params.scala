@@ -17,13 +17,13 @@ object Params {
     parameter was supplied without a value. */
   def unapply(req: HttpServletRequest) = {
     val names = JEnumerationIterator[String](req.getParameterNames.asInstanceOf[java.util.Enumeration[String]])
-    Some(((Map.empty[String, Seq[String]] /: names) ((m, n) => 
+    Some(((Map.empty[String, Seq[String]] /: names) ((m, n) =>
         m + (n -> req.getParameterValues(n))
       )).withDefaultValue(Nil), req)
   }
 
   abstract class Extract[E,T](f: Map => Option[T]) {
-    def this(name: String, f: Seq[String] => Option[T]) = 
+    def this(name: String, f: Seq[String] => Option[T]) =
       this({ params: Map => f(params(name)) })
     def unapply(params: Map) = f(params) map {
       (_, params)
@@ -33,7 +33,7 @@ object Params {
   object Query {
     type ParamBind[E] = String => QueryBuilder[E,String]
     class MappedQuery[E,R](params:Map, f: ParamBind[E] => Query[E,()=>R]) {
-      def orElse(ef: Seq[E] => R) = 
+      def orElse(ef: Seq[E] => R) =
         f(n => new QueryBuilder(Right(params(n)))).value.fold(ef, _())
     }
     /** @return a query binding function for the given parameters */
@@ -43,23 +43,24 @@ object Params {
         new MappedQuery(params, f)
     }
   }
-  
-  class Chained[A, B](f: A => B) extends (A => B) {
-    def apply(a: A) = f(a)
-    def ~> [C](that: B => C) = new Chained(this andThen that)
+
+  type Condition[A,B] = Option[A] => Option[B]
+
+  class Chained[B](f: Seq[String] => Option[B]) extends (Seq[String] => Option[B]) {
+    def apply(a: Seq[String]) = f(a)
+    def ~> [C](that: Option[B] => Option[C]) = new Chained(f andThen that)
   }
 
-  type Condition[A,B] = A => Option[B]
   class QueryBuilder[E, A](value: Either[E,Seq[A]]) extends {
     def is [B](cond: Condition[A,B]) = new QueryBuilder(
-      value.right.map { _.flatMap { i => cond(i).toList } }
+      value.right.map { _.flatMap { i => cond(Some(i)).toList } }
     )
     def is [B](cond: Condition[A,B], msg: E) = new QueryBuilder(
       value.right.flatMap { seq =>
         val s: Either[E, List[B]] = Right(Nil)
         (s /: seq) { (either, item) =>
           either.right.flatMap { l =>
-            cond(item).map { i => Right(i :: l) } getOrElse Left(msg)
+            cond(Some(item)).map { i => Right(i :: l) } getOrElse Left(msg)
           }
         }
       }
@@ -78,28 +79,32 @@ object Params {
     ))
   }
 
-  val first = new Chained({ seq: Seq[String] => seq.headOption })
+  def first = new {
+    def ~> [B] (that: Condition[String, B]) = new Chained({seq =>
+      that(seq.firstOption)
+    })
+  }
 
-  def trimmed(in: String) = Some(in) map { _.trim }
-  def nonempty(in: String) = Some(in) filter { ! _.isEmpty  }
+  val trimmed = (_: Option[String]) map { _.trim }
+  val nonempty = (_: Option[String]) filter { ! _.isEmpty  }
 
-  def int(in: String) =
-    try { Some(in) map { _.toInt } } catch { case _ => None }
+  def int(v: Option[String]) =
+    try { v map { _.toInt } } catch { case _ => None }
 
   class Query[E,A](val value: Either[List[E],A]) {
     /**
      * Joins errors into a list on the way *out* of a for exp.
      */
-    def flatMap[B](f: Query[E,A] => Query[E,B]) = 
+    def flatMap[B](f: Query[E,A] => Query[E,B]) =
       new Query(value.fold(
         l => Left(l ::: f(this).value.left.getOrElse(Nil)),
-        _ => f(this).value 
+        _ => f(this).value
       ))
     /**
-     * Maps the yield into a function, that won't be evaluated
+     * Maps the yield into a function, it won't be evaluated
      * unless the top Either is still a Right.
      */
-    def map(f: Query[E,A] => ResponseFunction) = 
+    def map(f: Query[E,A] => ResponseFunction) =
       new Query(value.right.map { _ => () => f(this) })
     /** Shortcut to getting the Right value, safe to use in yield. */
     def get = value.right.get
