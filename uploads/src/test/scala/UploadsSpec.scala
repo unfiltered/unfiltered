@@ -18,7 +18,7 @@ object UploadsSpec extends Specification with unfiltered.spec.Served {
   class TestPlan extends unfiltered.Planify({
     case POST(UFPath("/disk-upload", MultiPartParams.Disk(params, files, _))) => files("f") match { 
       case Seq(f, _*) => ResponseString("disk read file f named %s with content type %s" format(f.name, f.contentType))
-      case _ =>  ResponseString("what's f?")
+      case f =>  ResponseString("what's f?")
     }
     case POST(UFPath("/disk-upload/write", MultiPartParams.Disk(params, files, _))) => files("f") match { 
       case Seq(f, _*) =>
