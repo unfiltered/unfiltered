@@ -13,7 +13,10 @@ object JsonBodySpec extends Specification  with unfiltered.spec.Served {
   import dispatch.json.Js._
   
   class TestPlan extends unfiltered.Planify({
-    case POST(UFPath("/", JsonBody(js, _))) => ResponseString("parsed json %s" format(JsValue.toJson(js)))
+    case POST(UFPath("/", JsonBody(js, _))) => ResponseString(js.self match {
+      case List(a, b) => "array of 2"
+      case _ => "expected json array of 2"
+    })
     case _ => ResponseString("bad req")
   })
   
@@ -22,10 +25,10 @@ object JsonBodySpec extends Specification  with unfiltered.spec.Served {
   "JsonBody should" should {
     "match an application/json accepts and extract a json parsed representation of the body" in {
       val resp = Http(host <:< Map("Accept" -> "application/json") << "[4,2]" as_str)
-      resp must_=="parsed json [4, 2]"
+      resp must_=="array of 2"
     }
     "not match a non-application/json accepts request" in {
-      val resp = Http(host << "[42]" as_str)
+      val resp = Http(host << "[4,2]" as_str)
       resp must_=="bad req"
     }
     "not match an application/json accepts request with and non-json body" in {
