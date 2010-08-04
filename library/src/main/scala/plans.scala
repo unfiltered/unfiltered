@@ -24,7 +24,6 @@ trait Plan extends InittedFilter {
           filter(request)
         } catch {
           case m: MatchError => 
-            m.printStackTrace
             Pass
         }) match {
           case after: PassAndThen =>
