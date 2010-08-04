@@ -8,7 +8,7 @@ import org.fusesource.scalate.{TemplateEngine, Binding}
 private[scalate] object ScalateDefaults{
   implicit val engine = new TemplateEngine
 }
-
+ 
 import unfiltered.response.ResponseWriter
 /**
 This class will render the given template with the given attributes.
