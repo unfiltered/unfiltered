@@ -21,6 +21,8 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
     lazy val servlet_api = servletApiDependency
     val io = "commons-io" % "commons-io" % "1.4"
     val fileupload = "commons-fileupload" % "commons-fileupload" % "1.2.1"
+    // we can set this dep version to 0.1.4 when we release, 0.1.3  unapply*2 breaks tests
+    val test_server =  "net.databinder" %% "unfiltered-server" % "0.1.4-SNAPSHOT" % "test"
   }, library)
   val jetty_version = "7.0.2.v20100331"
   /** embedded server*/
