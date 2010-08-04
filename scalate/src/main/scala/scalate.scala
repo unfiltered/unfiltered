@@ -23,8 +23,8 @@ case class Scalate(template: String, attributes:(String,Any)*)
   ) extends ResponseWriter{
 
   import java.io.PrintWriter
-  import org.fusesource.scalate.DefaultRenderContext
   def write(writer: PrintWriter): Unit = {
+    import org.fusesource.scalate.DefaultRenderContext
     val scalateTemplate = engine.load(template, bindings)
     val context = new DefaultRenderContext(engine, writer)
     for(attr <- additionalAttributes) context.attributes(attr._1) = attr._2
