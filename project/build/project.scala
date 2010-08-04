@@ -4,10 +4,15 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
 
   class UnfilteredModule(info: ProjectInfo) extends DefaultProject(info) with sxr.Publish
 
+  /** Allows Unfiltered modules to test themselves using the last released version of the
+   *  server and specs helper, working around the cyclical dependency. */
   trait IntegrationTesting extends BasicDependencyProject {
-    lazy val unfilteredSpec =  "net.databinder" %% "unfiltered-spec" % "0.1.3" % "test"
+    val lastRelease = "0.1.3"
+    lazy val ufSpec = "net.databinder" %% "unfiltered-spec" % lastRelease % "test" intransitive()
+    lazy val ufServ = "net.databinder" %% "unfiltered-server" % lastRelease % "test" intransitive()
     lazy val specs = specsDependency % "test"
     lazy val dispatch = dispatchDependency % "test"
+    lazy val jetty7 = jettyDependency % "test"
   }
 
   /** core unfiltered library */
@@ -21,13 +26,11 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
     lazy val servlet_api = servletApiDependency
     val io = "commons-io" % "commons-io" % "1.4"
     val fileupload = "commons-fileupload" % "commons-fileupload" % "1.2.1"
-    // we can set this dep version to 0.1.4 when we release, 0.1.3  unapply*2 breaks tests
-    val test_server =  "net.databinder" %% "unfiltered-server" % "0.1.4-SNAPSHOT" % "test"
   }, library)
   val jetty_version = "7.0.2.v20100331"
   /** embedded server*/
   lazy val server = project("server", "Unfiltered Server", new UnfilteredModule(_) {
-    val jetty7 = "org.eclipse.jetty" % "jetty-webapp" % jetty_version
+    val jetty7 = jettyDependency
   }, library)
   /** AJP protocol server */
   lazy val ajp_server = project("ajp-server", "Unfiltered AJP Server", new UnfilteredModule(_) {
@@ -54,6 +57,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
     else
       "org.scala-tools.testing" %% "specs" % "1.6.5"
   def dispatchDependency = "net.databinder" %% "dispatch-mime" % "0.7.4"
+  def jettyDependency = "org.eclipse.jetty" % "jetty-webapp" % jetty_version
 
   /** Exclude demo from publish, all other actions run from parent */
   override def dependencies = super.dependencies.filter { d => !(d eq demo) }
