@@ -4,17 +4,17 @@ import org.fusesource.scalate.{TemplateEngine, Binding}
 
 /**
  * private object that holds the default engine
-**/
+*/
 private[scalate] object ScalateDefaults{
   implicit val engine = new TemplateEngine
 }
  
 import unfiltered.response.ResponseWriter
 /**
-This class will render the given template with the given attributes.
-An implicit Engine and Bindings can be passed to the constructor via
-its alternate parameters set.  This is described further in demo-scalate
-**/
+ * This class will render the given template with the given attributes.
+ * An implicit Engine and Bindings can be passed to the constructor via
+ * its alternate parameters set.  This is described further in demo-scalate
+*/
 case class Scalate(template: String, attributes:(String,Any)*)
   (
     implicit engine: TemplateEngine = ScalateDefaults.engine, 
