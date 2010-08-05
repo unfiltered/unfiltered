@@ -10,9 +10,10 @@ object AcceptSpec extends Specification  with unfiltered.spec.Served {
   import dispatch._
 
   class TestPlan extends unfiltered.Planify({
-    case GET(UFPath(Seg(ext :: Nil), Accepts(fmt, _))) => fmt match {
-      case fmt => ResponseString(fmt.toString.drop(1))
-    }
+    case GET(UFPath(Seg(ext :: Nil), Accepts.Json(_))) => ResponseString("json")
+    case GET(UFPath(Seg(ext :: Nil), Accepts.Xml(_))) => ResponseString("xml")
+    case GET(UFPath(Seg(ext :: Nil), Accepts.Csv(_))) => ResponseString("csv")
+    case GET(UFPath(Seg(ext :: Nil), Accepts.Html(_))) => ResponseString("html")
   })
   
   def setup = { _.filter(new TestPlan) }

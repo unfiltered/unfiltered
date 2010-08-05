@@ -5,49 +5,41 @@ object Accepts {
   
   trait Accepting {
     val contentType: String
-    val sym: Symbol
-    lazy val ext = sym.name
-   
+
+    val ext: String
+
     def unapply(r: javax.servlet.http.HttpServletRequest) = {
       val pathSuffix = r.getRequestURI.substring(r.getContextPath.length).split("[.]").lastOption
       r match {
         case Accept(values, _) =>
-          if(!values.filter(_.equalsIgnoreCase(contentType)).isEmpty) Some(sym)
-          else if(!values.filter(_=="*/*").isEmpty && ext == pathSuffix.getOrElse("not")) Some(sym)
+          if(!values.filter(_.equalsIgnoreCase(contentType)).isEmpty) Some(r)
+          else if(!values.filter(_=="*/*").isEmpty && ext == pathSuffix.getOrElse("not")) Some(r)
           else None
         case _ => pathSuffix match {
-          case Some(pathSuffix) if(pathSuffix == ext) => Some(sym)
+          case Some(pathSuffix) if(pathSuffix == ext) => Some(r)
           case _ => None
         }
       }
     }
   }
 
-  case object AcceptingJson extends Accepting {
+  object Json extends Accepting {
     val contentType = "application/json"
-    val sym = 'json
+    val ext = "json"
   }
 
-  case object AcceptingXml extends Accepting {
+  object Xml extends Accepting {
     val contentType = "text/xml"
-    val sym = 'xml
+    val ext = "xml"
   }
   
-  case object AcceptingHtml extends Accepting {
+  object Html extends Accepting {
     val contentType = "text/html"
-    val sym = 'html
+    val ext = "html"
   }
   
-  case object AcceptingCsv extends Accepting {
+  object Csv extends Accepting {
     val contentType = "text/csv"
-    val sym = 'csv
-  }
-
-  def unapply(r: javax.servlet.http.HttpServletRequest) = r match {
-    case AcceptingJson(sym) => Some((sym, r))
-    case AcceptingXml(sym) => Some((sym, r))
-    case AcceptingHtml(sym) => Some((sym, r))
-    case AcceptingCsv(sym) => Some((sym, r))
-    case _ => None
+    val ext = "csv"
   }
 }

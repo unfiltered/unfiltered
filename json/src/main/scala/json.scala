@@ -8,10 +8,8 @@ object JsonBody {
   
   /** @return Some(JsValue, req) if request accepts json and contains a valid json body. */
   def unapply(r: Req) = r match {
-    case Accepts(fmt, Bytes(body, _)) => fmt match {
-      case 'json => try{ Some(Js(new String(body)), r) } catch { case _ => None }
-      case _ => None
-    }
+    case Accepts.Json(Bytes(body, _)) =>
+      try { Some(Js(new String(body)), r) } catch { case _ => None }
     case _ => None
   } 
 }
@@ -36,13 +34,11 @@ object Jsonp {
       is provided else (emptywrapper, req) tuple is no callback param is provided */
   object Optional {
     def unapply(r: Req) = r match {
-      case Accepts(fmt, Params(p, _)) => fmt match {
-        case 'json => Some(p("callback") match {
+      case Accepts.Json(Params(p, _)) =>
+        Some(p("callback") match {
           case Seq(cb, _*) => new CallbackWrapper(cb)
           case _ => EmptyWrapper
         }, r)
-        case _ => None
-      }
       case _ => None
     }
   }
@@ -50,13 +46,11 @@ object Jsonp {
   /** @return (callbackwrapper, req) tuple if request accepts json and a callback 
       param is provided  */
   def unapply(r: Req) = r match {
-    case Accepts(fmt, Params(p, _)) => fmt match {
-      case 'json => p("callback") match {
+    case Accepts.Json(Params(p, _)) =>
+      p("callback") match {
         case Seq(cb, _*) => Some(new CallbackWrapper(cb), r)
         case _ => None
       }
-      case _ => None
-    }
     case _ => None
   }
 }
