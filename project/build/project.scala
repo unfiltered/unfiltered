@@ -47,7 +47,6 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   lazy val json = project("json", "Unfiltered Json", 
       new UnfilteredModule(_) with IntegrationTesting {
     val dispatch_json = "net.databinder" %% "dispatch-json" % "0.7.4"
-    val test_server = "net.databinder" %% "unfiltered-server" % "0.1.3" % "test"
   }, library)
 
   def servletApiDependency = "javax.servlet" % "servlet-api" % "2.3" % "provided"
