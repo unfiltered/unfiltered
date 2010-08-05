@@ -1,3 +1,10 @@
-* Parameter extraction with error handling through Params.Query
-* Multipart post upload handling...
-* Json responders...
+* library
+  * Parameter extraction with error handling through Params.Query
+* uploads
+  * Multipart file upload handling through the following extractors
+    * MultiPartParams.Disk - file data will start to write to disk after a provided size
+    * MultiPartParams.Memory - in memory files for environments which prohibit writing to disk such as Google App Engine (provided by [eed3si9n](http://github.com/eed3si9n))
+    * MultiPartParams.Streamed - files are read from input stream
+* json
+  * Jsonp callback extraction for accepts application/xml requests through Jsonp and Jsonp.Optional
+  * JsonBody extractor which extracts the body of an accepts application/xml request and parses the result into a [dispatch.json.Js](http://github.com/n8han/Databinder-Dispatch/blob/master/json/src/main/scala/dispatch/Json.scala) AST
