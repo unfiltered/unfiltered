@@ -51,7 +51,7 @@ object Params {
     def ~> [C](that: Option[B] => Option[C]) = new Chained(f andThen that)
   }
 
-  class QueryBuilder[E, A](value: Either[E,Seq[A]]) extends {
+  class QueryBuilder[E, A](value: Either[E,Seq[A]]) {
     def is [B](cond: Condition[A,B]) = new QueryBuilder(
       value.right.map { _.flatMap { i => cond(Some(i)).toList } }
     )
