@@ -79,9 +79,10 @@ object Params {
     ))
   }
 
-  def first = new {
+  def first = new (Seq[String] => Option[String]) {
+    def apply(seq: Seq[String]) = seq.firstOption
     def ~> [B] (that: Condition[String, B]) = new Chained({seq =>
-      that(seq.firstOption)
+      that(this(seq))
     })
   }
 

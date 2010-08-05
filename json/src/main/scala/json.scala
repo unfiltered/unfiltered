@@ -17,6 +17,8 @@ object JsonBody {
 /** jsonp extractor(s). Useful for extracting a callback out of a request */
 object Jsonp {
   import javax.servlet.http.{HttpServletRequest => Req}
+
+  object Callback extends Params.Extract("callback", Params.first)
   
   trait Wrapper {
     def wrap(body: String): String
@@ -34,11 +36,10 @@ object Jsonp {
       is provided else (emptywrapper, req) tuple is no callback param is provided */
   object Optional {
     def unapply(r: Req) = r match {
-      case Accepts.Json(Params(p, _)) =>
-        Some(p("callback") match {
-          case Seq(cb, _*) => new CallbackWrapper(cb)
-          case _ => EmptyWrapper
-        }, r)
+      case Accepts.Json(Params(p, req)) => Some(p match {
+        case Callback(cb, _) => new CallbackWrapper(cb)
+        case _ => EmptyWrapper
+      }, r)
       case _ => None
     }
   }
@@ -46,11 +47,7 @@ object Jsonp {
   /** @return (callbackwrapper, req) tuple if request accepts json and a callback 
       param is provided  */
   def unapply(r: Req) = r match {
-    case Accepts.Json(Params(p, _)) =>
-      p("callback") match {
-        case Seq(cb, _*) => Some(new CallbackWrapper(cb), r)
-        case _ => None
-      }
+    case Accepts.Json(Params(Callback(cb, _), _)) => Some(new CallbackWrapper(cb), r)
     case _ => None
   }
 }
