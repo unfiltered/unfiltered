@@ -1,6 +1,6 @@
 import sbt._
 
-class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
+class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.Publish {
 
   class UnfilteredModule(info: ProjectInfo) extends DefaultProject(info) with sxr.Publish
 
@@ -61,6 +61,8 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) {
 
   /** Exclude demo from publish, all other actions run from parent */
   override def dependencies = super.dependencies.filter { d => !(d eq demo) }
+
+  override def postTitle(vers: String) = "Unfiltered %s" format vers
 
   override def managedStyle = ManagedStyle.Maven
   val publishTo = "Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"
