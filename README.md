@@ -1,9 +1,5 @@
 # Unfiltered
 
-A toolkit for handling HTTP requests in [Scala](http://www.scala-lang.org/).
-
-## The Gist
-
 Unfiltered embraces the HTTP protocol, Scala, type-safety, and minimalism. It enables applications to handle HTTP requests as partially applied functions that take requests and return functions to respond to them. Typically, applications [pattern-match](http://en.wikipedia.org/wiki/Pattern_matching) requests against nested extractor objects. HTTP responses are defined with response [combinator functions](http://en.wikipedia.org/wiki/Combinatory_logic).
 
 The request response cycle reduces to a pattern matching clause similar to message handling in the Scala [actors](http://www.scala-lang.org/node/242) library.
