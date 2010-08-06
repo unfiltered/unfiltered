@@ -54,20 +54,32 @@ These response functions are the expected return values of `Plans`.
 A restful api for a given resource might look something like
 
     unfiltered.Planify {
-      case GET(Path(Seg("resource" :: id :: Nil), Accepts(fmt, _))) => Store(id) match {
-        case Some(resource) => Ok ~> ResponseString(render(resource).as(fmt))
+      case GET(Path(Seg("resource" :: id :: Nil), r)) => Store(id) match {
+        case Some(resource) => ResponseString(render(resource).as(r match {
+          case Accepts.Json(_) => 'json
+          case Accepts.Xml(_) => 'xml
+          case _ => 'html
+        }) ~> Ok 
         case _ => NotFound
       }
-      case POST(Path(Seg("resource" :: id :: Nil), Bytes(body, _))) => Store(id, body) match {
-        case Some(id) => Created ~> ResponseString("resource created")
+      case POST(Path(Seg("resource" :: id :: Nil), Bytes(body, r))) => Store(id, body) match {
+        case Some(id) => ResponseString(render("resource created").as(r match {
+          case Accepts.Json(_) => 'json
+          case Accepts.Xml(_) => 'xml
+          case _ => 'html
+        }) ~> Created
         case _ => BadRequest
       }
-      case PUT(Path(Seg("resource" :: id :: Nil), Bytes(body, _))) => Store(id, body) match {
-        case Some(id) => Ok ~> ResponseString("resource updated")
+      case PUT(Path(Seg("resource" :: id :: Nil), Bytes(body, r))) => Store(id, body) match {
+        case Some(id) => ResponseString(render("resource updated").as(r match {
+          case Accepts.Json(_) => 'json
+          case Accepts.Xml(_) => 'xml
+          case _ => 'html
+        }) ~> Ok
         case _ => BadRequest
       }
       case DELETE(Path(Seg("resource" :: id :: Nil),_)) => Store.delete(id) match {
-        case Some(id) => Ok ~> ResponseString("resource deleted")
+        case Some(id) => Ok
         case _ => Gone
       }
     }
