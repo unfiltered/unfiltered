@@ -9,9 +9,6 @@ object JsonBodySpec extends Specification  with unfiltered.spec.Served {
   
   import dispatch._
 
-  import net.liftweb.json.JsonParser._
-  implicit val formats = net.liftweb.json.DefaultFormats
-  
   class TestPlan extends unfiltered.Planify({
     case POST(UFPath("/", JsonBody(js, _))) => ResponseString(js match {
       case  net.liftweb.json.JsonAST.JArray(a :: b :: Nil) => "array of 2"
