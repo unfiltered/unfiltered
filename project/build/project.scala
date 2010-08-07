@@ -8,6 +8,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
    *  server and specs helper, working around the cyclical dependency. */
   trait IntegrationTesting extends BasicDependencyProject {
     val lastRelease = "0.1.3"
+    /** Must be intransitive to block dependency on uf library */
     lazy val ufSpec = "net.databinder" %% "unfiltered-spec" % lastRelease % "test" intransitive()
     lazy val ufServ = "net.databinder" %% "unfiltered-server" % lastRelease % "test" intransitive()
     lazy val specs = specsDependency % "test"
