@@ -11,10 +11,10 @@ object Params {
   }
   type Map = scala.collection.Map[String, Seq[String]]
   /**
-    Given a req, extract the request params into a (Map[String, Seq[String]], request).
-    The Map is assigned a default value of Nil, so param("p") would return Nil if there
-    is no such parameter, or (as normal for servlets) a single empty string if the
-    parameter was supplied without a value. */
+   * Given a req, extract the request params into a (Map[String, Seq[String]], request).
+   * The Map is assigned a default value of Nil, so param("p") would return Nil if there
+   * is no such parameter, or (as normal for servlets) a single empty string if the
+   * parameter was supplied without a value. */
   def unapply(req: HttpServletRequest) = {
     val names = JEnumerationIterator[String](req.getParameterNames.asInstanceOf[java.util.Enumeration[String]])
     Some(((Map.empty[String, Seq[String]] /: names) ((m, n) =>
@@ -22,6 +22,34 @@ object Params {
       )).withDefaultValue(Nil), req)
   }
 
+  /**
+   * Conditions return None if not satisfied. When satisisfied, they may change
+   * the type and value of their input. */
+  type Condition[A,B] = Option[A] => Option[B]
+
+  /**
+   * A function Seq[String] => Option[B]  used to test and transform values
+   * from the parameter map. Conditions may be chained with `~>` */
+  class ParamMapper[B](f: Seq[String] => Option[B]) extends (Seq[String] => Option[B]) {
+    def apply(a: Seq[String]) = f(a)
+    def ~> [C](that: Option[B] => Option[C]) = new ParamMapper(f andThen that)
+  }
+
+  /** Maps first parameter, if present. */
+  val first = new ParamMapper(_.firstOption)
+
+  /** Condition that trims its input string */
+  val trimmed = (_: Option[String]) map { _.trim }
+  /** Condition that requires a non-empty input string */
+  val nonempty = (_: Option[String]) filter { ! _.isEmpty  }
+
+  /** Condition that requires an integer value, transforms to Int */
+  def int(v: Option[String]) =
+    try { v map { _.toInt } } catch { case _ => None }
+
+  /**
+   * Base class for parameter extractor objects, may be extended inline with
+   * chained ParamMapper objects. */
   abstract class Extract[E,T](f: Map => Option[T]) {
     def this(name: String, f: Seq[String] => Option[T]) =
       this({ params: Map => f(params(name)) })
@@ -42,13 +70,6 @@ object Params {
       def apply[R](f: Query.ParamBind[E] => Query[E,()=>R]) =
         new MappedQuery(params, f)
     }
-  }
-
-  type Condition[A,B] = Option[A] => Option[B]
-
-  class Chained[B](f: Seq[String] => Option[B]) extends (Seq[String] => Option[B]) {
-    def apply(a: Seq[String]) = f(a)
-    def ~> [C](that: Option[B] => Option[C]) = new Chained(f andThen that)
   }
 
   class QueryBuilder[E, A](value: Either[E,Seq[A]]) {
@@ -78,19 +99,6 @@ object Params {
       v => Right(v)
     ))
   }
-
-  def first = new (Seq[String] => Option[String]) {
-    def apply(seq: Seq[String]) = seq.firstOption
-    def ~> [B] (that: Condition[String, B]) = new Chained({seq =>
-      that(this(seq))
-    })
-  }
-
-  val trimmed = (_: Option[String]) map { _.trim }
-  val nonempty = (_: Option[String]) filter { ! _.isEmpty  }
-
-  def int(v: Option[String]) =
-    try { v map { _.toInt } } catch { case _ => None }
 
   class Query[E,A](val value: Either[List[E],A]) {
     /**
