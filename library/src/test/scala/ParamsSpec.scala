@@ -10,7 +10,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
   import dispatch._
 
   class TestPlan extends unfiltered.Planify({
-    case GET(UFPath("/qp", Params(params, _))) => params("foo") match {
+    case UFPath("/basic", Params(params, _)) => params("foo") match {
       case Seq(foo) => ResponseString("foo is %s" format foo)
       case _ =>  ResponseString("what's foo?")
     }
@@ -45,20 +45,16 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
         BadRequest ~> Status(fails.first.error) ~> ResponseString("fail")
       }
 
-    case POST(UFPath("/pp", Params(params,_))) => params("foo") match {
-      case Seq(foo) => ResponseString("foo is %s" format foo)
-      case _ =>  ResponseString("what's foo?")
-    }
   })
   
   def setup = { _.filter(new TestPlan) }
   
   "Params" should {
     "extract query params" in {
-      Http(host / "qp" <<? Map("foo" -> "bar") as_str) must_=="foo is bar"
+      Http(host / "basic" <<? Map("foo" -> "bar") as_str) must_=="foo is bar"
     }
     "extract post params" in {
-      Http(host / "pp" << Map("foo" -> "bar") as_str) must_=="foo is bar"
+      Http(host / "basic" << Map("foo" -> "bar") as_str) must_=="foo is bar"
     }
     "return a number" in {
       Http(host / "int" <<? Map("number" -> "8") as_str) must_=="8"
