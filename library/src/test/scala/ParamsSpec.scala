@@ -9,11 +9,18 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
   
   import dispatch._
 
+  /** Used for extract test */
+  object Number extends Params.Extract("number", Params.first ~> Params.int)
+
   class TestPlan extends unfiltered.Planify({
+
     case UFPath("/basic", Params(params, _)) => params("foo") match {
       case Seq(foo) => ResponseString("foo is %s" format foo)
       case _ =>  ResponseString("what's foo?")
     }
+
+    case POST(UFPath("/extract", Params(Number(num, _), _))) =>
+      ResponseString(num.toString)
 
     case GET(UFPath("/int", Params(params, _))) => 
       Params.Query[Unit](params) { q => for {
@@ -49,17 +56,27 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
   
   def setup = { _.filter(new TestPlan) }
   
-  "Params" should {
-    "extract query params" in {
+  "Params basic map" should {
+    "map query string params" in {
       Http(host / "basic" <<? Map("foo" -> "bar") as_str) must_=="foo is bar"
     }
-    "extract post params" in {
+    "map post params" in {
       Http(host / "basic" << Map("foo" -> "bar") as_str) must_=="foo is bar"
     }
+  }
+  "Params Extract matcher" should {
+    "match and return number" in {
+      Http(host / "extract" << Map("number" -> "8") as_str) must_=="8"
+    }
+    "not match a non-number" in {
+      Http.when(_ == 404)(host / "extract" << Map("number" -> "8a") as_str)
+    }
+  }
+  "Params Query expression" should {
     "return a number" in {
       Http(host / "int" <<? Map("number" -> "8") as_str) must_=="8"
     }
-    "fail on non-number" in {
+    "not match on non-number" in {
       Http.when(_ == 400)(host / "int" <<? Map("number" -> "8a") as_str) must_=="number"
     }
     "return even number" in {
