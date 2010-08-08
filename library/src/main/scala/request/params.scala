@@ -58,11 +58,12 @@ object Params {
     }
   }
 
+  case class Fail[E](name: String, error: E)
   object Query {
     type ParamBind[E] = String => QueryBuilder[E,String]
     class MappedQuery[E,R](params:Map, f: ParamBind[E] => Query[E,()=>R]) {
-      def orElse(ef: Seq[E] => R) =
-        f(n => new QueryBuilder(Right(params(n)))).value.fold(ef, _())
+      def orElse(ef: Seq[Fail[E]] => R) =
+        f(n => new QueryBuilder(n, Right(params(n)))).value.fold(ef, _())
     }
     /** @return a query binding function for the given parameters */
     def apply[E](params: Map) = new {
@@ -72,35 +73,36 @@ object Params {
     }
   }
 
-  class QueryBuilder[E, A](value: Either[E,Seq[A]]) {
-    def is [B](cond: Condition[A,B]) = new QueryBuilder(
+  class QueryBuilder[E, A](name: String, value: Either[E,Seq[A]]) {
+    def is [B](cond: Condition[A,B]) = new QueryBuilder(name,
       value.right.map { _.flatMap { i => cond(Some(i)).toList } }
     )
-    def is [B](cond: Condition[A,B], msg: E) = new QueryBuilder(
+    def is [B](cond: Condition[A,B], err: E) = new QueryBuilder(name,
       value.right.flatMap { seq =>
         val s: Either[E, List[B]] = Right(Nil)
         (s /: seq) { (either, item) =>
           either.right.flatMap { l =>
-            cond(Some(item)).map { i => Right(i :: l) } getOrElse Left(msg)
+            cond(Some(item)).map { i => Right(i :: l) } getOrElse Left(err)
           }
         }
       }
     )
-    def required(msg: E) = new Query(value.fold(
-      msg => Left(msg :: Nil),
-      v => v.firstOption.map { v => Right(v) } getOrElse Left(msg :: Nil)
+    private def fail(err: E) = Fail(name, err) :: Nil
+    def required(err: E) = new Query(value.fold(
+      err => Left(fail(err)),
+      v => v.firstOption.map { v => Right(v) } getOrElse Left(fail(err))
     ))
     def optional = new Query(value.fold(
-      msg => Left(msg :: Nil),
+      err => Left(fail(err)),
       v => Right(v.firstOption)
     ))
     def multiple = new Query(value.fold(
-      msg => Left(msg :: Nil),
+      err => Left(fail(err)),
       v => Right(v)
     ))
   }
 
-  class Query[E,A](val value: Either[List[E],A]) {
+  class Query[E,A](val value: Either[List[Fail[E]],A]) {
     /**
      * Joins errors into a list on the way *out* of a for exp.
      */
