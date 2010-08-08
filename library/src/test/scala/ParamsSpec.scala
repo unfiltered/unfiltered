@@ -16,11 +16,11 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     }
 
     case GET(UFPath("/int", Params(params, _))) => 
-      Params.Query[String](params) { q => for {
-        even <- q("number") is Params.int required("missing")
+      Params.Query[Unit](params) { q => for {
+        even <- q("number") is Params.int required(())
       } yield ResponseString(even.get.toString) } orElse { fails =>
         BadRequest ~> ResponseString(
-          fails map { fail => fail.name + ":" + fail.error } mkString ","
+          fails map { _.name } mkString ","
         )
       }
 
@@ -64,7 +64,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
       Http(host / "int" <<? Map("number" -> "8") as_str) must_=="8"
     }
     "fail on non-number" in {
-      Http.when(_ == 400)(host / "int" <<? Map("number" -> "8a") as_str) must_=="number:missing"
+      Http.when(_ == 400)(host / "int" <<? Map("number" -> "8a") as_str) must_=="number"
     }
     "return even number" in {
       Http(host / "even" <<? Map("number"->"8","what"->"foo") as_str) must_=="8"
