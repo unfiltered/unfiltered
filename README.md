@@ -6,9 +6,9 @@ The request response cycle reduces to a pattern matching clause similar to messa
 
     object Server {
       def main(args: Array[String]) {
-        unfilered.server.Http(8080).filter(unfilered.Planify {
+        unfiltered.server.Http(8080).filter(unfiltered.Planify {
           case _ => Ok ~> ResponseString("Hello there")
-        })
+        }).run
       }
     }
 
