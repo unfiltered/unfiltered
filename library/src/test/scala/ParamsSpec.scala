@@ -23,32 +23,33 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
       ResponseString(num.toString)
 
     case GET(UFPath("/int", Params(params, _))) => 
-      Params.Query[Unit](params) { q => for {
+      ( for {
+        q <- Params.Query[Unit](params)
         even <- q("number") is Params.int required(())
-      } yield ResponseString(even.get.toString) } orElse { fails =>
+      } yield ResponseString(even.get.toString) ) orElse { fails =>
         BadRequest ~> ResponseString(
           fails map { _.name } mkString ","
         )
       }
 
     case GET(UFPath("/even", Params(params, _))) => 
-      Params.Query[String](params) { q => for {
+      ( for {
+        q <- Params.Query[String](params)
         even <- q("number") is (Params.int, "nonnumber") is
           (_ filter(_ % 2 == 0), "odd") required "missing"
         whatever <- q("what") required("bad")
-      } yield ResponseString(even.get.toString) } orElse { fails =>
+      } yield ResponseString(even.get.toString) ) orElse { fails =>
         BadRequest ~> ResponseString(
           fails map { fail => fail.name + ":" + fail.error } mkString ","
         )
       }
     
     case GET(UFPath("/str", Params(params, _))) => 
-      Params.Query[Int](params) { q =>
-        for {
-          str <- (q("param") is Params.int).optional
-          req <- q("req") required(400)
-        } yield ResponseString(str.get.getOrElse(0).toString)
-      } orElse { fails =>
+      ( for {
+        q <- Params.Query[Int](params)
+        str <- (q("param") is Params.int).optional
+        req <- q("req") required(400)
+      } yield ResponseString(str.get.getOrElse(0).toString) ) orElse { fails =>
         BadRequest ~> Status(fails.first.error) ~> ResponseString("fail")
       }
 
