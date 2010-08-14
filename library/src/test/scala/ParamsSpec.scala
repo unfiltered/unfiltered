@@ -27,7 +27,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
         q <- Params.Query.errors[Unit]
         even <- q("number") is Params.int required()
       } yield ResponseString(even.get.toString)
-      expected(params) orElse { fails =>
+      expected(params) orFail { fails =>
         BadRequest ~> ResponseString(
           fails map { _.name } mkString ","
         )
@@ -40,7 +40,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
           (Params.predicate{ _ % 2 == 0}, "odd") required "missing"
         whatever <- q("what") required("bad")
       } yield ResponseString(even.get.toString)
-      expected(params) orElse { fails =>
+      expected(params) orFail { fails =>
         BadRequest ~> ResponseString(
           fails map { fail => fail.name + ":" + fail.error } mkString ","
         )
@@ -52,7 +52,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
         str <- (q("param") is Params.int).optional
         req <- q("req") required(400)
       } yield ResponseString(str.get.getOrElse(0).toString)
-      expected(params) orElse { fails =>
+      expected(params) orFail { fails =>
         BadRequest ~> Status(fails.first.error) ~> ResponseString("fail")
       }
 

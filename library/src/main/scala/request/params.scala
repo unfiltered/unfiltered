@@ -66,7 +66,7 @@ object Params {
       def apply(params: Map) = new Applied(params, f)
     }
     class Applied[E,R](params:Map, f: ParamBind[E] => Query[E,()=>R]) {
-      def orElse(ef: Seq[Fail[E]] => R) =
+      def orFail(ef: Seq[Fail[E]] => R) =
         f(n => new QueryBuilder(n, Right(params(n)))).value.fold(ef, _())
     }
     /** @return a query binding function for the given parameters */
