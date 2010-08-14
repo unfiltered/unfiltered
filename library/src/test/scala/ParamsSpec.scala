@@ -36,7 +36,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
       ( for {
         q <- Params.Query[String](params)
         even <- q("number") is (Params.int, "nonnumber") is
-          (_ filter(_ % 2 == 0), "odd") required "missing"
+          (Params.predicate{ _ % 2 == 0}, "odd") required "missing"
         whatever <- q("what") required("bad")
       } yield ResponseString(even.get.toString) ) orElse { fails =>
         BadRequest ~> ResponseString(

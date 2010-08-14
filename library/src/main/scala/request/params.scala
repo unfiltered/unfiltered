@@ -25,27 +25,28 @@ object Params {
   /**
    * Conditions return None if not satisfied. When satisisfied, they may change
    * the type and value of their input. */
-  type Condition[A,B] = Option[A] => Option[B]
+  type Condition[A,B] = A => Option[B]
+  def predicate[A](p: A => Boolean): Condition[A,A] = a => if(p(a)) Some(a) else None
 
   /**
    * A function Seq[String] => Option[B]  used to test and transform values
    * from the parameter map. Conditions may be chained with `~>` */
   class ParamMapper[B](f: Seq[String] => Option[B]) extends (Seq[String] => Option[B]) {
     def apply(a: Seq[String]) = f(a)
-    def ~> [C](that: Option[B] => Option[C]) = new ParamMapper(f andThen that)
+    def ~> [C](that: B => Option[C]) = new ParamMapper({ seq => f(seq).flatMap(that) })
   }
 
   /** Maps first parameter, if present. */
   val first = new ParamMapper(_.firstOption)
 
   /** Condition that trims its input string */
-  val trimmed = (_: Option[String]) map { _.trim }
+  def trimmed(s: String) = Some(s.trim)
   /** Condition that requires a non-empty input string */
-  val nonempty = (_: Option[String]) filter { ! _.isEmpty  }
+  val nonempty = predicate { s: String => ! s.isEmpty }
 
   /** Condition that requires an integer value, transforms to Int */
-  def int(v: Option[String]) =
-    try { v map { _.toInt } } catch { case _ => None }
+  def int(v: String) =
+    try { Some(v.toInt) } catch { case _ => None }
 
   /**
    * Base class for parameter extractor objects, may be extended inline with
@@ -75,14 +76,14 @@ object Params {
 
   class QueryBuilder[E, A](name: String, value: Either[E,Seq[A]]) {
     def is [B](cond: Condition[A,B]) = new QueryBuilder(name,
-      value.right.map { _.flatMap { i => cond(Some(i)).toList } }
+      value.right.map { _.flatMap { i => cond(i).toList } }
     )
     def is [B](cond: Condition[A,B], err: E) = new QueryBuilder(name,
       value.right.flatMap { seq =>
         val s: Either[E, List[B]] = Right(Nil)
         (s /: seq) { (either, item) =>
           either.right.flatMap { l =>
-            cond(Some(item)).map { i => Right(i :: l) } getOrElse Left(err)
+            cond(item).map { i => Right(i :: l) } getOrElse Left(err)
           }
         }
       }
