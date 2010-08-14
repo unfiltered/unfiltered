@@ -62,15 +62,18 @@ object Params {
   case class Fail[E](name: String, error: E)
   object Query {
     type ParamBind[E] = String => QueryBuilder[E,String]
-    class MappedQuery[E,R](params:Map, f: ParamBind[E] => Query[E,()=>R]) {
+    class Unapplied[E,R](f: ParamBind[E] => Query[E,()=>R]) {
+      def apply(params: Map) = new Applied(params, f)
+    }
+    class Applied[E,R](params:Map, f: ParamBind[E] => Query[E,()=>R]) {
       def orElse(ef: Seq[Fail[E]] => R) =
         f(n => new QueryBuilder(n, Right(params(n)))).value.fold(ef, _())
     }
     /** @return a query binding function for the given parameters */
-    def apply[E](params: Map) = new {
+    def errors[E] = new {
       // not curried so that E can be explicit, R implicit
       def flatMap[R](f: Query.ParamBind[E] => Query[E,()=>R]) =
-        new MappedQuery(params, f)
+        new Unapplied(f)
     }
   }
 
