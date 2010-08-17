@@ -2,7 +2,11 @@ import sbt._
 
 class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.Publish {
 
-  class UnfilteredModule(info: ProjectInfo) extends DefaultProject(info) with sxr.Publish
+  class UnfilteredModule(info: ProjectInfo) extends DefaultProject(info) with sxr.Publish {
+    override def packageSrcJar= defaultJarPath("-sources.jar")
+    lazy val sourceArtifact = Artifact.sources(artifactID)
+    override def packageToPublishActions = super.packageToPublishActions ++ Seq(packageSrc)
+  }
 
   /** Allows Unfiltered modules to test themselves using the last released version of the
    *  server and specs helper, working around the cyclical dependency. */
