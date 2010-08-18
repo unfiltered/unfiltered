@@ -51,7 +51,7 @@ object Params {
 
   /* Implicitly provide 'orElse' for QueryResult (either) type. */
   case class QueryResultX[E,A](r: QueryResult[E,A]) {
-    def orElse(handler: Log[E] => A) =
+    def orElse[B >: A](handler: Log[E] => B) =
       r.left.map(handler).merge
   }
   implicit def queryOrElse[E,A](r: QueryResult[E,A]): QueryResultX[E,A] =
