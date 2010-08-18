@@ -46,11 +46,11 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     
     case GET(UFPath("/str", Params(params, _))) => 
       val expected = for {
-        str <- lookup("param") is(optional, 0) is({ _ map int}, 0)
+        str <- lookup("param") is(optional, -1) is({ _ map int}, 400)
         req <- lookup("req") is(required, 400)
       } yield ResponseString(str.get.getOrElse(0).toString)
       expected(params) orElse { fails =>
-        BadRequest ~> Status(fails.first._2) ~> ResponseString("fail")
+        BadRequest ~> Status(fails.head._2) ~> ResponseString("fail")
       }
 
   })
@@ -94,8 +94,14 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     "fail on not present" in {
       Http.when(_ == 400)(host / "even" as_str) must_=="number:missing,what:bad"
     }
-    "return zero if param not an int" in {
-      Http(host / "str" <<? Map("param"->"hi","req"->"whew") as_str) must_=="0"
+    "return zero if param no int" in {
+      Http(host / "str" <<? Map("req"->"whew") as_str) must_=="0"
+    }
+    "return 400 if param not an int" in {
+      Http(host / "str" <<? Map("praam" -> "one", "req"->"whew") as_str) must_=="400"
+    }
+    "return optional param if an int" in {
+      Http(host / "str" <<? Map("param"->"2","req"->"whew") as_str) must_=="2"
     }
   }
 }
