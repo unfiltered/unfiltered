@@ -22,14 +22,14 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     case POST(UFPath("/extract", Params(Number(num, _), _))) =>
       ResponseString(num.toString)
 
-    case GET(UFPath("/int", Params(params, _))) => 
+    case GET(UFPath("/int", Params(params, _))) =>
+      import Params._
       val expected = for {
-        q <- Params.Query.errors[Unit]
-        even <- q("number") is Params.int required()
+        even <- lookup("number") is (required, ()) is(int, ())
       } yield ResponseString(even.get.toString)
-      expected(params) orFail { fails =>
+      expected(params) orElse { fails =>
         BadRequest ~> ResponseString(
-          fails map { _.name } mkString ","
+          fails map { _._1 } mkString ","
         )
       }
 

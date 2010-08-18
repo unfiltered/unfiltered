@@ -23,30 +23,15 @@ object Params {
   }
 
   /**
-   * Conditions return None if not satisfied. When satisisfied, they may change
-   * the type and value of their input. */
-  type Condition[A,B] = A => Option[B]
-  def predicate[A](p: A => Boolean): Condition[A,A] = a => if(p(a)) Some(a) else None
-
-  /**
    * A function Seq[String] => Option[B]  used to test and transform values
    * from the parameter map. Conditions may be chained with `~>` */
   class ParamMapper[B](f: Seq[String] => Option[B]) extends (Seq[String] => Option[B]) {
     def apply(a: Seq[String]) = f(a)
-    def ~> [C](that: B => Option[C]) = new ParamMapper({ seq => f(seq).flatMap(that) })
+    def ~> [C](that: Option[B] => Option[C]) = new ParamMapper({ f andThen that })
   }
 
   /** Maps first parameter, if present. */
   val first = new ParamMapper(_.firstOption)
-
-  /** Condition that trims its input string */
-  def trimmed(s: String) = Some(s.trim)
-  /** Condition that requires a non-empty input string */
-  val nonempty = predicate { s: String => ! s.isEmpty }
-
-  /** Condition that requires an integer value, transforms to Int */
-  def int(v: String) =
-    try { Some(v.toInt) } catch { case _ => None }
 
   /**
    * Base class for parameter extractor objects, may be extended inline with
@@ -59,69 +44,90 @@ object Params {
     }
   }
 
-  case class Fail[E](name: String, error: E)
-  object Query {
-    type ParamBind[E] = String => QueryBuilder[E,String]
-    class Unapplied[E,R](f: ParamBind[E] => Query[E,()=>R]) {
-      def apply(params: Map) = new Applied(params, f)
-    }
-    class Applied[E,R](params:Map, f: ParamBind[E] => Query[E,()=>R]) {
-      def orFail(ef: Seq[Fail[E]] => R) =
-        f(n => new QueryBuilder(n, Right(params(n)))).value.fold(ef, _())
-    }
-    /** @return a query binding function for the given parameters */
-    def errors[E] = new {
-      // not curried so that E can be explicit, R implicit
-      def flatMap[R](f: Query.ParamBind[E] => Query[E,()=>R]) =
-        new Unapplied(f)
-    }
-  }
+  type Log[E] = List[(String,E)]
+  type QueryFn[E,A] = (Map, Option[String], Log[E]) =>
+    (Option[String], Log[E], A)
+  type QueryResult[E,A] = Either[Log[E], A]
 
-  class QueryBuilder[E, A](name: String, value: Either[E,Seq[A]]) {
-    def is [B](cond: Condition[A,B]) = new QueryBuilder(name,
-      value.right.map { _.flatMap { i => cond(i).toList } }
-    )
-    def is [B](cond: Condition[A,B], err: E) = new QueryBuilder(name,
-      value.right.flatMap { seq =>
-        val s: Either[E, List[B]] = Right(Nil)
-        (s /: seq) { (either, item) =>
-          either.right.flatMap { l =>
-            cond(item).map { i => Right(i :: l) } getOrElse Left(err)
-          }
-        }
+  /* Implicitly provide 'orElse' for QueryResult (either) type. */
+  case class QueryResultX[E,A](r: QueryResult[E,A]) {
+    def orElse(handler: Log[E] => A) =
+      r.left.map(handler).merge
+  }
+  implicit def queryOrElse[E,A](r: QueryResult[E,A]): QueryResultX[E,A] =
+    QueryResultX(r)
+
+  /* The query-building monad, a variant of state-transformer. */
+  case class QueryM[E,A](exec: QueryFn[E,A]) {
+    def flatMap[B](f: A => QueryM[E,B]): QueryM[E,B] =
+      QueryM {
+        (params, key0, log0) =>
+          val (key1, log1, value) = exec(params, key0, log0)
+          f(value).exec(params, key1, log1)
       }
-    )
-    private def fail(err: E) = Fail(name, err) :: Nil
-    def required(err: E) = new Query(value.fold(
-      err => Left(fail(err)),
-      v => v.firstOption.map { v => Right(v) } getOrElse Left(fail(err))
-    ))
-    def optional = new Query(value.fold(
-      err => Left(fail(err)),
-      v => Right(v.firstOption)
-    ))
-    def multiple = new Query(value.fold(
-      err => Left(fail(err)),
-      v => Right(v)
-    ))
+
+    /* Compose monads, ignoring value of this. */
+    def andThen[B](that: QueryM[E,B]): QueryM[E,B] =
+      flatMap(_ => that)
+
+    /* This map is not defined as flatMap(unit(f(_))), as expected.
+       If any errors have been accumulated, it does NOT run the
+       query function. */
+    def map[B](f: A => B): QueryM[E,QueryResult[E,B]] =
+      QueryM {
+        (params, key0, log0) =>
+          val (key1, log1, value) = exec(params, key0, log0)
+          (key1, log1, log1 match {
+            case Nil => Right(f(value))
+            case _ => Left(log1.reverse)
+          })
+      }
+
+    /* Combinator for filtering the value and tagging errors. */
+    def is[B](f: A => Option[B], err: E): QueryM[E,Option[B]] =
+      QueryM {
+        (params, key0, log0) =>
+          val (key1, log1, value) = exec(params, key0, log0)
+          key1 match {
+            case None => (key1, log1, None) // do not record error
+            case Some(k) =>
+              f(value) match {
+                case None => (None, (k,err)::log1, None) // do record
+                case Some(v) => (key1, log1, Some(v))
+              }
+          }
+      }
+
+    def apply(params: Map) = exec(params, None, Nil)._3
   }
 
-  class Query[E,A](val value: Either[List[Fail[E]],A]) {
-    /**
-     * Joins errors into a list on the way *out* of a for exp.
-     */
-    def flatMap[B](f: Query[E,A] => Query[E,B]) =
-      new Query(value.fold(
-        l => Left(l ::: f(this).value.left.getOrElse(Nil)),
-        _ => f(this).value
-      ))
-    /**
-     * Maps the yield into a function, it won't be evaluated
-     * unless the top Either is still a Right.
-     */
-    def map(f: Query[E,A] => ResponseFunction) =
-      new Query(value.right.map { _ => () => f(this) })
-    /** Shortcut to getting the Right value, safe to use in yield. */
-    def get = value.right.get
-  }
+  def lookup[E](key: String): QueryM[E,Seq[String]] =
+    QueryM {
+      (params, _, log0) =>
+        (Some(key), log0, params.getOrElse(key, Seq()))
+    }
+
+
+  /* Functions that are useful arguments to QueryM.is */
+  def required(xs: Seq[String]): Option[String] =
+    if(xs.length == 1) Some(xs(0))
+    else None
+
+  def forbidden(xs: Seq[String]): Option[Unit] =
+    if(xs.length == 0) Some(())
+    else None
+
+  def optional(xs: Seq[String]): Option[Option[String]] =
+    if(xs.length > 1) None  // trigger error
+    else if(xs.length == 1) Some(Some(xs(0)))
+    else Some(None) // no error, but no value either
+
+  def int(opt: Option[String]): Option[Int] =
+    try { opt.map(_.toInt) } catch { case _ => None }
+
+  def pred[A](p: A => Boolean): Option[A] => Option[A] =
+    opt => opt.flatMap(a => if(p(a)) opt else None)
+
+  val even = pred((_:Int) % 2 == 0)
+  val odd = pred((_:Int) % 2 == 1)
 }
