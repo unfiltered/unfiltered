@@ -6,14 +6,14 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
-  
+  import Params._
+
   import dispatch._
 
   /** Used for extract test */
   object Number extends Params.Extract("number", Params.first ~> Params.int)
 
   class TestPlan extends unfiltered.Planify({
-
     case UFPath("/basic", Params(params, _)) => params("foo") match {
       case Seq(foo) => ResponseString("foo is %s" format foo)
       case _ =>  ResponseString("what's foo?")
@@ -23,37 +23,34 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
       ResponseString(num.toString)
 
     case GET(UFPath("/int", Params(params, _))) =>
-      import Params._
       val expected = for {
         even <- lookup("number") is (required, ()) is(int, ())
       } yield ResponseString(even.get.toString)
       expected(params) orElse { fails =>
         BadRequest ~> ResponseString(
-          fails map { _._1 } mkString ","
+          fails map { _._1  } mkString ","
         )
       }
 
     case GET(UFPath("/even", Params(params, _))) => 
       val expected = for {
-        q <- Params.Query.errors[String]
-        even <- q("number") is (Params.int, "nonnumber") is
-          (Params.predicate{ _ % 2 == 0}, "odd") required "missing"
-        whatever <- q("what") required("bad")
+        even <- lookup("number") is (required, "missing") is
+          (int, "nonnumber") is (pred { _ % 2 == 0}, "odd")
+        whatever <- lookup("what") is (required, "bad")
       } yield ResponseString(even.get.toString)
-      expected(params) orFail { fails =>
+      expected(params) orElse { fails =>
         BadRequest ~> ResponseString(
-          fails map { fail => fail.name + ":" + fail.error } mkString ","
+          fails map { fail => fail._1 + ":" + fail._2 } mkString ","
         )
       }
     
     case GET(UFPath("/str", Params(params, _))) => 
       val expected = for {
-        q <- Params.Query.errors[Int]
-        str <- (q("param") is Params.int).optional
-        req <- q("req") required(400)
+        str <- lookup("param") is(optional, 0) is({ _ map int}, 0)
+        req <- lookup("req") is(required, 400)
       } yield ResponseString(str.get.getOrElse(0).toString)
-      expected(params) orFail { fails =>
-        BadRequest ~> Status(fails.first.error) ~> ResponseString("fail")
+      expected(params) orElse { fails =>
+        BadRequest ~> Status(fails.first._2) ~> ResponseString("fail")
       }
 
   })
