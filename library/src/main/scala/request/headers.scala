@@ -3,10 +3,14 @@ package unfiltered.request
 import javax.servlet.http.HttpServletRequest
 
 class RequestHeader(val name: String) {
-  def unapply(req: HttpServletRequest) = { 
+  def unapply(req: HttpServletRequest) = {
+    def split(raw: String): List[String] = raw.split(",") map {
+      _.trim.takeWhile { _ != ';' }
+    } toList
+    
     def headers(e: java.util.Enumeration[_]): List[String] =
       if (e.hasMoreElements) e.nextElement match {
-        case v: String => v :: headers(e)
+        case v: String => split(v) ++ headers(e)
         case _ => headers(e)
       } else Nil
     Some((headers(req.getHeaders(name)), req))
