@@ -43,9 +43,19 @@ object Params {
       (_, params)
     }
   }
+  def pred[E,A](p: A => Boolean): Option[A] => Option[A] =
+    opt => opt filter p
 
+  def int(os: Option[String]) = 
+    try { os map { _.toInt } } catch { case _ => None }
+
+  val even = pred((_:Int) % 2 == 0)
+  val odd = pred((_:Int) % 2 == 1)
+}
+
+object QParams {
   type Log[E] = List[(String,E)]
-  type QueryFn[E,A] = (Map, Option[String], Log[E]) =>
+  type QueryFn[E,A] = (Params.Map, Option[String], Log[E]) =>
     (Option[String], Log[E], A)
   type QueryResult[E,A] = Either[Log[E], A]
 
@@ -84,7 +94,7 @@ object Params {
       }
 
     /* Combinator for filtering the value and tagging errors. */
-    def is[B](f: A => Option[B], err: E): QueryM[E,Option[B]] =
+    def is[B](f: A => Either[E,Option[B]]): QueryM[E,Option[B]] =
       QueryM {
         (params, key0, log0) =>
           val (key1, log1, value) = exec(params, key0, log0)
@@ -92,42 +102,53 @@ object Params {
             case None => (key1, log1, None) // do not record error
             case Some(k) =>
               f(value) match {
-                case None => (None, (k,err)::log1, None) // do record
-                case Some(v) => (key1, log1, Some(v))
+                case Left(err) => (None, (k,err)::log1, None) // do record
+                case Right(v) => (key1, log1, v)
               }
           }
       }
 
-    def apply(params: Map) = exec(params, None, Nil)._3
+    def apply(params: Params.Map) = exec(params, None, Nil)._3
   }
 
-  def lookup[E](key: String): QueryM[E,Seq[String]] =
+  def all[E](key: String): QueryM[E,Seq[String]] =
     QueryM {
       (params, _, log0) =>
         (Some(key), log0, params.getOrElse(key, Seq()))
     }
 
+  def first[E](key: String): QueryM[E,Option[String]] =
+    QueryM {
+      (params, _, log0) =>
+        (Some(key), log0, params.get(key).flatMap { _.firstOption })
+    }
 
   /* Functions that are useful arguments to QueryM.is */
-  def required(xs: Seq[String]): Option[String] =
-    if(xs.length == 1) Some(xs(0))
-    else None
+  def required[E,A](err:E)(xs: Option[A]): Either[E,Option[A]] = 
+    xs match {
+      case None => Left(err)
+      case oa => Right(oa)
+    }
 
   def forbidden(xs: Seq[String]): Option[Unit] =
     if(xs.length == 0) Some(())
     else None
 
-  def optional(xs: Seq[String]): Option[Option[String]] =
-    if(xs.length > 1) None  // trigger error
-    else if(xs.length == 1) Some(Some(xs(0)))
-    else Some(None) // no error, but no value either
+  def optional[E,A](xs: Option[A]): Either[E,Option[Option[A]]] =
+    Right(Some(xs))
 
-  def int(opt: Option[String]): Option[Int] =
-    try { opt.map(_.toInt) } catch { case _ => None }
+  def conv[E,A,B](c: Option[A] => Option[B], err: E): Option[A] => Either[E,Option[B]] = {
+    case None => Right(None)
+    case oa => c(oa) match {
+      case None => Left(err)
+      case ob => Right(ob)
+    }
+  }
 
-  def pred[A](p: A => Boolean): Option[A] => Option[A] =
-    opt => opt.flatMap(a => if(p(a)) opt else None)
+  def pred[E,A](p: A => Boolean)(err: E): Option[A] => Either[E,Option[A]] =
+    conv({_ filter p}, err)
 
-  val even = pred((_:Int) % 2 == 0)
-  val odd = pred((_:Int) % 2 == 1)
+  def int[E](e: E) = conv(Params.int, e)
+  def even[E](e: E) = conv(Params.even, e)
+  def odd[E](e: E) = conv(Params.odd, e)
 }

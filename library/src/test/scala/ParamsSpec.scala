@@ -4,9 +4,8 @@ import org.specs._
 
 object ParamsSpec extends Specification with unfiltered.spec.Served {
   import unfiltered.response._
-  import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
-  import Params._
+  import QParams._
 
   import dispatch._
 
@@ -24,7 +23,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
 
     case GET(UFPath("/int", Params(params, _))) =>
       val expected = for {
-        even <- lookup("number") is (required, ()) is(int, ())
+        even <- first("number") is(int(()))
       } yield ResponseString(even.get.toString)
       expected(params) orElse { fails =>
         BadRequest ~> ResponseString(
@@ -34,9 +33,9 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
 
     case GET(UFPath("/even", Params(params, _))) => 
       val expected = for {
-        even <- lookup("number") is (required, "missing") is
-          (int, "nonnumber") is (pred { _ % 2 == 0}, "odd")
-        whatever <- lookup("what") is (required, "bad")
+        even <- first("number") is(int("nonnumber")) is 
+          (pred { (_: Int) % 2 == 0}("odd")) is(required("missing"))
+        whatever <- first("what") is(required("bad"))
       } yield ResponseString(even.get.toString)
       expected(params) orElse { fails =>
         BadRequest ~> ResponseString(
@@ -46,8 +45,8 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     
     case GET(UFPath("/str", Params(params, _))) => 
       val expected = for {
-        str <- lookup("param") is(optional, -1) is({ _ map int}, 400)
-        req <- lookup("req") is(required, 400)
+        str <- first("param") is(int(400)) is(optional)
+        req <- first("req") is(required(400))
       } yield ResponseString(str.get.getOrElse(0).toString)
       expected(params) orElse { fails =>
         BadRequest ~> Status(fails.head._2) ~> ResponseString("fail")
@@ -97,8 +96,8 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     "return zero if param no int" in {
       Http(host / "str" <<? Map("req"->"whew") as_str) must_=="0"
     }
-    "return 400 if param not an int" in {
-      Http(host / "str" <<? Map("praam" -> "one", "req"->"whew") as_str) must_=="400"
+    "fail 400 if param not an int" in {
+      Http.when(_ == 400)(host / "str" <<? Map("param" -> "one", "req"->"whew") as_str) must_=="fail"
     }
     "return optional param if an int" in {
       Http(host / "str" <<? Map("param"->"2","req"->"whew") as_str) must_=="2"
