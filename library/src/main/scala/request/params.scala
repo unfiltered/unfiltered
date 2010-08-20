@@ -65,7 +65,9 @@ object QParams {
     (Option[String], Log[E], A)
   type QueryResult[E,A] = Either[Log[E], A]
   /** Left if the query has failed, right if it has not (but may be empty) */
-  type ParamState[E,A] = Either[E,Option[A]]
+  type Report[E,A] = Either[E,Option[A]]
+  type Reporter[E,A,B] = Option[A] => Report[E,B]
+
 
   /* Implicitly provide 'orFail' for QueryResult (either) type. */
   case class QueryResultX[E,A](r: QueryResult[E,A]) {
@@ -105,7 +107,7 @@ object QParams {
       }
 
     /* Combinator for filtering the value and tagging errors. */
-    def is[B](f: A => ParamState[E,B]): QueryM[E,Option[B]] =
+    def is[B](f: A => Report[E,B]): QueryM[E,Option[B]] =
       QueryM {
         (params, key0, log0) =>
           val (key1, log1, value) = exec(params, key0, log0)
@@ -129,27 +131,26 @@ object QParams {
     }
 
   /* Functions that are useful arguments to QueryM.is */
-  def required[E,A](err:E)(xs: Option[A]): ParamState[E,A] = 
-    xs match {
-      case None => Left(err)
-      case oa => Right(oa)
-    }
+  def required[E,A](err:E): Reporter[E,A,A] = {
+    case None => Left(err)
+    case oa => Right(oa)
+  }
 
-  def optional[E,A](xs: Option[A]): ParamState[E,Option[A]] =
+  def optional[E,A](xs: Option[A]): Report[E,Option[A]] =
     Right(Some(xs))
 
   /** Promote c to an error reporter that fails if Some input is discarded */
-  def watch[E,A,B](c: Option[A] => Option[B], err: E): Option[A] => ParamState[E,B] = {
+  def watch[E,A,B](c: Option[A] => Option[B], err: E): Reporter[E,A,B] = {
     case None => Right(None)
     case oa => c(oa).map { b => Right(Some(b)) } getOrElse Left(err)
   }
 
   /** Convert a predicate into an error reporter */
-  def pred[E,A](p: A => Boolean)(err: E): Option[A] => ParamState[E,A] =
+  def pred[E,A](p: A => Boolean)(err: E): Reporter[E,A,A] =
     watch({_ filter p}, err)
 
   /** Convert f into an error reporter that never reports errors */
-  def ignore[E,A](f: Option[A] => Option[A]): Option[A] => ParamState[E,A] = 
+  def ignore[E,A](f: Option[A] => Option[A]): Reporter[E,A,A] = 
     opt => Right(f(opt))
 
   def int[E](e: E) = watch(Params.int, e)
