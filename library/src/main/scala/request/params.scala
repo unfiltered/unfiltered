@@ -138,18 +138,23 @@ object QParams {
   def optional[E,A](xs: Option[A]): ParamState[E,Option[A]] =
     Right(Some(xs))
 
-  /** Promote to a ParamState that fails if Some input is discarded */
+  /** Promote c to an error reporter that fails if Some input is discarded */
   def watch[E,A,B](c: Option[A] => Option[B], err: E): Option[A] => ParamState[E,B] = {
     case None => Right(None)
     case oa => c(oa).map { b => Right(Some(b)) } getOrElse Left(err)
   }
 
+  /** Convert a predicate into an error reporter */
   def pred[E,A](p: A => Boolean)(err: E): Option[A] => ParamState[E,A] =
     watch({_ filter p}, err)
+
+  /** Convert f into an error reporter that never reports errors */
+  def ignore[E,A](f: Option[A] => Option[A]): Option[A] => ParamState[E,A] = 
+    opt => Right(f(opt))
 
   def int[E](e: E) = watch(Params.int, e)
   def even[E](e: E) = watch(Params.even, e)
   def odd[E](e: E) = watch(Params.odd, e)
-  def trimmed[E](e: E) = watch(Params.trimmed, e)
+  def trimmed[E] = ignore[E,String](Params.trimmed)
   def nonempty[E](e: E) = watch(Params.nonempty, e)
 }
