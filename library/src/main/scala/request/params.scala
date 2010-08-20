@@ -52,6 +52,9 @@ object Params {
 
   val even = pred { (_:Int) % 2 == 0 }
   val odd = pred { (_:Int) % 2 == 1 }
+
+  def trimmed(s: Option[String]) = s map { _.trim }
+  val nonempty = pred { !(_:String).isEmpty }
 }
 
 /** Fined-grained error reporting for arbitrarily many failing parameters.
@@ -147,4 +150,6 @@ object QParams {
   def int[E](e: E) = watch(Params.int, e)
   def even[E](e: E) = watch(Params.even, e)
   def odd[E](e: E) = watch(Params.odd, e)
+  def trimmed[E](e: E) = watch(Params.trimmed, e)
+  def nonempty[E](e: E) = watch(Params.nonempty, e)
 }
