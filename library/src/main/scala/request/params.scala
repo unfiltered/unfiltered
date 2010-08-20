@@ -116,13 +116,7 @@ object QParams {
     def apply(params: Params.Map) = exec(params, None, Nil)._3
   }
 
-  def all[E](key: String): QueryM[E,Seq[String]] =
-    QueryM {
-      (params, _, log0) =>
-        (Some(key), log0, params.getOrElse(key, Seq()))
-    }
-
-  def first[E](key: String): QueryM[E,Option[String]] =
+  def lookup[E](key: String): QueryM[E,Option[String]] =
     QueryM {
       (params, _, log0) =>
         (Some(key), log0, params.get(key).flatMap { _.firstOption })

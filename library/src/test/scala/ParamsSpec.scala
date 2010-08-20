@@ -26,7 +26,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
 
     case GET(UFPath("/int", Params(params, _))) =>
       val expected = for {
-        even <- first("number") is(int(()))
+        even <- lookup("number") is(int(()))
       } yield ResponseString(even.get.toString)
       expected(params) orElse { fails =>
         BadRequest ~> ResponseString(
@@ -36,9 +36,9 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
 
     case GET(UFPath("/even", Params(params, _))) => 
       val expected = for {
-        even <- first("number") is(int("nonnumber")) is 
+        even <- lookup("number") is(int("nonnumber")) is 
           (pred { (_: Int) % 2 == 0}("odd")) is(required("missing"))
-        whatever <- first("what") is(required("bad"))
+        whatever <- lookup("what") is(required("bad"))
       } yield ResponseString(even.get.toString)
       expected(params) orElse { fails =>
         BadRequest ~> ResponseString(
@@ -48,8 +48,8 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     
     case GET(UFPath("/str", Params(params, _))) => 
       val expected = for {
-        str <- first("param") is(int(400)) is(optional[Int,Int]) // note: 2.8 can infer type on optional
-        req <- first("req") is(required(400))
+        str <- lookup("param") is(int(400)) is(optional[Int,Int]) // note: 2.8 can infer type on optional
+        req <- lookup("req") is(required(400))
       } yield ResponseString(str.get.getOrElse(0).toString)
       expected(params) orElse { fails =>
         BadRequest ~> Status(fails.head._2) ~> ResponseString("fail")
