@@ -32,7 +32,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
       } yield ResponseString(even.get.toString)
       expected(params) orFail { fails =>
         BadRequest ~> ResponseString(
-          fails map { _._1  } mkString ","
+          fails map { _.name  } mkString ","
         )
       }
 
@@ -44,7 +44,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
       } yield ResponseString(even.get.toString)
       expected(params) orFail { fails =>
         BadRequest ~> ResponseString(
-          fails map { fail => fail._1 + ":" + fail._2 } mkString ","
+          fails map { fail => fail.name + ":" + fail.error } mkString ","
         )
       }
     
@@ -54,7 +54,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
         req <- lookup("req") is(required(400))
       } yield ResponseString(str.get.getOrElse(0).toString)
       expected(params) orFail { fails =>
-        BadRequest ~> Status(fails.head._2) ~> ResponseString("fail")
+        BadRequest ~> Status(fails.head.error) ~> ResponseString("fail")
       }
 
   })

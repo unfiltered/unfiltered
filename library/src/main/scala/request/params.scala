@@ -60,7 +60,7 @@ object Params {
 /** Fined-grained error reporting for arbitrarily many failing parameters.
  * Import QParams._ to use; see ParamsSpec for examples. */
 object QParams {
-  type Log[E] = List[(String,E)]
+  type Log[E] = List[Fail[E]]
   type QueryFn[E,A] = (Params.Map, Option[String], Log[E]) =>
     (Option[String], Log[E], A)
   type QueryResult[E,A] = Either[Log[E], A]
@@ -68,6 +68,7 @@ object QParams {
   type Report[E,A] = Either[E,Option[A]]
   type Reporter[E,A,B] = Option[A] => Report[E,B]
 
+  case class Fail[E](name: String, error: E)
 
   /* Implicitly provide 'orFail' for QueryResult (either) type. */
   case class QueryResultX[E,A](r: QueryResult[E,A]) {
@@ -115,7 +116,7 @@ object QParams {
             case None => (key1, log1, None) // do not record error
             case Some(k) =>
               f(value) match {
-                case Left(err) => (None, (k,err)::log1, None) // do record
+                case Left(err) => (None, Fail(k,err)::log1, None) // do record
                 case Right(v) => (key1, log1, v)
               }
           }
