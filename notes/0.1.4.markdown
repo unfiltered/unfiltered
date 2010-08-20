@@ -5,7 +5,10 @@ library
     called `Params.Extract`
     
   * A new `QParams` module facilitates fine-grained error reporting for
-    arbitrarily many failing parameters
+    arbitrarily many failing parameters.  Special thanks to
+    [league][league] for rewriting it, twice.
+
+[league]: http://github.com/league
 
 uploads
 -------
