@@ -49,8 +49,8 @@ object Params {
   def int(os: Option[String]) = 
     try { os map { _.toInt } } catch { case _ => None }
 
-  val even = pred((_:Int) % 2 == 0)
-  val odd = pred((_:Int) % 2 == 1)
+  val even = pred { (_:Int) % 2 == 0 }
+  val odd = pred { (_:Int) % 2 == 1 }
 }
 
 object QParams {
