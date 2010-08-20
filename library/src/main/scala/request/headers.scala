@@ -5,7 +5,7 @@ import javax.servlet.http.HttpServletRequest
 class RequestHeader(val name: String) {
   def unapply(req: HttpServletRequest) = {
     def split(raw: String): List[String] = raw.split(",") map {
-      _.trim.takeWhile { _ != ';' }
+      _.trim.takeWhile { _ != ';' } mkString
     } toList
     
     def headers(e: java.util.Enumeration[_]): List[String] =
