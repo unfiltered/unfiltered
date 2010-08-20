@@ -48,7 +48,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     
     case GET(UFPath("/str", Params(params, _))) => 
       val expected = for {
-        str <- first("param") is(int(400)) is(optional)
+        str <- first("param") is(int(400)) is(optional[Int,Int]) // note: 2.8 can infer type on optional
         req <- first("req") is(required(400))
       } yield ResponseString(str.get.getOrElse(0).toString)
       expected(params) orElse { fails =>

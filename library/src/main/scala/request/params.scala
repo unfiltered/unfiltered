@@ -64,7 +64,10 @@ object QParams {
   /* Implicitly provide 'orElse' for QueryResult (either) type. */
   case class QueryResultX[E,A](r: QueryResult[E,A]) {
     def orElse[B >: A](handler: Log[E] => B) =
-      r.left.map(handler).merge
+      r.left.map(handler) match { // i.e. .merge, in 2.8
+        case Left(v) => v
+        case Right(v) => v
+      }
   }
   implicit def queryOrElse[E,A](r: QueryResult[E,A]): QueryResultX[E,A] =
     QueryResultX(r)
@@ -132,7 +135,7 @@ object QParams {
       case oa => Right(oa)
     }
 
-  def optional[E,A](xs: Option[A]): Either[E,Option[Option[A]]] =
+  def optional[E,A](xs: Option[A]): ParamState[E,Option[A]] =
     Right(Some(xs))
 
   /** Promote to a ParamState that fails if Some input is discarded */
