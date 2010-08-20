@@ -28,7 +28,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
       val expected = for {
         even <- lookup("number") is(int(()))
       } yield ResponseString(even.get.toString)
-      expected(params) orElse { fails =>
+      expected(params) orFail { fails =>
         BadRequest ~> ResponseString(
           fails map { _._1  } mkString ","
         )
@@ -40,7 +40,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
           (pred { (_: Int) % 2 == 0}("odd")) is(required("missing"))
         whatever <- lookup("what") is(required("bad"))
       } yield ResponseString(even.get.toString)
-      expected(params) orElse { fails =>
+      expected(params) orFail { fails =>
         BadRequest ~> ResponseString(
           fails map { fail => fail._1 + ":" + fail._2 } mkString ","
         )
@@ -51,7 +51,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
         str <- lookup("param") is(int(400)) is(optional[Int,Int]) // note: 2.8 can infer type on optional
         req <- lookup("req") is(required(400))
       } yield ResponseString(str.get.getOrElse(0).toString)
-      expected(params) orElse { fails =>
+      expected(params) orFail { fails =>
         BadRequest ~> Status(fails.head._2) ~> ResponseString("fail")
       }
 

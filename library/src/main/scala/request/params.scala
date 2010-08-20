@@ -3,6 +3,7 @@ package unfiltered.request
 import unfiltered.response.ResponsePackage.ResponseFunction
 import javax.servlet.http.HttpServletRequest
 
+/** Basic parameter acess, and a pattern matching extractor in Extract. */
 object Params {
   /** Dress a Java Enumeration in Scala Iterator clothing */
   case class JEnumerationIterator[T](e: java.util.Enumeration[T]) extends Iterator[T] {
@@ -53,6 +54,8 @@ object Params {
   val odd = pred { (_:Int) % 2 == 1 }
 }
 
+/** Fined-grained error reporting for arbitrarily many failing parameters.
+ * Import QParams._ to use; see ParamsSpec for examples. */
 object QParams {
   type Log[E] = List[(String,E)]
   type QueryFn[E,A] = (Params.Map, Option[String], Log[E]) =>
@@ -61,9 +64,9 @@ object QParams {
   /** Left if the query has failed, right if it has not (but may be empty) */
   type ParamState[E,A] = Either[E,Option[A]]
 
-  /* Implicitly provide 'orElse' for QueryResult (either) type. */
+  /* Implicitly provide 'orFail' for QueryResult (either) type. */
   case class QueryResultX[E,A](r: QueryResult[E,A]) {
-    def orElse[B >: A](handler: Log[E] => B) =
+    def orFail[B >: A](handler: Log[E] => B) =
       r.left.map(handler) match { // i.e. .merge, in 2.8
         case Left(v) => v
         case Right(v) => v
