@@ -21,6 +21,9 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     case POST(UFPath("/extract", Params(Number(num, _), _))) =>
       ResponseString(num.toString)
 
+    case POST(UFPath("/extract",_)) =>
+      ResponseString("passed")
+
     case GET(UFPath("/int", Params(params, _))) =>
       val expected = for {
         even <- first("number") is(int(()))
@@ -68,8 +71,8 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     "match and return number" in {
       Http(host / "extract" << Map("number" -> "8") as_str) must_=="8"
     }
-    "not match a non-number" in {
-      Http.when(_ == 404)(host / "extract" << Map("number" -> "8a") as_str)
+    "pass on a non-number" in {
+      Http(host / "extract" << Map("number" -> "8a") as_str) must_== "passed"
     }
   }
   "Params Query expression" should {
