@@ -2,12 +2,17 @@ import sbt._
 
 class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.Publish {
 
-  class UnfilteredModule(info: ProjectInfo) extends DefaultProject(info) with sxr.Publish
+  class UnfilteredModule(info: ProjectInfo) extends DefaultProject(info) with sxr.Publish {
+    override def packageSrcJar= defaultJarPath("-sources.jar")
+    lazy val sourceArtifact = Artifact.sources(artifactID)
+    override def packageToPublishActions = super.packageToPublishActions ++ Seq(packageSrc)
+  }
 
   /** Allows Unfiltered modules to test themselves using the last released version of the
    *  server and specs helper, working around the cyclical dependency. */
   trait IntegrationTesting extends BasicDependencyProject {
     val lastRelease = "0.1.3"
+    /** Must be intransitive to block dependency on uf library */
     lazy val ufSpec = "net.databinder" %% "unfiltered-spec" % lastRelease % "test" intransitive()
     lazy val ufServ = "net.databinder" %% "unfiltered-server" % lastRelease % "test" intransitive()
     lazy val specs = specsDependency % "test"
@@ -53,8 +58,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   /** json extractors */
   lazy val json = project("json", "Unfiltered Json", 
       new UnfilteredModule(_) with IntegrationTesting {
-    val dispatch_json = "net.databinder" %% "dispatch-json" % "0.7.4"
-    val test_server = "net.databinder" %% "unfiltered-server" % "0.1.3" % "test"
+    val lift_json = "net.liftweb" %% "lift-json" % "2.1-M1"
   }, library)
 
   def servletApiDependency = "javax.servlet" % "servlet-api" % "2.3" % "provided"

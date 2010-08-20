@@ -1,37 +1,32 @@
 # Unfiltered
 
-A modular [Scala](http://www.scala-lang.org/) web toolkit
+Unfiltered embraces the HTTP protocol, Scala, type-safety, and minimalism. It enables applications to handle HTTP requests as partially applied functions that take requests and return functions to respond to them. Typically, applications [pattern-match](http://en.wikipedia.org/wiki/Pattern_matching) requests against nested extractor objects. HTTP responses are defined with response [combinator functions](http://en.wikipedia.org/wiki/Combinatory_logic).
 
-## The Gist
-
-Unfiltered embraces the HTTP protocol, statelessness, idiomatic Scala, and minimalism. HTTP requests are handled as a partially applied functions that take a request and return a function that takes a response and returns a response. These requests are [pattern matched](http://en.wikipedia.org/wiki/Pattern_matching) against collections of extractors. HTTP responses are composed of response [combinators](http://en.wikipedia.org/wiki/Combinatory_logic).
-
-The request response cycle distills to a pattern match clause much like the Scala [actor](http://www.scala-lang.org/node/242) library.
+The request response cycle reduces to a pattern matching clause similar to message handling in the Scala [actors](http://www.scala-lang.org/node/242) library.
 
     object Server {
       def main(args: Array[String]) {
-        unfilered.server.Http(8080).filter(unfilered.Planify {
+        unfiltered.server.Http(8080).filter(unfiltered.Planify {
           case _ => Ok ~> ResponseString("Hello there")
-        })
+        }).run
       }
     }
 
-This will start an embedded web server at [http://localhost:8080](http://localhost:8080) and respond to all requests with a "Hello there" message and can also be run as a standard java main application. No extra container is required.
+The above example starts an embedded web server at `http://localhost:8080` and responds to all requests with a "Hello there" message. It runs as a standalone Java application. You can also define filter classes, to be added by configuration to a servlet container like Tomcat or Google App Engine.
 
 ## Plans
 
 Plans are the core client interface for intercepting and requests. Plans pattern match on requests and return response functions.
 
-
 ## Request Extractors
 
-A request extractor is just an extractor that accepts an HTTP request and returns a tuple something useful along with the request to chain other extractors with.
+A request extractor is an extractor that accepts an HTTP request and returns a tuple of something useful along with the request to chain other extractors with.
 
 An example signature would might be
 
     def unapply(x: HttpServletRequest): (Y, HttpServletRequest)
     
-Unfiltered provides a collection extractors for matching common most HTTP requests attributes.
+Unfiltered provides a library of extractors for matching common most HTTP requests attributes.
 
 At the most basic level...
 
@@ -41,39 +36,50 @@ At the most basic level...
     
     Seg // matches request path elements
     
-You can combine these extractors to compose your own patterns
+You can compose your own patterns using these and other extractors:
 
     PUT(Path(Seg("a" :: b :: "c" :: d :: Nil), SomeOtherExactor(foo, request)))
 
 
 ## Response Combinators
 
-A response combinator is a function that takes as its argument a function that takes an HTTP request and returns and HTTP request and also returns and HTTP request.
+A response combinator is a function that takes a another function as its argument. Using these combinators, applications compose a function that acts on the Java servlet primitives to respond to the request. In general, applications employ these built-in combinators to act on primitives rather than referencing them directly, but they are free to construct responses ad hoc if necessary.
 
     type ResponseFunction = HttpServletRequest => HttpServletRequest
     
 Core response functions are implemented as responders which can be chained together with `~>`.
 
-These response functions are the expected return values are Plans.
+These response functions are the expected return values of `Plans`.
 
-
-An example of a fictional restful api for a given resource might look something like
+A restful api for a given resource might look something like
 
     unfiltered.Planify {
-      case GET(Path(Seg("resource" :: id :: Nil), Accepts(fmt, _))) => Store(id) match {
-        case Some(resource) => Ok ~> ResponseString(render(resource).as(fmt))
+      case GET(Path(Seg("resource" :: id :: Nil), r)) => Store(id) match {
+        case Some(resource) => ResponseString(render(resource).as(r match {
+          case Accepts.Json(_) => 'json
+          case Accepts.Xml(_) => 'xml
+          case _ => 'html
+        }) ~> Ok 
         case _ => NotFound
       }
-      case POST(Path(Seg("resource" :: id :: Nil), Bytes(body, _))) => Store(id, body) match {
-        case Some(id) => Created ~> ResponseString("resource created")
+      case POST(Path(Seg("resource" :: id :: Nil), Bytes(body, r))) => Store(id, body) match {
+        case Some(id) => ResponseString(render("resource created").as(r match {
+          case Accepts.Json(_) => 'json
+          case Accepts.Xml(_) => 'xml
+          case _ => 'html
+        }) ~> Created
         case _ => BadRequest
       }
-      case PUT(Path(Seg("resource" :: id :: Nil), Bytes(body, _))) => Store(id, body) match {
-        case Some(id) => Ok ~> ResponseString("resource updated")
+      case PUT(Path(Seg("resource" :: id :: Nil), Bytes(body, r))) => Store(id, body) match {
+        case Some(id) => ResponseString(render("resource updated").as(r match {
+          case Accepts.Json(_) => 'json
+          case Accepts.Xml(_) => 'xml
+          case _ => 'html
+        }) ~> Ok
         case _ => BadRequest
       }
       case DELETE(Path(Seg("resource" :: id :: Nil),_)) => Store.delete(id) match {
-        case Some(id) => Ok ~> ResponseString("resource deleted")
+        case Some(id) => Ok
         case _ => Gone
       }
     }
@@ -83,11 +89,11 @@ An example of a fictional restful api for a given resource might look something 
 
 ### ajp-server
 
-Provides and embedded server that adheres to the ajp protocol.
+An embedded server that adheres to the ajp protocol.
 
 ### demo
 
-Provides a example Unfiltered application that demonstrates some of the core features.
+An example Unfiltered application that demonstrates some of the core features.
 
 ### library
 
@@ -99,28 +105,32 @@ Provides an embedded web server abstraction for serving filters.
 
 ### spec
 
-Provides test helpers for the [specs](http://code.google.com/p/specs/) test framework.
+Provides helpers for testing filters with [specs](http://code.google.com/p/specs/).
 
 ### uploads
 
-Provides extractors for file uploads.
+Provides extractors for multipart posts.
+
+### json
+
+Provides extractors for working with jsonp and transforming json request bodies
 
 ## Install
 
-Unfiltered is a [cross built](http://code.google.com/p/simple-build-tool/wiki/CrossBuild) project, built against the following Scala versions
+Unfiltered is a [cross built](http://code.google.com/p/simple-build-tool/wiki/CrossBuild) project, currently for the following Scala versions
 
     2.8.0, 2.7.7, 2.7.6, 2.7.5
     
 ### via sbt
 
-For most projects, including `unfiltered-server` as a dependency of your project should be sufficient.
+For standalone projects, including `unfiltered-server` as a dependency is sufficient.
 
     import sbt._
     class Project(info) extends DefaultProject(info) {
       val uf = "net.databinder" %% "unfiltered-server" % "1.3"
     }
     
-To specify individual modules, do so by specifying the module name in the dependency.
+To specify individual modules, specify the module name in the dependency.
 
     import sbt._
     class Project(info) extends DefaultProject(info) {

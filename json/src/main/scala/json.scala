@@ -3,13 +3,13 @@ package unfiltered.request
 /** Extractor for json request bodies. Complement to dispatch.json._ */
 object JsonBody {
   import javax.servlet.http.{HttpServletRequest => Req}
-  import dispatch.json._
-  import dispatch.json.Js._
+  import net.liftweb.json.JsonParser._
+  implicit val formats = net.liftweb.json.DefaultFormats
   
   /** @return Some(JsValue, req) if request accepts json and contains a valid json body. */
   def unapply(r: Req) = r match {
     case Accepts.Json(Bytes(body, _)) =>
-      try { Some(Js(new String(body)), r) } catch { case _ => None }
+      try { Some(parse(new String(body)), r) } catch { case _ => None }
     case _ => None
   } 
 }

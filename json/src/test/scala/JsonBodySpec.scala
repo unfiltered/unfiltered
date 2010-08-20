@@ -9,12 +9,9 @@ object JsonBodySpec extends Specification  with unfiltered.spec.Served {
   
   import dispatch._
 
-  import dispatch.json._
-  import dispatch.json.Js._
-  
   class TestPlan extends unfiltered.Planify({
-    case POST(UFPath("/", JsonBody(js, _))) => ResponseString(js.self match {
-      case List(a, b) => "array of 2"
+    case POST(UFPath("/", JsonBody(js, _))) => ResponseString(js match {
+      case  net.liftweb.json.JsonAST.JArray(a :: b :: Nil) => "array of 2"
       case _ => "expected json array of 2"
     })
     case _ => ResponseString("bad req")
