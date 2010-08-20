@@ -13,21 +13,21 @@ library
 uploads
 -------
 
-Multipart file upload handling through the following extractors
+Multipart file upload extractors
 
-  * MultiPartParams.Disk - file data will start to write to disk after a provided size
-  * MultiPartParams.Memory - in memory files for environments which
+  * `MultiPartParams.Disk` - writes file data to disk after a exceeding a memory limit
+  * `MultiPartParams.Memory` - in memory files for environments which
     prohibit writing to disk such as Google App Engine (provided by
-    [eed3si9n][ee]
-  * MultiPartParams.Streamed - files are read from input stream
+    [eed3si9n][ee])
+  * `MultiPartParams.Streamed` - files are read from input stream
 
-[ee]: http://github.com/eed3si9n)
+[ee]: http://github.com/eed3si9n
 
 json
 ----
 
-  * Jsonp callback extraction for accepts application/xml requests through Jsonp and Jsonp.Optional
-  * JsonBody extractor which extracts the body of an accepts
+  * `Jsonp` callback extractors
+  * `JsonBody` extractor which extracts the body of an accepts
     application/json request and parses the result with lift-json
 
 scalate
