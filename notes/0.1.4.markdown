@@ -7,6 +7,9 @@ library
   * A new `QParams` module facilitates fine-grained error reporting for
     arbitrarily many failing parameters.  Special thanks to
     [league][league] for rewriting it, twice.
+    
+  * Support for multi-valued request headers (simplistic tokenization
+    on comma).
 
 [league]: http://github.com/league
 
