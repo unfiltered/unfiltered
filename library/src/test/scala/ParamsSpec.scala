@@ -24,6 +24,8 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     case POST(UFPath("/extract",_)) =>
       ResponseString("passed")
 
+    // QParam test paths:
+
     case GET(UFPath("/int", Params(params, _))) =>
       val expected = for {
         even <- lookup("number") is(int(()))
