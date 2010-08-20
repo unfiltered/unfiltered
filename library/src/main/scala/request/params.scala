@@ -58,6 +58,8 @@ object QParams {
   type QueryFn[E,A] = (Params.Map, Option[String], Log[E]) =>
     (Option[String], Log[E], A)
   type QueryResult[E,A] = Either[Log[E], A]
+  /** Left if the query has failed, right if it has not (but may be empty) */
+  type ParamState[E,A] = Either[E,Option[A]]
 
   /* Implicitly provide 'orElse' for QueryResult (either) type. */
   case class QueryResultX[E,A](r: QueryResult[E,A]) {
@@ -94,7 +96,7 @@ object QParams {
       }
 
     /* Combinator for filtering the value and tagging errors. */
-    def is[B](f: A => Either[E,Option[B]]): QueryM[E,Option[B]] =
+    def is[B](f: A => ParamState[E,B]): QueryM[E,Option[B]] =
       QueryM {
         (params, key0, log0) =>
           val (key1, log1, value) = exec(params, key0, log0)
@@ -124,31 +126,25 @@ object QParams {
     }
 
   /* Functions that are useful arguments to QueryM.is */
-  def required[E,A](err:E)(xs: Option[A]): Either[E,Option[A]] = 
+  def required[E,A](err:E)(xs: Option[A]): ParamState[E,A] = 
     xs match {
       case None => Left(err)
       case oa => Right(oa)
     }
 
-  def forbidden(xs: Seq[String]): Option[Unit] =
-    if(xs.length == 0) Some(())
-    else None
-
   def optional[E,A](xs: Option[A]): Either[E,Option[Option[A]]] =
     Right(Some(xs))
 
-  def conv[E,A,B](c: Option[A] => Option[B], err: E): Option[A] => Either[E,Option[B]] = {
+  /** Promote to a ParamState that fails if Some input is discarded */
+  def watch[E,A,B](c: Option[A] => Option[B], err: E): Option[A] => ParamState[E,B] = {
     case None => Right(None)
-    case oa => c(oa) match {
-      case None => Left(err)
-      case ob => Right(ob)
-    }
+    case oa => c(oa).map { b => Right(Some(b)) } getOrElse Left(err)
   }
 
-  def pred[E,A](p: A => Boolean)(err: E): Option[A] => Either[E,Option[A]] =
-    conv({_ filter p}, err)
+  def pred[E,A](p: A => Boolean)(err: E): Option[A] => ParamState[E,A] =
+    watch({_ filter p}, err)
 
-  def int[E](e: E) = conv(Params.int, e)
-  def even[E](e: E) = conv(Params.even, e)
-  def odd[E](e: E) = conv(Params.odd, e)
+  def int[E](e: E) = watch(Params.int, e)
+  def even[E](e: E) = watch(Params.even, e)
+  def odd[E](e: E) = watch(Params.odd, e)
 }
