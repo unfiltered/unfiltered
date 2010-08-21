@@ -93,6 +93,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
 
   override def postTitle(vers: String) = "Unfiltered %s" format vers
 
+  val databinder_net = "databinder.net repository" at "http://databinder.net/repo"
   override def managedStyle = ManagedStyle.Maven
   val publishTo = "Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"
   Credentials(Path.userHome / ".ivy2" / ".credentials", log)
