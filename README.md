@@ -113,7 +113,13 @@ Provides extractors for multipart posts.
 
 ### json
 
-Provides extractors for working with jsonp and transforming json request bodies
+Provides extractors for working with jsonp and transforming json request bodies.
+
+### scalate
+
+[Scalate][scalate] template support.
+
+[scalate]: http://scalate.fusesource.org/
 
 ## Install
 
