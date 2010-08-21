@@ -14,9 +14,9 @@ class RequestHeader(val name: String) {
         case _ => headers(e)
       } else Nil
     
-    req.getHeaders(name) match {
-      case e if e.hasMoreElements => Some(headers(e), req)
-      case _ => None
+    headers(req.getHeaders(name)) match {
+      case Nil => None
+      case hs => Some(hs, req)
     }
   }
 }
