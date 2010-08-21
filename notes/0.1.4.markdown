@@ -21,7 +21,7 @@ Multipart file upload extractors
 
   * `MultiPartParams.Disk` - writes file data to disk after a exceeding a memory limit
   * `MultiPartParams.Memory` - in memory files for environments which
-    prohibit writing to disk such as Google App Engine (provided by
+    prohibit writing to disk such as Google App Engine (contributed by
     [eed3si9n][ee])
   * `MultiPartParams.Streamed` - files are read from input stream
 
