@@ -2,41 +2,45 @@ library
 -------
 
   * The parameter extractor abstract class `Params.Named` is now
-    called `Params.Extract`
+    called [Params.Extract][extract]
     
-  * A new `QParams` module facilitates fine-grained error reporting for
-    arbitrarily many failing parameters.  Special thanks to
-    [league][league] for rewriting it, twice.
+  * A new [QParams][qparams] object facilitates fine-grained error reporting for
+    arbitrarily many failing parameters. See example usage in [ParamsSpec][paramsspec]. 
+    Special thanks to [league][league] for rewriting it, twice.
     
-  * Support for multi-valued request headers (simplistic tokenization
+  * Support for multi-valued request [headers][headers] (simplistic tokenization
     on comma) contributed by [chrislewis][chris]
 
 [league]: http://github.com/league
 [chris]: http://github.com/chrislewis
+[extract]: http://sourced.implicit.ly/net.databinder/unfiltered/0.1.4/request/params.scala.html#18573
+[qparams]: http://sourced.implicit.ly/net.databinder/unfiltered/0.1.4/request/params.scala.html#9172
+[paramsspec]: http://sourced.implicit.ly/net.databinder/unfiltered.test/0.1.4/ParamsSpec.scala.html#29094
+[headers]: http://sourced.implicit.ly/net.databinder/unfiltered/0.1.4/request/headers.scala.html#9103
 
 uploads
 -------
 
 Multipart file upload extractors
 
-  * `MultiPartParams.Disk` - writes file data to disk after a exceeding a memory limit
-  * `MultiPartParams.Memory` - in memory files for environments which
+  * [MultiPartParams.Disk](http://sourced.implicit.ly/net.databinder/unfiltered-uploads/0.1.4/request/uploads.scala.html#15915) - writes file data to disk after a exceeding a memory limit
+  * [MultiPartParams.Memory](http://sourced.implicit.ly/net.databinder/unfiltered-uploads/0.1.4/request/uploads.scala.html#15917) - in memory files for environments which
     prohibit writing to disk such as Google App Engine (contributed by
     [eed3si9n][ee])
-  * `MultiPartParams.Streamed` - files are read from input stream
+  * [MultiPartParams.Streamed](http://sourced.implicit.ly/net.databinder/unfiltered-uploads/0.1.4/request/uploads.scala.html#15913) - files are read from input stream
 
 [ee]: http://github.com/eed3si9n
 
 json
 ----
 
-  * `Jsonp` callback extractors
-  * `JsonBody` extractor which extracts the body of an accepts
+  * [Jsonp](http://sourced.implicit.ly/net.databinder/unfiltered-json/0.1.4/json.scala.html#9464) callback extractors
+  * [JsonBody](http://sourced.implicit.ly/net.databinder/unfiltered-json/0.1.4/json.scala.html#9462) extractor which extracts the body of an accepts
     application/json request and parses the result with lift-json
 
 scalate
 ------
 
-  * [Scalate][scalate] template support contributed by [dwhitney](http://github.com/dwhitney)
+  * [Scalate][scalate] template [support](http://sourced.implicit.ly/net.databinder/unfiltered-scalate/0.1.4/scalate.scala.html) contributed by [dwhitney](http://github.com/dwhitney)
 
 [scalate]: http://scalate.fusesource.org/
