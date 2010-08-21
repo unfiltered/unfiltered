@@ -9,9 +9,10 @@ library
     [league][league] for rewriting it, twice.
     
   * Support for multi-valued request headers (simplistic tokenization
-    on comma).
+    on comma) contributed by [chrislewis][chris]
 
 [league]: http://github.com/league
+[chris]: http://github.com/chrislewis
 
 uploads
 -------
