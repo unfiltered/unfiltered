@@ -13,7 +13,11 @@ class RequestHeader(val name: String) {
         case v: String => split(v) ++ headers(e)
         case _ => headers(e)
       } else Nil
-    Some((headers(req.getHeaders(name)), req))
+    
+    req.getHeaders(name) match {
+      case e if e.hasMoreElements => Some(headers(e), req)
+      case _ => None
+    }
   }
 }
 
