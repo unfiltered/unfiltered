@@ -37,7 +37,7 @@ object Params {
   /**
    * Base class for parameter extractor objects, may be extended inline with
    * chained ParamMapper objects. */
-  abstract class Extract[E,T](f: Map => Option[T]) {
+  class Extract[E,T](f: Map => Option[T]) {
     def this(name: String, f: Seq[String] => Option[T]) =
       this({ params: Map => f(params(name)) })
     def unapply(params: Map) = f(params) map {
