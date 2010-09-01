@@ -66,11 +66,13 @@ trait Server extends ContextBuilder {
     }
   }
   /** Starts server in the background */
-  def start() {
+  def start() = {
     server.start()
+    Server.this
   }
   /** Stops server running in the background */
-  def stop() {
-    server.stop() 
+  def stop() = {
+    server.stop()
+    Server.this
   }
 }
