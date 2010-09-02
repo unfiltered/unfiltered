@@ -80,7 +80,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     else
       "org.scala-tools.testing" %% "specs" % "1.6.5"
 
-  def dispatchDependency = "net.databinder" %% "dispatch-mime" % "0.7.4"
+  def dispatchDependency = "net.databinder" %% "dispatch-mime" % "0.7.6"
   
   def jettyDependency = "org.eclipse.jetty" % "jetty-webapp" % jetty_version
 
