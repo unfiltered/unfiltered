@@ -8,9 +8,9 @@ import response.ResponsePackage.ResponseFunction
 
 /** To ecapsulate a filter in a class definition */
 trait Plan  {
-  def filter: PartialFunction[ServletRequest, ResponseFunction]
+  def filter: PartialFunction[HttpRequest, ResponseFunction]
 
-  /*def doFilter(request: ServletRequest, response: HttpResponse, chain: FilterChain) {
+  /*def doFilter(request: HttpRequest, response: HttpResponse, chain: FilterChain) {
     (request, response) match {
       case (request: HttpServletRequest, response: HttpHttpResponse) =>
         (try {
@@ -30,8 +30,8 @@ trait Plan  {
 }
 
 /** To define a filter class with an independent function */
-class Planify(val filter: PartialFunction[ServletRequest, ResponseFunction]) extends Plan
+class Planify(val filter: PartialFunction[HttpRequest, ResponseFunction]) extends Plan
 /** To create a filter instance with an independent function */
 object Planify {
-  def apply(filter: PartialFunction[ServletRequest, ResponseFunction]) = new Planify(filter)
+  def apply(filter: PartialFunction[HttpRequest, ResponseFunction]) = new Planify(filter)
 }
