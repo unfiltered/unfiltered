@@ -3,7 +3,7 @@ package unfiltered.response
 
 
 case class ContentType(content_type: String) extends Responder {
-  def respond(res: HttpServletResponse) {
+  def respond(res: HttpResponse) {
     res.setContentType("%s; charset=%s".format(content_type, charset))
   }
   def charset = "utf-8"

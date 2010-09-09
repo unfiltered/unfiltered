@@ -13,4 +13,3 @@ trait ServletRequest {
   def getParameterValues(param: String) : Array[String]
   def getHeaders(name: String) : java.util.Enumeration[String]
 }
-trait HttpServletRequest extends ServletRequest

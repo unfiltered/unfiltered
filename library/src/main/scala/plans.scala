@@ -10,9 +10,9 @@ import response.ResponsePackage.ResponseFunction
 trait Plan  {
   def filter: PartialFunction[ServletRequest, ResponseFunction]
 
-  /*def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
+  /*def doFilter(request: ServletRequest, response: HttpResponse, chain: FilterChain) {
     (request, response) match {
-      case (request: HttpServletRequest, response: HttpServletResponse) =>
+      case (request: HttpServletRequest, response: HttpHttpResponse) =>
         (try {
           filter(request)
         } catch {

@@ -2,7 +2,7 @@ package unfiltered.response
 
 import java.io.{OutputStream, PrintWriter}
 
-trait ServletResponse {
+trait HttpResponse {
   def setContentType(contentType: String) : Unit
   def setStatus(statusCode: Int) : Unit
   def getWriter() : PrintWriter
@@ -11,5 +11,3 @@ trait ServletResponse {
   def addHeader(name: String, value: String) : Unit
 }
 
-trait HttpServletResponse extends ServletResponse {
-}
