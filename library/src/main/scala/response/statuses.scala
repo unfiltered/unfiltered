@@ -1,6 +1,5 @@
 package unfiltered.response
 
-import javax.servlet.http.HttpServletResponse
 
 case class Status(code: Int) extends Responder {
   def respond(res: HttpServletResponse) { res.setStatus(code) }

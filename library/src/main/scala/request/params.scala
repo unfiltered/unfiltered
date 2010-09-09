@@ -1,7 +1,6 @@
 package unfiltered.request
 
 import unfiltered.response.ResponsePackage.ResponseFunction
-import javax.servlet.http.HttpServletRequest
 
 /** Basic parameter acess, and a pattern matching extractor in Extract. */
 object Params {

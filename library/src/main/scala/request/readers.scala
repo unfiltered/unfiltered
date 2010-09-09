@@ -1,6 +1,5 @@
 package unfiltered.request
 
-import javax.servlet.http.HttpServletRequest
 
 object InStream {
   def unapply(req: HttpServletRequest) = Some(req.getInputStream, req)

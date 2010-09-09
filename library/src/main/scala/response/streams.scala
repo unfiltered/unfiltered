@@ -1,7 +1,6 @@
 package unfiltered.response
 
-import javax.servlet.http.HttpServletResponse
-import javax.servlet.ServletOutputStream
+import java.io.OutputStream
 
 trait ResponseStreamer extends Responder {
   def respond(res: HttpServletResponse) {
@@ -9,8 +8,8 @@ trait ResponseStreamer extends Responder {
     try { stream(os) }
     finally { os.close() }
   }
-  def stream(os: ServletOutputStream): Unit
+  def stream(os: OutputStream): Unit
 }
 case class ResponseBytes(content: Array[Byte]) extends ResponseStreamer {
-  def stream(os: ServletOutputStream) { os.write(content) }
+  def stream(os: OutputStream) { os.write(content) }
 }

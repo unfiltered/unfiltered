@@ -1,7 +1,5 @@
 package unfiltered.response
 
-import javax.servlet.http.HttpServletResponse
-
 case class ResponseHeader(name: String, values: Iterable[String]) extends unfiltered.response.Responder {
   def respond(res: HttpServletResponse) { 
     values.foreach { v => res.addHeader(name, v) } 

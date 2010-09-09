@@ -1,7 +1,5 @@
 package unfiltered.request
 
-import javax.servlet.http.HttpServletRequest
-
 object Path {
   def unapply(req: HttpServletRequest) = Some((req.getRequestURI.substring(req.getContextPath.length), req))
 }

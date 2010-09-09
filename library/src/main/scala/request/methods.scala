@@ -1,6 +1,5 @@
 package unfiltered.request
 
-import javax.servlet.http.HttpServletRequest
 
 
 class Method(method: String) {

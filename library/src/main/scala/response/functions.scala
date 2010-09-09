@@ -1,6 +1,5 @@
 package unfiltered.response
-
-import javax.servlet.http.{HttpServletRequest,HttpServletResponse}
+import unfiltered.request._
 
 object ResponsePackage {
   // make a package object when 2.7 support is dropped

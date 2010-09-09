@@ -1,6 +1,4 @@
-package unfiltered.requset
-
-import javax.servlet.http.HttpServletRequest
+package unfiltered.request
 
 object HTTPS {
   def unapply(req: HttpServletRequest) = 

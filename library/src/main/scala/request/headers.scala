@@ -1,7 +1,5 @@
 package unfiltered.request
 
-import javax.servlet.http.HttpServletRequest
-
 class RequestHeader(val name: String) {
   def unapply(req: HttpServletRequest) = {
     def split(raw: String): List[String] = raw.split(",") map {

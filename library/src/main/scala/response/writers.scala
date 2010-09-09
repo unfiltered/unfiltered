@@ -1,6 +1,5 @@
 package unfiltered.response
 
-import javax.servlet.http.HttpServletResponse
 import java.io.PrintWriter
 
 trait ResponseWriter extends Responder {

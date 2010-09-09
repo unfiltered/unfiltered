@@ -1,6 +1,6 @@
 package unfiltered.response
 
-import javax.servlet.http.HttpServletResponse
+
 
 case class ContentType(content_type: String) extends Responder {
   def respond(res: HttpServletResponse) {
