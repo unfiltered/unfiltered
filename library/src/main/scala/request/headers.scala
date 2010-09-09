@@ -1,7 +1,7 @@
 package unfiltered.request
 
 class RequestHeader(val name: String) {
-  def unapply(req: HttpServletRequest) = {
+  def unapply(req: HttpRequest) = {
     def split(raw: String): List[String] = raw.split(",") map {
       _.trim.takeWhile { _ != ';' } mkString
     } toList

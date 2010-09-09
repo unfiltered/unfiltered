@@ -3,7 +3,7 @@ package unfiltered.request
 
 
 class Method(method: String) {
-  def unapply(req: HttpServletRequest) = 
+  def unapply(req: HttpRequest) = 
     if (req.getMethod.equalsIgnoreCase(method)) Some(req)
     else None
 }

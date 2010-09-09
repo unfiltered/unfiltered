@@ -13,14 +13,14 @@ object Pass extends ResponseFunction {
 }
 
 /** Pass on the the next filter then execute `later` after */
-case class PassAndThen(later: PartialFunction[HttpServletRequest, ResponseFunction]) extends ResponseFunction  {
+case class PassAndThen(later: PartialFunction[HttpRequest, ResponseFunction]) extends ResponseFunction  {
   def apply(res: HttpResponse) = res
-  def then(req: HttpServletRequest) = later.orElse[HttpServletRequest, ResponseFunction] { case _ => Pass } (req)
+  def then(req: HttpRequest) = later.orElse[HttpRequest, ResponseFunction] { case _ => Pass } (req)
 }
 
 /** Companion of PassAndThen(later). Return this in plans to execute a fn later */
 object PassAndThen {
-  def after(later: PartialFunction[HttpServletRequest, ResponseFunction]) = PassAndThen(later)
+  def after(later: PartialFunction[HttpRequest, ResponseFunction]) = PassAndThen(later)
 }
 
 trait Responder extends ResponseFunction {
