@@ -8,7 +8,7 @@ object Accepts {
 
     val ext: String
 
-    def unapply(r: HttpRequest) = {
+    def unapply[T](r: HttpRequest[T]) = {
       val pathSuffix = r.getRequestURI.substring(r.getContextPath.length).split("[.]").lastOption
       r match {
         case Accept(values, _) =>

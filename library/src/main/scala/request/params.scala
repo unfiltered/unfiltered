@@ -15,7 +15,7 @@ object Params {
    * The Map is assigned a default value of Nil, so param("p") would return Nil if there
    * is no such parameter, or (as normal for servlets) a single empty string if the
    * parameter was supplied without a value. */
-  def unapply(req: HttpRequest) = {
+  def unapply[T](req: HttpRequest[T]) = {
     val names = JEnumerationIterator[String](req.getParameterNames.asInstanceOf[java.util.Enumeration[String]])
     Some(((Map.empty[String, Seq[String]] /: names) ((m, n) =>
         m + (n -> req.getParameterValues(n))

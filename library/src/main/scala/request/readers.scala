@@ -2,15 +2,15 @@ package unfiltered.request
 
 
 object InStream {
-  def unapply(req: HttpRequest) = Some(req.getInputStream, req)
+  def unapply[T](req: HttpRequest[T]) = Some(req.getInputStream, req)
 }
 
 object Read {
-  def unapply(req: HttpRequest) = Some(req.getReader, req)
+  def unapply[T](req: HttpRequest[T]) = Some(req.getReader, req)
 }
 
 object Bytes {
-  def unapply(req: HttpRequest) = {
+  def unapply[T](req: HttpRequest[T]) = {
     val InStream(in, _) = req
     val bos = new java.io.ByteArrayOutputStream
     val ba = new Array[Byte](4096)

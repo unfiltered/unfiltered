@@ -12,17 +12,6 @@ object Pass extends ResponseFunction {
   def apply[T](res: HttpResponse[T]) = res
 }
 
-/** Pass on the the next filter then execute `later` after */
-case class PassAndThen(later: PartialFunction[HttpRequest, ResponseFunction]) extends ResponseFunction  {
-  def apply[T](res: HttpResponse[T]) = res
-  def then[T](req: HttpRequest) = later.orElse[HttpRequest, ResponseFunction] { case _ => Pass } (req)
-}
-
-/** Companion of PassAndThen(later). Return this in plans to execute a fn later */
-object PassAndThen {
-  def after(later: PartialFunction[HttpRequest, ResponseFunction]) = PassAndThen(later)
-}
-
 trait Responder extends ResponseFunction {
   def apply[T](res: HttpResponse[T]) = {
     respond(res)

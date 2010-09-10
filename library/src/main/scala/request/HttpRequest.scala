@@ -2,7 +2,7 @@ package unfiltered.request
 
 import java.io.{Reader, InputStream}
 
-trait HttpRequest {
+abstract class HttpRequest[T](val underlying: T) {
   def getInputStream() : InputStream
   def getReader() : Reader
   def getProtocol() : String
