@@ -1,7 +1,7 @@
 package unfiltered.response
 
 case class ResponseHeader(name: String, values: Iterable[String]) extends unfiltered.response.Responder {
-  def respond(res: HttpResponse) {
+  def respond[T](res: HttpResponse[T]) {
     values.foreach { v => res.addHeader(name, v) } 
   }
 }

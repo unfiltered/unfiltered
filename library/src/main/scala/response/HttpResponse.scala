@@ -2,7 +2,8 @@ package unfiltered.response
 
 import java.io.{OutputStream, PrintWriter}
 
-trait HttpResponse {
+trait HttpResponse[T] {
+  def underlying: T
   def setContentType(contentType: String) : Unit
   def setStatus(statusCode: Int) : Unit
   def getWriter() : PrintWriter

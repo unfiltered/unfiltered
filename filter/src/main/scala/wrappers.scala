@@ -5,6 +5,8 @@ import unfiltered.request.HttpRequest
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 
 class ServletResponseWrapper(val res: HttpServletResponse) extends HttpResponse {
+  type underlyingType = HttpServletResponse
+  def underlying = res
   def setContentType(contentType: String) = res.setContentType(contentType)
   def setStatus(statusCode: Int) = res.setStatus(statusCode)
   def getWriter() = res.getWriter

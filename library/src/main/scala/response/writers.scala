@@ -3,7 +3,7 @@ package unfiltered.response
 import java.io.PrintWriter
 
 trait ResponseWriter extends Responder {
-  def respond(res: HttpResponse) {
+  def respond[T](res: HttpResponse[T]) {
     val writer = res.getWriter()
     try { write(writer) }
     finally { writer.close() }
