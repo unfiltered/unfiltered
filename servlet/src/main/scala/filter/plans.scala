@@ -3,6 +3,7 @@ package unfiltered.servlet.filter
 import javax.servlet.{Filter, FilterConfig, FilterChain, ServletRequest, ServletResponse}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import unfiltered.servlet._
+import unfiltered.request.HttpRequest
 import unfiltered.response.ResponseFunction
 
 trait InittedFilter extends Filter {
@@ -15,7 +16,7 @@ trait InittedFilter extends Filter {
 
 /** To ecapsulate a filter in a class definition */
 trait Plan extends InittedFilter {
-  def filter: PartialFunction[ServletRequest, ResponseFunction]
+  def filter: PartialFunction[HttpRequest[HttpServletRequest], ResponseFunction]
   
   def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     (request, response) match {
@@ -23,7 +24,7 @@ trait Plan extends InittedFilter {
         val request = new ServletRequestWrapper(hreq)
         val response = new ServletResponseWrapper(hres)
         (try {
-          filter(request.underlying)
+          filter(request)
         } catch {
           case m: MatchError => 
             Pass
@@ -39,8 +40,8 @@ trait Plan extends InittedFilter {
 }
 
 /** To define a filter class with an independent function */
-class Planify(val filter: PartialFunction[ServletRequest, ResponseFunction]) extends Plan
+class Planify(val filter: PartialFunction[HttpRequest[HttpServletRequest], ResponseFunction]) extends Plan
 /** To create a filter instance with an independent function */
 object Planify {
-  def apply(filter: PartialFunction[ServletRequest, ResponseFunction]) = new Planify(filter)
+  def apply(filter: PartialFunction[HttpRequest[HttpServletRequest], ResponseFunction]) = new Planify(filter)
 }

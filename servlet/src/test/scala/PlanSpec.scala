@@ -15,6 +15,7 @@ object PlanSpec extends Specification with unfiltered.spec.Served {
         println("should pass to next filter")
         Pass
       }
+      case _ => println("nonmatching first"); Pass
     }).filter(Planify {
       case GET(UFPath("/filter", _)) => ResponseString("test") ~> Ok
     }).context("/filter2") {
