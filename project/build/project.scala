@@ -23,8 +23,10 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   /** core unfiltered library */
   lazy val library = project("library", "Unfiltered",
       new UnfilteredModule(_) with IntegrationTesting {
-    lazy val servlet_api = servletApiDependency
     val codec = "commons-codec" % "commons-codec" % "1.4"
+  })
+  lazy val filter = project("filter", "Unfiltered Filter", new UnfilteredModule(_) {
+    lazy val servlet_api = servletApiDependency
   })
   /** file uploads */
   lazy val uploads = project("uploads", "Unfiltered Uploads", new UnfilteredModule(_) {
