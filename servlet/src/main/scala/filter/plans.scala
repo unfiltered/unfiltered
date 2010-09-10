@@ -21,8 +21,8 @@ trait Plan extends InittedFilter {
   def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     (request, response) match {
       case (hreq: HttpServletRequest, hres: HttpServletResponse) => 
-        val request = new ServletRequestWrapper(hreq)
-        val response = new ServletResponseWrapper(hres)
+        val request = new RequestBinding(hreq)
+        val response = new ResponseBinding(hres)
         (try {
           filter(request)
         } catch {
