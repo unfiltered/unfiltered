@@ -1,11 +1,7 @@
 package unfiltered.response
 import unfiltered.request._
 
-object ResponsePackage {
-  // make a package object when 2.7 support is dropped
-  trait ResponseFunction { def apply[T](res: HttpResponse[T]): HttpResponse[T] }
-}
-import ResponsePackage.ResponseFunction
+trait ResponseFunction { def apply[T](res: HttpResponse[T]): HttpResponse[T] }
 
 trait Responder extends ResponseFunction {
   def apply[T](res: HttpResponse[T]) = {

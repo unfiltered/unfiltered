@@ -1,8 +1,8 @@
-package unfiltered.servlet
+package unfiltered.servlet.filter
 
+import unfiltered.servlet._
 import unfiltered.request._
 import unfiltered.response._
-import ResponsePackage.ResponseFunction
 
 /** Pass on to the next servlet filter */
 object Pass extends ResponseFunction {

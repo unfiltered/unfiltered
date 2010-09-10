@@ -1,6 +1,6 @@
 package unfiltered.request
 
-import unfiltered.response.ResponsePackage.ResponseFunction
+import unfiltered.response.ResponseFunction
 
 /** Basic parameter acess, and a pattern matching extractor in Extract. */
 object Params {

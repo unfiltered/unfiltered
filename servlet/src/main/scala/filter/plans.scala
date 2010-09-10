@@ -1,9 +1,9 @@
-package unfiltered.servlet
+package unfiltered.servlet.filter
 
 import javax.servlet.{Filter, FilterConfig, FilterChain, ServletRequest, ServletResponse}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import unfiltered.response.ResponsePackage
-import ResponsePackage.ResponseFunction
+import unfiltered.servlet._
+import unfiltered.response.ResponseFunction
 
 trait InittedFilter extends Filter {
   private var config_var: FilterConfig = _
