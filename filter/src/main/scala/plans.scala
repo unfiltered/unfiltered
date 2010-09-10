@@ -1,4 +1,4 @@
-package unfiltered
+package unfiltered.servlet
 
 import javax.servlet.{Filter, FilterConfig, FilterChain, ServletRequest, ServletResponse}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
@@ -19,17 +19,19 @@ trait Plan extends InittedFilter {
   
   def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     (request, response) match {
-      case (request: HttpServletRequest, response: HttpServletResponse) => 
+      case (hreq: HttpServletRequest, hres: HttpServletResponse) => 
+        val request = new ServletRequestWrapper(hreq)
+        val response = new ServletResponseWrapper(hres)
         (try {
-          filter(request)
+          filter(request.underlying)
         } catch {
           case m: MatchError => 
             Pass
         }) match {
           case after: PassAndThen =>
-            chain.doFilter(request, response)
+            chain.doFilter(request.underlying, response.underlying)
             after.then(request)(response)
-          case Pass => chain.doFilter(request, response)
+          case Pass => chain.doFilter(request.underlying, response.underlying)
           case response_function => response_function(response) 
         }
      }

@@ -4,9 +4,7 @@ import unfiltered.response.HttpResponse
 import unfiltered.request.HttpRequest
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 
-class ServletResponseWrapper(val res: HttpServletResponse) extends HttpResponse {
-  type underlyingType = HttpServletResponse
-  def underlying = res
+class ServletResponseWrapper(res: HttpServletResponse) extends HttpResponse(res) {
   def setContentType(contentType: String) = res.setContentType(contentType)
   def setStatus(statusCode: Int) = res.setStatus(statusCode)
   def getWriter() = res.getWriter
@@ -15,14 +13,14 @@ class ServletResponseWrapper(val res: HttpServletResponse) extends HttpResponse 
   def addHeader(name: String, value: String) = res.addHeader(name, value)
 }
 
-class ServletRequestWrapper(val req: HttpServletRequest) extends HttpRequest {
-  def getInputStream() = req.getInputStream
-  def getReader() = req.getReader
-  def getProtocol() = req.getProtocol
-  def getMethod() = req.getMethod
-  def getRequestURI() = req.getRequestURI
-  def getContextPath() = req.getContextPath
-  def getParameterNames() = req.getParameterNames.asInstanceOf[java.util.Enumeration[String]]
-  def getParameterValues(param: String) = req.getParameterValues(param)
-  def getHeaders(name: String) = req.getHeaders(name).asInstanceOf[java.util.Enumeration[String]]
+class ServletRequestWrapper(val underlying: HttpServletRequest) extends HttpRequest {
+  def getInputStream() = underlying.getInputStream
+  def getReader() = underlying.getReader
+  def getProtocol() = underlying.getProtocol
+  def getMethod() = underlying.getMethod
+  def getRequestURI() = underlying.getRequestURI
+  def getContextPath() = underlying.getContextPath
+  def getParameterNames() = underlying.getParameterNames.asInstanceOf[java.util.Enumeration[String]]
+  def getParameterValues(param: String) = underlying.getParameterValues(param)
+  def getHeaders(name: String) = underlying.getHeaders(name).asInstanceOf[java.util.Enumeration[String]]
 }
