@@ -4,6 +4,11 @@ import unfiltered.request._
 import unfiltered.response._
 import ResponsePackage.ResponseFunction
 
+/** Pass on to the next servlet filter */
+object Pass extends ResponseFunction {
+  def apply[T](res: HttpResponse[T]) = res
+}
+
 /** Pass on the the next filter then execute `later` after */
 case class PassAndThen(later: PartialFunction[ServletRequestWrapper, ResponseFunction]) extends ResponseFunction  {
   def apply[T](res: HttpResponse[T]) = res

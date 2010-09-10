@@ -2,7 +2,7 @@ package unfiltered.servlet
 
 import javax.servlet.{Filter, FilterConfig, FilterChain, ServletRequest, ServletResponse}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import unfiltered.response.{ResponsePackage, Pass}
+import unfiltered.response.ResponsePackage
 import ResponsePackage.ResponseFunction
 
 trait InittedFilter extends Filter {

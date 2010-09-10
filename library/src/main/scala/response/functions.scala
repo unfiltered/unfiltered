@@ -7,11 +7,6 @@ object ResponsePackage {
 }
 import ResponsePackage.ResponseFunction
 
-/** Pass on to the next servlet filter */
-object Pass extends ResponseFunction {
-  def apply[T](res: HttpResponse[T]) = res
-}
-
 trait Responder extends ResponseFunction {
   def apply[T](res: HttpResponse[T]) = {
     respond(res)
