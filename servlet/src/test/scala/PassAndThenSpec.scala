@@ -6,10 +6,11 @@ object PassAndThenSpec extends Specification with unfiltered.spec.Served {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
+  import unfiltered.servlet.filter._
   
   import dispatch._
   
-  class Around extends unfiltered.Planify({
+  class Around extends Planify({
     case GET(UFPath("/h", _)) => PassAndThen after {
       case _ => new HeaderName("x-test")("passed")
     }
@@ -18,7 +19,7 @@ object PassAndThenSpec extends Specification with unfiltered.spec.Served {
     }
   })
   
-  class TestPlan extends unfiltered.Planify({
+  class TestPlan extends Planify({
     case GET(UFPath("/h", _)) => JsonContent ~> ResponseString("""[{"msg":"howdy partner"}]""")
     case GET(UFPath("/b", _)) => JsonContent
   })

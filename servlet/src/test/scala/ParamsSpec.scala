@@ -12,7 +12,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
   /** Used for extract test */
   object Number extends Params.Extract("number", Params.first ~> Params.int)
 
-  class TestPlan extends unfiltered.Planify({
+  class TestPlan extends unfiltered.servlet.filter.Planify({
     case UFPath("/basic", Params(params, _)) => params("foo") match {
       case Seq(foo) => ResponseString("foo is %s" format foo)
       case _ =>  ResponseString("what's foo?")

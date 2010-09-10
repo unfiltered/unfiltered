@@ -6,18 +6,19 @@ object PlanSpec extends Specification with unfiltered.spec.Served {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
+  import unfiltered.servlet.filter._
   
   import dispatch._
   
-  def setup = { _.filter(unfiltered.Planify {
+  def setup = { _.filter(Planify {
       case GET(UFPath("/filter", _)) => {
         println("should pass to next filter")
         Pass
       }
-    }).filter(unfiltered.Planify {
+    }).filter(Planify {
       case GET(UFPath("/filter", _)) => ResponseString("test") ~> Ok
     }).context("/filter2") {
-      _.filter(unfiltered.Planify {
+      _.filter(Planify {
         case GET(UFPath("/test2", _)) => ResponseString("test2") ~> Ok
       })
     }

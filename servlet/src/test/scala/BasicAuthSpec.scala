@@ -9,7 +9,7 @@ object BasicAuthSpec extends Specification  with unfiltered.spec.Served {
   
   import dispatch._
   
-  class TestPlan extends unfiltered.Planify({
+  class TestPlan extends unfiltered.servlet.filter.Planify({
     case GET(UFPath("/secret", BasicAuth(creds, _))) => creds match {
       case ("test", "secret") => ResponseString("pass")
       case _ => ResponseString("fail")
