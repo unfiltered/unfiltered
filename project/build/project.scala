@@ -63,7 +63,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
 
   def servletApiDependency = "javax.servlet" % "servlet-api" % "2.3" % "provided"
 
-  lazy val scalateDemo = project("demo-scalate", "Unfiltered Scalate Demo", new UnfilteredModule(_) with Only28{
+  lazy val scalateDemo = project("demo-scalate", "Unfiltered Scalate Demo", new UnfilteredModule(_) with Only28 with Demo {
     val slf4j = "org.slf4j" % "slf4j-simple" % "1.6.0"
   }, server, scalate)
 
