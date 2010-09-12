@@ -22,7 +22,7 @@ trait Rendering {
 
 object Demo extends Rendering
 
-class PlannedDemo extends unfiltered.Planify ({
+class PlannedDemo extends unfiltered.servlet.filter.Planify ({
   case GET(Path("/", req)) => Status(201) ~> ContentType("text/plain") ~> ResponseString("hello world")
   case GET(Path(AId(id), req)) => Demo.render(id)
   case GET(Path(Seg("b" :: Id(id) :: Nil), req)) => Demo.render(id.toString)
@@ -46,7 +46,7 @@ class PlannedDemo extends unfiltered.Planify ({
   )
 })
 
-class PlanDemo extends unfiltered.Plan with Rendering {
+class PlanDemo extends unfiltered.servlet.filter.Plan with Rendering {
   def filter = {
     case GET(Path(Seg(what :: Nil), req)) => render(what)
   }

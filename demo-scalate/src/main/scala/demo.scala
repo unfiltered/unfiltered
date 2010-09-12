@@ -33,7 +33,7 @@ object MyEngine{
 
 case class User(username: String, firstName: String, lastName: String, age: Int)
 
-class PlanDemo extends unfiltered.Plan {
+class PlanDemo extends unfiltered.servlet.filter.Plan {
   def filter = {
     case GET(Path("/", req)) =>
       /*

@@ -2,12 +2,11 @@ package unfiltered.request
 
 /** Extractor for json request bodies. Complement to dispatch.json._ */
 object JsonBody {
-  import javax.servlet.http.{HttpServletRequest => Req}
   import net.liftweb.json.JsonParser._
   implicit val formats = net.liftweb.json.DefaultFormats
   
   /** @return Some(JsValue, req) if request accepts json and contains a valid json body. */
-  def unapply(r: Req) = r match {
+  def unapply[T](r: HttpRequest[T]) = r match {
     case Accepts.Json(Bytes(body, _)) =>
       try { Some(parse(new String(body)), r) } catch { case _ => None }
     case _ => None
@@ -16,8 +15,6 @@ object JsonBody {
 
 /** jsonp extractor(s). Useful for extracting a callback out of a request */
 object Jsonp {
-  import javax.servlet.http.{HttpServletRequest => Req}
-
   object Callback extends Params.Extract("callback", Params.first)
   
   trait Wrapper {
@@ -35,7 +32,7 @@ object Jsonp {
   /** @return if request accepts json, (callbackwrapper, req) tuple if a callback param
       is provided else (emptywrapper, req) tuple is no callback param is provided */
   object Optional {
-    def unapply(r: Req) = r match {
+    def unapply[T](r: HttpRequest[T]) = r match {
       case Accepts.Json(Params(p, req)) => Some(p match {
         case Callback(cb, _) => new CallbackWrapper(cb)
         case _ => EmptyWrapper
@@ -46,7 +43,7 @@ object Jsonp {
   
   /** @return (callbackwrapper, req) tuple if request accepts json and a callback 
       param is provided  */
-  def unapply(r: Req) = r match {
+  def unapply[T](r: HttpRequest[T]) = r match {
     case Accepts.Json(Params(Callback(cb, _), _)) => Some(new CallbackWrapper(cb), r)
     case _ => None
   }
