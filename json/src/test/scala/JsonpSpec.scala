@@ -9,7 +9,7 @@ object JsonpSpec extends Specification  with unfiltered.spec.Served {
   
   import dispatch._
 
-  class TestPlan extends unfiltered.Planify({
+  class TestPlan extends unfiltered.servlet.filter.Planify({
     case GET(UFPath("/jsonp/with-callback", Jsonp(cb, _))) => ResponseString(cb.wrap("[42]"))
     case GET(UFPath("/jsonp/with-optional-callback", Jsonp.Optional(cb, _))) => ResponseString(cb.wrap("[42]"))
     case _ => ResponseString("bad req")

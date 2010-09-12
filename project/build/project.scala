@@ -8,13 +8,13 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     override def packageToPublishActions = super.packageToPublishActions ++ Seq(packageSrc)
   }
 
-  /** Allows Unfiltered modules to test themselves using the last released version of the
-   *  server and specs helper, working around the cyclical dependency. */
-  trait IntegrationTesting extends BasicDependencyProject {
-    val lastRelease = "0.1.3"
-    /** Must be intransitive to block dependency on uf library */
-    lazy val ufSpec = "net.databinder" %% "unfiltered-spec" % lastRelease % "test" intransitive()
-    lazy val ufServ = "net.databinder" %% "unfiltered-server" % lastRelease % "test" intransitive()
+  /** Allows Unfiltered modules to test themselves using other modules */
+  trait IntegrationTesting extends DefaultProject {
+    override def testClasspath = (super.testClasspath /: (spec :: server :: servlet :: Nil)) {
+      _ +++ _.projectClasspath(Configurations.Compile)
+    }
+    override def testCompileAction = super.testCompileAction dependsOn 
+      (spec.compile, server.compile, servlet.compile)
     lazy val specs = specsDependency % "test"
     lazy val dispatch = dispatchDependency % "test"
     lazy val jetty7 = jettyDependency % "test"
@@ -25,11 +25,11 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
       new UnfilteredModule(_) with IntegrationTesting {
     val codec = "commons-codec" % "commons-codec" % "1.4"
   })
-  lazy val servlet = project("servlet", "Unfiltered Servlet", new UnfilteredModule(_) {
+  lazy val servlet = project("servlet", "Unfiltered Servlet", new UnfilteredModule(_) with IntegrationTesting {
     lazy val servlet_api = servletApiDependency
   }, library)
   /** file uploads */
-  lazy val uploads = project("uploads", "Unfiltered Uploads", new UnfilteredModule(_) {
+  lazy val uploads = project("uploads", "Unfiltered Uploads", new UnfilteredModule(_) with IntegrationTesting{
     lazy val servlet_api = servletApiDependency
     val io = "commons-io" % "commons-io" % "1.4"
     val fileupload = "commons-fileupload" % "commons-fileupload" % "1.2.1"
