@@ -1,10 +1,10 @@
-package unfiltered.servlet
+package unfiltered.filter
 
 import unfiltered.response.HttpResponse
 import unfiltered.request.HttpRequest
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 
-class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
+private [filter] class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   def getInputStream() = req.getInputStream
   def getReader() = req.getReader
   def getProtocol() = req.getProtocol
@@ -16,7 +16,7 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   def getHeaders(name: String) = req.getHeaders(name).asInstanceOf[java.util.Enumeration[String]]
 }
 
-class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
+private [filter] class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
   def setContentType(contentType: String) = res.setContentType(contentType)
   def setStatus(statusCode: Int) = res.setStatus(statusCode)
   def getWriter() = res.getWriter

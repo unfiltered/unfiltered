@@ -1,8 +1,8 @@
-package unfiltered.servlet.filter
+package unfiltered.filter
 
 import javax.servlet.{Filter, FilterConfig, FilterChain, ServletRequest, ServletResponse}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import unfiltered.servlet._
+import unfiltered.filter._
 import unfiltered.request.HttpRequest
 import unfiltered.response.ResponseFunction
 

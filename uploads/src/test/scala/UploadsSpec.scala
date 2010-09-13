@@ -15,7 +15,7 @@ object UploadsSpec extends Specification with unfiltered.spec.Served {
   import scala.io.Source
   import java.io.{File => JFile}
  
-  class TestPlan extends unfiltered.servlet.filter.Planify({
+  class TestPlan extends unfiltered.filter.Planify({
     case POST(UFPath("/disk-upload", MultiPartParams.Disk(params, files, _))) => files("f") match { 
       case Seq(f, _*) => ResponseString("disk read file f named %s with content type %s" format(f.name, f.contentType))
       case f =>  ResponseString("what's f?")

@@ -6,7 +6,7 @@ object PassAndThenSpec extends Specification with unfiltered.spec.Served {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
-  import unfiltered.servlet.filter._
+  import unfiltered.filter._
   
   import dispatch._
   

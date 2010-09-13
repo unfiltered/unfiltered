@@ -9,7 +9,7 @@ object AcceptSpec extends Specification  with unfiltered.spec.Served {
   
   import dispatch._
 
-  class TestPlan extends unfiltered.servlet.filter.Planify({
+  class TestPlan extends unfiltered.filter.Planify({
     case GET(UFPath(Seg(ext :: Nil), Accepts.Json(_))) => ResponseString("json")
     case GET(UFPath(Seg(ext :: Nil), Accepts.Xml(_))) => ResponseString("xml")
     case GET(UFPath(Seg(ext :: Nil), Accepts.Csv(_))) => ResponseString("csv")

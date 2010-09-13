@@ -11,11 +11,11 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   /** Allows Unfiltered modules to test themselves using other modules */
   trait IntegrationTesting extends DefaultProject {
     // add to test classpath manually since we don't want to actually depend on these modules
-    override def testClasspath = (super.testClasspath /: (spec :: server :: servlet :: Nil)) {
+    override def testClasspath = (super.testClasspath /: (spec :: jetty :: filter_p :: Nil)) {
       _ +++ _.projectClasspath(Configurations.Compile)
     }
     override def testCompileAction = super.testCompileAction dependsOn 
-      (spec.compile, server.compile, servlet.compile)
+      (spec.compile, jetty.compile, filter_p.compile)
     lazy val specs = specsDependency % "test"
     lazy val dispatch = dispatchDependency % "test"
     lazy val jetty7 = jettyDependency % "test"
@@ -26,24 +26,24 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
       new UnfilteredModule(_) with IntegrationTesting {
     val codec = "commons-codec" % "commons-codec" % "1.4"
   })
-  lazy val servlet = project("servlet", "Unfiltered Servlet", new UnfilteredModule(_) with IntegrationTesting {
-    lazy val servlet_api = servletApiDependency
+  lazy val filter_p = project("filter", "Unfiltered Filter", new UnfilteredModule(_) with IntegrationTesting {
+    lazy val filter = servletApiDependency
   }, library)
   /** file uploads */
   lazy val uploads = project("uploads", "Unfiltered Uploads", new UnfilteredModule(_) with IntegrationTesting{
-    lazy val servlet_api = servletApiDependency
+    lazy val filter = servletApiDependency
     val io = "commons-io" % "commons-io" % "1.4"
     val fileupload = "commons-fileupload" % "commons-fileupload" % "1.2.1"
-  }, servlet)
+  }, filter_p)
   val jetty_version = "7.0.2.v20100331"
   /** embedded server*/
-  lazy val server = project("server", "Unfiltered Server", new UnfilteredModule(_) {
+  lazy val jetty = project("jetty", "Unfiltered Jetty", new UnfilteredModule(_) {
     val jetty7 = jettyDependency
-  }, servlet)
+  }, filter_p)
   /** AJP protocol server */
-  lazy val ajp_server = project("ajp-server", "Unfiltered AJP Server", new UnfilteredModule(_) {
+  lazy val jetty_ajp = project("jetty-ajp", "Unfiltered Jetty AJP", new UnfilteredModule(_) {
     val jetty7 = "org.eclipse.jetty" % "jetty-ajp" % jetty_version
-  }, server)
+  }, jetty)
 
   /** Marker for demos that should not be published */
   trait Demo
@@ -51,13 +51,13 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   trait Only28
 
   /** demo project */
-  lazy val demo = project("demo", "Unfiltered Demo", new UnfilteredModule(_) with Demo, server)
+  lazy val demo = project("demo", "Unfiltered Demo", new UnfilteredModule(_) with Demo, jetty)
 
   /** specs  helper */
   lazy val spec = project("spec", "Unfiltered Spec", new DefaultProject(_) with sxr.Publish {
     lazy val specs = specsDependency
     lazy val dispatch = dispatchDependency
-  }, server)
+  }, jetty)
   /** json extractors */
   lazy val json = project("json", "Unfiltered Json", 
       new UnfilteredModule(_) with IntegrationTesting {
@@ -68,7 +68,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
 
   lazy val scalateDemo = project("demo-scalate", "Unfiltered Scalate Demo", new UnfilteredModule(_) with Only28 with Demo {
     val slf4j = "org.slf4j" % "slf4j-simple" % "1.6.0"
-  }, server, scalate)
+  }, jetty, scalate)
 
   lazy val scalate = project("scalate", "Unfiltered Scalate", 
       new UnfilteredModule(_) with Only28 with IntegrationTesting {

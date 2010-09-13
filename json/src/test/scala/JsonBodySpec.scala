@@ -9,7 +9,7 @@ object JsonBodySpec extends Specification  with unfiltered.spec.Served {
   
   import dispatch._
 
-  class TestPlan extends unfiltered.servlet.filter.Planify({
+  class TestPlan extends unfiltered.filter.Planify({
     case POST(UFPath("/", JsonBody(js, _))) => ResponseString(js match {
       case  net.liftweb.json.JsonAST.JArray(a :: b :: Nil) => "array of 2"
       case _ => "expected json array of 2"

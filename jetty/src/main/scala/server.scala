@@ -1,4 +1,4 @@
-package unfiltered.server
+package unfiltered.jetty
 
 import org.eclipse.jetty.server.{Server => JettyServer, Connector, Handler}
 import org.eclipse.jetty.server.handler.{ContextHandlerCollection, ResourceHandler}

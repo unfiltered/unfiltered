@@ -6,7 +6,7 @@ import dispatch._
 trait Served extends Specification {
   shareVariables()
 
-  import unfiltered.server._
+  import unfiltered.jetty._
   def setup: (Server => Server)
   val port = 9090
   lazy val server = setup(new Http(port))
