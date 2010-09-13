@@ -10,6 +10,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
 
   /** Allows Unfiltered modules to test themselves using other modules */
   trait IntegrationTesting extends DefaultProject {
+    // add to test classpath manually since we don't want to actually depend on these modules
     override def testClasspath = (super.testClasspath /: (spec :: server :: servlet :: Nil)) {
       _ +++ _.projectClasspath(Configurations.Compile)
     }
