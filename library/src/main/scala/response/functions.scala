@@ -17,5 +17,5 @@ trait Responder extends ResponseFunction { self =>
 }
 
 class ChainResponse(f: ResponseFunction) extends Responder {
-  def respond[T](res: HttpResponse[T]) = f(res)
+  def respond[T](res: HttpResponse[T]) { f(res) }
 }
