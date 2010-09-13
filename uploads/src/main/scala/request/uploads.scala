@@ -72,9 +72,9 @@ object MultiPartParams {
       @note the seq returned by keys will only return the `first` named value. This is a limitation
       on apache commons file upload streaming interface. To read from the stream iterator,
       you must read before #next is called or the stream read will fail. */
-    def unapply(req: HttpServletRequest) =
-      if (ServletFileUpload.isMultipartContent(req)) {
-        def items = new ServletFileUpload().getItemIterator(req).asInstanceOf[FileItemIterator]
+    def unapply(req: HttpRequest[HttpServletRequest]) =
+      if (ServletFileUpload.isMultipartContent(req.underlying)) {
+        def items = new ServletFileUpload().getItemIterator(req.underlying).asInstanceOf[FileItemIterator]
         /** attempt to extract the first named param from the stream */
         def extractParam(name: String): Seq[String] = {
            items.find(f => f.getFieldName == name && f.isFormField) match {
@@ -90,7 +90,7 @@ object MultiPartParams {
            }
         }
        
-        Some((extractParam)_, (extractFile)_, req)
+        Some((extractParam)_, (extractFile)_, req.underlying)
       } else None
     
     def withStreamedFile[T](fstm: FileItemStream)(f: java.io.InputStream => T): T = {
@@ -190,14 +190,16 @@ object MultiPartParams {
       The Map is assigned a default value of Nil, so param("p") would return Nil if there
       is no such parameter, or (as normal for servlets) a single empty string if the
       parameter was supplied without a value. */
-    def unapply(req: HttpServletRequest) =
-      if (ServletFileUpload.isMultipartContent(req)) {
-        val items =  new ServletFileUpload(factory(memLimit, tempDir)).parseRequest(req).iterator.asInstanceOf[JIterator[ACFileItem]]
+    def unapply(req: HttpRequest[HttpServletRequest]) =
+      if (ServletFileUpload.isMultipartContent(req.underlying)) {
+        val items =  new ServletFileUpload(factory(memLimit, tempDir)).parseRequest(
+          req.underlying
+        ).iterator.asInstanceOf[JIterator[ACFileItem]]
         val (params, files) = genTuple[String, DiskFileWrapper, ACFileItem](items) ((maps, item) =>
           if(item.isFormField) (maps._1 + (item.getFieldName -> (item.getString :: maps._1(item.getFieldName))), maps._2)
           else (maps._1, maps._2 + (item.getFieldName -> (new DiskFileWrapper(item) :: maps._2(item.getFieldName))))
         )
-        Some(params, files, req)
+        Some(params, files, req.underlying)
       } else None
   }
   
