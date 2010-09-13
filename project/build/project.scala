@@ -44,6 +44,10 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   lazy val jetty_ajp = project("jetty-ajp", "Unfiltered Jetty AJP", new UnfilteredModule(_) {
     val jetty7 = "org.eclipse.jetty" % "jetty-ajp" % jetty_version
   }, jetty)
+  
+  lazy val netty = project("netty", "Unfiltered Netty", new UnfilteredModule(_) {
+  	val netty = "org.jboss.netty" % "netty" % "3.2.1.Final" withSources()
+  }, library)
 
   /** Marker for demos that should not be published */
   trait Demo
