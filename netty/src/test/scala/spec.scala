@@ -5,7 +5,7 @@ import org.jboss.netty.buffer.ChannelBuffers
 import scala.collection.JavaConversions._
 import org.jboss.netty.handler.codec.http._
 
-class BindingsSpec extends Specification {
+class RequestSpec extends Specification {
 
   val payload = "This is the request payload"
   val nettyReq = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/seg1/seg2?param1=value%201&param2=value%202&param2=value%202%20again")
@@ -41,8 +41,16 @@ class BindingsSpec extends Specification {
       // Also tests inputstream
       req.getReader.readLine must_== payload
     }
+    "return the request URI without params" in {
+      req.getRequestURI must_== "/seg1/seg2"
+    }
+    "be able to get the Path extracted correctly" in {
+      unfiltered.request.Path.unapply(req) must_== Some(Path("/seg1/seg2"))
+    }
   }
+}
 
+class ResponseSpec extends Specification {
   val nettyResp = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)
   val resp = new ResponseBinding(nettyResp)
 

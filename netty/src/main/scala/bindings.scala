@@ -31,8 +31,8 @@ private [netty] class RequestBinding(req: DefaultHttpRequest) extends HttpReques
   }
   def getMethod() = req.getMethod.toString
 
-  def getRequestURI() = req.getUri
-  def getContextPath() = "/" // No contexts here
+  def getRequestURI() = req.getUri.split('?').head
+  def getContextPath() = "" // No contexts here
 
   def getParameterNames() = params.keysIterator
   def getParameterValues(param: String) = params.getOrElse(param, null)
