@@ -53,6 +53,7 @@ class RequestSpec extends Specification {
 class ResponseSpec extends Specification {
   val nettyResp = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)
   val resp = new ResponseBinding(nettyResp)
+  val payload = "This is the request payload"
 
   "Response binding" should {
     "return a working outputstream" in {
