@@ -44,9 +44,6 @@ class RequestSpec extends Specification {
     "return the request URI without params" in {
       req.getRequestURI must_== "/seg1/seg2"
     }
-    "be able to get the Path extracted correctly" in {
-      unfiltered.request.Path.unapply(req) must_== Some(Path("/seg1/seg2"))
-    }
   }
 }
 

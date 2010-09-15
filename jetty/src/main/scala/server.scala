@@ -1,5 +1,7 @@
 package unfiltered.jetty
 
+import unfiltered.filter.ServletFilterPlan
+import unfiltered.plan._
 import org.eclipse.jetty.server.{Server => JettyServer, Connector, Handler}
 import org.eclipse.jetty.server.handler.{ContextHandlerCollection, ResourceHandler}
 import org.eclipse.jetty.servlet.{FilterHolder, FilterMapping, ServletContextHandler}
@@ -18,10 +20,16 @@ trait ContextBuilder {
     current.addFilter(new FilterHolder(filt), "/*", FilterMapping.DEFAULT)
     this
   }
+  def filter(plan: Plan) : this.type = {
+    filter(new ServletFilterPlan(plan))
+    this
+  }
+
   def resources(path: java.net.URL): this.type = {
     current.setBaseResource(Resource.newResource(path))
     this
   }
+
 }
 
 trait Server extends ContextBuilder {
