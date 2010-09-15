@@ -46,7 +46,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   }, jetty)
   
   lazy val netty = project("netty", "Unfiltered Netty", new UnfilteredModule(_) {
-  	val netty = "org.jboss.netty" % "netty" % "3.2.1.Final" withSources()
+    val netty = "org.jboss.netty" % "netty" % "3.2.1.Final" withSources()
   }, library)
 
   /** Marker for demos that should not be published */
@@ -99,6 +99,8 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   }
 
   override def postTitle(vers: String) = "Unfiltered %s" format vers
+
+  lazy val jboss = "JBoss repository" at "http://repository.jboss.org/nexus/content/groups/public"
 
   override def managedStyle = ManagedStyle.Maven
   val publishTo = "Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"
