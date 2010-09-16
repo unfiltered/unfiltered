@@ -2,6 +2,7 @@ package unfiltered.jetty
 
 import unfiltered.filter.ServletFilterPlan
 import unfiltered.plan._
+import javax.servlet.http.HttpServletRequest
 import org.eclipse.jetty.server.{Server => JettyServer, Connector, Handler}
 import org.eclipse.jetty.server.handler.{ContextHandlerCollection, ResourceHandler}
 import org.eclipse.jetty.servlet.{FilterHolder, FilterMapping, ServletContextHandler}
@@ -20,7 +21,7 @@ trait ContextBuilder {
     current.addFilter(new FilterHolder(filt), "/*", FilterMapping.DEFAULT)
     this
   }
-  def filter(plan: Plan) : this.type = {
+  def filter(plan: Plan[HttpServletRequest]) : this.type = {
     filter(new ServletFilterPlan(plan))
     this
   }
