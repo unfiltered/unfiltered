@@ -17,7 +17,7 @@ trait InittedFilter extends Filter {
 /**
  * Servlet filter that wraps a plan and adheres to standard filter chain behaviour.
  */
-class ServletFilterPlan(val plan: Plan) extends InittedFilter {
+class ServletFilterPlan(val plan: Plan[HttpServletRequest]) extends InittedFilter {
   val filter = plan.filter
   def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     (request, response) match {
