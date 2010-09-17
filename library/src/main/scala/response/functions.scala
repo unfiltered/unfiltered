@@ -19,3 +19,8 @@ trait Responder extends ResponseFunction { self =>
 class ChainResponse(f: ResponseFunction) extends Responder {
   def respond[T](res: HttpResponse[T]) { f(res) }
 }
+
+/** Tells the binding implentation to treat the request as non-matching */
+object Pass extends ResponseFunction {
+  def apply[T](res: HttpResponse[T]) = res
+}

@@ -1,6 +1,7 @@
 package unfiltered.netty
 
-import _root_.unfiltered.response.{NotFound, ResponseFunction}
+import unfiltered.PassingIntent
+import _root_.unfiltered.response.{NotFound, ResponseFunction, Pass}
 import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.http.HttpResponseStatus._
 import org.jboss.netty.handler.codec.http.HttpVersion._
@@ -11,7 +12,7 @@ import org.jboss.netty.handler.codec.http.{DefaultHttpRequest, DefaultHttpRespon
  * ChannelHandler which responds via Unfiltered functions.
  * 
  */
-abstract class UnfilteredChannelHandler extends SimpleChannelUpstreamHandler {
+abstract class UnfilteredChannelHandler extends SimpleChannelUpstreamHandler with PassingIntent[DefaultHttpRequest] {
 
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
 
@@ -28,10 +29,9 @@ abstract class UnfilteredChannelHandler extends SimpleChannelUpstreamHandler {
     val requestBinding = new RequestBinding(request)
     val responseBinding = new ResponseBinding(response)
 
-    try {
-      filter(requestBinding).apply(responseBinding)
-    } catch {
-      case m: MatchError => NotFound.apply(responseBinding)
+    attempt(requestBinding) match {
+      case Pass => NotFound(responseBinding)
+      case response_function => response_function(responseBinding)
     }
 
     responseBinding.getOutputStream.close
@@ -52,8 +52,5 @@ abstract class UnfilteredChannelHandler extends SimpleChannelUpstreamHandler {
 
   override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
   }
-
-
-  def filter: PartialFunction[HttpRequest[DefaultHttpRequest], ResponseFunction]
 
 }
