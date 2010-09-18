@@ -152,5 +152,5 @@ object QParams {
   def even[E](e: Int => E) = watch(Params.even, e)
   def odd[E](e: Int => E) = watch(Params.odd, e)
   def trimmed[E] = ignore[E,String](Params.trimmed)
-  def nonempty[E](e: String => E) = watch(Params.nonempty, e)
+  def nonempty[E](e: E) = watch(Params.nonempty, (s: String) => e)
 }
