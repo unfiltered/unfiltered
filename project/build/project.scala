@@ -39,7 +39,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   /** embedded server*/
   lazy val jetty = project("jetty", "Unfiltered Jetty", new UnfilteredModule(_) {
     val jetty7 = jettyDependency
-  }, filter_p)
+  })
   /** AJP protocol server */
   lazy val jetty_ajp = project("jetty-ajp", "Unfiltered Jetty AJP", new UnfilteredModule(_) {
     val jetty7 = "org.eclipse.jetty" % "jetty-ajp" % jetty_version
