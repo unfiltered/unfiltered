@@ -11,9 +11,9 @@ object Params {
    * is no such parameter, or (as normal for servlets) a single empty string if the
    * parameter was supplied without a value. */
   def unapply[T](req: HttpRequest[T]) = {
-    val names = req.getParameterNames
+    val names = req.parameterNames
     Some(((Map.empty[String, Seq[String]] /: names) ((m, n) =>
-        m + (n -> req.getParameterValues(n))
+        m + (n -> req.parameterValues(n))
       )).withDefaultValue(Nil), req)
   }
 

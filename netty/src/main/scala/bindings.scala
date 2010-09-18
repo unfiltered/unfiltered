@@ -14,32 +14,28 @@ object HttpConfig {
 
 private [netty] class RequestBinding(req: DefaultHttpRequest) extends HttpRequest(req) {
 
-  private lazy val params = URLParser.parse(req.getUri)
+  lazy val params = URLParser.parse(req.getUri)
 
-  private lazy val inputStream = new ChannelBufferInputStream(req.getContent)
-  private lazy val reader = {
+  lazy val inputStream = new ChannelBufferInputStream(req.getContent)
+  lazy val reader = {
     val encoding = HttpConfig.DEFAULT_CHARSET // TODO: Parse content-type
     new BufferedReader(new InputStreamReader(inputStream))
   }
 
 
-  def getProtocol() = req.getProtocolVersion match {
+  def protocol = req.getProtocolVersion match {
     case HttpVersion.HTTP_1_0 => "HTTP/1.0"
     case HttpVersion.HTTP_1_1 => "HTTP/1.1"
   }
-  def getMethod() = req.getMethod.toString
+  def method = req.getMethod.toString
 
-  def getRequestURI = req.getUri.split('?').first
-  def getContextPath = "" // No contexts here
+  def requestURI = req.getUri.split('?').first
+  def contextPath = "" // No contexts here
 
-  lazy val getParameterNames = params.keySet.elements
-  def getParameterValues(param: String) = params(param).reverse
+  lazy val parameterNames = params.keySet.elements
+  def parameterValues(param: String) = params(param).reverse
 
-  def getHeaders(name: String) = new JIteratorIterator(req.getHeaders(name).iterator)
-
-  def getInputStream = inputStream
-  def getReader = reader
-
+  def headers(name: String) = new JIteratorIterator(req.getHeaders(name).iterator)
 }
 
 private [netty] class ResponseBinding(res: DefaultHttpResponse) extends HttpResponse(res) {

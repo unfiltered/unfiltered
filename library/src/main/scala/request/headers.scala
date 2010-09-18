@@ -9,7 +9,7 @@ class RequestHeader(val name: String) {
     def headers(e: Iterator[String]): List[String] =
       List.fromIterator(e).flatMap(split)
     
-    headers(req.getHeaders(name)) match {
+    headers(req.headers(name)) match {
       case Nil => None
       case hs => Some(hs, req)
     }

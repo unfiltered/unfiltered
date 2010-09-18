@@ -3,13 +3,13 @@ package unfiltered.request
 import java.io.{Reader, InputStream}
 
 abstract class HttpRequest[T](val underlying: T) {
-  def getInputStream() : InputStream
-  def getReader() : Reader
-  def getProtocol() : String
-  def getMethod() : String
-  def getRequestURI(): String
-  def getContextPath() : String
-  def getParameterNames() : Iterator[String]
-  def getParameterValues(param: String) : Seq[String]
-  def getHeaders(name: String) : Iterator[String]
+  def inputStream: InputStream
+  def reader: Reader
+  def protocol: String
+  def method: String
+  def requestURI: String
+  def contextPath: String
+  def parameterNames: Iterator[String]
+  def parameterValues(param: String) : Seq[String]
+  def headers(name: String) : Iterator[String]
 }
