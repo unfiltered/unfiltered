@@ -47,7 +47,8 @@ class RequestSpec extends Specification {
 <<<<<<< HEAD
 =======
     "be able to get the Path extracted correctly" in {
-      unfiltered.request.Path.unapply(req) must_== Some(Path("/seg1/seg2"))
+      val unfiltered.request.Path(path, _) = req
+      path must_== "/seg1/seg2"
     }
 >>>>>>> dc3ee5942558c7979522a04b82ec828057e843fb
   }

@@ -1,12 +1,13 @@
 package unfiltered.netty
 
-import unfiltered.request.HttpRequest
-import unfiltered.response.ResponseFunction
+import unfiltered.Unfiltered.Intent
 import org.jboss.netty.handler.codec.http.DefaultHttpRequest
 
+/** The default Netty Plan. (There may be other kinds of channel handlers?) */
+abstract class Plan extends UnfilteredChannelHandler
 
-class Planify(val filter: PartialFunction[HttpRequest[DefaultHttpRequest], ResponseFunction]) extends UnfilteredChannelHandler
+class Planify(val intent: Intent[DefaultHttpRequest]) extends Plan
 
 object Planify {
-  def apply(filter: PartialFunction[HttpRequest[DefaultHttpRequest], ResponseFunction]) = new Planify(filter)
+  def apply(intent: Intent[DefaultHttpRequest]) = new Planify(intent)
 }

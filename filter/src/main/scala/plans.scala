@@ -2,7 +2,7 @@ package unfiltered.filter
 
 import javax.servlet.{Filter, FilterConfig, FilterChain, ServletRequest, ServletResponse}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import unfiltered.plan._
+import unfiltered.Unfiltered.Intent
 import unfiltered.request._
 import unfiltered.response._
 
@@ -15,21 +15,15 @@ trait InittedFilter extends Filter {
 }
 
 /**
- * Servlet filter that wraps a plan and adheres to standard filter chain behaviour.
+ * Servlet filter that wraps an Intent and adheres to standard filter chain behaviour.
  */
-class ServletFilterPlan(val plan: Plan[HttpServletRequest]) extends InittedFilter {
-  val filter = plan.filter
+trait Plan extends InittedFilter with unfiltered.PassingIntent[HttpServletRequest] {
   def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     (request, response) match {
       case (hreq: HttpServletRequest, hres: HttpServletResponse) =>
         val request = new RequestBinding(hreq)
         val response = new ResponseBinding(hres)
-        (try {
-          filter(request)
-        } catch {
-          case m: MatchError =>
-            Pass
-        }) match {
+        attempt(request) match {
           case after: PassAndThen =>
             chain.doFilter(request.underlying, response.underlying)
             after.then(request)(response)
@@ -38,4 +32,11 @@ class ServletFilterPlan(val plan: Plan[HttpServletRequest]) extends InittedFilte
         }
      }
   }
+}
+
+/** To define a filter class with an independent function */
+class Planify(val intent: Intent[HttpServletRequest]) extends Plan
+/** To create a filter instance with an independent function */
+object Planify {
+  def apply(intent: Intent[HttpServletRequest]) = new Planify(intent)
 }
