@@ -9,7 +9,7 @@ abstract class HttpRequest[T](val underlying: T) {
   def getMethod() : String
   def getRequestURI(): String
   def getContextPath() : String
-  def getParameterNames() : java.util.Enumeration[String]
-  def getParameterValues(param: String) : Array[String]
-  def getHeaders(name: String) : java.util.Enumeration[String]
+  def getParameterNames() : Iterator[String]
+  def getParameterValues(param: String) : Seq[String]
+  def getHeaders(name: String) : Iterator[String]
 }

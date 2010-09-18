@@ -2,15 +2,12 @@ package unfiltered.request
 
 class RequestHeader(val name: String) {
   def unapply[T](req: HttpRequest[T]) = {
-    def split(raw: String): List[String] = raw.split(",") map {
+    def split(raw: String) = raw.split(",") map {
       _.trim.takeWhile { _ != ';' } mkString
-    } toList
+    }
     
-    def headers(e: java.util.Enumeration[_]): List[String] =
-      if (e.hasMoreElements) e.nextElement match {
-        case v: String => split(v) ++ headers(e)
-        case _ => headers(e)
-      } else Nil
+    def headers(e: Iterator[String]): List[String] =
+      List.fromIterator(e).flatMap(split)
     
     headers(req.getHeaders(name)) match {
       case Nil => None
