@@ -135,22 +135,22 @@ object QParams {
     Right(Some(xs))
 
   /** Promote c to an error reporter that fails if Some input is discarded */
-  def watch[E,A,B](c: Option[A] => Option[B], err: E): Reporter[E,A,B] = {
+  def watch[E,A,B](c: Option[A] => Option[B], err: A => E): Reporter[E,A,B] = {
     case None => Right(None)
-    case oa => c(oa).map { b => Right(Some(b)) } getOrElse Left(err)
+    case Some(a) => c(Some(a)).map { b => Right(Some(b)) } getOrElse Left(err(a))
   }
 
   /** Convert a predicate into an error reporter */
-  def pred[E,A](p: A => Boolean)(err: E): Reporter[E,A,A] =
+  def pred[E,A](p: A => Boolean)(err: A => E): Reporter[E,A,A] =
     watch({_ filter p}, err)
 
   /** Convert f into an error reporter that never reports errors */
   def ignore[E,A](f: Option[A] => Option[A]): Reporter[E,A,A] = 
     opt => Right(f(opt))
 
-  def int[E](e: E) = watch(Params.int, e)
-  def even[E](e: E) = watch(Params.even, e)
-  def odd[E](e: E) = watch(Params.odd, e)
+  def int[E](e: String => E) = watch(Params.int, e)
+  def even[E](e: Int => E) = watch(Params.even, e)
+  def odd[E](e: Int => E) = watch(Params.odd, e)
   def trimmed[E] = ignore[E,String](Params.trimmed)
-  def nonempty[E](e: E) = watch(Params.nonempty, e)
+  def nonempty[E](e: String => E) = watch(Params.nonempty, e)
 }
