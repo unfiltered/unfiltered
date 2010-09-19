@@ -29,7 +29,7 @@ private [netty] class RequestBinding(req: DefaultHttpRequest) extends HttpReques
   }
   def method = req.getMethod.toString
 
-  def requestURI = req.getUri.split('?').first
+  def requestURI = req.getUri.split('?').toList.head
   def contextPath = "" // No contexts here
 
   lazy val parameterNames = params.keySet.elements
