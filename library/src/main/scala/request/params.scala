@@ -4,11 +4,6 @@ import unfiltered.response.ResponseFunction
 
 /** Basic parameter acess, and a pattern matching extractor in Extract. */
 object Params {
-  /** Dress a Java Enumeration in Scala Iterator clothing */
-  case class JEnumerationIterator[T](e: java.util.Enumeration[T]) extends Iterator[T] {
-    def hasNext: Boolean =  e.hasMoreElements()
-    def next: T = e.nextElement()
-  }
   type Map = scala.collection.Map[String, Seq[String]]
   /**
    * Given a req, extract the request params into a (Map[String, Seq[String]], request).
@@ -16,7 +11,7 @@ object Params {
    * is no such parameter, or (as normal for servlets) a single empty string if the
    * parameter was supplied without a value. */
   def unapply[T](req: HttpRequest[T]) = {
-    val names = JEnumerationIterator[String](req.getParameterNames.asInstanceOf[java.util.Enumeration[String]])
+    val names = req.getParameterNames
     Some(((Map.empty[String, Seq[String]] /: names) ((m, n) =>
         m + (n -> req.getParameterValues(n))
       )).withDefaultValue(Nil), req)

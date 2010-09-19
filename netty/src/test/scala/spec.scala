@@ -2,7 +2,6 @@ package unfiltered.netty
 
 import org.specs.Specification
 import org.jboss.netty.buffer.ChannelBuffers
-import scala.collection.JavaConversions._
 import org.jboss.netty.handler.codec.http._
 
 class RequestSpec extends Specification {
@@ -22,17 +21,17 @@ class RequestSpec extends Specification {
        req.getMethod must_== "GET"
      }
     "return an empty enumeration for a missing header" in {
-      req.getHeaders("N/A").hasMoreElements() must beFalse
+      req.getHeaders("N/A").hasNext must beFalse
     }
     "return the correct values in a single-header" in {
       val headers = req.getHeaders("Single-Header")
-      headers.nextElement() must_== "A"
-      headers.hasMoreElements() must beFalse
+      headers.next must_== "A"
+      headers.hasNext must beFalse
     }
     "return the correct values in a multi-header" in {
       val headers = req.getHeaders("Multi-Header")
-      headers.nextElement() must_== "A"
-      headers.nextElement() must_== "B"
+      headers.next must_== "A"
+      headers.next must_== "B"
     }
     "return url parameters" in {
       req.getParameterValues("param1")(0) must_== "value 1"
@@ -71,14 +70,13 @@ class ResponseSpec extends Specification {
   "URL Parser" should {
     "return an empty map when no params given" in {
       val url = "/seg1/seg2"
-      URLParser.parse(url) must_== Map()
+      URLParser.parse(url) must be empty
     }
     "return correctly decoded parameters when given" in {
       val url = "/seg1/seg2?param1=value%201&param2=value%202&param2=value%202%20again"
-      URLParser.parse(url) must_== Map(
-        "param1" -> List("value 1"),
-        "param2" -> List("value 2", "value 2 again")
-        )
+      val m = URLParser.parse(url)
+      m("param1") must_== List("value 1")
+      m("param2").reverse must_== List("value 2", "value 2 again")
     }
   }
 

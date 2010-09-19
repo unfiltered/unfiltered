@@ -1,8 +1,8 @@
 package unfiltered.netty
 
+import unfiltered.JIteratorIterator
 import unfiltered.response.HttpResponse
 import unfiltered.request.HttpRequest
-import scala.collection.JavaConversions._
 import java.net.URLDecoder
 import org.jboss.netty.handler.codec.http._
 import java.io._
@@ -14,9 +14,7 @@ object HttpConfig {
 
 private [netty] class RequestBinding(req: DefaultHttpRequest) extends HttpRequest(req) {
 
-  private lazy val params: Map[String, Array[String]] = {
-    URLParser.parse(req.getUri).map { e => (e._1, e._2.toArray)}
-  }
+  private lazy val params = URLParser.parse(req.getUri)
 
   private lazy val inputStream = new ChannelBufferInputStream(req.getContent)
   private lazy val reader = {
@@ -31,16 +29,16 @@ private [netty] class RequestBinding(req: DefaultHttpRequest) extends HttpReques
   }
   def getMethod() = req.getMethod.toString
 
-  def getRequestURI() = req.getUri.split('?').head
-  def getContextPath() = "" // No contexts here
+  def getRequestURI = req.getUri.split('?').first
+  def getContextPath = "" // No contexts here
 
-  def getParameterNames() = params.keysIterator
-  def getParameterValues(param: String) = params.getOrElse(param, null)
+  lazy val getParameterNames = params.keySet.elements
+  def getParameterValues(param: String) = params(param).reverse
 
-  def getHeaders(name: String) = asEnumeration(req.getHeaders(name).iterator)
+  def getHeaders(name: String) = new JIteratorIterator(req.getHeaders(name).iterator)
 
-  def getInputStream() = inputStream
-  def getReader() = reader
+  def getInputStream = inputStream
+  def getReader = reader
 
 }
 
@@ -77,9 +75,9 @@ private [netty] object URLParser {
         case _ => Nil
       }
     }
-    pairs.groupBy(v => v._1)
-            .map(e => (e._1, e._2.map(_._2)))
-
+    (Map.empty[String, List[String]].withDefault {_ => Nil } /: pairs) {
+      case (m, (k, v)) => m + (k -> (v :: m(k)))
+    }
   }
 
 }

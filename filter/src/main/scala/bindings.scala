@@ -1,5 +1,6 @@
 package unfiltered.filter
 
+import unfiltered.JEnumerationIterator
 import unfiltered.response.HttpResponse
 import unfiltered.request.HttpRequest
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
@@ -11,9 +12,13 @@ private [filter] class RequestBinding(req: HttpServletRequest) extends HttpReque
   def getMethod() = req.getMethod
   def getRequestURI() = req.getRequestURI
   def getContextPath() = req.getContextPath
-  def getParameterNames() = req.getParameterNames.asInstanceOf[java.util.Enumeration[String]]
+  lazy val getParameterNames = new JEnumerationIterator(
+    req.getParameterNames.asInstanceOf[java.util.Enumeration[String]]
+  )
   def getParameterValues(param: String) = req.getParameterValues(param)
-  def getHeaders(name: String) = req.getHeaders(name).asInstanceOf[java.util.Enumeration[String]]
+  def getHeaders(name: String) = new JEnumerationIterator(
+    req.getHeaders(name).asInstanceOf[java.util.Enumeration[String]]
+  )
 }
 
 private [filter] class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
