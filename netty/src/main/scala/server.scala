@@ -9,7 +9,7 @@ import org.jboss.netty.channel._
 
 class Server(val port: Int, lastHandler: ChannelHandler) {
   val DEFAULT_IO_THREADS = Runtime.getRuntime().availableProcessors() + 1;
-	val DEFAULT_EVENT_THREADS = DEFAULT_IO_THREADS * 4;
+  val DEFAULT_EVENT_THREADS = DEFAULT_IO_THREADS * 4;
 
   def start(): Unit = {
 
@@ -20,12 +20,12 @@ class Server(val port: Int, lastHandler: ChannelHandler) {
 
     bootstrap.setPipelineFactory(new ServerPipelineFactory(lastHandler))
 
-   	bootstrap.setOption("child.tcpNoDelay", true)
-		bootstrap.setOption("child.keepAlive", true)
-		bootstrap.setOption("receiveBufferSize", 128 * 1024)
-		bootstrap.setOption("sendBufferSize", 128 * 1024)
-		bootstrap.setOption("reuseAddress", true)
-		bootstrap.setOption("backlog", 16384)
+    bootstrap.setOption("child.tcpNoDelay", true)
+    bootstrap.setOption("child.keepAlive", true)
+    bootstrap.setOption("receiveBufferSize", 128 * 1024)
+    bootstrap.setOption("sendBufferSize", 128 * 1024)
+    bootstrap.setOption("reuseAddress", true)
+    bootstrap.setOption("backlog", 16384)
     bootstrap.bind(new InetSocketAddress(port))
 
   }
