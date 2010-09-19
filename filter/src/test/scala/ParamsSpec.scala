@@ -5,6 +5,11 @@ import org.specs._
 object ParamsSpecJetty extends unfiltered.spec.jetty.Served with ParamsSpec {
   def setup = { _.filter(unfiltered.filter.Planify(intent)) }
 }
+object ParamsSpecNetty extends unfiltered.spec.netty.Served with ParamsSpec {
+  def setup = { p => 
+    new unfiltered.netty.Server(p, unfiltered.netty.Planify(intent)) 
+  }
+}
 trait ParamsSpec extends unfiltered.spec.Hosted {
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}

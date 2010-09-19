@@ -11,7 +11,7 @@ class Server(val port: Int, lastHandler: ChannelHandler) {
   val DEFAULT_IO_THREADS = Runtime.getRuntime().availableProcessors() + 1;
   val DEFAULT_EVENT_THREADS = DEFAULT_IO_THREADS * 4;
 
-  def start(): Unit = {
+  def start() = {
 
     val bootstrap = new ServerBootstrap(
       new NioServerSocketChannelFactory(
@@ -27,7 +27,6 @@ class Server(val port: Int, lastHandler: ChannelHandler) {
     bootstrap.setOption("reuseAddress", true)
     bootstrap.setOption("backlog", 16384)
     bootstrap.bind(new InetSocketAddress(port))
-
   }
 }
 
