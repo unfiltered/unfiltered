@@ -49,13 +49,8 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     val netty = "org.jboss.netty" % "netty" % "3.2.1.Final" withSources()
   }, library)
 
-  /** Marker for demos that should not be published */
-  trait Demo
   /** Marker for Scala 2.8-only projects that shouldn't be cross compiled or published */
   trait Only28
-
-  /** demo project */
-  lazy val demo = project("demo", "Unfiltered Demo", new UnfilteredModule(_) with Demo, jetty)
 
   /** specs  helper */
   lazy val spec = project("spec", "Unfiltered Spec", new DefaultProject(_) with sxr.Publish {
@@ -69,10 +64,6 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   }, library)
 
   def servletApiDependency = "javax.servlet" % "servlet-api" % "2.3" % "provided"
-
-  lazy val scalateDemo = project("demo-scalate", "Unfiltered Scalate Demo", new UnfilteredModule(_) with Only28 with Demo {
-    val slf4j = "org.slf4j" % "slf4j-simple" % "1.6.0"
-  }, jetty, scalate)
 
   lazy val scalate = project("scalate", "Unfiltered Scalate", 
       new UnfilteredModule(_) with Only28 with IntegrationTesting {
@@ -91,9 +82,8 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   
   def jettyDependency = "org.eclipse.jetty" % "jetty-webapp" % jetty_version
 
-  /** Exclude demo from publish and all other actions run from parent */
+  /** Exclude 2.8 projects from cross-buiding actions run from parent */
   override def dependencies = super.dependencies.filter { 
-    case _: Demo => false
     case _: Only28 => buildScalaVersion startsWith "2.8"
     case _ => true
   }
