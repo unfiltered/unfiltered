@@ -56,7 +56,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   lazy val spec = project("spec", "Unfiltered Spec", new DefaultProject(_) with sxr.Publish {
     lazy val specs = specsDependency
     lazy val dispatch = dispatchDependency
-  }, jetty)
+  }, jetty, netty)
   /** json extractors */
   lazy val json = project("json", "Unfiltered Json", 
       new UnfilteredModule(_) with IntegrationTesting {

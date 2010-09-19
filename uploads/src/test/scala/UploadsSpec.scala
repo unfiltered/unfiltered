@@ -3,7 +3,7 @@ package unfiltered.request
 import org.specs._
 
 // TODO ask nathan about adding a StringPart request to dispatch
-object UploadsSpec extends Specification with unfiltered.spec.Served {
+object UploadsSpec extends Specification with unfiltered.spec.jetty.Served {
   import java.io.{File => JFile,FileInputStream => FIS}
   import org.apache.commons.io.{IOUtils => IOU}
   import unfiltered.response._

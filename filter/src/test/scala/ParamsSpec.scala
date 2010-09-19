@@ -2,7 +2,10 @@ package unfiltered.request
 
 import org.specs._
 
-object ParamsSpec extends Specification with unfiltered.spec.Served {
+object ParamsSpecJetty extends unfiltered.spec.jetty.Served with ParamsSpec {
+  def setup = { _.filter(unfiltered.filter.Planify(intent)) }
+}
+trait ParamsSpec extends unfiltered.spec.Hosted {
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
   import QParams._
@@ -12,7 +15,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
   /** Used for extract test */
   object Number extends Params.Extract("number", Params.first ~> Params.int)
 
-  class TestPlan extends unfiltered.filter.Planify({
+  def intent[T]: unfiltered.Unfiltered.Intent[T] = {
     case UFPath("/basic", Params(params, _)) => params("foo") match {
       case Seq(foo) => ResponseString("foo is %s" format foo)
       case _ =>  ResponseString("what's foo?")
@@ -56,10 +59,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
       expected(params) orFail { fails =>
         BadRequest ~> Status(fails.head.error) ~> ResponseString("fail")
       }
-
-  })
-  
-  def setup = { _.filter(new TestPlan) }
+  }
   
   "Params basic map" should {
     "map query string params" in {

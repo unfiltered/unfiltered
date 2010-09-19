@@ -2,7 +2,7 @@ package unfiltered.request
 
 import org.specs._
 
-object AcceptSpec extends Specification  with unfiltered.spec.Served {
+object AcceptSpec extends Specification  with unfiltered.spec.jetty.Served {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
