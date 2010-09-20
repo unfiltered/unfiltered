@@ -2,10 +2,10 @@ package unfiltered.request
 
 import org.specs._
 
-object AcecptsSpecJetty extends unfiltered.spec.jetty.Served with ParamsSpec {
+object AcceptsSpecJetty extends unfiltered.spec.jetty.Served with AcceptsSpec {
   def setup = { _.filter(unfiltered.filter.Planify(intent)) }
 }
-object AcceptsSpecNetty extends unfiltered.spec.netty.Served with ParamsSpec {
+object AcceptsSpecNetty extends unfiltered.spec.netty.Served with AcceptsSpec {
   def setup = { p => 
     new unfiltered.netty.Server(p, unfiltered.netty.Planify(intent)) 
   }
