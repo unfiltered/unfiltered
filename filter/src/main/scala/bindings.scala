@@ -6,17 +6,17 @@ import unfiltered.request.HttpRequest
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 
 private [filter] class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
-  def getInputStream() = req.getInputStream
-  def getReader() = req.getReader
-  def getProtocol() = req.getProtocol
-  def getMethod() = req.getMethod
-  def getRequestURI() = req.getRequestURI
-  def getContextPath() = req.getContextPath
-  lazy val getParameterNames = new JEnumerationIterator(
+  def inputStream = req.getInputStream
+  def reader = req.getReader
+  def protocol = req.getProtocol
+  def method = req.getMethod
+  def requestURI = req.getRequestURI
+  def contextPath = req.getContextPath
+  lazy val parameterNames = new JEnumerationIterator(
     req.getParameterNames.asInstanceOf[java.util.Enumeration[String]]
   )
-  def getParameterValues(param: String) = req.getParameterValues(param)
-  def getHeaders(name: String) = new JEnumerationIterator(
+  def parameterValues(param: String) = req.getParameterValues(param)
+  def headers(name: String) = new JEnumerationIterator(
     req.getHeaders(name).asInstanceOf[java.util.Enumeration[String]]
   )
 }

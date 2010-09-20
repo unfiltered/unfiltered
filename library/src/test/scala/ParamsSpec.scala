@@ -2,7 +2,15 @@ package unfiltered.request
 
 import org.specs._
 
-object ParamsSpec extends Specification with unfiltered.spec.Served {
+object ParamsSpecJetty extends unfiltered.spec.jetty.Served with ParamsSpec {
+  def setup = { _.filter(unfiltered.filter.Planify(intent)) }
+}
+object ParamsSpecNetty extends unfiltered.spec.netty.Served with ParamsSpec {
+  def setup = { p => 
+    new unfiltered.netty.Server(p, unfiltered.netty.Planify(intent)) 
+  }
+}
+trait ParamsSpec extends unfiltered.spec.Hosted {
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
   import QParams._
@@ -12,7 +20,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
   /** Used for extract test */
   object Number extends Params.Extract("number", Params.first ~> Params.int)
 
-  class TestPlan extends unfiltered.filter.Planify({
+  def intent[T]: unfiltered.Unfiltered.Intent[T] = {
     case UFPath("/basic", Params(params, _)) => params("foo") match {
       case Seq(foo) => ResponseString("foo is %s" format foo)
       case _ =>  ResponseString("what's foo?")
@@ -28,7 +36,7 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
 
     case GET(UFPath("/int", Params(params, _))) =>
       val expected = for {
-        even <- lookup("number") is(int(()))
+        even <- lookup("number") is(int(_ => ()))
       } yield ResponseString(even.get.toString)
       expected(params) orFail { fails =>
         BadRequest ~> ResponseString(
@@ -38,8 +46,8 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
 
     case GET(UFPath("/even", Params(params, _))) => 
       val expected = for {
-        even <- lookup("number") is(int("nonnumber")) is 
-          (pred { (_: Int) % 2 == 0}("odd")) is(required("missing"))
+        even <- lookup("number") is(int(in => "%s is not a number".format(in))) is 
+          (pred { (_: Int) % 2 == 0} { i => "%d is odd".format(i) }) is(required("missing"))
         whatever <- lookup("what") is(required("bad"))
       } yield ResponseString(even.get.toString)
       expected(params) orFail { fails =>
@@ -50,16 +58,13 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     
     case GET(UFPath("/str", Params(params, _))) => 
       val expected = for {
-        str <- lookup("param") is(int(400)) is(optional[Int,Int]) // note: 2.8 can infer type on optional
+        str <- lookup("param") is(int(_ => 400)) is(optional[Int,Int]) // note: 2.8 can infer type on optional
         req <- lookup("req") is(required(400))
       } yield ResponseString(str.get.getOrElse(0).toString)
       expected(params) orFail { fails =>
         BadRequest ~> Status(fails.head.error) ~> ResponseString("fail")
       }
-
-  })
-  
-  def setup = { _.filter(new TestPlan) }
+  }
   
   "Params basic map" should {
     "map query string params" in {
@@ -90,10 +95,10 @@ object ParamsSpec extends Specification with unfiltered.spec.Served {
     "fail on non-number" in {
       Http.when(_ == 400)(
         host / "even" <<? Map("number"->"eight", "what"->"") as_str
-      ) must_== "number:nonnumber"
+      ) must_== "number:eight is not a number"
     }
     "fail on odd number" in {
-      Http.when(_ == 400)(host / "even" <<? Map("number" -> "7") as_str) must_=="number:odd,what:bad"
+      Http.when(_ == 400)(host / "even" <<? Map("number" -> "7") as_str) must_=="number:7 is odd,what:bad"
     }
     "fail on not present" in {
       Http.when(_ == 400)(host / "even" as_str) must_=="number:missing,what:bad"

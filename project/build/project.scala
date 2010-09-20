@@ -11,11 +11,12 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   /** Allows Unfiltered modules to test themselves using other modules */
   trait IntegrationTesting extends DefaultProject {
     // add to test classpath manually since we don't want to actually depend on these modules
-    override def testClasspath = (super.testClasspath /: (spec :: jetty :: filter_p :: Nil)) {
+    def testDeps = spec :: jetty :: filter_p :: netty :: Nil
+    override def testClasspath = (super.testClasspath /: testDeps) {
       _ +++ _.projectClasspath(Configurations.Compile)
     }
     override def testCompileAction = super.testCompileAction dependsOn 
-      (spec.compile, jetty.compile, filter_p.compile)
+      (testDeps map { _.compile} : _*)
     lazy val specs = specsDependency % "test"
     lazy val dispatch = dispatchDependency % "test"
     lazy val jetty7 = jettyDependency % "test"
@@ -39,7 +40,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   /** embedded server*/
   lazy val jetty = project("jetty", "Unfiltered Jetty", new UnfilteredModule(_) {
     val jetty7 = jettyDependency
-  }, filter_p)
+  })
   /** AJP protocol server */
   lazy val jetty_ajp = project("jetty-ajp", "Unfiltered Jetty AJP", new UnfilteredModule(_) {
     val jetty7 = "org.eclipse.jetty" % "jetty-ajp" % jetty_version
@@ -49,19 +50,14 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   	val netty = "org.jboss.netty" % "netty" % "3.2.1.Final" withSources()
   }, library)
 
-  /** Marker for demos that should not be published */
-  trait Demo
   /** Marker for Scala 2.8-only projects that shouldn't be cross compiled or published */
   trait Only28
-
-  /** demo project */
-  lazy val demo = project("demo", "Unfiltered Demo", new UnfilteredModule(_) with Demo, jetty)
 
   /** specs  helper */
   lazy val spec = project("spec", "Unfiltered Spec", new DefaultProject(_) with sxr.Publish {
     lazy val specs = specsDependency
     lazy val dispatch = dispatchDependency
-  }, jetty)
+  }, jetty, netty)
   /** json extractors */
   lazy val json = project("json", "Unfiltered Json", 
       new UnfilteredModule(_) with IntegrationTesting {
@@ -69,10 +65,6 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   }, library)
 
   def servletApiDependency = "javax.servlet" % "servlet-api" % "2.3" % "provided"
-
-  lazy val scalateDemo = project("demo-scalate", "Unfiltered Scalate Demo", new UnfilteredModule(_) with Only28 with Demo {
-    val slf4j = "org.slf4j" % "slf4j-simple" % "1.6.0"
-  }, jetty, scalate)
 
   lazy val scalate = project("scalate", "Unfiltered Scalate", 
       new UnfilteredModule(_) with Only28 with IntegrationTesting {
@@ -91,9 +83,8 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   
   def jettyDependency = "org.eclipse.jetty" % "jetty-webapp" % jetty_version
 
-  /** Exclude demo from publish and all other actions run from parent */
+  /** Exclude 2.8 projects from cross-buiding actions run from parent */
   override def dependencies = super.dependencies.filter { 
-    case _: Demo => false
     case _: Only28 => buildScalaVersion startsWith "2.8"
     case _ => true
   }

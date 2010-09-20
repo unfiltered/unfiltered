@@ -1,12 +1,11 @@
 package unfiltered.request
 
-
 object InStream {
-  def unapply[T](req: HttpRequest[T]) = Some(req.getInputStream, req)
+  def unapply[T](req: HttpRequest[T]) = Some(req.inputStream, req)
 }
 
 object Read {
-  def unapply[T](req: HttpRequest[T]) = Some(req.getReader, req)
+  def unapply[T](req: HttpRequest[T]) = Some(req.reader, req)
 }
 
 object Bytes {

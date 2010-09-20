@@ -2,21 +2,27 @@ package unfiltered.request
 
 import org.specs._
 
-object AcceptSpec extends Specification  with unfiltered.spec.Served {
+object AcecptsSpecJetty extends unfiltered.spec.jetty.Served with ParamsSpec {
+  def setup = { _.filter(unfiltered.filter.Planify(intent)) }
+}
+object AcceptsSpecNetty extends unfiltered.spec.netty.Served with ParamsSpec {
+  def setup = { p => 
+    new unfiltered.netty.Server(p, unfiltered.netty.Planify(intent)) 
+  }
+}
+trait AcceptsSpec extends unfiltered.spec.Hosted {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
   
   import dispatch._
 
-  class TestPlan extends unfiltered.filter.Planify({
+  def intent[T]: unfiltered.Unfiltered.Intent[T] = {
     case GET(UFPath(Seg(ext :: Nil), Accepts.Json(_))) => ResponseString("json")
     case GET(UFPath(Seg(ext :: Nil), Accepts.Xml(_))) => ResponseString("xml")
     case GET(UFPath(Seg(ext :: Nil), Accepts.Csv(_))) => ResponseString("csv")
     case GET(UFPath(Seg(ext :: Nil), Accepts.Html(_))) => ResponseString("html")
-  })
-  
-  def setup = { _.filter(new TestPlan) }
+  }
   
   "Accepts should" should {
     "match an application/json accepts request as json" in {

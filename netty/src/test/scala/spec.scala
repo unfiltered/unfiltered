@@ -18,30 +18,30 @@ class RequestSpec extends Specification {
 
   "Request Binding" should {
      "return the correct method" in {
-       req.getMethod must_== "GET"
+       req.method must_== "GET"
      }
     "return an empty enumeration for a missing header" in {
-      req.getHeaders("N/A").hasNext must beFalse
+      req.headers("N/A").hasNext must beFalse
     }
     "return the correct values in a single-header" in {
-      val headers = req.getHeaders("Single-Header")
+      val headers = req.headers("Single-Header")
       headers.next must_== "A"
       headers.hasNext must beFalse
     }
     "return the correct values in a multi-header" in {
-      val headers = req.getHeaders("Multi-Header")
+      val headers = req.headers("Multi-Header")
       headers.next must_== "A"
       headers.next must_== "B"
     }
     "return url parameters" in {
-      req.getParameterValues("param1")(0) must_== "value 1"
+      req.parameterValues("param1")(0) must_== "value 1"
     }
     "return a working reader" in {
       // Also tests inputstream
-      req.getReader.readLine must_== payload
+      req.reader.readLine must_== payload
     }
     "return the request URI without params" in {
-      req.getRequestURI must_== "/seg1/seg2"
+      req.requestURI must_== "/seg1/seg2"
     }
 <<<<<<< HEAD
 =======
@@ -69,14 +69,14 @@ class ResponseSpec extends Specification {
 
   "URL Parser" should {
     "return an empty map when no params given" in {
-      val url = "/seg1/seg2"
-      URLParser.parse(url) must be empty
+      val url = ""
+      URLParser.urldecode(url) must be empty
     }
     "return correctly decoded parameters when given" in {
-      val url = "/seg1/seg2?param1=value%201&param2=value%202&param2=value%202%20again"
-      val m = URLParser.parse(url)
+      val url = "param1=value%201&param2=value%202&param2=value%202%20again"
+      val m = URLParser.urldecode(url)
       m("param1") must_== List("value 1")
-      m("param2").reverse must_== List("value 2", "value 2 again")
+      m("param2") must_== List("value 2", "value 2 again")
     }
   }
 
