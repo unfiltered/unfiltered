@@ -68,6 +68,7 @@ private [netty] object URLParser {
     val pairs : List[(String, String)] = uri.split(Array('?', '&')).toList.drop(1).flatMap {
       _.split("=") match {
         case Array(key, value) => List((key, URLDecoder.decode(value, URI_CHARSET)))
+        case Array(key) => List((key, ""))
         case _ => Nil
       }
     }
