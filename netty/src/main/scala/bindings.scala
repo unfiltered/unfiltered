@@ -76,9 +76,9 @@ private [netty] object URLParser {
 
   def urldecode(enc: String) : Map[String, Seq[String]] = {
     val pairs = enc.split('&').flatMap {
-      _.split("=") match {
+      _.split('=') match {
         case Array(key, value) => List((key, URLDecoder.decode(value, HttpConfig.DEFAULT_CHARSET)))
-        case Array(key) => List((key, ""))
+        case Array(key) if key != "" => List((key, ""))
         case _ => Nil
       }
     }.reverse
