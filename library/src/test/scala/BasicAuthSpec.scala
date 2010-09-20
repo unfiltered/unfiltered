@@ -2,20 +2,27 @@ package unfiltered.request
 
 import org.specs._
 
-object BasicAuthSpec extends Specification  with unfiltered.spec.jetty.Served {
+object BasicAuthSpecJetty extends unfiltered.spec.jetty.Served with BasicAuthSpec {
+  def setup = { _.filter(unfiltered.filter.Planify(intent)) }
+}
+object BasicAuthSpecNetty extends unfiltered.spec.netty.Served with BasicAuthSpec {
+  def setup = { p => 
+    new unfiltered.netty.Server(p, unfiltered.netty.Planify(intent)) 
+  }
+}
+trait BasicAuthSpec extends unfiltered.spec.Hosted {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
   
   import dispatch._
   
-  class TestPlan extends unfiltered.filter.Planify({
+  def intent[T]: unfiltered.Unfiltered.Intent[T] = {
     case GET(UFPath("/secret", BasicAuth(creds, _))) => creds match {
       case ("test", "secret") => ResponseString("pass")
       case _ => ResponseString("fail")
     }
-  })
-  def setup = { _.filter(new TestPlan) }
+  }
   
   "Basic Auth" should {
     shareVariables()
