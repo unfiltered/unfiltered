@@ -43,13 +43,10 @@ class RequestSpec extends Specification {
     "return the request URI without params" in {
       req.requestURI must_== "/seg1/seg2"
     }
-<<<<<<< HEAD
-=======
     "be able to get the Path extracted correctly" in {
       val unfiltered.request.Path(path, _) = req
       path must_== "/seg1/seg2"
     }
->>>>>>> dc3ee5942558c7979522a04b82ec828057e843fb
   }
 }
 
