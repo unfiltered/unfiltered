@@ -11,5 +11,5 @@ trait Served extends unfiltered.spec.Hosted {
   var channel: org.jboss.netty.channel.Channel = _
   
   doBeforeSpec { channel = server.start() }
-  doAfterSpec { channel.unbind() }
+  doAfterSpec { channel.unbind().await() }
 }
