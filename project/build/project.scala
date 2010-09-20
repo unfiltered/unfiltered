@@ -47,7 +47,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   }, jetty)
   
   lazy val netty = project("netty", "Unfiltered Netty", new UnfilteredModule(_) {
-    val netty = "org.jboss.netty" % "netty" % "3.2.1.Final" withSources()
+  	val netty = "org.jboss.netty" % "netty" % "3.2.1.Final" withSources()
   }, library)
 
   /** Marker for Scala 2.8-only projects that shouldn't be cross compiled or published */
