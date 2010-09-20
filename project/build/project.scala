@@ -11,11 +11,12 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   /** Allows Unfiltered modules to test themselves using other modules */
   trait IntegrationTesting extends DefaultProject {
     // add to test classpath manually since we don't want to actually depend on these modules
-    override def testClasspath = (super.testClasspath /: (spec :: jetty :: filter_p :: netty :: Nil)) {
+    def testDeps = spec :: jetty :: filter_p :: netty :: Nil
+    override def testClasspath = (super.testClasspath /: testDeps) {
       _ +++ _.projectClasspath(Configurations.Compile)
     }
     override def testCompileAction = super.testCompileAction dependsOn 
-      (spec.compile, jetty.compile, filter_p.compile)
+      (testDeps map { _.compile} : _*)
     lazy val specs = specsDependency % "test"
     lazy val dispatch = dispatchDependency % "test"
     lazy val jetty7 = jettyDependency % "test"
