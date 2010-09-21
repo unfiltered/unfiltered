@@ -56,3 +56,25 @@ The method in a Plan type that defines the partial function is now
 called `intent`, by convention and specifically in the filter and
 netty Plan traits. In the previous version's Plan trait it was named
 `filter`.
+
+QParam
+-------
+
+Requirement methods such as `int`, `even` that can be expected to
+fail on user input now take a function `String => E`, `Int => E`, or
+similar rather than a simple error object `E`. This allows the
+failing input to be easily cited in a constructed error message. The
+predicate builder function `pred` takes a function `A => E` for the
+same purpose. These uses are [demonstrated][example] in the
+`softprops/unfiltered.g8` template project.
+
+[example]: http://github.com/softprops/unfiltered.g8/blob/master/src/main/g8/src/main/scala/Example.scala
+
+Demos
+------
+
+The demo projects have been removed from the project
+repository. Users are instead encouraged to try out released versions
+of Unfiltered using project templates such as [softprops/unfiltered.g8][template].
+
+[template]: http://github.com/softprops/unfiltered.g8
