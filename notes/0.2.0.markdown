@@ -1,0 +1,58 @@
+Modules
+-------
+
+The core Unfiltered library no longer depends on the Servlet API. Instead, it interacts with abstract request and response traits that require a binding implementation.
+
+- **unfiltered**  Most applications will depend on a particular
+    binding library rather than this core library.
+
+- **unfiltered-filter** Binds the core library to servlet filters,
+    version 2.3 of the Servlet API. Comparable to the core library in
+    previous versions of Unfiltered.
+
+- **unfiltered-jetty** Offers convenience functions for defining an
+    embedded Jetty server. Does not depend on unfiltered-filter,
+    although it is generally expected to be used with it. This module
+    was previously named unfiltered-server. Its server-building class
+    is now `unfiltered.jetty.Http`.
+
+- **unfiltered-jetty-ajp** For defining an embedded Jetty server that
+    supports the Apache JServ Protocol. Previously unfiltered-ajp-server.
+
+- **unfiltered-netty** Contributed by [daggerrz][daggerrz], this
+    module has "basic alpha Netty support", meaning, the tests
+    pass. It was the motivation for abstracting the Servlet API from
+    the core library and it supports the same kind of
+    synchronous interaction as unfiltered-filter. (Future versions will
+    support asynchronous messages.)
+
+- **unfiltered-spec** Now enables integration testing with both Netty
+    and Jetty. This module is used by the core library to test itself
+    against both server modules.
+
+[daggerrz]: http://github.com/daggerrz/
+
+The unfiltered-scalate, unfiltered-uploads, and unfiltered-json modules are
+unchanged in this release.
+
+Types
+-----
+
+The `Plan` type has the same purpose as before, however it's now
+available in servlet-filter and Netty varieties. If your application
+references `Plan` or `Planify`, these can now be found in the
+`unfiltered.filter` package.
+
+The partial function that Plans wrap is now called an Intent:
+
+    type Intent[T] = PartialFunction[HttpRequest[T], ResponseFunction]
+
+The type parameter allows Unfiltered modules (like uploads) and
+applications that need to use the actual request and response objects
+of their underlying implementation to do so type-safely through
+the `underlying` fields of HttpRequest and HttpResponse.
+
+The method in a Plan type that defines the partial function is now
+called `intent`, by convention and specifically in the filter and
+netty Plan traits. In the previous version's Plan trait it was named
+`filter`.
