@@ -43,11 +43,11 @@ available in servlet-filter and Netty varieties. If your application
 references `Plan` or `Planify`, these can now be found in the
 `unfiltered.filter` package.
 
-The partial function that Plans wrap is now called an Intent:
+The partial function that defines a Plan is now called an Intent:
 
     type Intent[T] = PartialFunction[HttpRequest[T], ResponseFunction]
 
-The type parameter allows Unfiltered modules (like uploads) and
+The type parameter T allows Unfiltered modules (like uploads) and
 applications that need to use the actual request and response objects
 of their underlying implementation to do so type-safely through
 the `underlying` fields of HttpRequest and HttpResponse.
