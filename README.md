@@ -6,7 +6,7 @@ The request response cycle reduces to a pattern matching clause similar to messa
 
     object Server {
       def main(args: Array[String]) {
-        unfiltered.server.Http(8080).filter(unfiltered.Planify {
+        unfiltered.jetty.Http(8080).filter(unfiltered.filter.Planify {
           case _ => Ok ~> ResponseString("Hello there")
         }).run
       }
@@ -14,9 +14,18 @@ The request response cycle reduces to a pattern matching clause similar to messa
 
 The above example starts an embedded web server at `http://localhost:8080` and responds to all requests with a "Hello there" message. It runs as a standalone Java application. You can also define filter classes, to be added by configuration to a servlet container like Tomcat or Google App Engine.
 
+
+## Intents
+
+Intents are the core library interface for handling requests and responses. Specifically:
+
+    type Intent[T] = PartialFunction[HttpRequest[T], ResponseFunction]
+
+Intent functions pattern match against incoming requests and return a function that produces the desired response. Type parameters allow the client or extension library to directly access the underlying requests and response objects though the `underlying` method of `HttpRequest` and `HttpResponse`.
+
 ## Plans
 
-Plans are the core client interface for intercepting and requests. Plans pattern match on requests and return response functions.
+Plans assign an Intent to particular request and response bindings. For example, the trait `unfiltered.filter.Plan` defines a `javax.servlet.Filter` from the Intent returned by its `intent` method. The class `unfiltered.netty.Plan` defines a channel handler similarly. A future Plan trait might define a Servlet. Plan is a convention (and not currently a common interface) to apply an Intent to any request handling framework.
 
 ## Request Extractors
 
@@ -53,7 +62,7 @@ These response functions are the expected return values of `Plans`.
 
 A restful api for a given resource might look something like
 
-    unfiltered.Planify {
+    unfiltered.filter.Planify {
       case GET(Path(Seg("resource" :: id :: Nil), r)) => Store(id) match {
         case Some(resource) => ResponseString(render(resource).as(r match {
           case Accepts.Json(_) => 'json
@@ -87,29 +96,33 @@ A restful api for a given resource might look something like
 
 ## Modules
 
-### ajp-server
-
-An embedded server that adheres to the ajp protocol.
-
-### demo
-
-An example Unfiltered application that demonstrates some of the core features.
-
 ### library
 
 The core application library for Unfiltered. This module provides interfaces and implementations of core request extractors and response combinators.
 
-### server
+### filter
+
+Binds the core library to filters in the servlet 2.3 API.
+
+### jetty
 
 Provides an embedded web server abstraction for serving filters.
 
+### jetty-ajp
+
+An embedded server that adheres to the ajp protocol.
+
+### netty
+
+Binds the core library to a Netty channel handler and provides an embedded server.
+
 ### spec
 
-Provides helpers for testing filters with [specs](http://code.google.com/p/specs/).
+Provides helpers for testing Intents with [specs](http://code.google.com/p/specs/).
 
 ### uploads
 
-Provides extractors for multipart posts.
+Provides extractors for multipart posts using the servlet API.
 
 ### json
 
