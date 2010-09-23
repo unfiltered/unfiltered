@@ -14,7 +14,6 @@ The request response cycle reduces to a pattern matching clause similar to messa
 
 The above example starts an embedded web server at `http://localhost:8080` and responds to all requests with a "Hello there" message. It runs as a standalone Java application. You can also define filter classes, to be added by configuration to a servlet container like Tomcat or Google App Engine.
 
-
 ## Intents
 
 Intents are the core library's interface for handling requests and responses. Specifically:
@@ -60,7 +59,7 @@ A response combinator is a function that takes a another function as its argumen
     
 Core response functions are implemented as responders which can be chained together with `~>`.
 
-These response functions are the expected return values of `Plans`.
+These response functions are the expected return values of Intents.
 
 A restful api for a given resource might look something like
 
@@ -140,25 +139,31 @@ Provides extractors for working with jsonp and transforming json request bodies.
 
 Unfiltered is a [cross built](http://code.google.com/p/simple-build-tool/wiki/CrossBuild) project, currently for the following Scala versions
 
-    2.8.0, 2.7.7, 2.7.6, 2.7.5
+    2.8.0, 2.7.7
     
 ### via sbt
 
-For standalone projects, including `unfiltered-server` as a dependency is sufficient.
+For standalone projects,  you'll want `unfiltered-jetty` as well as a
+binding module:
 
     import sbt._
     class Project(info) extends DefaultProject(info) {
-      val uf = "net.databinder" %% "unfiltered-server" % "1.3"
+      val uf = "net.databinder" %% "unfiltered-jetty" % "0.2.0"
+      val uf = "net.databinder" %% "unfiltered-filter" % "0.2.0"
     }
     
 To specify individual modules, specify the module name in the dependency.
 
     import sbt._
     class Project(info) extends DefaultProject(info) {
-      val ufx = "net.databinder" %% "unfiltered-{module}" % "1.3"
+      val ufx = "net.databinder" %% "unfiltered-{module}" % "0.2.0"
     }
     
-See the [demo](http://github.com/n8han/Unfiltered/tree/master/demo/) application for an example of a basic Unfiltered application.
+See the [template](http://github.com/n8han/Unfiltered/tree/master/demo/) application for an example of a basic Unfiltered application.
+
+## Community
+
+Join the [Unfiltered mailing list on Nabble](http://databinder.3617998.n2.nabble.com/Unfiltered-f5560764.html).
 
 ## Troubleshooting
 
@@ -177,4 +182,4 @@ As paulp put it
 > size of a method.  The compiler's emotional state at that moment would
 > be better characterized as pollyanna-esque.
 
-The work around is good software design. Break up your problems into parts and put them in separate filters. Don't give one `unfiltered.Plan` too much responsibility.
+The work around is good software design. Break up your problems into parts and put them in separate filters. Don't give one Plan too much responsibility.
