@@ -30,7 +30,6 @@ trait Plan extends InittedFilter with unfiltered.PassingIntent[HttpServletReques
             after.then(request)(response) 
             response.getWriter.write(hrw.toString)
             response.getWriter.close
-            after.then(request)(response)
           case Pass => chain.doFilter(request.underlying, response.underlying)
           case response_function => response_function(response)
         }
