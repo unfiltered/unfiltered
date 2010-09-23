@@ -1,38 +1,38 @@
 Modules
 -------
 
-The core Unfiltered library no longer depends on the Servlet API. Instead, it interacts with abstract request and response traits that require a binding implementation.
+The core Unfiltered library no longer depends on the Java Servlet API. Instead, it interacts with abstract request and response traits that require a binding implementation.
 
-- **unfiltered**  Most applications will now depend on a particular
+- **[unfiltered](http://sourced.implicit.ly/net.databinder/unfiltered/0.2.0/index.html)**  Most applications will now depend on a particular
     binding library rather than this core library.
 
-- **unfiltered-filter** Binds the core library to servlet filters,
+- **[unfiltered-filter](http://sourced.implicit.ly/net.databinder/unfiltered-filter/0.2.0/index.html)** Binds the core library to servlet filters,
     version 2.3 of the Servlet API. Comparable to the core library in
     previous versions of Unfiltered.
 
-- **unfiltered-jetty** Offers convenience functions for defining an
+- **[unfiltered-jetty](http://sourced.implicit.ly/net.databinder/unfiltered-jetty/0.2.0/index.html)** Offers convenience functions for defining an
     embedded Jetty server. Does not depend on unfiltered-filter,
     although it is generally expected to be used with it. This module
     was previously named unfiltered-server. Its server-building class
-    is now `unfiltered.jetty.Http`.
+    is now [`unfiltered.jetty.Http`](http://sourced.implicit.ly/net.databinder/unfiltered-jetty/0.2.0/servers.scala.html#15383).
 
-- **unfiltered-jetty-ajp** For defining an embedded Jetty server that
+- **[unfiltered-jetty-ajp](http://sourced.implicit.ly/net.databinder/unfiltered-jetty-ajp/0.2.0/index.html)** For defining an embedded Jetty server that
     supports the Apache JServ Protocol. Previously unfiltered-ajp-server.
 
-- **unfiltered-netty** Contributed by [daggerrz][daggerrz], this
+- **[unfiltered-netty](http://sourced.implicit.ly/net.databinder/unfiltered-jetty-ajp/0.2.0/index.html)** Contributed by [daggerrz][daggerrz], this
     module has "basic alpha Netty support", meaning, the tests
     pass. It was the motivation for abstracting the Servlet API from
     the core library and it supports the same kind of
     synchronous interaction as unfiltered-filter. (Future versions will
     support asynchronous messages.)
 
-- **unfiltered-spec** Now enables integration testing with both Netty
+- **[unfiltered-spec](http://sourced.implicit.ly/net.databinder/unfiltered-jetty-ajp/0.2.0/index.html)** Now enables integration testing with both Netty
     and Jetty. This module is used by the core library to test itself
     against both server modules.
 
 [daggerrz]: http://github.com/daggerrz/
 
-The unfiltered-scalate, unfiltered-uploads, and unfiltered-json modules are
+The [unfiltered-scalate](http://sourced.implicit.ly/net.databinder/unfiltered-scalate/0.2.0/index.html), [unfiltered-uploads](http://sourced.implicit.ly/net.databinder/unfiltered-uploads/0.2.0/index.html), and [unfiltered-json](http://sourced.implicit.ly/net.databinder/unfiltered-json/0.2.0/index.html) modules are
 unchanged in this release.
 
 Types
@@ -41,28 +41,28 @@ Types
 The `Plan` type has the same purpose as before, however it's now
 available in servlet-filter and Netty varieties. If your application
 references `Plan` or `Planify`, these can now be found in the
-`unfiltered.filter` package.
+[`unfiltered.filter`](http://sourced.implicit.ly/net.databinder/unfiltered-filter/0.2.0/plans.scala.html) package.
 
-The partial function that defines a Plan is now called an Intent:
+The partial function that defines a Plan is now called an [Intent](http://sourced.implicit.ly/net.databinder/unfiltered/0.2.0/intents.scala.html#9436):
 
     type Intent[T] = PartialFunction[HttpRequest[T], ResponseFunction]
 
-The type parameter T allows Unfiltered modules (like uploads) and
+The type parameter T allows Unfiltered modules (like [uploads](http://sourced.implicit.ly/net.databinder/unfiltered-uploads/0.2.0/request/uploads.scala.html#15945)) and
 applications that need to use the actual request and response objects
 of their underlying implementation to do so type-safely through
-the `underlying` fields of HttpRequest and HttpResponse.
+the `underlying` fields of [HttpRequest](http://sourced.implicit.ly/net.databinder/unfiltered/0.2.0/request/HttpRequest.scala.html) and [HttpResponse](http://sourced.implicit.ly/net.databinder/unfiltered/0.2.0/response/HttpResponse.scala.html).
 
 The method in a Plan type that defines the partial function is now
-called `intent`, by convention and specifically in the filter and
-netty Plan traits. In the previous version's Plan trait it was named
+called `intent`, by convention and specifically in the [PassingIntent](http://sourced.implicit.ly/net.databinder/unfiltered/0.2.0/intents.scala.html#9064)
+base that the filter Netty Plan traits extend. In the previous version's Plan trait it was named
 `filter`.
 
 QParam
 -------
 
 Requirement methods such as `int`, `even` that can be expected to
-fail on user input now take a function `String => E`, `Int => E`, or
-similar rather than a simple error object `E`. This allows the
+fail on user input [now take a function](http://sourced.implicit.ly/net.databinder/unfiltered/0.2.0/request/params.scala.html#19709) such as `String => E` or `Int => E`
+rather than a simple error object `E`. This allows the
 failing input to be easily cited in a constructed error message. The
 predicate builder function `pred` takes a function `A => E` for the
 same purpose. These uses are [demonstrated][example] in the
@@ -78,3 +78,9 @@ repository. Users are instead encouraged to try out released versions
 of Unfiltered using project templates such as [softprops/unfiltered.g8][template].
 
 [template]: http://github.com/softprops/unfiltered.g8
+
+Scala Support
+-----------
+
+In addition to Scala 2.7.7 and 2.8.0, this release of Unfiltered is
+compiled and published with Scala 2.8.1.RC1 for testing purposes.

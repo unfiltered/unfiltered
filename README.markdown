@@ -139,7 +139,7 @@ Provides extractors for working with jsonp and transforming json request bodies.
 
 Unfiltered is a [cross built](http://code.google.com/p/simple-build-tool/wiki/CrossBuild) project, currently for the following Scala versions
 
-    2.8.0, 2.7.7
+    2.7.7, 2.8.0, 2.8.1.RC1
     
 ### via sbt
 
