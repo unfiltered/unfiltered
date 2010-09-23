@@ -6,7 +6,7 @@ The request response cycle reduces to a pattern matching clause similar to messa
 
     object Server {
       def main(args: Array[String]) {
-        unfiltered.server.Http(8080).filter(unfiltered.Planify {
+        unfiltered.jetty.Http(8080).filter(unfiltered.filter.Planify {
           case _ => Ok ~> ResponseString("Hello there")
         }).run
       }
@@ -14,9 +14,19 @@ The request response cycle reduces to a pattern matching clause similar to messa
 
 The above example starts an embedded web server at `http://localhost:8080` and responds to all requests with a "Hello there" message. It runs as a standalone Java application. You can also define filter classes, to be added by configuration to a servlet container like Tomcat or Google App Engine.
 
+## Intents
+
+Intents are the core library's interface for handling requests and responses. Specifically:
+
+    type Intent[T] = PartialFunction[HttpRequest[T], ResponseFunction]
+
+Intent functions pattern match against incoming requests and return a function that produces the desired response. Type parameters allow the client or extension library to directly access the underlying requests and response objects though the `underlying` method of `HttpRequest` and `HttpResponse`.
+
 ## Plans
 
-Plans are the core client interface for intercepting and requests. Plans pattern match on requests and return response functions.
+Plans assign an Intent to particular request and response
+bindings. For example, the trait `unfiltered.filter.Plan` defines a
+`javax.servlet.Filter` that delegates to its`intent` method. The class `unfiltered.netty.Plan` defines a channel handler similarly. A future Plan trait might define a Servlet. Plan is a convention (and not currently a common interface) to apply an Intent to any request handling framework.
 
 ## Request Extractors
 
@@ -49,11 +59,11 @@ A response combinator is a function that takes a another function as its argumen
     
 Core response functions are implemented as responders which can be chained together with `~>`.
 
-These response functions are the expected return values of `Plans`.
+These response functions are the expected return values of Intents.
 
 A restful api for a given resource might look something like
 
-    unfiltered.Planify {
+    unfiltered.filter.Planify {
       case GET(Path(Seg("resource" :: id :: Nil), r)) => Store(id) match {
         case Some(resource) => ResponseString(render(resource).as(r match {
           case Accepts.Json(_) => 'json
@@ -87,29 +97,33 @@ A restful api for a given resource might look something like
 
 ## Modules
 
-### ajp-server
-
-An embedded server that adheres to the ajp protocol.
-
-### demo
-
-An example Unfiltered application that demonstrates some of the core features.
-
 ### library
 
 The core application library for Unfiltered. This module provides interfaces and implementations of core request extractors and response combinators.
 
-### server
+### filter
+
+Binds the core library to filters in the servlet 2.3 API.
+
+### jetty
 
 Provides an embedded web server abstraction for serving filters.
 
+### jetty-ajp
+
+An embedded server that adheres to the ajp protocol.
+
+### netty
+
+Binds the core library to a Netty channel handler and provides an embedded server.
+
 ### spec
 
-Provides helpers for testing filters with [specs](http://code.google.com/p/specs/).
+Provides helpers for testing Intents with [specs](http://code.google.com/p/specs/).
 
 ### uploads
 
-Provides extractors for multipart posts.
+Provides extractors for multipart posts using the servlet API.
 
 ### json
 
@@ -125,25 +139,31 @@ Provides extractors for working with jsonp and transforming json request bodies.
 
 Unfiltered is a [cross built](http://code.google.com/p/simple-build-tool/wiki/CrossBuild) project, currently for the following Scala versions
 
-    2.8.0, 2.7.7, 2.7.6, 2.7.5
+    2.8.0, 2.7.7
     
 ### via sbt
 
-For standalone projects, including `unfiltered-server` as a dependency is sufficient.
+For standalone projects,  you'll want `unfiltered-jetty` as well as a
+binding module:
 
     import sbt._
     class Project(info) extends DefaultProject(info) {
-      val uf = "net.databinder" %% "unfiltered-server" % "1.3"
+      val uf = "net.databinder" %% "unfiltered-jetty" % "0.2.0"
+      val uf = "net.databinder" %% "unfiltered-filter" % "0.2.0"
     }
     
 To specify individual modules, specify the module name in the dependency.
 
     import sbt._
     class Project(info) extends DefaultProject(info) {
-      val ufx = "net.databinder" %% "unfiltered-{module}" % "1.3"
+      val ufx = "net.databinder" %% "unfiltered-{module}" % "0.2.0"
     }
     
-See the [demo](http://github.com/n8han/Unfiltered/tree/master/demo/) application for an example of a basic Unfiltered application.
+See the [template](http://github.com/n8han/Unfiltered/tree/master/demo/) application for an example of a basic Unfiltered application.
+
+## Community
+
+Join the [Unfiltered mailing list on Nabble](http://databinder.3617998.n2.nabble.com/Unfiltered-f5560764.html).
 
 ## Troubleshooting
 
@@ -162,4 +182,4 @@ As paulp put it
 > size of a method.  The compiler's emotional state at that moment would
 > be better characterized as pollyanna-esque.
 
-The work around is good software design. Break up your problems into parts and put them in separate filters. Don't give one `unfiltered.Plan` too much responsibility.
+The work around is good software design. Break up your problems into parts and put them in separate filters. Don't give one Plan too much responsibility.
