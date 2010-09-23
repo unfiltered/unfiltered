@@ -60,7 +60,10 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   /** json extractors */
   lazy val json = project("json", "Unfiltered Json", 
       new UnfilteredModule(_) with IntegrationTesting {
-    val lift_json = "net.liftweb" %% "lift-json" % "2.1-M1"
+    val lift_json = if (buildScalaVersion startsWith "2.8.1")
+      "net.liftweb" % "lift-json_2.8.0" % "2.1-M1"
+    else
+      "net.liftweb" %% "lift-json" % "2.1-M1"
   }, library)
 
   def servletApiDependency = "javax.servlet" % "servlet-api" % "2.3" % "provided"
@@ -78,13 +81,16 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     else
       "org.scala-tools.testing" %% "specs" % "1.6.5"
 
-  def dispatchDependency = "net.databinder" %% "dispatch-mime" % "0.7.6"
+  def dispatchDependency = if(buildScalaVersion startsWith "2.8.1")
+      "net.databinder" % "dispatch-mime_2.8.0" % "0.7.6"
+    else
+      "net.databinder" %% "dispatch-mime" % "0.7.6"
   
   def jettyDependency = "org.eclipse.jetty" % "jetty-webapp" % jetty_version
 
   /** Exclude 2.8 projects from cross-buiding actions run from parent */
   override def dependencies = super.dependencies.filter { 
-    case _: Only28 => buildScalaVersion startsWith "2.8"
+    case _: Only28 => buildScalaVersion startsWith "2.8.0"
     case _ => true
   }
 
