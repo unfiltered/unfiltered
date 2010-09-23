@@ -29,13 +29,11 @@ object PassAndThenSpec extends Specification with unfiltered.spec.jetty.Served {
   "PassAndThen" should {
     "Pass and then execute some function setting a body" in {
       val (body, headers) = Http(host / "b" >+ { r => (r as_str, r >:> { h => h }) })
-      println(headers)
       headers must havePair(("Content-Type" -> Set("application/json; charset=utf-8")))
       body must_=="""[{"msg":"howdy partner"}]"""
     }
     "Pass and then execute some function appending a header" in {
       val (body, headers) = Http(host / "h" >+ { r => (r as_str, r >:> { h => h }) })
-      println(headers)
       headers must havePair(("x-test" -> Set("passed")))
       headers must havePair(("Content-Type" -> Set("application/json; charset=utf-8")))
       body must_=="""[{"msg":"howdy partner"}]"""
