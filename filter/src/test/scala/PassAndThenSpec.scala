@@ -33,8 +33,6 @@ object PassAndThenSpec extends Specification with unfiltered.spec.jetty.Served {
       headers must havePair(("Content-Type" -> Set("application/json; charset=utf-8")))
       body must_=="""[{"msg":"howdy partner"}]"""
     }
-    /* the following test fails, the response after the `later` fn is called contains the header
-       but the response that dispatch recieves does not contain it
     "Pass and then execute some function appending a header" in {
       val (body, headers) = Http(host / "h" >+ { r => (r as_str, r >:> { h => h }) })
       println(headers)
@@ -42,6 +40,5 @@ object PassAndThenSpec extends Specification with unfiltered.spec.jetty.Served {
       headers must havePair(("Content-Type" -> Set("application/json; charset=utf-8")))
       body must_=="""[{"msg":"howdy partner"}]"""
     }
-    */
   }
 }

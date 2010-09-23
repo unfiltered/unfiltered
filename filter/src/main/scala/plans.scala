@@ -25,8 +25,11 @@ trait Plan extends InittedFilter with unfiltered.PassingIntent[HttpServletReques
         val response = new ResponseBinding(hres)
         attempt(request) match {
           case after: PassAndThen =>
-            chain.doFilter(request.underlying, response.underlying)
-            after.then(request)(response)
+            val hrw = PassAndThenResponseWrapper(response.underlying)
+            chain.doFilter(request.underlying, hrw)
+            after.then(request)(response) 
+            response.getWriter.write(hrw.toString)
+            response.getWriter.close
           case Pass => chain.doFilter(request.underlying, response.underlying)
           case response_function => response_function(response)
         }
