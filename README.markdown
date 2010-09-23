@@ -17,7 +17,7 @@ The above example starts an embedded web server at `http://localhost:8080` and r
 
 ## Intents
 
-Intents are the core library interface for handling requests and responses. Specifically:
+Intents are the core library's interface for handling requests and responses. Specifically:
 
     type Intent[T] = PartialFunction[HttpRequest[T], ResponseFunction]
 
@@ -25,7 +25,9 @@ Intent functions pattern match against incoming requests and return a function t
 
 ## Plans
 
-Plans assign an Intent to particular request and response bindings. For example, the trait `unfiltered.filter.Plan` defines a `javax.servlet.Filter` from the Intent returned by its `intent` method. The class `unfiltered.netty.Plan` defines a channel handler similarly. A future Plan trait might define a Servlet. Plan is a convention (and not currently a common interface) to apply an Intent to any request handling framework.
+Plans assign an Intent to particular request and response
+bindings. For example, the trait `unfiltered.filter.Plan` defines a
+`javax.servlet.Filter` that delegates to its`intent` method. The class `unfiltered.netty.Plan` defines a channel handler similarly. A future Plan trait might define a Servlet. Plan is a convention (and not currently a common interface) to apply an Intent to any request handling framework.
 
 ## Request Extractors
 
