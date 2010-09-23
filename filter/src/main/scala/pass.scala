@@ -2,7 +2,13 @@ package unfiltered.filter
 
 import unfiltered.request._
 import unfiltered.response._
-import javax.servlet.http.{HttpServletRequest,HttpServletResponse}
+import javax.servlet.http.{HttpServletRequest,HttpServletResponse, HttpServletResponseWrapper}
+
+case class PassAndThenResponseWrapper(underlying:HttpServletResponse) extends HttpServletResponseWrapper(underlying) {
+    val output = new java.io.CharArrayWriter
+    override def toString = output.toString
+    override def getWriter = new java.io.PrintWriter(output)
+}
 
 /** Pass on the the next filter then execute `later` after */
 case class PassAndThen(later: PartialFunction[HttpRequest[HttpServletRequest], ResponseFunction]) extends ResponseFunction  {
