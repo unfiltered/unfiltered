@@ -3,7 +3,7 @@ Modules
 
 The core Unfiltered library no longer depends on the Servlet API. Instead, it interacts with abstract request and response traits that require a binding implementation.
 
-- **unfiltered**  Most applications will depend on a particular
+- **unfiltered**  Most applications will now depend on a particular
     binding library rather than this core library.
 
 - **unfiltered-filter** Binds the core library to servlet filters,
