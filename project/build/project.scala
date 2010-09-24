@@ -35,7 +35,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     val io = "commons-io" % "commons-io" % "1.4"
     val fileupload = "commons-fileupload" % "commons-fileupload" % "1.2.1"
   }, filter_p)
-  val jetty_version = "7.0.2.v20100331"
+  val jetty_version = "7.1.6.v20100715"
   /** embedded server*/
   lazy val jetty = project("jetty", "Unfiltered Jetty", new UnfilteredModule(_) {
     val jetty7 = jettyDependency
