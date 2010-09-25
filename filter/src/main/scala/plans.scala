@@ -7,9 +7,9 @@ import unfiltered.request._
 import unfiltered.response._
 
 trait InittedFilter extends Filter {
-  private var config_var: FilterConfig = _
-  def init(config: FilterConfig) { config_var = config; }
-  def config = config_var
+  private var configVar: FilterConfig = _
+  def init(config: FilterConfig) { configVar = config; }
+  def config = configVar
 
   def destroy { }
 }
@@ -31,7 +31,7 @@ trait Plan extends InittedFilter with unfiltered.PassingIntent[HttpServletReques
             response.getWriter.write(hrw.toString)
             response.getWriter.close
           case Pass => chain.doFilter(request.underlying, response.underlying)
-          case response_function => response_function(response)
+          case responseFunction => responseFunction(response)
         }
      }
   }
