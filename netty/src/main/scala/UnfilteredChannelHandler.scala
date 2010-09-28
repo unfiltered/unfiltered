@@ -13,39 +13,44 @@ import org.jboss.netty.handler.codec.http.{DefaultHttpRequest, DefaultHttpRespon
  * 
  */
 abstract class UnfilteredChannelHandler extends SimpleChannelUpstreamHandler with PassingIntent[DefaultHttpRequest] {
-
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
 
     val request = e.getMessage().asInstanceOf[DefaultHttpRequest]
-    val response = new DefaultHttpResponse(HTTP_1_1, OK)
-
-    response.setHeader("Server", "Scala Netty Unfiltered Server")
-    val ch = request.getHeader("Connection")
-    val keepAlive = request.getProtocolVersion match {
-      case HTTP_1_1 => !"close".equalsIgnoreCase(ch)
-      case HTTP_1_0 => "Keep-Alive".equals(ch)
-    }
-
     val requestBinding = new RequestBinding(request)
-    val responseBinding = new ResponseBinding(response)
+
+    /** If issuing a wrapped response */
+    def respond[T](rf: ResponseFunction) {
+      val response = new DefaultHttpResponse(HTTP_1_1, OK)
+
+      response.setHeader("Server", "Scala Netty Unfiltered Server")
+      val ch = request.getHeader("Connection")
+      val keepAlive = request.getProtocolVersion match {
+        case HTTP_1_1 => !"close".equalsIgnoreCase(ch)
+        case HTTP_1_0 => "Keep-Alive".equals(ch)
+      }
+
+      val responseBinding = new ResponseBinding(response)
+      
+      rf(responseBinding)
+
+      responseBinding.getOutputStream.close
+      if (keepAlive) {
+        response.setHeader("Connection", "Keep-Alive")
+        response.setHeader("Content-Length", response.getContent().readableBytes());
+      } else {
+        response.setHeader("Connection", "close")
+      }
+
+      val future = e.getChannel.write(response)
+      if (!keepAlive) {
+        future.addListener(ChannelFutureListener.CLOSE)
+      }
+    }
 
     attempt(requestBinding) match {
-      case Pass => NotFound(responseBinding)
-      case response_function => response_function(responseBinding)
-    }
-
-    responseBinding.getOutputStream.close
-    if (keepAlive) {
-      response.setHeader("Connection", "Keep-Alive")
-      response.setHeader("Content-Length", response.getContent().readableBytes());
-    } else {
-      response.setHeader("Connection", "close")
-    }
-
-
-    val future = e.getChannel.write(response)
-    if (!keepAlive) {
-      future.addListener(ChannelFutureListener.CLOSE)
+      case Pass => respond(NotFound)
+      case Channeled(cf) => cf(e.getChannel)
+      case response_function => respond(response_function)
     }
 
   }
