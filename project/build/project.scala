@@ -46,7 +46,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   }, jetty)
   
   lazy val netty = project("netty", "Unfiltered Netty", new UnfilteredModule(_) {
-    val netty = "org.jboss.netty" % "netty" % "3.2.1.Final" withSources()
+    val netty = "org.jboss.netty" % "netty" % "3.2.2.Final" withSources()
   }, library)
 
   /** Marker for Scala 2.8-only projects that shouldn't be cross compiled or published */
@@ -65,7 +65,6 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     else
       "net.liftweb" %% "lift-json" % "2.1-M1"
   }, library)
-
   def servletApiDependency = "javax.servlet" % "servlet-api" % "2.3" % "provided"
 
   lazy val scalate = project("scalate", "Unfiltered Scalate", 
@@ -74,6 +73,10 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     val scalaCompiler = "org.scala-lang" % "scala-compiler" % "2.8.0" % "test"
     override def repositories = Set(ScalaToolsSnapshots)
   }, library)
+  /** websockets */
+  lazy val websockets = project("websockets", "Unfiltered Websockets", new  UnfilteredModule(_) {
+    lazy val netty = "org.jboss.netty" % "netty" % "3.2.2.Final"
+  }, netty)
   
   def specsDependency =
     if (buildScalaVersion startsWith "2.7.")

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+    <title>Unfiltered WebSockets</title>
+    <style type="text/css">
+      * { margin:0; padding:0; }
+      body { font-size: 24px; font-family:helvetica, sans serif; padding:1em; color:#333; }
+      input[type='text'] { font-size:24px; } #debug { font-size:16px; color:#ccc; }
+    </style>
+    <script text="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+       var socket;
+       var supportsWebsockets = function() { return window.WebSocket; }
+       var createSocket = function(uri) {
+         if(supportsWebsockets()) {
+            socket = new WebSocket(uri);
+            socket.onmessage = function(e) { 
+              $('ul').first().append('<li>'+e.data+'</li>'); 
+            }
+            socket.onopen = function(e) { 
+              debug('socket open') 
+            }
+            socket.onclose = function(e) { 
+              debug('socket close'); 
+            }
+          } else { 
+            alert("your browser does not support web sockets. try chrome."); 
+          }
+       }
+       
+       var debug = function(msg) { $("#debug").html(msg); }
+       
+       createSocket("ws://localhost:8080/");
+       
+       var send = function(message) {
+         if(!supportsWebsockets()) { return; }
+         if(socket.readyState == WebSocket.OPEN) {
+           socket.send(message);
+         } else { 
+           alert("socket is not open"); 
+         }
+       }
+       var isOpen = function() { return supportsWebsockets() ? socket.readyState == WebSocket.OPEN : false; }
+       var isClosed = function() { return supportsWebsockets() ? !isOpen() : false; };
+       var closeSocket = function() { if(supportsWebsockets() && isOpen()) { socket.close(); } };
+       var openSocket = function() {
+          if(isOpen()) {
+            alert('socket already open');
+            return;
+          }
+          createSocket("ws://localhost:8080/");
+       }
+       var toggleConnection = function() { if(isOpen()) { closeSocket(); } else { openSocket(); } };
+    </script>
+    ws://localhost:8080/
+    <form onsubmit="return false;">
+      <input type="text" name="message" value="Hello World" />
+      <input type="submit" value="Send" onclick="send(this.form.message.value)" />
+      <input type="button" value="toogle connection" onclick="toggleConnection()" />
+    </form>
+    <div id="debug"></div>
+    <ul></ul> 
+  </body>
+</html>
