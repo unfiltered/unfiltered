@@ -20,16 +20,23 @@ case class WebSocket(c: Channel) {
   
   def send(str: String) = c.write(new DefaultWebSocketFrame(str))
   
-  /** will throw an IllegalArgumentException if (type & 0x80 == 0) and the data is not encoded in UTF-8 */
+  /** will throw an IllegalArgumentException if (type & 0x80 == 0) and the data is not
+   * encoded in UTF-8 */
   def send(mtype: Int, buf: ChannelBuffer) = c.write(new DefaultWebSocketFrame(mtype, buf))
 }
 
-class WebSocketHandler(path: String, intent: PartialFunction[SocketCallback, Unit]) extends SimpleChannelUpstreamHandler {
+class WebSocketHandler(path: String, intent: PartialFunction[SocketCallback, Unit]) 
+  extends SimpleChannelUpstreamHandler {
+  
   import java.security.MessageDigest
-  import netty.channel.{ChannelFuture, ChannelFutureListener, ChannelHandlerContext, ChannelStateEvent, ExceptionEvent, MessageEvent}
+  import netty.channel.{ChannelFuture, ChannelFutureListener, ChannelHandlerContext, 
+                        ChannelStateEvent, ExceptionEvent, MessageEvent}
   import netty.buffer.ChannelBuffers
-  import netty.handler.codec.http.websocket.{DefaultWebSocketFrame, WebSocketFrame, WebSocketFrameDecoder, WebSocketFrameEncoder}
-  import netty.handler.codec.http.{HttpHeaders, HttpMethod, HttpRequest => NHttpRequest, HttpResponseStatus, HttpVersion, DefaultHttpResponse, HttpResponse => NHttpResponse}
+  import netty.handler.codec.http.websocket.{DefaultWebSocketFrame, WebSocketFrame, 
+                                             WebSocketFrameDecoder, WebSocketFrameEncoder}
+  import netty.handler.codec.http.{HttpHeaders, HttpMethod, HttpRequest => NHttpRequest, 
+                                   HttpResponseStatus, HttpVersion, DefaultHttpResponse,
+                                   HttpResponse => NHttpResponse}
   import netty.handler.codec.http
   import HttpHeaders._
   import HttpHeaders.Names._
@@ -65,8 +72,10 @@ class WebSocketHandler(path: String, intent: PartialFunction[SocketCallback, Uni
   private def handshake(ctx: ChannelHandlerContext, req: NHttpRequest) = req.getMethod match {
     case GET => req.getUri match {
       case p: String if(p.equals(path)) =>
-        if (Values.UPGRADE.equalsIgnoreCase(req.getHeader(CONNECTION)) && WEBSOCKET.equalsIgnoreCase(req.getHeader(Names.UPGRADE))) {
-          val res = new DefaultHttpResponse(HTTP_1_1, new HttpResponseStatus(101, "Web Socket Protocol Handshake"))
+        if (Values.UPGRADE.equalsIgnoreCase(req.getHeader(CONNECTION)) && 
+            WEBSOCKET.equalsIgnoreCase(req.getHeader(Names.UPGRADE))) {
+          val res = new DefaultHttpResponse(HTTP_1_1, 
+                                            new HttpResponseStatus(101, "Web Socket Protocol Handshake"))
           
           def head(k: String, v: String) = res.addHeader(k, v)
           def headIfDefined(k: String) = if(req.getHeader(k) != null) head(k, req.getHeader(k))
