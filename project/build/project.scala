@@ -74,9 +74,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     override def repositories = Set(ScalaToolsSnapshots)
   }, library)
   /** websockets */
-  lazy val websockets = project("websockets", "Unfiltered Websockets", new  UnfilteredModule(_) {
-    lazy val netty = "org.jboss.netty" % "netty" % "3.2.2.Final"
-  }, netty)
+  lazy val websockets = project("websockets", "Unfiltered Websockets", new  UnfilteredModule(_), netty)
   
   def specsDependency =
     if (buildScalaVersion startsWith "2.7.")
