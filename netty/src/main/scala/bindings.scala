@@ -44,7 +44,7 @@ private [netty] class RequestBinding(req: DefaultHttpRequest) extends HttpReques
   def requestURI = req.getUri.split('?').toList.head
   def contextPath = "" // No contexts here
 
-  lazy val parameterNames = params.keySet.elements
+  def parameterNames = params.keySet.elements
   def parameterValues(param: String) = params(param)
 
   def headers(name: String) = new JIteratorIterator(req.getHeaders(name).iterator)
