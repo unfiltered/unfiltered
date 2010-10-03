@@ -20,7 +20,7 @@ trait ParamsSpec extends unfiltered.spec.Hosted {
   /** Used for extract test */
   object Number extends Params.Extract("number", Params.first ~> Params.int)
 
-  def intent[T]: unfiltered.Unfiltered.Intent[T] = {
+  def intent[A]: unfiltered.Unfiltered.Intent[A,ResponseFunction] = {
     case UFPath("/basic", Params(params, _)) => params("foo") match {
       case Seq(foo) => ResponseString("foo is %s" format foo)
       case _ =>  ResponseString("what's foo?")

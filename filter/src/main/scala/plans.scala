@@ -17,13 +17,17 @@ trait InittedFilter extends Filter {
 /**
  * Servlet filter that wraps an Intent and adheres to standard filter chain behaviour.
  */
-trait Plan extends InittedFilter with unfiltered.PassingIntent[HttpServletRequest] {
+trait Plan extends InittedFilter {
+  def complete(intent: Intent[HttpServletRequest, ResponseFunction]) =
+    intent.orElse({ case _ => Pass }: Intent[HttpServletRequest, ResponseFunction])
+  def intent: Intent[HttpServletRequest, ResponseFunction]
+      
   def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     (request, response) match {
       case (hreq: HttpServletRequest, hres: HttpServletResponse) =>
         val request = new RequestBinding(hreq)
         val response = new ResponseBinding(hres)
-        attempt(request) match {
+        complete(intent)(request) match {
           case after: PassAndThen =>
             val hrw = PassAndThenResponseWrapper(response.underlying)
             chain.doFilter(request.underlying, hrw)
@@ -38,8 +42,8 @@ trait Plan extends InittedFilter with unfiltered.PassingIntent[HttpServletReques
 }
 
 /** To define a filter class with an independent function */
-class Planify(val intent: Intent[HttpServletRequest]) extends Plan
+class Planify(val intent: Intent[HttpServletRequest, ResponseFunction]) extends Plan
 /** To create a filter instance with an independent function */
 object Planify {
-  def apply(intent: Intent[HttpServletRequest]) = new Planify(intent)
+  def apply(intent: Intent[HttpServletRequest, ResponseFunction]) = new Planify(intent)
 }
