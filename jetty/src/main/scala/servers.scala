@@ -3,7 +3,7 @@ package unfiltered.jetty
 import javax.servlet.http.HttpServletRequest
 import org.eclipse.jetty.server.{Server => JettyServer, Connector, Handler}
 import org.eclipse.jetty.server.handler.{ContextHandlerCollection, ResourceHandler}
-import org.eclipse.jetty.servlet.{FilterHolder, FilterMapping, ServletContextHandler}
+import org.eclipse.jetty.servlet.{FilterHolder, FilterMapping, ServletContextHandler, ServletHolder}
 import org.eclipse.jetty.server.bio.SocketConnector
 import org.eclipse.jetty.util.resource.Resource
 
@@ -16,7 +16,9 @@ case class Http(port: Int) extends Server {
 trait ContextBuilder { 
   def current: ServletContextHandler
   def filter(filt: javax.servlet.Filter): this.type = {
-    current.addFilter(new FilterHolder(filt), "/*", FilterMapping.DEFAULT)
+    val holder = new FilterHolder(filt)
+    holder.setName("Filter %s" format System.currentTimeMillis)
+    current.addFilter(holder, "/*", FilterMapping.DEFAULT)
     this
   }
 
@@ -34,7 +36,9 @@ trait Server extends ContextBuilder {
   
   private def contextHandler(path: String) = {
     val ctx = new ServletContextHandler(handlers, path, false, false)
-    ctx.addServlet(classOf[org.eclipse.jetty.servlet.DefaultServlet], "/")
+    val holder = new ServletHolder(classOf[org.eclipse.jetty.servlet.DefaultServlet])
+    holder.setName("Servlet %s" format System.currentTimeMillis)
+    ctx.addServlet(holder, "/")
     handlers.addHandler(ctx)
     ctx
   }
