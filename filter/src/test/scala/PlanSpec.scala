@@ -10,10 +10,8 @@ object PlanSpec extends Specification with unfiltered.spec.jetty.Served {
   
   import dispatch._
   
-  // uncomment the following to get lots of info from jetty
-  // System.setProperty("org.eclipse.jetty.util.log.DEBUG","true")
-  
-  def setup = { _.filter(Planify {
+  def setup = { 
+    _.filter(Planify {
       case GET(UFPath("/filter", _)) => {
         println("should pass to next filter")
         Pass
@@ -26,66 +24,39 @@ object PlanSpec extends Specification with unfiltered.spec.jetty.Served {
         case GET(UFPath("/test2", _)) => ResponseString("test2") ~> Ok
       })
     }.context("/filter3") {
-      _.filter(new unfiltered.filter.Plan { def intent = {
+      _.filter(new Plan { def intent = {
         case GET(UFPath(Seg("aplan" :: Nil), r)) =>
-          println("aplan matched path on " + UFPath.unapply(r).get._1)
           Ok ~> ContentType("text/html") ~> ResponseString("Plan A")
-        case UFPath(p, _) => 
-          println("aplan FAILED TO MATCH PATH %s %s" format(p, hashCode))
-          Pass
       }})
-      .filter(new unfiltered.filter.Plan { def intent = {
+      .filter(new Plan { def intent = {
         case GET(UFPath(Seg("bplan" :: Nil), r)) =>
-          println("bplan matched path on " + UFPath.unapply(r).get._1)
           Ok ~> ContentType("text/html") ~> ResponseString("Plan B")
-        case UFPath(p, _) => 
-          println("bplan FAILED TO MATCH PATH %s %s" format(p, hashCode))
-          Pass
       }})
     }.context("/filter4") {
       _.filter(new unfiltered.filter.Planify({
         case GET(UFPath(Seg("aplan" :: Nil), r)) =>
           Ok ~> ContentType("text/html") ~> ResponseString("Plan A")
-        case UFPath(p, _) => 
-          println("aplan FAILED TO MATCH PATH %s %s" format(p, hashCode))
-          Pass
       }))
       .filter(new unfiltered.filter.Planify({
         case GET(UFPath(Seg("bplan" :: Nil), r)) =>
           Ok ~> ContentType("text/html") ~> ResponseString("Plan B")
-        case UFPath(p, _) => 
-          println("bplan FAILED TO MATCH PATH %s %s" format(p, hashCode))
-          Pass
       }))
       .filter(new unfiltered.filter.Planify({
         case GET(UFPath(Seg("cplan" :: Nil), r)) =>
           Ok ~> ContentType("text/html") ~> ResponseString("Plan C")
-        case UFPath(p, _) => 
-          println("cplan FAILED TO MATCH PATH %s %s" format(p, hashCode))
-          Pass
       }))
-    }
-    .context("/filter5") {
+    }.context("/filter5") {
       _.filter(unfiltered.filter.Planify {
         case GET(UFPath(Seg("aplan" :: Nil), r)) =>
           Ok ~> ContentType("text/html") ~> ResponseString("Plan A")
-        case UFPath(p, _) => 
-          println("aplan FAILED TO MATCH PATH %s %s" format(p, hashCode))
-          Pass
       })
       .filter(unfiltered.filter.Planify {
         case GET(UFPath(Seg("bplan" :: Nil), r)) =>
           Ok ~> ContentType("text/html") ~> ResponseString("Plan B")
-        case UFPath(p, _) => 
-          println("bplan FAILED TO MATCH PATH %s %s" format(p, hashCode))
-          Pass
       })
       .filter(unfiltered.filter.Planify {
         case GET(UFPath(Seg("cplan" :: Nil), r)) =>
           Ok ~> ContentType("text/html") ~> ResponseString("Plan C")
-        case UFPath(p, _) => 
-          println("cplan FAILED TO MATCH PATH %s %s" format(p, hashCode))
-          Pass
       })
     }
   }
