@@ -12,7 +12,7 @@ private [filter] class RequestBinding(req: HttpServletRequest) extends HttpReque
   def method = req.getMethod
   def requestURI = req.getRequestURI
   def contextPath = req.getContextPath
-  lazy val parameterNames = new JEnumerationIterator(
+  def parameterNames = new JEnumerationIterator(
     req.getParameterNames.asInstanceOf[java.util.Enumeration[String]]
   )
   def parameterValues(param: String) = req.getParameterValues(param)
