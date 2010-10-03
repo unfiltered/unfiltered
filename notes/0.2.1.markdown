@@ -1,0 +1,4 @@
+Fixes [issue 3][i3], a bug in the embedded Jetty server wrapper that
+caused only the first filter defined in a context to be evaluated.
+
+[i3]: http://github.com/n8han/Unfiltered/issues/3
