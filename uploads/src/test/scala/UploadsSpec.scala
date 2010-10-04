@@ -16,11 +16,11 @@ object UploadsSpec extends Specification with unfiltered.spec.jetty.Served {
   import java.io.{File => JFile}
  
   class TestPlan extends unfiltered.filter.Planify({
-    case POST(UFPath("/disk-upload", MultiPartParams.Disk(params, files, _))) => files("f") match { 
+    case POST(UFPath("/disk-upload", MultiPart(req))) => MultiPartParams.Disk(req).files("f") match {
       case Seq(f, _*) => ResponseString("disk read file f named %s with content type %s" format(f.name, f.contentType))
       case f =>  ResponseString("what's f?")
     }
-    case POST(UFPath("/disk-upload/write", MultiPartParams.Disk(params, files, _))) => files("f") match { 
+    case POST(UFPath("/disk-upload/write", MultiPart(req))) => MultiPartParams.Disk(req).files("f") match {
       case Seq(f, _*) =>
         f.write(new JFile("upload-test-out.txt")) match {
           case Some(outFile) =>
@@ -29,14 +29,15 @@ object UploadsSpec extends Specification with unfiltered.spec.jetty.Served {
             )
             else ResponseString("wrote disk read file f named %s with content type %s, with differing contents" format(f.name, f.contentType))
           case None => ResponseString("did not write disk read file f named %s with content type %s" format(f.name, f.contentType))
-        }
+      }
       case _ =>  ResponseString("what's f?")
     }
-    case POST(UFPath("/stream-upload", MultiPartParams.Streamed(params, files, _))) => files("f") match {
+    case POST(UFPath("/stream-upload", MultiPart(req))) => MultiPartParams.Streamed(req).files("f") match {
       case Seq(f, _*) => ResponseString("stream read file f is named %s with content type %s" format(f.name, f.contentType))  
       case _ =>  ResponseString("what's f?")
     }
-    case POST(UFPath("/stream-upload/write", MultiPartParams.Streamed(params, files, _))) => files("f") match {
+    case POST(UFPath("/stream-upload/write", MultiPart(req))) => 
+      MultiPartParams.Streamed(req).files("f") match {
        case Seq(f, _*) =>
           val src = IOU.toString(getClass.getResourceAsStream("upload-test.txt"))
           f.write(new JFile("upload-test-out.txt")) match {
@@ -48,12 +49,12 @@ object UploadsSpec extends Specification with unfiltered.spec.jetty.Served {
             case None => ResponseString("did not write stream read file f named %s with content type %s" format(f.name, f.contentType))
           }
         case _ =>  ResponseString("what's f?")
-    }
-    case POST(UFPath("/mem-upload", MultiPartParams.Memory(params, files, _))) => files("f") match {
+      }
+    case POST(UFPath("/mem-upload", MultiPart(req))) => MultiPartParams.Memory(req).files("f") match {
       case Seq(f, _*) => ResponseString("memory read file f is named %s with content type %s" format(f.name, f.contentType))
       case _ =>  ResponseString("what's f?")
     }
-    case POST(UFPath("/mem-upload/write", MultiPartParams.Memory(params, files, _))) => files("f") match {
+    case POST(UFPath("/mem-upload/write", MultiPart(req))) => MultiPartParams.Memory(req).files("f") match {
       case Seq(f, _*) =>
         f.write(new JFile("upload-test-out.txt")) match {
           case Some(outFile) => ResponseString("wrote memory read file f is named %s with content type %s" format(f.name, f.contentType))
