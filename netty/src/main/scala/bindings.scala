@@ -7,6 +7,7 @@ import java.net.URLDecoder
 import org.jboss.netty.handler.codec.http._
 import java.io._
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBufferOutputStream, ChannelBufferInputStream}
+import java.nio.charset.{Charset => JNIOCharset}
 
 object HttpConfig {
    val DEFAULT_CHARSET = "UTF-8"
@@ -21,7 +22,7 @@ private [netty] class RequestBinding(req: DefaultHttpRequest) extends HttpReques
   }
   def postParams = this match {
     case POST(RequestContentType(ct, _)) if ct.contains("application/x-www-form-urlencoded") =>
-      URLParser.urldecode(req.getContent.toString(charset))
+      URLParser.urldecode(req.getContent.toString(JNIOCharset.forName(charset)))
     case _ => Map.empty[String,Seq[String]]
   }
 
