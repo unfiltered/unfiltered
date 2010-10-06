@@ -6,6 +6,7 @@ import org.eclipse.jetty.server.handler.{ContextHandlerCollection, ResourceHandl
 import org.eclipse.jetty.servlet.{FilterHolder, FilterMapping, ServletContextHandler, ServletHolder}
 import org.eclipse.jetty.server.bio.SocketConnector
 import org.eclipse.jetty.util.resource.Resource
+import java.util.concurrent.atomic.AtomicInteger
 
 case class Http(port: Int) extends Server {
   val conn = new SocketConnector()
@@ -13,11 +14,12 @@ case class Http(port: Int) extends Server {
   server.addConnector(conn)
 }
 
-trait ContextBuilder { 
+trait ContextBuilder {
+  val counter: AtomicInteger
   def current: ServletContextHandler
   def filter(filt: javax.servlet.Filter): this.type = {
     val holder = new FilterHolder(filt)
-    holder.setName("Filter %s" format System.currentTimeMillis)
+    holder.setName("Filter %s" format counter.incrementAndGet)
     current.addFilter(holder, "/*", FilterMapping.DEFAULT)
     this
   }
@@ -32,12 +34,14 @@ trait ContextBuilder {
 trait Server extends ContextBuilder {
   val server = new JettyServer()
   val handlers = new ContextHandlerCollection
+  val counter = new AtomicInteger
+  
   server.setHandler(handlers)
   
   private def contextHandler(path: String) = {
     val ctx = new ServletContextHandler(handlers, path, false, false)
     val holder = new ServletHolder(classOf[org.eclipse.jetty.servlet.DefaultServlet])
-    holder.setName("Servlet %s" format System.currentTimeMillis)
+    holder.setName("Servlet %s" format counter.incrementAndGet)
     ctx.addServlet(holder, "/")
     handlers.addHandler(ctx)
     ctx
@@ -46,6 +50,7 @@ trait Server extends ContextBuilder {
   def context(path: String)(block: ContextBuilder => Unit) = {
     block(new ContextBuilder {
       val current = contextHandler(path)
+      val counter = Server.this.counter
     })
     Server.this
   }
