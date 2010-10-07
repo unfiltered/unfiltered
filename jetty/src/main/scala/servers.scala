@@ -94,4 +94,8 @@ trait Server extends ContextBuilder {
     underlying.stop()
     Server.this
   }
+  /** Destroys the Jetty server instance and frees its resources. */
+  def destroy() {
+    underlying.destroy()
+  }
 }
