@@ -24,6 +24,10 @@ trait ContextBuilder {
     this
   }
 
+  /** Sets a base resource path for this context, in which
+   * Jetty checks for file resources when no filters have
+   * served a response. The `path` URL may refer to a file
+   * (see File#toURL) or a location on the classpath. */ 
   def resources(path: java.net.URL): this.type = {
     current.setBaseResource(Resource.newResource(path))
     this
