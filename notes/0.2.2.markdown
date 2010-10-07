@@ -1,3 +1,8 @@
 * The `server` field in prior version of `unfiltered.jetty.Server`
   (the wrapper's reference to the Jetty server object) is now
   `underlying`
+* The `destroy` method of the underlying Jetty server is now promoted
+  to the wrapper interface, and it is called automatcally from the
+  `run` method. Destroying completed server instances frees PermGen
+  space for long-running JVM sessions, such as those provided by
+  interactive build and test tools.
