@@ -62,7 +62,8 @@ trait Server extends ContextBuilder {
   }
   /** Starts the server, calls andThen, and joins the server's controlling thread. If the
    * current thread is not the main thread, e.g. if running in sbt, waits for input in a
-   * loop and stops the server as soon as any key is pressed.  */
+   * loop and stops the server as soon as any key is pressed. In either case the server
+   * instance is destroyed after being stopped. */
   def run(afterStart: this.type => Unit) {
     // enter wait loop if not in main thread, e.g. running inside sbt
     Thread.currentThread.getName match {
@@ -71,6 +72,7 @@ trait Server extends ContextBuilder {
         underlying.start()
         afterStart(Server.this)
         underlying.join()
+        destroy()
       case _ => 
         underlying.start()
         afterStart(Server.this)
@@ -82,6 +84,7 @@ trait Server extends ContextBuilder {
         }
         doWait()
         stop()
+        destroy()
     }
   }
   /** Starts server in the background */
@@ -94,7 +97,9 @@ trait Server extends ContextBuilder {
     underlying.stop()
     Server.this
   }
-  /** Destroys the Jetty server instance and frees its resources. */
+  /** Destroys the Jetty server instance and frees its resources.
+   * Call after stopping a server, if finished with the instance,
+   * to help avoid PermGen errors in an ongoing JVM session. */
   def destroy() {
     underlying.destroy()
   }
