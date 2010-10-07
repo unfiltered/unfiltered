@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger
 case class Http(port: Int) extends Server {
   val conn = new SocketConnector()
   conn.setPort(port)
-  server.addConnector(conn)
+  underlying.addConnector(conn)
 }
 
 trait ContextBuilder {
@@ -32,11 +32,11 @@ trait ContextBuilder {
 }
 
 trait Server extends ContextBuilder {
-  val server = new JettyServer()
+  val underlying = new JettyServer()
   val handlers = new ContextHandlerCollection
   val counter = new AtomicInteger
   
-  server.setHandler(handlers)
+  underlying.setHandler(handlers)
   
   private def contextHandler(path: String) = {
     val ctx = new ServletContextHandler(handlers, path, false, false)
@@ -67,12 +67,12 @@ trait Server extends ContextBuilder {
     // enter wait loop if not in main thread, e.g. running inside sbt
     Thread.currentThread.getName match {
       case "main" => 
-        server.setStopAtShutdown(true)
-        server.start()
+        underlying.setStopAtShutdown(true)
+        underlying.start()
         afterStart(Server.this)
-        server.join()
+        underlying.join()
       case _ => 
-        server.start()
+        underlying.start()
         afterStart(Server.this)
         println("Embedded server running. Press any key to stop.")
         def doWait() {
@@ -86,12 +86,12 @@ trait Server extends ContextBuilder {
   }
   /** Starts server in the background */
   def start() = {
-    server.start()
+    underlying.start()
     Server.this
   }
   /** Stops server running in the background */
   def stop() = {
-    server.stop()
+    underlying.stop()
     Server.this
   }
 }
