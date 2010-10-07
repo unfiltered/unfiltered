@@ -1,0 +1,3 @@
+* The `server` field in prior version of `unfiltered.jetty.Server`
+  (the wrapper's reference to the Jetty server object) is now
+  `underlying`
