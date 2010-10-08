@@ -8,9 +8,12 @@ import org.eclipse.jetty.server.bio.SocketConnector
 import org.eclipse.jetty.util.resource.Resource
 import java.util.concurrent.atomic.AtomicInteger
 
-case class Http(port: Int) extends Server {
+case class Http(port: Int, host: String) extends Server {
+  def this(port: Int) = this(port, "0.0.0.0")
+  val url = "http://%s:%d/" format (host, port)
   val conn = new SocketConnector()
   conn.setPort(port)
+  conn.setHost(host)
   underlying.addConnector(conn)
 }
 
