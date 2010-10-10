@@ -17,6 +17,39 @@ case class Http(port: Int, host: String) extends Server {
   underlying.addConnector(conn)
 }
 
+/** Provides ssl support to a Server. This trait only requires a x509 keystore cert.
+    for added truststore support, mix in the Trusted trait */
+trait Ssl { self: Server =>
+  import org.eclipse.jetty.server.ssl.SslSocketConnector
+  
+  def tryProperty(name: String) = System.getProperty(name) match {
+    case null => error("required system property not set %s" format name)
+    case prop => prop
+  }
+  
+  val sslPort: Int
+  val sslMaxIdleTime = 90000
+  val sslHandshakeTimeout = 120000
+  lazy val keyStore = tryProperty("jetty.ssl.keyStore")
+  lazy val keyStorePassword = tryProperty("jetty.ssl.keyStorePassword")
+
+  val sslConn = new SslSocketConnector()
+  sslConn.setPort(sslPort)
+  sslConn.setKeystore(keyStore)
+  sslConn.setKeyPassword(keyStorePassword)
+  sslConn.setMaxIdleTime(sslMaxIdleTime)
+  sslConn.setHandshakeTimeout(sslHandshakeTimeout)
+  underlying.addConnector(sslConn)
+}
+
+/** Provides truststore support to an Ssl supported Server */
+trait Trusted { self: Ssl =>
+  lazy val trustStore = tryProperty("jetty.ssl.trustStore")
+  lazy val trustStorePassword = tryProperty("jetty.ssl.trustStorePassword")
+  sslConn.setTruststore(trustStore)
+  sslConn.setTrustPassword(trustStorePassword)
+}
+
 trait ContextBuilder {
   val counter: AtomicInteger
   def current: ServletContextHandler
