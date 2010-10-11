@@ -5,6 +5,8 @@ import unfiltered.netty.{Server => NServer, HouseKeepingChannelHandler}
 object WebSocketServer {
   def apply(path: String, port: Int)(intent: PartialFunction[SocketCallback, Unit]) =
      new WebSocketServer(port, path, intent).run
+  def apply(host: String, path: String, port: Int)(intent: PartialFunction[SocketCallback, Unit]) =
+      new WebSocketServer(port, host, path, intent).run
 }
 
 class WebSocketServer(port: Int, host: String, path: String, intent: PartialFunction[SocketCallback, Unit]) 
