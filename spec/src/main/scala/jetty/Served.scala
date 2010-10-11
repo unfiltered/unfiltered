@@ -10,5 +10,5 @@ trait Served extends unfiltered.spec.Hosted {
   lazy val server = setup(new Http(port))
   
   doBeforeSpec { server.start() }
-  doAfterSpec { server.stop() }
+  doAfterSpec { server.stop(); server.destroy() }
 }

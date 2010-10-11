@@ -135,6 +135,10 @@ Provides extractors for working with jsonp and transforming json request bodies.
 
 [scalate]: http://scalate.fusesource.org/
 
+### websockets
+
+A minimal server websocket interface build on netty
+
 ## Install
 
 Unfiltered is a [cross built](http://code.google.com/p/simple-build-tool/wiki/CrossBuild) project, currently for the following Scala versions
