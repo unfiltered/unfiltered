@@ -17,7 +17,7 @@ trait AcceptsSpec extends unfiltered.spec.Hosted {
   
   import dispatch._
 
-  def intent[A]: unfiltered.Unfiltered.Intent[A,ResponseFunction] = {
+  def intent[A]: PartialFunction[A,ResponseFunction] = {
     case GET(UFPath(Seg(ext :: Nil), Accepts.Json(_))) => ResponseString("json")
     case GET(UFPath(Seg(ext :: Nil), Accepts.Xml(_))) => ResponseString("xml")
     case GET(UFPath(Seg(ext :: Nil), Accepts.Csv(_))) => ResponseString("csv")

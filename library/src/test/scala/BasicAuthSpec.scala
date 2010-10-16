@@ -17,7 +17,7 @@ trait BasicAuthSpec extends unfiltered.spec.Hosted {
   
   import dispatch._
   
-  def intent[A]: unfiltered.Unfiltered.Intent[A,ResponseFunction] = {
+  def intent[A]: PartialFunction[A,ResponseFunction] = {
     case GET(UFPath("/secret", BasicAuth(creds, _))) => creds match {
       case ("test", "secret") => ResponseString("pass")
       case _ => ResponseString("fail")

@@ -1,16 +1,19 @@
 package unfiltered.netty
 
-import unfiltered.Unfiltered.Intent
 import org.jboss.netty.handler.codec.http.DefaultHttpRequest
 import unfiltered.response.ResponseFunction
+import unfiltered.request.HttpRequest
 
+object Plan {
+  type Intent = PartialFunction[HttpRequest[DefaultHttpRequest], ResponseFunction]
+}
 /** The default Netty Plan. (There may be other kinds of channel handlers?) */
 abstract class Plan extends UnfilteredChannelHandler
 
-class Planify(val intent: Intent[DefaultHttpRequest, ResponseFunction]) extends Plan
+class Planify(val intent: Plan.Intent) extends Plan
 
 object Planify {
-  def apply(intent: Intent[DefaultHttpRequest, ResponseFunction]) = new Planify(intent)
+  def apply(intent: Plan.Intent) = new Planify(intent)
 }
 
 case class Channeled(cf: org.jboss.netty.channel.Channel => Unit) extends unfiltered.response.ResponseFunction {
