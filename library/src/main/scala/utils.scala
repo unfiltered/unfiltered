@@ -22,3 +22,9 @@ object Browser {
       None
     } catch { case e => Some(e) }
 }
+
+/** Shim for what scala 2.8 Option#apply does so 2.7 can play too */
+object NonNull {
+  def apply[T](x: T) = if(x == null) None else Some(x)
+  def unapply[T](x: T) = apply(x)
+}

@@ -7,6 +7,9 @@ import java.net.URLDecoder
 import org.jboss.netty.handler.codec.http._
 import java.io._
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBufferOutputStream, ChannelBufferInputStream}
+import java.nio.charset.{Charset => JNIOCharset}
+import unfiltered.Cookie
+import unfiltered.{Cookie, NonNull}
 
 object HttpConfig {
    val DEFAULT_CHARSET = "UTF-8"
@@ -21,7 +24,7 @@ private [netty] class RequestBinding(req: DefaultHttpRequest) extends HttpReques
   }
   def postParams = this match {
     case POST(RequestContentType(ct, _)) if ct.contains("application/x-www-form-urlencoded") =>
-      URLParser.urldecode(req.getContent.toString(charset))
+      URLParser.urldecode(req.getContent.toString(JNIOCharset.forName(charset)))
     case _ => Map.empty[String,Seq[String]]
   }
 
@@ -48,6 +51,20 @@ private [netty] class RequestBinding(req: DefaultHttpRequest) extends HttpReques
   def parameterValues(param: String) = params(param)
 
   def headers(name: String) = new JIteratorIterator(req.getHeaders(name).iterator)
+  
+  lazy val cookies = {
+    import org.jboss.netty.handler.codec.http.{Cookie => NCookie, CookieDecoder}
+    import unfiltered.Cookie
+    val cookieString = req.getHeader(HttpHeaders.Names.COOKIE);
+    if (cookieString != null) {
+      val cookieDecoder = new CookieDecoder
+      val decCookies = Set(cookieDecoder.decode(cookieString).toArray(new Array[NCookie](0)): _*)
+      (List[Cookie]() /: decCookies)((l, c) => 
+        Cookie(c.getName, c.getValue, NonNull(c.getDomain), NonNull(c.getPath), NonNull(c.getMaxAge), NonNull(c.isSecure)) :: l)  
+    } else {
+      Nil
+    }
+  }
 }
 
 private [netty] class ResponseBinding(res: DefaultHttpResponse) extends HttpResponse(res) {
@@ -70,6 +87,22 @@ private [netty] class ResponseBinding(res: DefaultHttpResponse) extends HttpResp
 
   def getWriter() = writer
   def getOutputStream() = outputStream
+  
+  def cookies(resCookies: Seq[Cookie]) = {
+    import org.jboss.netty.handler.codec.http.{DefaultCookie, CookieEncoder}
+    if(!resCookies.isEmpty) {
+      val cookieEncoder = new CookieEncoder(true)
+      resCookies.foreach { c =>
+        val nc = new DefaultCookie(c.name, c.value)
+        if(c.domain.isDefined) nc.setDomain(c.domain.get)
+        if(c.path.isDefined) nc.setPath(c.path.get)
+        if(c.maxAge.isDefined) nc.setMaxAge(c.maxAge.get)
+        if(c.secure.isDefined) nc.setSecure(c.secure.get)
+        cookieEncoder.addCookie(nc)
+      }
+      res.addHeader(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode)
+    }
+  }
 }
 
 private [netty] object URLParser {

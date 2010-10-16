@@ -1,6 +1,7 @@
 package unfiltered.request
 
 import java.io.{Reader, InputStream}
+import unfiltered.Cookie
 
 abstract class HttpRequest[T](val underlying: T) {
   def inputStream: InputStream
@@ -12,4 +13,5 @@ abstract class HttpRequest[T](val underlying: T) {
   def parameterNames: Iterator[String]
   def parameterValues(param: String) : Seq[String]
   def headers(name: String) : Iterator[String]
+  def cookies: Seq[Cookie]
 }

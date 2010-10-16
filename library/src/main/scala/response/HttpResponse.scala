@@ -1,6 +1,7 @@
 package unfiltered.response
 
 import java.io.{OutputStream, PrintWriter}
+import unfiltered.Cookie
 
 abstract class HttpResponse[T](val underlying: T) {
   def setContentType(contentType: String) : Unit
@@ -9,6 +10,5 @@ abstract class HttpResponse[T](val underlying: T) {
   def getOutputStream() : OutputStream
   def sendRedirect(url: String) : Unit
   def addHeader(name: String, value: String) : Unit
+  def cookies(cookie: Seq[Cookie]) : Unit
 }
-
-
