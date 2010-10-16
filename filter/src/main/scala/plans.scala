@@ -14,7 +14,7 @@ trait InittedFilter extends Filter {
 }
 
 object Plan {
-  type Intent = PartialFunction[HttpRequest[HttpServletRequest], ResponseFunction]
+  type Intent = unfiltered.Roundtrip.Intent[HttpServletRequest]
 }
 
 /**

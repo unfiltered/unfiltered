@@ -5,7 +5,7 @@ import unfiltered.response.ResponseFunction
 import unfiltered.request.HttpRequest
 
 object Plan {
-  type Intent = PartialFunction[HttpRequest[DefaultHttpRequest], ResponseFunction]
+  type Intent = unfiltered.Roundtrip.Intent[DefaultHttpRequest]
 }
 /** The default Netty Plan. (There may be other kinds of channel handlers?) */
 abstract class Plan extends UnfilteredChannelHandler
