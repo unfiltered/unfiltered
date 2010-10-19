@@ -7,7 +7,7 @@ object AcceptsSpecJetty extends unfiltered.spec.jetty.Served with AcceptsSpec {
 }
 object AcceptsSpecNetty extends unfiltered.spec.netty.Served with AcceptsSpec {
   def setup = { p => 
-    new unfiltered.netty.Server(p, unfiltered.netty.Planify(intent)) 
+    new unfiltered.netty.Server(p, unfiltered.netty.roundtrip.Planify(intent)) 
   }
 }
 trait AcceptsSpec extends unfiltered.spec.Hosted {
