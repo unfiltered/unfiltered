@@ -9,16 +9,18 @@ import unfiltered.response.{ResponseFunction,NotFound}
 import unfiltered.request.HttpRequest
 
 object Plan {
-  type Intent = PartialFunction[ChanneledRequestBinding, Unit]
+  type Intent = PartialFunction[RecievedMessageBinding, Unit]
 }
 /** A Netty Plan for roundtrip request handling. */
 abstract class Plan extends SimpleChannelUpstreamHandler {
   def intent: Plan.Intent
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     val request = e.getMessage().asInstanceOf[DefaultHttpRequest]
-    val requestBinding = new ChanneledRequestBinding(request, ctx, e)
-    if (intent.isDefinedAt(requestBinding)) {
-      intent(requestBinding)
+    val messageBinding = new RecievedMessageBinding(request, ctx, e)
+    if (intent.isDefinedAt(messageBinding)) {
+      intent(messageBinding)
+    } else {
+      messageBinding.respond(NotFound)
     }
   }
 }
@@ -29,9 +31,20 @@ object Planify {
   def apply(intent: Plan.Intent) = new Planify(intent)
 }
 
-class ChanneledRequestBinding(
+class RecievedMessageBinding(
     req: DefaultHttpRequest, 
     val context: ChannelHandlerContext,
     val event: MessageEvent) extends RequestBinding(req) {
-  lazy val channel = messageEvent.getChannel
+  import org.jboss.netty.handler.codec.http.{HttpResponse => NHttpResponse}
+  lazy val channel = event.getChannel
+
+  // ultimately this should be the foundation for roundtrip plans too
+  def response[T <: NHttpResponse](res: T)(rf: ResponseFunction) =
+    rf(new ResponseBinding(res)).underlying
+  // should be based on version of incoming request
+  val defaultResponse = response(new DefaultHttpResponse(HTTP_1_1, OK))_
+  def respond(rf: ResponseFunction) = 
+    channel.write(
+      defaultResponse(rf)
+    ).addListener(ChannelFutureListener.CLOSE) // should be based on incoming request
 }

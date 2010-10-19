@@ -66,9 +66,9 @@ private [netty] class RequestBinding(req: DefaultHttpRequest) extends HttpReques
     }
   }
 }
-
-private [netty] class ResponseBinding(res: DefaultHttpResponse) extends HttpResponse(res) {
-
+import org.jboss.netty.handler.codec.http.{HttpResponse=>NHttpResponse}
+private [netty] class ResponseBinding[U <: NHttpResponse](res: U) 
+    extends HttpResponse(res) {
   private lazy val outputStream = new ByteArrayOutputStream {
     override def close = {
       res.setContent(ChannelBuffers.copiedBuffer(this.toByteArray))
