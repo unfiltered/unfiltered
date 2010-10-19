@@ -11,8 +11,6 @@ object NettyServerTest {
         case GET(UFPath("/", _)) => ResponseString("test") ~> Ok
       })
 
-    // Tired.. Why can't I pass p here?
     new Server(8080, p).start
-
   }
 }
