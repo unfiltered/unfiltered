@@ -3,7 +3,18 @@ package unfiltered.request
 import javax.servlet.http.HttpServletRequest
 
 import org.apache.commons.{fileupload => fu}
+import fu.servlet.ServletFileUpload
 import java.io.{File => JFile}
+
+/** Matches requests that have multipart content */
+object MultiPart {
+  def unapply(req: HttpRequest[HttpServletRequest]) =
+    if (ServletFileUpload.isMultipartContent(req.underlying))
+      Some(req)
+    else None
+}
+
+case class MultipartData[W](params: String => Seq[String], files: String => W)
 
 trait FileWrapper {
   val name: String
@@ -51,7 +62,6 @@ class StreamedFileWrapper(fstm: fu.FileItemStream) extends FileWrapper with unfi
   * afterwards, the requests input stream will appear empty
   */
 object MultiPartParams {
-  import fu.servlet.ServletFileUpload
   
   /** Stream-based multi-part form data extractor */
   object Streamed {
@@ -72,26 +82,24 @@ object MultiPartParams {
       @note the seq returned by keys will only return the `first` named value. This is a limitation
       on apache commons file upload streaming interface. To read from the stream iterator,
       you must read before #next is called or the stream read will fail. */
-    def unapply(req: HttpRequest[HttpServletRequest]) =
-      if (ServletFileUpload.isMultipartContent(req.underlying)) {
-        def items = new ServletFileUpload().getItemIterator(req.underlying).asInstanceOf[FileItemIterator]
-        /** attempt to extract the first named param from the stream */
-        def extractParam(name: String): Seq[String] = {
-           items.find(f => f.getFieldName == name && f.isFormField) match {
-             case Some(p) => Seq(extractStr(p))
-             case _ => Nil
-           }
-        }
-        /** attempt to extract the first named file from the stream */
-        def extractFile(name: String): Seq[StreamedFileWrapper] = {
-           items.find(f => f.getFieldName == name && !f.isFormField) match {
-             case Some(f) => Seq(new StreamedFileWrapper(f))
-             case _ => Nil
-           }
-        }
-       
-        Some((extractParam)_, (extractFile)_, req.underlying)
-      } else None
+    def apply(req: HttpRequest[HttpServletRequest]) = {
+      def items = new ServletFileUpload().getItemIterator(req.underlying).asInstanceOf[FileItemIterator]
+      /** attempt to extract the first named param from the stream */
+      def extractParam(name: String): Seq[String] = {
+         items.find(f => f.getFieldName == name && f.isFormField) match {
+           case Some(p) => Seq(extractStr(p))
+           case _ => Nil
+         }
+      }
+      /** attempt to extract the first named file from the stream */
+      def extractFile(name: String): Seq[StreamedFileWrapper] = {
+         items.find(f => f.getFieldName == name && !f.isFormField) match {
+           case Some(f) => Seq(new StreamedFileWrapper(f))
+           case _ => Nil
+         }
+      }
+      MultipartData(extractParam _,extractFile _)
+    }
     
     def withStreamedFile[T](fstm: FileItemStream)(f: java.io.InputStream => T): T = {
       val stm = fstm.openStream
@@ -190,17 +198,16 @@ object MultiPartParams {
       The Map is assigned a default value of Nil, so param("p") would return Nil if there
       is no such parameter, or (as normal for servlets) a single empty string if the
       parameter was supplied without a value. */
-    def unapply(req: HttpRequest[HttpServletRequest]) =
-      if (ServletFileUpload.isMultipartContent(req.underlying)) {
-        val items =  new ServletFileUpload(factory(memLimit, tempDir)).parseRequest(
-          req.underlying
-        ).iterator.asInstanceOf[JIterator[ACFileItem]]
-        val (params, files) = genTuple[String, DiskFileWrapper, ACFileItem](items) ((maps, item) =>
-          if(item.isFormField) (maps._1 + (item.getFieldName -> (item.getString :: maps._1(item.getFieldName))), maps._2)
-          else (maps._1, maps._2 + (item.getFieldName -> (new DiskFileWrapper(item) :: maps._2(item.getFieldName))))
-        )
-        Some(params, files, req.underlying)
-      } else None
+    def apply(req: HttpRequest[HttpServletRequest]) = {
+      val items =  new ServletFileUpload(factory(memLimit, tempDir)).parseRequest(
+        req.underlying
+      ).iterator.asInstanceOf[JIterator[ACFileItem]]
+      val (params, files) = genTuple[String, DiskFileWrapper, ACFileItem](items) ((maps, item) =>
+        if(item.isFormField) (maps._1 + (item.getFieldName -> (item.getString :: maps._1(item.getFieldName))), maps._2)
+        else (maps._1, maps._2 + (item.getFieldName -> (new DiskFileWrapper(item) :: maps._2(item.getFieldName))))
+      )
+      MultipartData(params, files)
+    }
   }
   
   /** generates a tuple of (Map[String, List[A]], Map[String, List[B]]) */

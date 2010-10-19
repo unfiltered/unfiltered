@@ -1,24 +1,24 @@
-package unfiltered.netty
+package unfiltered.netty.roundtrip
 
-import unfiltered.PassingIntent
-import _root_.unfiltered.response.{NotFound, ResponseFunction, Pass}
+import org.jboss.netty.handler.codec.http.{DefaultHttpRequest,DefaultHttpResponse}
 import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.http.HttpResponseStatus._
 import org.jboss.netty.handler.codec.http.HttpVersion._
+import unfiltered.netty._
+import unfiltered.response.{ResponseFunction,NotFound}
 import unfiltered.request.HttpRequest
-import org.jboss.netty.handler.codec.http.{DefaultHttpRequest, DefaultHttpResponse}
 
-/**
- * ChannelHandler which responds via Unfiltered functions.
- * 
- */
-abstract class UnfilteredChannelHandler extends SimpleChannelUpstreamHandler with PassingIntent[DefaultHttpRequest] {
+object Plan {
+  type Intent = unfiltered.Roundtrip.Intent[DefaultHttpRequest]
+}
+/** A Netty Plan for roundtrip request handling. */
+abstract class Plan extends SimpleChannelUpstreamHandler {
+  def intent: Plan.Intent
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
-
     val request = e.getMessage().asInstanceOf[DefaultHttpRequest]
     val requestBinding = new RequestBinding(request)
 
-    /** If issuing a wrapped response */
+
     def respond[T](rf: ResponseFunction) {
       val response = new DefaultHttpResponse(HTTP_1_1, OK)
 
@@ -46,16 +46,16 @@ abstract class UnfilteredChannelHandler extends SimpleChannelUpstreamHandler wit
         future.addListener(ChannelFutureListener.CLOSE)
       }
     }
-
-    attempt(requestBinding) match {
-      case Pass => respond(NotFound)
-      case Channeled(cf) => cf(e.getChannel)
-      case response_function => respond(response_function)
+    if (intent.isDefinedAt(requestBinding)) {
+      respond(intent(requestBinding))
+    } else {
+      respond(NotFound)
     }
-
   }
+}
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
-  }
+class Planify(val intent: Plan.Intent) extends Plan
 
+object Planify {
+  def apply(intent: Plan.Intent) = new Planify(intent)
 }
