@@ -11,7 +11,7 @@ import unfiltered.request.HttpRequest
 object Plan {
   type Intent = unfiltered.Roundtrip.Intent[DefaultHttpRequest]
 }
-/** The default Netty Plan. (There may be other kinds of channel handlers?) */
+/** A Netty Plan for roundtrip request handling. */
 abstract class Plan extends SimpleChannelUpstreamHandler {
   def intent: Plan.Intent
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
@@ -47,9 +47,7 @@ abstract class Plan extends SimpleChannelUpstreamHandler {
       }
     }
     if (intent.isDefinedAt(requestBinding)) {
-      intent(requestBinding) match {
-        case response_function => respond(response_function)
-      }
+      respond(intent(requestBinding))
     } else {
       respond(NotFound)
     }
@@ -60,9 +58,4 @@ class Planify(val intent: Plan.Intent) extends Plan
 
 object Planify {
   def apply(intent: Plan.Intent) = new Planify(intent)
-}
-
-case class Channeled(cf: org.jboss.netty.channel.Channel => Unit)
-     extends unfiltered.response.ResponseFunction {
-  def apply[T](res: unfiltered.response.HttpResponse[T]) = res
 }

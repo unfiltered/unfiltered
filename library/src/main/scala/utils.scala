@@ -28,3 +28,5 @@ object NonNull {
   def apply[T](x: T) = if(x == null) None else Some(x)
   def unapply[T](x: T) = apply(x)
 }
+
+object & { def unapply[A](a: A) = Some(a, a) }
