@@ -16,6 +16,7 @@ trait Responder extends ResponseFunction { self =>
   }
 }
 
+/** Base class for composing a response function from others */
 class ChainResponse(f: ResponseFunction) extends Responder {
   def respond[T](res: HttpResponse[T]) { f(res) }
 }
