@@ -7,7 +7,7 @@ object ParamsSpecJetty extends unfiltered.spec.jetty.Served with ParamsSpec {
 }
 object ParamsSpecNetty extends unfiltered.spec.netty.Served with ParamsSpec {
   def setup = { p => 
-    new unfiltered.netty.Server(p, unfiltered.netty.roundtrip.Planify(intent)) 
+    unfiltered.netty.Server(p, unfiltered.netty.cycle.Planify(intent)) 
   }
 }
 trait ParamsSpec extends unfiltered.spec.Hosted {
@@ -20,7 +20,7 @@ trait ParamsSpec extends unfiltered.spec.Hosted {
   /** Used for extract test */
   object Number extends Params.Extract("number", Params.first ~> Params.int)
 
-  def intent[A]: unfiltered.Roundtrip.Intent[A] = {
+  def intent[A]: unfiltered.Cycle.Intent[A] = {
     case UFPath("/basic", Params(params, _)) => params("foo") match {
       case Seq(foo) => ResponseString("foo is %s" format foo)
       case _ =>  ResponseString("what's foo?")

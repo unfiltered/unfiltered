@@ -1,4 +1,4 @@
-package unfiltered.netty.roundtrip
+package unfiltered.netty.cycle
 
 import org.jboss.netty.handler.codec.http.{DefaultHttpRequest,DefaultHttpResponse}
 import org.jboss.netty.channel._
@@ -9,9 +9,9 @@ import unfiltered.response.{ResponseFunction,NotFound}
 import unfiltered.request.HttpRequest
 
 object Plan {
-  type Intent = unfiltered.Roundtrip.Intent[DefaultHttpRequest]
+  type Intent = unfiltered.Cycle.Intent[DefaultHttpRequest]
 }
-/** A Netty Plan for roundtrip request handling. */
+/** A Netty Plan for request cycle handling. */
 abstract class Plan extends SimpleChannelUpstreamHandler {
   def intent: Plan.Intent
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {

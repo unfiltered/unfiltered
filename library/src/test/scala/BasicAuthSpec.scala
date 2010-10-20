@@ -7,7 +7,7 @@ object BasicAuthSpecJetty extends unfiltered.spec.jetty.Served with BasicAuthSpe
 }
 object BasicAuthSpecNetty extends unfiltered.spec.netty.Served with BasicAuthSpec {
   def setup = { p => 
-    new unfiltered.netty.Server(p, unfiltered.netty.roundtrip.Planify(intent)) 
+    unfiltered.netty.Server(p, unfiltered.netty.cycle.Planify(intent)) 
   }
 }
 trait BasicAuthSpec extends unfiltered.spec.Hosted {
@@ -17,7 +17,7 @@ trait BasicAuthSpec extends unfiltered.spec.Hosted {
   
   import dispatch._
   
-  def intent[A]: unfiltered.Roundtrip.Intent[A] = {
+  def intent[A]: unfiltered.Cycle.Intent[A] = {
     case GET(UFPath("/secret", BasicAuth(creds, _))) => creds match {
       case ("test", "secret") => ResponseString("pass")
       case _ => ResponseString("fail")
