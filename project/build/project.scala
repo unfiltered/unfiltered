@@ -11,7 +11,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   /** Allows Unfiltered modules to test themselves using other modules */
   trait IntegrationTesting extends DefaultProject {
     // add to test classpath manually since we don't want to actually depend on these modules
-    def testDeps = spec :: jetty :: filter_p :: netty :: Nil
+    def testDeps = spec :: jetty :: filter_p :: netty :: netty_server :: Nil
     override def testClasspath = (super.testClasspath /: testDeps) {
       _ +++ _.projectClasspath(Configurations.Compile)
     }
@@ -36,7 +36,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     val fileupload = "commons-fileupload" % "commons-fileupload" % "1.2.1"
   }, filter_p)
   /** Base module for Unfiltered library and servers */
-  lazy val util = project("util", "Unfiltered Utils")
+  lazy val util = project("util", "Unfiltered Utils", new UnfilteredModule(_))
   val jetty_version = "7.1.6.v20100715"
   /** embedded server*/
   lazy val jetty = project("jetty", "Unfiltered Jetty", new UnfilteredModule(_) {
@@ -47,9 +47,13 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     val jetty7 = "org.eclipse.jetty" % "jetty-ajp" % jetty_version
   }, jetty)
   
-  lazy val netty = project("netty", "Unfiltered Netty", new UnfilteredModule(_) {
-    val netty = "org.jboss.netty" % "netty" % "3.2.2.Final" withSources()
-  }, library)
+  lazy val netty_server = project("netty-server", "Unfiltered Netty Server",
+    new UnfilteredModule(_) {
+      val netty = "org.jboss.netty" % "netty" % "3.2.2.Final" withSources()
+    }, util
+  )
+  lazy val netty = project("netty", "Unfiltered Netty", new UnfilteredModule(_), 
+    netty_server, library)
 
   /** Marker for Scala 2.8-only projects that shouldn't be cross compiled or published */
   trait Only28
@@ -76,7 +80,8 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     override def repositories = Set(ScalaToolsSnapshots)
   }, library)
   /** websockets */
-  lazy val websockets = project("websockets", "Unfiltered Websockets", new  UnfilteredModule(_), netty)
+  lazy val websockets = project("websockets", "Unfiltered Websockets", 
+    new UnfilteredModule(_), netty_server)
   
   def specsDependency =
     if (buildScalaVersion startsWith "2.7.")
