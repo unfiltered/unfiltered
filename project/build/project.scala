@@ -25,7 +25,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   lazy val library = project("library", "Unfiltered",
       new UnfilteredModule(_) with IntegrationTesting {
     val codec = "commons-codec" % "commons-codec" % "1.4"
-  })
+  }, util)
   lazy val filter_p = project("filter", "Unfiltered Filter", new UnfilteredModule(_) with IntegrationTesting {
     lazy val filter = servletApiDependency
   }, library)
@@ -35,11 +35,13 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     val io = "commons-io" % "commons-io" % "1.4"
     val fileupload = "commons-fileupload" % "commons-fileupload" % "1.2.1"
   }, filter_p)
+  /** Base module for Unfiltered library and servers */
+  lazy val util = project("util", "Unfiltered Utils")
   val jetty_version = "7.1.6.v20100715"
   /** embedded server*/
   lazy val jetty = project("jetty", "Unfiltered Jetty", new UnfilteredModule(_) {
     val jetty7 = jettyDependency
-  })
+  }, util)
   /** AJP protocol server */
   lazy val jetty_ajp = project("jetty-ajp", "Unfiltered Jetty AJP", new UnfilteredModule(_) {
     val jetty7 = "org.eclipse.jetty" % "jetty-ajp" % jetty_version
