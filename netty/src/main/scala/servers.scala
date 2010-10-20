@@ -10,7 +10,6 @@ import group.{ChannelGroup, DefaultChannelGroup}
 
 case class Server(val port: Int, host: String, val lastHandler: ChannelHandler) 
     extends unfiltered.util.RunnableServer {
-  def this(port: Int, lastHandler: ChannelHandler) = this(port, "0.0.0.0", lastHandler)
   val DEFAULT_IO_THREADS = Runtime.getRuntime().availableProcessors() + 1;
   val DEFAULT_EVENT_THREADS = DEFAULT_IO_THREADS * 4;
   
@@ -56,6 +55,11 @@ case class Server(val port: Int, host: String, val lastHandler: ChannelHandler)
     // ?
     this
   }
+}
+
+object Server {
+  def apply(port: Int, lastHandler: ChannelHandler): Server = 
+    Server(port, "0.0.0.0", lastHandler)
 }
 
 class ServerPipelineFactory(channels: ChannelGroup, lastHandler: ChannelHandler) extends ChannelPipelineFactory {
