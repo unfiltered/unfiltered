@@ -8,8 +8,8 @@ import org.jboss.netty.handler.codec.http.{HttpRequestDecoder, HttpResponseEncod
 import org.jboss.netty.channel._
 import group.{ChannelGroup, DefaultChannelGroup}
 
-class Server(val port: Int, host: String, val lastHandler: ChannelHandler) {
-  def this(port: Int, lastHandler: ChannelHandler) = this(port, "0.0.0.0", lastHandler)
+case class Server(val port: Int, host: String, val lastHandler: ChannelHandler) 
+    extends unfiltered.util.RunnableServer {
   val DEFAULT_IO_THREADS = Runtime.getRuntime().availableProcessors() + 1;
   val DEFAULT_EVENT_THREADS = DEFAULT_IO_THREADS * 4;
   
@@ -37,6 +37,7 @@ class Server(val port: Int, host: String, val lastHandler: ChannelHandler) {
     bootstrap.setOption("reuseAddress", true)
     bootstrap.setOption("backlog", 16384)
     channels.add(bootstrap.bind(new InetSocketAddress(host, port)))
+    this
   }
 
   def stop() = {
@@ -44,7 +45,21 @@ class Server(val port: Int, host: String, val lastHandler: ChannelHandler) {
     channels.close.awaitUninterruptibly
     // Release NIO resources to the OS
     bootstrap.releaseExternalResources
+    this
   }
+  def destroy() = {
+    // ?
+    this
+  }
+  def join() = {
+    // ?
+    this
+  }
+}
+
+object Server {
+  def apply(port: Int, lastHandler: ChannelHandler): Server = 
+    Server(port, "0.0.0.0", lastHandler)
 }
 
 class ServerPipelineFactory(channels: ChannelGroup, lastHandler: ChannelHandler) extends ChannelPipelineFactory {

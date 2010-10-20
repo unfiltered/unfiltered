@@ -4,7 +4,8 @@ import unfiltered.JEnumerationIterator
 import unfiltered.response.HttpResponse
 import unfiltered.request.HttpRequest
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import unfiltered.{Cookie, NonNull}
+import unfiltered.Cookie
+import unfiltered.util.NonNull
 
 private [filter] class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   def inputStream = req.getInputStream

@@ -9,7 +9,7 @@ import java.io._
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBufferOutputStream, ChannelBufferInputStream}
 import java.nio.charset.{Charset => JNIOCharset}
 import unfiltered.Cookie
-import unfiltered.{Cookie, NonNull}
+import unfiltered.util.NonNull
 
 object HttpConfig {
    val DEFAULT_CHARSET = "UTF-8"

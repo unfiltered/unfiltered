@@ -30,21 +30,4 @@ class WebSocketServer(port: Int, host: String, path: String, intent: PartialFunc
       "housekeeping" -> new HouseKeepingChannelHandler(channels)
     ) 
   }
-  
-  /** @todo can this be a trait? */
-  def run = Thread.currentThread.getName match {
-    case "main" => 
-      start()
-      println("Embedded websocket server running on port %s." format port)
-    case _ => 
-      start()
-      println("Embedded websocket server running on port %s. Press any key to stop." format port)
-      def doWait() {
-        try { Thread.sleep(1000) } catch { case _: InterruptedException => () }
-        if(System.in.available() <= 0)
-          doWait()
-      }
-      doWait()
-      stop()
-  }
 }

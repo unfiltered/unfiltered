@@ -1,4 +1,4 @@
-package unfiltered
+package unfiltered.util
 
 object Port {
   /** Finds any available port and returns it */

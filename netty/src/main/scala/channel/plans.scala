@@ -1,4 +1,4 @@
-package unfiltered.netty.openreturn
+package unfiltered.netty.channel
 
 import org.jboss.netty.handler.codec.http.{DefaultHttpRequest,DefaultHttpResponse}
 import org.jboss.netty.channel._
@@ -11,7 +11,7 @@ import unfiltered.request.HttpRequest
 object Plan {
   type Intent = PartialFunction[RecievedMessageBinding, Unit]
 }
-/** A Netty Plan for roundtrip request handling. */
+/** A Netty Plan for request only handling. */
 abstract class Plan extends SimpleChannelUpstreamHandler {
   def intent: Plan.Intent
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
