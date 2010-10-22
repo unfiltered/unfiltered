@@ -27,7 +27,7 @@ trait Ssl { self: Server =>
     case prop => prop
   }
   
-  val sslPort: Int
+  def sslPort: Int
   val sslMaxIdleTime = 90000
   val sslHandshakeTimeout = 120000
   lazy val keyStore = tryProperty("jetty.ssl.keyStore")
