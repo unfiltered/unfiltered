@@ -95,18 +95,23 @@ class RecievedMessageBinding(
     }
     val closer = new unfiltered.response.Responder[NHttpResponse] {
       def respond(res: HttpResponse[NHttpResponse]) {
-        if (keepAlive)
-          unfiltered.response.Connection("Keep-Alive") ~>
-          unfiltered.response.ContentLength(
-            res.underlying.getContent().readableBytes().toString)
-        else unfiltered.response.Connection("close")
+        res.getOutputStream.close()
+        (
+          if (keepAlive)
+            unfiltered.response.Connection("Keep-Alive") ~>
+            unfiltered.response.ContentLength(
+              res.underlying.getContent().readableBytes().toString)
+          else unfiltered.response.Connection("close")
+        )(res)
       }
     }
-    channel.write(
+    val future = channel.write(
       defaultResponse(
-        unfiltered.response.Server("Scala Netty Unfiltered Server") ~> rf ~> closer
+        unfiltered.response.Server("Scala Netty Unfiltered Server") ~> rf ~> closer 
       )
-    ).addListener(ChannelFutureListener.CLOSE) // should be based on incoming request
+    )
+    if (!keepAlive)
+      future.addListener(ChannelFutureListener.CLOSE)
   }
 }
 
