@@ -50,6 +50,8 @@ trait Server extends RunnableServer {
     bootstrap.releaseExternalResources
     this
   }
+  /** This has different semantics from the join method on the jetty server.
+   * It does not return (or consistently return) after stopping the server. */
   def join(): this.type = {
     def doWait() {
       try { Thread.sleep(1000) } catch { case _: InterruptedException => () }
