@@ -7,7 +7,7 @@ object BasicAuthSpecJetty extends unfiltered.spec.jetty.Served with BasicAuthSpe
 }
 object BasicAuthSpecNetty extends unfiltered.spec.netty.Served with BasicAuthSpec {
   def setup = { p => 
-    unfiltered.netty.Http(p, unfiltered.netty.cycle.Planify(intent)) 
+    unfiltered.netty.Http(p).handler(unfiltered.netty.cycle.Planify(intent))
   }
 }
 trait BasicAuthSpec extends unfiltered.spec.Hosted {

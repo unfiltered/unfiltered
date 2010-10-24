@@ -59,35 +59,39 @@ trait Server {
   }
 }
 
-case class Http(port: Int, host: String, lastHandler: ChannelHandler, 
+/** Default implementation of the Server trait. If you want to use a custom pipeline
+ * factory it's better to extend Server directly. */
+case class Http(port: Int, host: String,
+                handlers: List[ChannelHandler],
                 beforeStopBlock: () => Unit) extends Server with RunnableServer {
+  def pipelineFactory = new ServerPipelineFactory(channels, handlers)
   def stop() = {
     beforeStopBlock()
     closeConnections()
     destroy()
   }
+  def handler(h: ChannelHandler) = 
+    Http(port, host, h :: handlers, beforeStopBlock)
   def beforeStop(block: => Unit) =
-    Http(port, host, lastHandler, { () => beforeStopBlock(); block })
-
-  protected def pipelineFactory: ChannelPipelineFactory = 
-    new ServerPipelineFactory(channels, lastHandler)
+    Http(port, host, handlers, { () => beforeStopBlock(); block })
 }
 
 object Http {
-  def apply(port: Int, host: String, lastHandler: ChannelHandler): Http = 
-    Http(port, host, lastHandler, () => ())
-  def apply(port: Int, lastHandler: ChannelHandler): Http = 
-    Http(port, "0.0.0.0", lastHandler)
+  def apply(port: Int, host: String): Http = 
+    Http(port, host, Nil, () => ())
+  def apply(port: Int): Http = 
+    Http(port, "0.0.0.0")
 }
 
-class ServerPipelineFactory(channels: ChannelGroup, lastHandler: ChannelHandler) extends ChannelPipelineFactory {
+class ServerPipelineFactory(channels: ChannelGroup, handlers: List[ChannelHandler]) 
+    extends ChannelPipelineFactory {
   def getPipeline(): ChannelPipeline = {
     val line = Channels.pipeline
 
     line.addLast("housekeeping", new HouseKeepingChannelHandler(channels))
     line.addLast("decoder", new HttpRequestDecoder)
     line.addLast("encoder", new HttpResponseEncoder)
-    line.addLast("handler", lastHandler)
+    handlers.reverse.foreach { h => line.addLast("handler", h) }
 
     line
   }

@@ -7,7 +7,7 @@ object ParamsSpecJetty extends unfiltered.spec.jetty.Served with ParamsSpec {
 }
 object ParamsSpecNetty extends unfiltered.spec.netty.Served with ParamsSpec {
   def setup = { p => 
-    unfiltered.netty.Http(p, unfiltered.netty.cycle.Planify(intent)) 
+    unfiltered.netty.Http(p).handler(unfiltered.netty.cycle.Planify(intent))
   }
 }
 trait ParamsSpec extends unfiltered.spec.Hosted {
