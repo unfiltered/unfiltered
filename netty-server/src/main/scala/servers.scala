@@ -1,5 +1,6 @@
 package unfiltered.netty
 
+import unfiltered.util.RunnableServer
 import java.util.concurrent.Executors
 import org.jboss.netty.bootstrap.ServerBootstrap
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
@@ -8,8 +9,11 @@ import org.jboss.netty.handler.codec.http.{HttpRequestDecoder, HttpResponseEncod
 import org.jboss.netty.channel._
 import group.{ChannelGroup, DefaultChannelGroup}
 
-case class Server(val port: Int, host: String, val lastHandler: ChannelHandler) 
-    extends unfiltered.util.RunnableServer {
+trait Server {
+  val port: Int
+  val host: String
+  protected def pipelineFactory: ChannelPipelineFactory
+
   val DEFAULT_IO_THREADS = Runtime.getRuntime().availableProcessors() + 1;
   val DEFAULT_EVENT_THREADS = DEFAULT_IO_THREADS * 4;
   
@@ -18,11 +22,7 @@ case class Server(val port: Int, host: String, val lastHandler: ChannelHandler)
   /** any channels added to this will receive broadcasted events */
   protected val channels = new DefaultChannelGroup("Netty Unfiltered Server Channel Group")
   
-  /** override this to provide an alternative pipeline factory */
-  protected lazy val pipelineFactory: ChannelPipelineFactory = new ServerPipelineFactory(channels, lastHandler)
-
-  def start() = {
-
+  def start(): this.type = {
     bootstrap = new ServerBootstrap(
       new NioServerSocketChannelFactory(
         Executors.newFixedThreadPool(DEFAULT_IO_THREADS),
@@ -40,26 +40,44 @@ case class Server(val port: Int, host: String, val lastHandler: ChannelHandler)
     this
   }
 
-  def stop() = {
+  def closeConnections(): this.type = {
     // Close any pending connections / channels (including server)
     channels.close.awaitUninterruptibly
+    this
+  }
+  def destroy(): this.type = {
     // Release NIO resources to the OS
     bootstrap.releaseExternalResources
     this
   }
-  def destroy() = {
-    // ?
-    this
-  }
-  def join() = {
-    // ?
+  def join(): this.type = {
+    def doWait() {
+      try { Thread.sleep(1000) } catch { case _: InterruptedException => () }
+    }
+    doWait()
     this
   }
 }
 
-object Server {
-  def apply(port: Int, lastHandler: ChannelHandler): Server = 
-    Server(port, "0.0.0.0", lastHandler)
+case class Http(port: Int, host: String, lastHandler: ChannelHandler, 
+                beforeStopBlock: () => Unit) extends Server with RunnableServer {
+  def stop() = {
+    beforeStopBlock()
+    closeConnections()
+    destroy()
+  }
+  def beforeStop(block: => Unit) =
+    Http(port, host, lastHandler, { () => beforeStopBlock(); block })
+
+  protected def pipelineFactory: ChannelPipelineFactory = 
+    new ServerPipelineFactory(channels, lastHandler)
+}
+
+object Http {
+  def apply(port: Int, host: String, lastHandler: ChannelHandler): Http = 
+    Http(port, host, lastHandler, () => ())
+  def apply(port: Int, lastHandler: ChannelHandler): Http = 
+    Http(port, "0.0.0.0", lastHandler)
 }
 
 class ServerPipelineFactory(channels: ChannelGroup, lastHandler: ChannelHandler) extends ChannelPipelineFactory {
