@@ -9,7 +9,7 @@ import org.jboss.netty.handler.codec.http.{HttpRequestDecoder, HttpResponseEncod
 import org.jboss.netty.channel._
 import group.{ChannelGroup, DefaultChannelGroup}
 
-trait Server {
+trait Server extends RunnableServer {
   val port: Int
   val host: String
   protected def pipelineFactory: ChannelPipelineFactory
@@ -53,7 +53,11 @@ trait Server {
   def join(): this.type = {
     def doWait() {
       try { Thread.sleep(1000) } catch { case _: InterruptedException => () }
+      doWait()
     }
+    Runtime.getRuntime.addShutdownHook(new Thread {
+      override def run() { Server.this.stop() }
+    })
     doWait()
     this
   }
