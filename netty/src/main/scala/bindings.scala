@@ -1,12 +1,17 @@
 package unfiltered.netty
 
 import unfiltered.JIteratorIterator
-import unfiltered.response.HttpResponse
+import unfiltered.response.{ResponseFunction, HttpResponse}
 import unfiltered.request.{HttpRequest,POST,RequestContentType,Charset}
 import java.net.URLDecoder
 import org.jboss.netty.handler.codec.http._
 import java.io._
-import org.jboss.netty.buffer.{ChannelBuffers, ChannelBufferOutputStream, ChannelBufferInputStream}
+import org.jboss.netty.buffer.{ChannelBuffers, ChannelBufferOutputStream, 
+  ChannelBufferInputStream}
+import org.jboss.netty.channel._
+import org.jboss.netty.handler.codec.http.HttpVersion._
+import org.jboss.netty.handler.codec.http.HttpResponseStatus._
+import org.jboss.netty.handler.codec.http.{HttpResponse=>NHttpResponse}
 import java.nio.charset.{Charset => JNIOCharset}
 import unfiltered.Cookie
 import unfiltered.util.NonNull
@@ -15,8 +20,8 @@ object HttpConfig {
    val DEFAULT_CHARSET = "UTF-8"
 }
 
+/** Basic binding needed to satisfy HttpRequest */
 private [netty] class RequestBinding(req: DefaultHttpRequest) extends HttpRequest(req) {
-
   lazy val params = queryParams ++ postParams
   def queryParams = req.getUri.split("\\?", 2) match {
     case Array(_, qs) => URLParser.urldecode(qs)
@@ -66,7 +71,43 @@ private [netty] class RequestBinding(req: DefaultHttpRequest) extends HttpReques
     }
   }
 }
-import org.jboss.netty.handler.codec.http.{HttpResponse=>NHttpResponse}
+/** Extension of basic request binding to expose Netty-specific attributes */
+class RecievedMessageBinding(
+    req: DefaultHttpRequest, 
+    val context: ChannelHandlerContext,
+    val event: MessageEvent) extends RequestBinding(req) {
+  import org.jboss.netty.handler.codec.http.{HttpResponse => NHttpResponse}
+  lazy val channel = event.getChannel
+
+  /** Binds a Netty HttpResponse res to Unfiltered's HttpResponse to apply any
+   * response function to it. */
+  def response[T <: NHttpResponse](res: T)(rf: ResponseFunction) =
+    rf(new ResponseBinding(res)).underlying
+
+  /** @return a new Netty DefaultHttpResponse bound to an Unfiltered HttpResponse */
+  val defaultResponse = response(new DefaultHttpResponse(HTTP_1_1, OK))_
+  /** Applies rf to a new `defaultResponse` and writes it out */
+  def respond(rf: ResponseFunction) = {
+    val ch = req.getHeader("Connection")
+    val keepAlive = req.getProtocolVersion match {
+      case HTTP_1_1 => !"close".equalsIgnoreCase(ch)
+      case HTTP_1_0 => "Keep-Alive".equals(ch)
+    }
+    val closer = { res: HttpResponse[NHttpResponse] =>
+      if (keepAlive)
+        unfiltered.response.Connection("Keep-Alive") ~>
+        unfiltered.response.ContentLength(
+          res.underlying.getContent().readableBytes().toString)
+      else unfiltered.response.Connection("close")
+    }
+    channel.write(
+      defaultResponse(
+        unfiltered.response.Server("Scala Netty Unfiltered Server") ~> rf ~> closer
+      )
+    ).addListener(ChannelFutureListener.CLOSE) // should be based on incoming request
+  }
+}
+
 private [netty] class ResponseBinding[U <: NHttpResponse](res: U) 
     extends HttpResponse(res) {
   private lazy val outputStream = new ByteArrayOutputStream {
