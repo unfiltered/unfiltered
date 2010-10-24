@@ -1,6 +1,6 @@
 package unfiltered.response
 
-case class ContentType(content_type: String) extends Responder {
+case class ContentType(content_type: String) extends Responder[Any] {
   def respond(res: HttpResponse[Any]) {
     res.setContentType("%s; charset=%s".format(content_type, charset))
   }

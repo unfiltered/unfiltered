@@ -7,24 +7,22 @@ trait ResponseFunction[-A] {
   def apply[B <: A](res: HttpResponse[B]): HttpResponse[B]
 }
 
-trait SubtypeResponder[A] extends ResponseFunction[A] { self =>
+trait Responder[A] extends ResponseFunction[A] { self =>
   def apply[B <: A](res: HttpResponse[B]) = {
     respond(res)
     res
   }
   def respond(res: HttpResponse[A])
-  def ~> [B <: A](that: ResponseFunction[B]) = new SubtypeResponder[B] {
+  def ~> [B <: A](that: ResponseFunction[B]) = new Responder[B] {
     def respond(res: HttpResponse[B]) {
       that(self(res))
     }
   }
 }
-/** The typical Responder does not depend on any underlying type */
-trait Responder extends SubtypeResponder[Any]
 
 /** Base class for composing a response function from others */
 class ChainResponse[A](f: ResponseFunction[A]) extends 
-    SubtypeResponder[A] {
+    Responder[A] {
   def respond(res: HttpResponse[A]) { f(res) }
 }
 

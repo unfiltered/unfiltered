@@ -93,7 +93,7 @@ class RecievedMessageBinding(
       case HTTP_1_1 => !"close".equalsIgnoreCase(ch)
       case HTTP_1_0 => "Keep-Alive".equals(ch)
     }
-    val closer = new unfiltered.response.SubtypeResponder[NHttpResponse] {
+    val closer = new unfiltered.response.Responder[NHttpResponse] {
       def respond(res: HttpResponse[NHttpResponse]) {
         if (keepAlive)
           unfiltered.response.Connection("Keep-Alive") ~>

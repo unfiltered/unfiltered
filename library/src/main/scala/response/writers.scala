@@ -2,7 +2,7 @@ package unfiltered.response
 
 import java.io.PrintWriter
 
-trait ResponseWriter extends Responder {
+trait ResponseWriter extends Responder[Any] {
   def respond(res: HttpResponse[Any]) {
     val writer = res.getWriter()
     try { write(writer) }

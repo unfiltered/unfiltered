@@ -1,7 +1,7 @@
 package unfiltered.response
 
 
-case class Status(code: Int) extends Responder {
+case class Status(code: Int) extends Responder[Any] {
   def respond(res: HttpResponse[Any]) { res.setStatus(code) }
 }
 
