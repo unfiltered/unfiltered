@@ -3,7 +3,7 @@ package unfiltered.response
 import java.io.OutputStream
 
 trait ResponseStreamer extends Responder {
-  def respond[T](res: HttpResponse[T]) {
+  def respond(res: HttpResponse[Any]) {
     val os = res.getOutputStream()
     try { stream(os) }
     finally { os.close() }

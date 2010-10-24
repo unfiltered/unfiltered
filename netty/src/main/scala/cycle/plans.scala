@@ -1,6 +1,7 @@
 package unfiltered.netty.cycle
 
-import org.jboss.netty.handler.codec.http.{DefaultHttpRequest,DefaultHttpResponse}
+import org.jboss.netty.handler.codec.http.{
+  DefaultHttpRequest, DefaultHttpResponse, HttpResponse=>NHttpResponse}
 import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.http.HttpResponseStatus._
 import org.jboss.netty.handler.codec.http.HttpVersion._
@@ -9,7 +10,7 @@ import unfiltered.response.{ResponseFunction,NotFound}
 import unfiltered.request.HttpRequest
 
 object Plan {
-  type Intent = unfiltered.Cycle.Intent[DefaultHttpRequest]
+  type Intent = unfiltered.Cycle.Intent[DefaultHttpRequest,NHttpResponse]
 }
 /** A Netty Plan for request cycle handling. */
 abstract class Plan extends SimpleChannelUpstreamHandler {
@@ -19,7 +20,7 @@ abstract class Plan extends SimpleChannelUpstreamHandler {
     val requestBinding = new RequestBinding(request)
 
 
-    def respond[T](rf: ResponseFunction) {
+    def respond[T](rf: ResponseFunction[NHttpResponse]) {
       val response = new DefaultHttpResponse(HTTP_1_1, OK)
 
       response.setHeader("Server", "Scala Netty Unfiltered Server")

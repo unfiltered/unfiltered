@@ -14,7 +14,7 @@ trait InittedFilter extends Filter {
 }
 
 object Plan {
-  type Intent = unfiltered.Cycle.Intent[HttpServletRequest]
+  type Intent = unfiltered.Cycle.Intent[HttpServletRequest,HttpServletResponse]
 }
 
 /**

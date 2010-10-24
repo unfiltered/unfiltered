@@ -81,24 +81,26 @@ class RecievedMessageBinding(
 
   /** Binds a Netty HttpResponse res to Unfiltered's HttpResponse to apply any
    * response function to it. */
-  def response[T <: NHttpResponse](res: T)(rf: ResponseFunction) =
+  def response[T <: NHttpResponse](res: T)(rf: ResponseFunction[T]) =
     rf(new ResponseBinding(res)).underlying
 
   /** @return a new Netty DefaultHttpResponse bound to an Unfiltered HttpResponse */
   val defaultResponse = response(new DefaultHttpResponse(HTTP_1_1, OK))_
   /** Applies rf to a new `defaultResponse` and writes it out */
-  def respond(rf: ResponseFunction) = {
+  def respond(rf: ResponseFunction[NHttpResponse]) = {
     val ch = req.getHeader("Connection")
     val keepAlive = req.getProtocolVersion match {
       case HTTP_1_1 => !"close".equalsIgnoreCase(ch)
       case HTTP_1_0 => "Keep-Alive".equals(ch)
     }
-    val closer = { res: HttpResponse[NHttpResponse] =>
-      if (keepAlive)
-        unfiltered.response.Connection("Keep-Alive") ~>
-        unfiltered.response.ContentLength(
-          res.underlying.getContent().readableBytes().toString)
-      else unfiltered.response.Connection("close")
+    val closer = new unfiltered.response.SubtypeResponder[NHttpResponse] {
+      def respond(res: HttpResponse[NHttpResponse]) {
+        if (keepAlive)
+          unfiltered.response.Connection("Keep-Alive") ~>
+          unfiltered.response.ContentLength(
+            res.underlying.getContent().readableBytes().toString)
+        else unfiltered.response.Connection("close")
+      }
     }
     channel.write(
       defaultResponse(
