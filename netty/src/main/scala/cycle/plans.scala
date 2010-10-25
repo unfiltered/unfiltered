@@ -10,19 +10,19 @@ import unfiltered.response.{ResponseFunction,NotFound}
 import unfiltered.request.HttpRequest
 
 object Plan {
-  type Intent = unfiltered.Cycle.Intent[DefaultHttpRequest,NHttpResponse]
+  type Intent = unfiltered.Cycle.Intent[ReceivedMessage,NHttpResponse]
 }
 /** A Netty Plan for request cycle handling. */
 abstract class Plan extends SimpleChannelUpstreamHandler {
   def intent: Plan.Intent
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     val request = e.getMessage().asInstanceOf[DefaultHttpRequest]
-    val requestBinding = new RecievedMessageBinding(request, ctx, e)
+    val requestBinding = new RequestBinding(ReceivedMessage(request, ctx, e))
 
     if (intent.isDefinedAt(requestBinding)) {
-      requestBinding.respond(intent(requestBinding))
+      requestBinding.underlying.respond(intent(requestBinding))
     } else {
-      requestBinding.respond(NotFound)
+      requestBinding.underlying.respond(NotFound)
     }
   }
 }

@@ -7,18 +7,18 @@ import unfiltered.response.NotFound
 import unfiltered.request.HttpRequest
 
 object Plan {
-  type Intent = PartialFunction[RecievedMessageBinding, Unit]
+  type Intent = PartialFunction[RequestBinding, Unit]
 }
 /** A Netty Plan for request only handling. */
 abstract class Plan extends SimpleChannelUpstreamHandler {
   def intent: Plan.Intent
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     val request = e.getMessage().asInstanceOf[DefaultHttpRequest]
-    val messageBinding = new RecievedMessageBinding(request, ctx, e)
+    val messageBinding = new RequestBinding(ReceivedMessage(request, ctx, e))
     if (intent.isDefinedAt(messageBinding)) {
       intent(messageBinding)
     } else {
-      messageBinding.respond(NotFound)
+      messageBinding.underlying.respond(NotFound)
     }
   }
 }

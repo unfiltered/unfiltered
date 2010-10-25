@@ -11,7 +11,8 @@ import org.jboss.netty.buffer.{ChannelBuffers, ChannelBufferOutputStream,
 import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.http.HttpVersion._
 import org.jboss.netty.handler.codec.http.HttpResponseStatus._
-import org.jboss.netty.handler.codec.http.{HttpResponse=>NHttpResponse}
+import org.jboss.netty.handler.codec.http.{HttpResponse=>NHttpResponse,
+                                           HttpRequest=>NHttpRequest}
 import java.nio.charset.{Charset => JNIOCharset}
 import unfiltered.Cookie
 import unfiltered.util.NonNull
@@ -20,8 +21,8 @@ object HttpConfig {
    val DEFAULT_CHARSET = "UTF-8"
 }
 
-/** Basic binding needed to satisfy HttpRequest */
-private [netty] class RequestBinding(req: DefaultHttpRequest) extends HttpRequest(req) {
+private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(msg) {
+  private val req = msg.request
   lazy val params = queryParams ++ postParams
   def queryParams = req.getUri.split("\\?", 2) match {
     case Array(_, qs) => URLParser.urldecode(qs)
@@ -72,12 +73,11 @@ private [netty] class RequestBinding(req: DefaultHttpRequest) extends HttpReques
   }
 }
 /** Extension of basic request binding to expose Netty-specific attributes */
-class RecievedMessageBinding(
-    req: DefaultHttpRequest, 
-    val context: ChannelHandlerContext,
-    val event: MessageEvent) extends RequestBinding(req) {
+case class ReceivedMessage(
+  request: DefaultHttpRequest, 
+  context: ChannelHandlerContext,
+  event: MessageEvent) {
   import org.jboss.netty.handler.codec.http.{HttpResponse => NHttpResponse}
-  lazy val channel = event.getChannel
 
   /** Binds a Netty HttpResponse res to Unfiltered's HttpResponse to apply any
    * response function to it. */
@@ -88,8 +88,8 @@ class RecievedMessageBinding(
   val defaultResponse = response(new DefaultHttpResponse(HTTP_1_1, OK))_
   /** Applies rf to a new `defaultResponse` and writes it out */
   def respond(rf: ResponseFunction[NHttpResponse]) = {
-    val ch = req.getHeader("Connection")
-    val keepAlive = req.getProtocolVersion match {
+    val ch = request.getHeader("Connection")
+    val keepAlive = request.getProtocolVersion match {
       case HTTP_1_1 => !"close".equalsIgnoreCase(ch)
       case HTTP_1_0 => "Keep-Alive".equals(ch)
     }
@@ -105,7 +105,7 @@ class RecievedMessageBinding(
         )(res)
       }
     }
-    val future = channel.write(
+    val future = event.getChannel.write(
       defaultResponse(
         unfiltered.response.Server("Scala Netty Unfiltered Server") ~> rf ~> closer 
       )
