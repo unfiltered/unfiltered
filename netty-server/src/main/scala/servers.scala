@@ -22,7 +22,7 @@ trait Server extends RunnableServer {
   /** any channels added to this will receive broadcasted events */
   protected val channels = new DefaultChannelGroup("Netty Unfiltered Server Channel Group")
 
-  private var joinLock = new AnyRef
+  private val joinLock = new AnyRef
 
   @volatile()
   private var stopping  = false 
