@@ -1,7 +1,7 @@
 package unfiltered.response
 
-case class ResponseHeader(name: String, values: Iterable[String]) extends unfiltered.response.Responder {
-  def respond[T](res: HttpResponse[T]) {
+case class ResponseHeader(name: String, values: Iterable[String]) extends Responder[Any] {
+  def respond(res: HttpResponse[Any]) {
     values.foreach { v => res.addHeader(name, v) } 
   }
 }
@@ -15,6 +15,7 @@ object AcceptRanges extends HeaderName("Accept-Ranges")
 object Age extends HeaderName("Age")
 object Allow extends HeaderName("Allow")
 object CacheControl extends HeaderName("Cache-Control")
+object Connection extends HeaderName("Connection")
 object ContentEncoding extends HeaderName("Content-Encoding")
 object ContentLanguage extends HeaderName("Content-Language")
 object ContentLength extends HeaderName("Content-Length")

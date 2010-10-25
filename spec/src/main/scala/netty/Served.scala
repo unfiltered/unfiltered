@@ -6,7 +6,7 @@ trait Served extends unfiltered.spec.Hosted {
   shareVariables()
 
   import unfiltered.netty._
-  def setup: (Int => Server)
+  def setup: (Int => Http)
   lazy val server = setup(port)
 
   doBeforeSpec { server.start() }

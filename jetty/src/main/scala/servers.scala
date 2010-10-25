@@ -68,7 +68,10 @@ trait ContextBuilder {
     current.setBaseResource(Resource.newResource(path))
     this
   }
+}
 
+object Http {
+  def apply(port: Int): Http = new Http(port)
 }
 
 trait Server extends ContextBuilder with unfiltered.util.RunnableServer { self =>

@@ -7,7 +7,7 @@ object AcceptsSpecJetty extends unfiltered.spec.jetty.Served with AcceptsSpec {
 }
 object AcceptsSpecNetty extends unfiltered.spec.netty.Served with AcceptsSpec {
   def setup = { p => 
-    unfiltered.netty.Server(p, unfiltered.netty.cycle.Planify(intent)) 
+    unfiltered.netty.Http(p).handler(unfiltered.netty.cycle.Planify(intent))
   }
 }
 trait AcceptsSpec extends unfiltered.spec.Hosted {
@@ -17,7 +17,7 @@ trait AcceptsSpec extends unfiltered.spec.Hosted {
   
   import dispatch._
 
-  def intent[A]: unfiltered.Cycle.Intent[A] = {
+  def intent[A,B]: unfiltered.Cycle.Intent[A,B] = {
     case GET(UFPath(Seg(ext :: Nil), Accepts.Json(_))) => ResponseString("json")
     case GET(UFPath(Seg(ext :: Nil), Accepts.Xml(_))) => ResponseString("xml")
     case GET(UFPath(Seg(ext :: Nil), Accepts.Csv(_))) => ResponseString("csv")

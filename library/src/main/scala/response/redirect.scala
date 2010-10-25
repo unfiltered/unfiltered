@@ -1,5 +1,5 @@
 package unfiltered.response
 
-case class Redirect(loc: String) extends Responder {
-  def respond[T](res: HttpResponse[T]) { res.sendRedirect(loc) }
+case class Redirect(loc: String) extends Responder[Any] {
+  def respond(res: HttpResponse[Any]) { res.sendRedirect(loc) }
 }

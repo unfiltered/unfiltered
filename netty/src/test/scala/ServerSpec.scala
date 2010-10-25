@@ -11,6 +11,6 @@ object NettyServerTest {
       case GET(UFPath("/", _)) => ResponseString("test") ~> Ok
     })
 
-    Server(8080, p).start
+    Http(8080).handler(p).start
   }
 }

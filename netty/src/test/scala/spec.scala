@@ -14,7 +14,7 @@ class RequestSpec extends Specification {
   nettyReq.addHeader("Multi-Header", "A")
   nettyReq.addHeader("Multi-Header", "B")
 
-  val req = new RequestBinding(nettyReq)
+  val req = new RequestBinding(ReceivedMessage(nettyReq, null, null))
 
   "Request Binding" should {
      "return the correct method" in {
