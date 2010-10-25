@@ -9,7 +9,8 @@ import org.eclipse.jetty.util.resource.Resource
 import java.util.concurrent.atomic.AtomicInteger
 
 case class Http(port: Int, host: String) extends Server {
-  def this(port: Int) = this(port, "0.0.0.0")
+  /** use the factory method */
+  @deprecated def this(port: Int) = this(port, "0.0.0.0")
   val url = "http://%s:%d/" format (host, port)
   val conn = new SocketConnector()
   conn.setPort(port)
@@ -38,7 +39,12 @@ trait ContextBuilder {
 }
 
 object Http {
-  def apply(port: Int): Http = new Http(port)
+  /** bind to the given port for any host */
+  def apply(port: Int): Http = Http(port, "0.0.0.0")
+  /** bind to a the loopback interface only */
+  def local(port: Int) = Http(port, "127.0.0.1")
+  /** bind to any available port on the loopback interface */
+  def anylocal = local(unfiltered.util.Port.any)
 }
 
 trait Server extends ContextBuilder with unfiltered.util.RunnableServer { self =>
