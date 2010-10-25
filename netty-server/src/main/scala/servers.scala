@@ -21,6 +21,11 @@ trait Server extends RunnableServer {
   
   /** any channels added to this will receive broadcasted events */
   protected val channels = new DefaultChannelGroup("Netty Unfiltered Server Channel Group")
+
+  private var joinLock = new AnyRef
+
+  @volatile()
+  private var stopping  = false 
   
   def start(): this.type = {
     bootstrap = new ServerBootstrap(
@@ -48,19 +53,16 @@ trait Server extends RunnableServer {
   def destroy(): this.type = {
     // Release NIO resources to the OS
     bootstrap.releaseExternalResources
+    stopping = false
+    joinLock.synchronized { joinLock.notifyAll }
     this
   }
-  /** This has different semantics from the join method on the jetty server.
-   * It does not return (or consistently return) after stopping the server. */
+
   def join(): this.type = {
-    def doWait() {
-      try { Thread.sleep(1000) } catch { case _: InterruptedException => () }
-      doWait()
-    }
     Runtime.getRuntime.addShutdownHook(new Thread {
       override def run() { Server.this.stop() }
     })
-    doWait()
+    while (!stopping) joinLock.synchronized { joinLock.wait }
     this
   }
 }
