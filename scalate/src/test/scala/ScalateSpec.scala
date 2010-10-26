@@ -5,15 +5,24 @@ import org.specs._
 
 // java
 import java.io.{StringWriter, PrintWriter, File}
+import javax.servlet.http.HttpServletRequest
 
 // scalate
 import org.fusesource.scalate.{TemplateEngine, Binding}
 import org.fusesource.scalate.support.FileResourceLoader
 
+// Unfiltered
+import unfiltered.request.HttpRequest
+
 class ScalateSpec extends Specification {
+  
+  import org.mockito.Mockito._
+  
+  val requestStub = mock(classOf[HttpRequest[HttpServletRequest]])
+  
   "A Template" should {
     "load" in {
-      val scalate = Scalate("scalate/src/test/resources/hello.ssp")
+      val scalate = Scalate(requestStub, "scalate/src/test/resources/hello.ssp")
         
       val buffer = new StringWriter
       val writer = new PrintWriter(buffer)
@@ -24,7 +33,7 @@ class ScalateSpec extends Specification {
     "accept an implicit engine" in {
       implicit val myEngine = new TemplateEngine
       myEngine.resourceLoader = new FileResourceLoader(Some(new File("./scalate/src/test/resources/alternate/")))
-      val scalate = Scalate("another_test_template.ssp")
+      val scalate = Scalate(requestStub, "another_test_template.ssp")
         
       val buffer = new StringWriter
       val writer = new PrintWriter(buffer)
@@ -37,7 +46,7 @@ class ScalateSpec extends Specification {
       implicit val bindings: List[Binding] = List(Binding(name = "foo", className = "String"))
       implicit val additionalAttributes = List(("foo", "bar"))
         
-      val scalate = Scalate("scalate/src/test/resources/bindings.ssp")
+      val scalate = Scalate(requestStub, "scalate/src/test/resources/bindings.ssp")
         
       val buffer = new StringWriter
       val writer = new PrintWriter(buffer)

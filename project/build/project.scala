@@ -75,8 +75,9 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
 
   lazy val scalate = project("scalate", "Unfiltered Scalate", 
       new UnfilteredModule(_) with Only28 with IntegrationTesting {
-    val scalateLibs = "org.fusesource.scalate" % "scalate-core" % "1.2"
+    val scalateLibs = "org.fusesource.scalate" % "scalate-core" % "1.3"
     val scalaCompiler = "org.scala-lang" % "scala-compiler" % "2.8.0" % "test"
+    val mockito = "org.mockito" % "mockito-core" % "1.8.5" % "test"
     override def repositories = Set(ScalaToolsSnapshots)
   }, library)
   /** websockets */
@@ -104,7 +105,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
 
   override def postTitle(vers: String) = "Unfiltered %s" format vers
 
-  lazy val jboss = "JBoss repository" at "http://repository.jboss.org/maven2"
+  lazy val repo = "jboss repo" at "http://repository.jboss.org/nexus/content/groups/public-jboss/"
 
   override def managedStyle = ManagedStyle.Maven
   val publishTo = "Scala Tools Nexus" at 
