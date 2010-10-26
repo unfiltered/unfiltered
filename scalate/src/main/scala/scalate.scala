@@ -6,7 +6,8 @@ import org.fusesource.scalate.{TemplateEngine, Binding}
  * private object that holds the default engine
 */
 private[scalate] object ScalateDefaults{
-  implicit val engine = new TemplateEngine
+  val defaultTemplateDirs = List(new java.io.File("src/main/resources/templates"))
+  implicit val engine = new TemplateEngine(defaultTemplateDirs)
 }
  
 import unfiltered.response.ResponseWriter
