@@ -109,12 +109,6 @@ object Server{
 
 And the bindings and attributes can be implicit as well:
 
-import unfiltered.request._
-import unfiltered.response._
-import unfiltered.jetty._
-import unfiltered.scalate.Scalate
-import org.fusesource.scalate.{TemplateEngine, Binding}
-
 object Server{
   def main(args: Array[String]){
     
