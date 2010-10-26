@@ -44,7 +44,6 @@ now you can reference static assets from your template like /public/main.css or 
 
 ## Further Configuration and Usage
 
-
 ### Custom Template Engine
 If you wish to move your templates somewhere else, or you want to configure the org.fusesource.scalate.TemplateEngine for production use, you can create your own TemplateEngine and pass it to the secondary parameters set manually:
 
