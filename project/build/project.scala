@@ -16,7 +16,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
       _ +++ _.projectClasspath(Configurations.Compile)
     }
     override def testCompileAction = super.testCompileAction dependsOn 
-      (testDeps map { _.compile} : _*)
+      (testDeps map { _.compile } : _*)
     lazy val specs = specsDependency % "test"
     lazy val dispatch = dispatchDependency % "test"
   }
@@ -52,7 +52,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
       val netty = "org.jboss.netty" % "netty" % "3.2.2.Final" withSources()
     }, util
   )
-  lazy val netty = project("netty", "Unfiltered Netty", new UnfilteredModule(_), 
+  lazy val netty = project("netty", "Unfiltered Netty", new UnfilteredModule(_) with IntegrationTesting, 
     netty_server, library)
 
   /** Marker for Scala 2.8-only projects that shouldn't be cross compiled or published */

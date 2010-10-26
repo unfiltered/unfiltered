@@ -1,6 +1,6 @@
 package unfiltered.netty
 
-import unfiltered.util.RunnableServer
+import unfiltered.util.{IO, RunnableServer}
 import java.util.concurrent.Executors
 import org.jboss.netty.bootstrap.ServerBootstrap
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
@@ -8,6 +8,7 @@ import java.net.InetSocketAddress
 import org.jboss.netty.handler.codec.http.{HttpRequestDecoder, HttpResponseEncoder}
 import org.jboss.netty.channel._
 import group.{ChannelGroup, DefaultChannelGroup}
+import unfiltered._
 
 trait Server extends RunnableServer {
   val port: Int
@@ -27,7 +28,6 @@ trait Server extends RunnableServer {
       new NioServerSocketChannelFactory(
         Executors.newFixedThreadPool(DEFAULT_IO_THREADS),
         Executors.newFixedThreadPool(DEFAULT_EVENT_THREADS)))
-
     bootstrap.setPipelineFactory(pipelineFactory)
 
     bootstrap.setOption("child.tcpNoDelay", true)
@@ -65,12 +65,108 @@ trait Server extends RunnableServer {
   }
 }
 
+/** Mixin trait for Ssl support. note need to extend something with a 
+  * concrete #pipelineFactory impl */
+trait Ssl extends Http with SslSecurity {
+  import org.jboss.netty.handler.ssl.SslHandler
+  import javax.net.ssl.SSLEngine
+  
+  lazy val newPipes = try { new ChannelPipelineFactory {
+    def getPipeline(): ChannelPipeline = {
+      val otherPipes = Ssl.super.pipelineFactory.getPipeline.toMap
+      val line = Channels.pipeline
+      val engine = createSslEngine
+      engine.setUseClientMode(false)
+      line.addLast("ssl", new SslHandler(engine))
+      val jiter = otherPipes.entrySet.iterator
+      while(jiter.hasNext) {
+        val e = jiter.next
+        line.addLast(e.getKey, e.getValue) 
+      }
+      line
+    }
+  } } catch { case e => 
+    error("error securing pipeline %s" format e.getMessage)
+  }
+  
+  /** prefixes channel pipeline with ssl handler */
+  override def pipelineFactory = newPipes
+  
+  def createSslEngine = createSslContext.createSSLEngine
+}
+
+/** Provides security dependencies */
+trait Security {
+  import javax.net.ssl.SSLContext
+  /** create an SSLContext from which an SSLEngine can be created */
+  def createSslContext: SSLContext
+}
+
+/** Default implementation of Security provides basic ssl support */
+trait SslSecurity extends Security {
+  import java.io.FileInputStream
+  
+  import java.security.{KeyStore, SecureRandom}
+  import javax.net.ssl.{KeyManager, KeyManagerFactory, SSLContext}
+  
+  def requiredProperty(name: String) = System.getProperty(name) match {
+    case null => error("required system property not set %s" format name)
+    case prop => prop
+  }
+  
+  lazy val keyStore = requiredProperty("netty.ssl.keyStore")
+  lazy val keyStorePassword = requiredProperty("netty.ssl.keyStorePassword")
+  
+  def keyManagers = {
+    val keys = KeyStore.getInstance(System.getProperty("netty.ssl.keyStoreType","JKS"))
+    IO.use(new java.io.FileInputStream(keyStore)) { in =>
+      keys.load(in, keyStorePassword.toCharArray)
+    }
+    val keyManFact = KeyManagerFactory.getInstance(System.getProperty("netty.ssl.keyStoreAlgorithm", KeyManagerFactory.getDefaultAlgorithm))
+    keyManFact.init(keys, keyStorePassword.toCharArray)
+    keyManFact.getKeyManagers
+  }
+  
+  def createSslContext = {
+    val context = SSLContext.getInstance("TLS")
+    initSslContext(context)
+    context
+  }
+  
+  def initSslContext(ctx: SSLContext) = 
+    ctx.init(keyManagers, null, new SecureRandom)
+}
+
+/** Mixin for SslSecurity which adds trust store security */
+trait Trusted { self: SslSecurity =>
+  import java.io.FileInputStream
+  import java.security.{KeyStore, SecureRandom}
+  import javax.net.ssl.{SSLContext, TrustManager, TrustManagerFactory}
+  
+  lazy val trustStore = requiredProperty("netty.ssl.trustStore")
+  lazy val trustStorePassword = requiredProperty("netty.ssl.trustStorePassword")
+  
+  def initSslContext(ctx: SSLContext) = 
+    ctx.init(keyManagers, trustManagers, new SecureRandom)
+  
+  def trustManagers = {
+    val trusts = KeyStore.getInstance(System.getProperty("netty.ssl.trustStoreType","JKS"))
+    IO.use(new FileInputStream(trustStore)) { in =>
+      trusts.load(in, trustStorePassword.toCharArray)
+    }  
+    val trustManFact = TrustManagerFactory.getInstance(System.getProperty("netty.ssl.trustStoreAlgorithm", TrustManagerFactory.getDefaultAlgorithm))
+    trustManFact.init(trusts)
+    trustManFact.getTrustManagers
+  }
+}
+
 /** Default implementation of the Server trait. If you want to use a custom pipeline
  * factory it's better to extend Server directly. */
 case class Http(port: Int, host: String,
                 handlers: List[ChannelHandler],
                 beforeStopBlock: () => Unit) extends Server with RunnableServer {
-  def pipelineFactory = new ServerPipelineFactory(channels, handlers)
+  def pipelineFactory: ChannelPipelineFactory = new ServerPipelineFactory(channels, handlers)
+  
   def stop() = {
     beforeStopBlock()
     closeConnections()
@@ -85,7 +181,7 @@ case class Http(port: Int, host: String,
 object Http {
   def apply(port: Int, host: String): Http = 
     Http(port, host, Nil, () => ())
-  def apply(port: Int): Http = 
+  def apply(port: Int): Http =
     Http(port, "0.0.0.0")
 }
 
