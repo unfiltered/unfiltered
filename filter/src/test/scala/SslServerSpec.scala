@@ -12,6 +12,8 @@ object SslServerSpec extends Specification with spec.jetty.Served with spec.Secu
   
   import dispatch._
   
+  // generated keystore for localhost
+  // keytool -keystore keystore -alias unfiltered -genkey -keyalg RSA
   val keyStorePath = getClass.getResource("/keystore").getPath
   val keyStorePasswd = "unfiltered"
   val securePort = 8443
