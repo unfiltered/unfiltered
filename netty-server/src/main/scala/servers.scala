@@ -120,7 +120,7 @@ trait SslSecurity extends Security {
   lazy val keyStorePassword = requiredProperty("netty.ssl.keyStorePassword")
   
   def keyManagers = {
-    val keys = KeyStore.getInstance(System.getProperty("netty.ssl.keyStoreType","JKS"))
+    val keys = KeyStore.getInstance(System.getProperty("netty.ssl.keyStoreType", KeyStore.getDefaultType))
     IO.use(new java.io.FileInputStream(keyStore)) { in =>
       keys.load(in, keyStorePassword.toCharArray)
     }
@@ -152,7 +152,7 @@ trait Trusted { self: SslSecurity =>
     ctx.init(keyManagers, trustManagers, new SecureRandom)
   
   def trustManagers = {
-    val trusts = KeyStore.getInstance(System.getProperty("netty.ssl.trustStoreType","JKS"))
+    val trusts = KeyStore.getInstance(System.getProperty("netty.ssl.trustStoreType", KeyStore.getDefaultType))
     IO.use(new FileInputStream(trustStore)) { in =>
       trusts.load(in, trustStorePassword.toCharArray)
     }  
