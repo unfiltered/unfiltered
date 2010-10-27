@@ -8,7 +8,7 @@ import unfiltered.request.{Path => UFPath}
 
 object SslServerSpec extends Specification with spec.netty.Served with spec.SecureClient {
   
-  import unfiltered.netty.{Http => NHttp, Ssl}
+  import unfiltered.netty.Https
   import org.apache.http.client.ClientProtocolException
   import dispatch._
   
@@ -18,6 +18,15 @@ object SslServerSpec extends Specification with spec.netty.Served with spec.Secu
   val keyStorePasswd = "unfiltered"
   val securePort = port
   
+  doBeforeSpec { 
+    System.setProperty("netty.ssl.keyStore", keyStorePath)
+    System.setProperty("netty.ssl.keyStorePassword", keyStorePasswd)
+  }
+  doAfterSpec { 
+    System.clearProperty("netty.ssl.keyStore")
+    System.clearProperty("netty.ssl.keyStorePassword")
+  }
+  
   def setup = { port =>
     try {
       val securePlan = new unfiltered.netty.cycle.Plan with Secured {
@@ -25,14 +34,11 @@ object SslServerSpec extends Specification with spec.netty.Served with spec.Secu
         
         def intent = { case GET(UFPath("/", _)) => ResponseString("secret") ~> Ok }
         
-        override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) = {
+        override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) =
           ctx.getChannel.close
-        }
       }
-      new NHttp(port, "localhost", securePlan :: Nil, () => ()) with Ssl {
-        override lazy val keyStore = keyStorePath
-        override lazy val keyStorePassword = keyStorePasswd
-      }
+      
+      Https(port, "localhost").handler(securePlan) 
     } catch { case e => e.printStackTrace 
       throw new RuntimeException(e)
     }
