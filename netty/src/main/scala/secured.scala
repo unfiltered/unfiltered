@@ -11,12 +11,12 @@ trait Secured extends SimpleChannelUpstreamHandler {
   override def channelConnected(ctx: ChannelHandlerContext, e: ChannelStateEvent) =
     ctx.getPipeline.get(classOf[SslHandler]) match {
       case null => ()
-      case ssl: SslHandler => ssl.handshake.addListener(afterSecure)
+      case ssl: SslHandler => ssl.handshake.addListener(channelSecured(ctx))
     }
   
   /** Called after a successful Ssl handshake. By default, this does nothing. 
     * Override this for post-handshake behavior. */
-  def afterSecure = new ChannelFutureListener {
+  def channelSecured(ctx: ChannelHandlerContext) = new ChannelFutureListener {
     def operationComplete(future: ChannelFuture) { /* NO OP */ }
   }
 }
