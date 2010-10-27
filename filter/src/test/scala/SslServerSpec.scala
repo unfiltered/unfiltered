@@ -7,7 +7,7 @@ object SslServerSpec extends Specification with spec.jetty.Served with spec.Secu
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
-  import unfiltered.jetty.{Http => JHttp, Ssl}
+  import unfiltered.jetty.Https
   import org.apache.http.client.ClientProtocolException
   
   import dispatch._
@@ -20,8 +20,7 @@ object SslServerSpec extends Specification with spec.jetty.Served with spec.Secu
   
   override val host = :/("localhost", securePort)
   
-  override lazy val server = setup(new JHttp(port) with Ssl {
-    def sslPort = securePort
+  override lazy val server = setup(Https(securePort) {
     override lazy val keyStore = keyStorePath
     override lazy val keyStorePassword = keyStorePasswd
   })
