@@ -23,11 +23,6 @@ trait Server extends RunnableServer {
   /** any channels added to this will receive broadcasted events */
   protected val channels = new DefaultChannelGroup("Netty Unfiltered Server Channel Group")
 
-  private val joinLock = new AnyRef
-
-  @volatile()
-  private var stopping  = false 
-  
   def start(): this.type = {
     bootstrap = new ServerBootstrap(
       new NioServerSocketChannelFactory(
@@ -53,16 +48,6 @@ trait Server extends RunnableServer {
   def destroy(): this.type = {
     // Release NIO resources to the OS
     bootstrap.releaseExternalResources
-    stopping = false
-    joinLock.synchronized { joinLock.notifyAll }
-    this
-  }
-
-  def join(): this.type = {
-    Runtime.getRuntime.addShutdownHook(new Thread {
-      override def run() { Server.this.stop() }
-    })
-    while (!stopping) joinLock.synchronized { joinLock.wait }
     this
   }
 }
