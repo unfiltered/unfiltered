@@ -20,7 +20,7 @@ object SslServerSpec extends Specification with spec.jetty.Served with spec.Secu
   
   override val host = :/("localhost", securePort)
   
-  override lazy val server = setup(Https(securePort) {
+  override lazy val server = setup(new Https(securePort, "0.0.0.0") {
     override lazy val keyStore = keyStorePath
     override lazy val keyStorePassword = keyStorePasswd
   })
