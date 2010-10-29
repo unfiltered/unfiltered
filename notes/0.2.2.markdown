@@ -1,8 +1,47 @@
-* The `server` field in prior version of `unfiltered.jetty.Server`
+Server interfaces
+-----------------
+
+* The Netty server interface is now in an independent module,
+  unfiltered-netty-server.
+* The `server` field in prior versions of `unfiltered.jetty.Server`
   (the wrapper's reference to the Jetty server object) is now
-  `underlying`
+  `underlying`.
 * The `destroy` method of the underlying Jetty server is now promoted
-  to the wrapper interface, and it is called automatcally from the
-  `run` method. Destroying completed server instances frees PermGen
-  space for long-running JVM sessions, such as those provided by
-  interactive build and test tools.
+  to the wrapper interface, and it is called from the `run`
+  method. Destroying completed server instances frees PermGen space
+  for long-running JVM sessions, such as those provided by interactive
+  build and test tools.
+* The `run` method is not guaranteed to return. If you have code to
+  execute after the server is stopped, call run with beforeStart and
+  afterStop functions.
+
+Websockets
+----------
+
+New module, using Netty! Details are available in the
+[readme](http://github.com/n8han/Unfiltered/tree/master/websockets/#readme).
+
+ResponseFunction and Intent
+---------------------------
+
+ResponseFunction now takes a type parameter T to restrict the type of
+its `underlying` instance. The type T of all general ResponseFunctions
+in unfiltered-library is Any, as they do not require any specific
+implementation.
+
+The intent convention has evolved to encompass underlying response
+types, specifically the Cycle.Intent type takes two parameters, A
+for the underlying request and B for the response. This allows the
+use of narrowly typed ResponseFunctions to be checked when defining
+a particular intent.
+
+Netty
+-----
+
+The unfiltered-netty module now supplies two Plan
+constructs. unfiltered.netty.cycle.Plan is for defining a traditional
+request-response cycle, where a response object is synchronously
+produced for a request. unfiltered.netty.channel.Plan does not assume
+any response strategy; it simply matches the request and leaves it to
+the application to construct and write a response through Netty.
+
