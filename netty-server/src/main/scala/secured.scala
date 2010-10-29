@@ -7,38 +7,6 @@ import org.jboss.netty.channel._
 import group.ChannelGroup
 import unfiltered._
 
-/** Mixin trait for Ssl support. 
-  * For added truststore support, mix in the Trusted trait
-  * note need to extend something with a 
-  * concrete #pipelineFactory impl 
-  * @note you may prefer to just use Https (less pipe twisting) */
-trait Ssl extends Http with SslSecurity {
-  import org.jboss.netty.handler.ssl.SslHandler
-  
-  lazy val newPipes = try { new ChannelPipelineFactory {
-    def getPipeline(): ChannelPipeline = {
-      val otherPipes = Ssl.super.pipelineFactory.getPipeline.toMap
-      val line = Channels.pipeline
-      val engine = createSslEngine
-      engine.setUseClientMode(false)
-      line.addLast("ssl", new SslHandler(engine))
-      val jiter = otherPipes.entrySet.iterator
-      while(jiter.hasNext) {
-        val e = jiter.next
-        line.addLast(e.getKey, e.getValue) 
-      }
-      line
-    }
-  } } catch { case e => 
-    error("error securing pipeline %s" format e.getMessage)
-  }
-  
-  /** prefixes channel pipeline with ssl handler */
-  override def pipelineFactory = newPipes
-  
-  def createSslEngine = createSslContext.createSSLEngine
-}
-
 /** Provides security dependencies */
 trait Security {
   import javax.net.ssl.SSLContext
@@ -46,10 +14,10 @@ trait Security {
   def createSslContext: SSLContext
 }
 
-/** Default implementation of Security provides basic ssl support. 
-  * A keyStore, keyStorePassword are required and default to using the system property values
-  * "jetty.ssl.keyStore" and "jetty.ssl.keyStorePassword" respectively.*/
-trait SslSecurity extends Security {
+/** Provides basic ssl support. 
+  * A keyStore and keyStorePassword are required and default to using the system property values
+  * "jetty.ssl.keyStore" and "jetty.ssl.keyStorePassword" respectively. */
+trait Ssl extends Security {
   import java.io.FileInputStream
   import java.security.{KeyStore, SecureRandom}
   import javax.net.ssl.{KeyManager, KeyManagerFactory, SSLContext}
@@ -87,7 +55,7 @@ trait SslSecurity extends Security {
   * to the System property values "netty.ssl.trustStore" and 
   * "netty.ssl.trustStorePassword" respectively
   */
-trait Trusted { self: SslSecurity =>
+trait Trusted { self: Ssl =>
   import java.io.FileInputStream
   import java.security.{KeyStore, SecureRandom}
   import javax.net.ssl.{SSLContext, TrustManager, TrustManagerFactory}
@@ -112,7 +80,7 @@ trait Trusted { self: SslSecurity =>
 /** Http + Ssl implementation of the Server trait. */
 case class Https(port: Int, host: String,
                 handlers: List[ChannelHandler],
-                beforeStopBlock: () => Unit) extends Server with RunnableServer with SslSecurity {
+                beforeStopBlock: () => Unit) extends Server with RunnableServer with Ssl {
   def pipelineFactory: ChannelPipelineFactory = new SecureServerPipelineFactory(channels, handlers, this)
   
   def stop() = {
