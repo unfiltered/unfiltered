@@ -7,7 +7,7 @@ trait Served extends unfiltered.spec.Hosted {
 
   import unfiltered.jetty._
   def setup: (Server => Server)
-  lazy val server = setup(new Http(port))
+  lazy val server = setup(Http(port))
   
   doBeforeSpec { server.start() }
   doAfterSpec { server.stop(); server.destroy() }
