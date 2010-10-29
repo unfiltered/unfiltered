@@ -12,10 +12,7 @@ object PlanSpec extends Specification with unfiltered.spec.jetty.Served {
   
   def setup = { 
     _.filter(Planify {
-      case GET(UFPath("/filter", _)) => {
-        println("should pass to next filter")
-        Pass
-      }
+      case GET(UFPath("/filter", _)) => Pass
       case _ => println("nonmatching first"); Pass
     }).filter(Planify {
       case GET(UFPath("/filter", _)) => ResponseString("test") ~> Ok
