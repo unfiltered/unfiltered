@@ -10,18 +10,22 @@ Server Interfaces
   for long-running JVM sessions, such as those provided by interactive
   build and test tools.
 * The `run` method is not guaranteed to return. If you have code to
-  execute after the server is stopped, call run with beforeStart and
+  execute after the server is stopped, call [run][run] with beforeStart and
   afterStop functions.
-* Convenience methods on unfiltered.jetty.Http: `local` for a server
-  bound to the loopback interface only, and `anylocal` for a server on
+* Convenience methods on unfiltered.jetty.Http: [local][local] for a server
+  bound to the loopback interface only, and [anylocal][anylocal] for a server on
   loopback using any available port.
+  
+[run]: http://sourced.implicit.ly/net.databinder/unfiltered-utils/0.2.2/servers.scala.html#9101
+[local]: http://sourced.implicit.ly/net.databinder/unfiltered-jetty/0.2.2/servers.scala.html#16140
+[anylocal]: http://sourced.implicit.ly/net.databinder/unfiltered-jetty/0.2.2/servers.scala.html#16141
 
 New Modules
 -----------
 
-* unfiltered-websockets: using Netty! Details are available in the
+* unfiltered-websockets: Uses Netty. Details are available in the
 [readme](http://github.com/n8han/Unfiltered/tree/master/websockets/#readme).
-* unfiltered-util: basic objects of use to both unfiltered servers and libraries.
+* unfiltered-utils: basic functions used by other unfiltered modules.
 * unfiltered-netty-server: extracts servers from unfiltered-netty
   module, so that they may be used without depending on
   unfiltered-library.
@@ -29,35 +33,44 @@ New Modules
 Unfiltered Library
 ------------------
 
-Support for Cookies.
+Support for [Cookies](http://sourced.implicit.ly/net.databinder/unfiltered/0.2.2/request/cookies.scala.html#9120).
 
 ResponseFunction and Intent
 ---------------------------
 
-ResponseFunction now takes a type parameter T to restrict the type of
-its `underlying` instance. The type T of all general ResponseFunctions
-in unfiltered-library is Any, as they do not require any specific
+[ResponseFunction][rf] now takes a type parameter A to restrict the type of
+its `underlying` instance. The type A of all general ResponseFunctions
+in unfiltered library is Any, as they do not require any specific
 implementation.
 
+[rf]: http://sourced.implicit.ly/net.databinder/unfiltered/0.2.2/response/functions.scala.html#9248
+
 The intent convention has evolved to encompass underlying response
-types, specifically the Cycle.Intent type takes two parameters, A
+types, specifically the [Cycle.Intent][cycle] type takes two parameters, A
 for the underlying request and B for the response. This allows the
 use of narrowly typed ResponseFunctions to be checked when defining
 a particular intent.
+
+[cycle]: http://sourced.implicit.ly/net.databinder/unfiltered/0.2.2/intents.scala.html#11785
 
 Finally, the implementation of intent pattern matching has been
 improved. The method `isDefinedAt` is employed rather than
 optimistically attempting a match inside a try/catch block, all known
 side effects produced by request extractors have been eliminated. This
-required a slight change to the interface used to access multipart
-data in unfiltered-uploads.
+required a slight change to the interface used to access [multipart
+data][uploads] in unfiltered-uploads.
+
+[uploads]: http://sourced.implicit.ly/net.databinder/unfiltered-uploads/0.2.2/request/uploads.scala.html#9544
 
 Netty
 -----
 
 The unfiltered-netty module now supplies two Plan
-constructs. unfiltered.netty.cycle.Plan is for defining a traditional
+constructs. [unfiltered.netty.cycle.Plan][cycleplan] is for defining a traditional
 request-response cycle, where a response object is synchronously
-produced for a request. unfiltered.netty.channel.Plan does not assume
+produced for a request. [unfiltered.netty.channel.Plan][channelplan] does not assume
 any response strategy; it simply matches the request and leaves it to
 the application to construct and write a response through Netty.
+
+[cycleplan]: http://sourced.implicit.ly/net.databinder/unfiltered-netty/0.2.2/cycle/plans.scala.html#9182
+[channelplan]: http://sourced.implicit.ly/net.databinder/unfiltered-netty/0.2.2/channel/plans.scala.html#9164
