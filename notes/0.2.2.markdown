@@ -26,6 +26,11 @@ New Modules
   module, so that they may be used without depending on
   unfiltered-library.
 
+Unfiltered Library
+------------------
+
+Support for Cookies.
+
 ResponseFunction and Intent
 ---------------------------
 
@@ -39,6 +44,13 @@ types, specifically the Cycle.Intent type takes two parameters, A
 for the underlying request and B for the response. This allows the
 use of narrowly typed ResponseFunctions to be checked when defining
 a particular intent.
+
+Finally, the implementation of intent pattern matching has been
+improved. The method `isDefinedAt` is employed rather than
+optimistically attempting a match inside a try/catch block, all known
+side effects produced by request extractors have been eliminated. This
+required a slight change to the interface used to access multipart
+data in unfiltered-uploads.
 
 Netty
 -----
