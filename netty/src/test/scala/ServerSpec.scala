@@ -1,16 +1,20 @@
 package unfiltered.netty
 
-import unfiltered.response._
-import unfiltered.request._
-import unfiltered.request.{Path => UFPath}
-
-object NettyServerTest {
-  def main(args: Array[String]) = {
-
-    val p = unfiltered.netty.cycle.Planify({
-      case GET(UFPath("/", _)) => ResponseString("test") ~> Ok
-    })
-
-    Http(8080).handler(p).start
+object ServerSpec extends unfiltered.spec.netty.Served {
+  import unfiltered.response._
+  import unfiltered.request._
+  import unfiltered.request.{Path => UFPath}
+  import unfiltered.netty.{Http => NHttp}
+  
+  import dispatch._
+  
+  def setup = NHttp(_).handler(cycle.Planify({
+    case GET(UFPath("/", _)) => ResponseString("test") ~> Ok
+  }))
+  
+  "A Server" should {
+    "respond to requests" in {
+      Http(host as_str) must_=="test"
+    }
   }
 }

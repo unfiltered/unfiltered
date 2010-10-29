@@ -30,7 +30,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     lazy val filter = servletApiDependency
   }, library)
   /** file uploads */
-  lazy val uploads = project("uploads", "Unfiltered Uploads", new UnfilteredModule(_) with IntegrationTesting{
+  lazy val uploads = project("uploads", "Unfiltered Uploads", new UnfilteredModule(_) with IntegrationTesting {
     lazy val filter = servletApiDependency
     val io = "commons-io" % "commons-io" % "1.4"
     val fileupload = "commons-fileupload" % "commons-fileupload" % "1.2.1"
