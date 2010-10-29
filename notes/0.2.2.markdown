@@ -1,8 +1,6 @@
-Server interfaces
+Server Interfaces
 -----------------
 
-* The Netty server interface is now in an independent module,
-  unfiltered-netty-server.
 * The `server` field in prior versions of `unfiltered.jetty.Server`
   (the wrapper's reference to the Jetty server object) is now
   `underlying`.
@@ -14,12 +12,19 @@ Server interfaces
 * The `run` method is not guaranteed to return. If you have code to
   execute after the server is stopped, call run with beforeStart and
   afterStop functions.
+* Convenience methods on unfiltered.jetty.Http: `local` for a server
+  bound to the loopback interface only, and `anylocal` for a server on
+  loopback using any available port.
 
-Websockets
-----------
+New Modules
+-----------
 
-New module, using Netty! Details are available in the
+* unfiltered-websockets: using Netty! Details are available in the
 [readme](http://github.com/n8han/Unfiltered/tree/master/websockets/#readme).
+* unfiltered-util: basic objects of use to both unfiltered servers and libraries.
+* unfiltered-netty-server: extracts servers from unfiltered-netty
+  module, so that they may be used without depending on
+  unfiltered-library.
 
 ResponseFunction and Intent
 ---------------------------
@@ -44,4 +49,3 @@ request-response cycle, where a response object is synchronously
 produced for a request. unfiltered.netty.channel.Plan does not assume
 any response strategy; it simply matches the request and leaves it to
 the application to construct and write a response through Netty.
-
