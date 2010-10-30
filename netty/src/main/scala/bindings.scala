@@ -71,6 +71,10 @@ private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(m
       Nil
     }
   }
+  def isSecure = msg.context.getPipeline.get(classOf[org.jboss.netty.handler.ssl.SslHandler]) match {
+    case null => false
+    case _ => true
+  }
 }
 /** Extension of basic request binding to expose Netty-specific attributes */
 case class ReceivedMessage(
