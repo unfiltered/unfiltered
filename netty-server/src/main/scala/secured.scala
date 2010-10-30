@@ -31,11 +31,13 @@ trait Ssl extends Security {
   lazy val keyStorePassword = requiredProperty("netty.ssl.keyStorePassword")
   
   def keyManagers = {
-    val keys = KeyStore.getInstance(System.getProperty("netty.ssl.keyStoreType", KeyStore.getDefaultType))
-    IO.use(new java.io.FileInputStream(keyStore)) { in =>
+    val keys = KeyStore.getInstance(System.getProperty(
+      "netty.ssl.keyStoreType", KeyStore.getDefaultType))
+    IO.use(new FileInputStream(keyStore)) { in =>
       keys.load(in, keyStorePassword.toCharArray)
     }
-    val keyManFact = KeyManagerFactory.getInstance(System.getProperty("netty.ssl.keyStoreAlgorithm", KeyManagerFactory.getDefaultAlgorithm))
+    val keyManFact = KeyManagerFactory.getInstance(System.getProperty(
+      "netty.ssl.keyStoreAlgorithm", KeyManagerFactory.getDefaultAlgorithm))
     keyManFact.init(keys, keyStorePassword.toCharArray)
     keyManFact.getKeyManagers
   }
@@ -67,11 +69,13 @@ trait Trusted { self: Ssl =>
     ctx.init(keyManagers, trustManagers, new SecureRandom)
   
   def trustManagers = {
-    val trusts = KeyStore.getInstance(System.getProperty("netty.ssl.trustStoreType", KeyStore.getDefaultType))
+    val trusts = KeyStore.getInstance(System.getProperty(
+      "netty.ssl.trustStoreType", KeyStore.getDefaultType))
     IO.use(new FileInputStream(trustStore)) { in =>
       trusts.load(in, trustStorePassword.toCharArray)
     }  
-    val trustManFact = TrustManagerFactory.getInstance(System.getProperty("netty.ssl.trustStoreAlgorithm", TrustManagerFactory.getDefaultAlgorithm))
+    val trustManFact = TrustManagerFactory.getInstance(System.getProperty(
+      "netty.ssl.trustStoreAlgorithm", TrustManagerFactory.getDefaultAlgorithm))
     trustManFact.init(trusts)
     trustManFact.getTrustManagers
   }
@@ -81,7 +85,8 @@ trait Trusted { self: Ssl =>
 case class Https(port: Int, host: String,
                 handlers: List[ChannelHandler],
                 beforeStopBlock: () => Unit) extends Server with RunnableServer with Ssl {
-  def pipelineFactory: ChannelPipelineFactory = new SecureServerPipelineFactory(channels, handlers, this)
+  def pipelineFactory: ChannelPipelineFactory =
+    new SecureServerPipelineFactory(channels, handlers, this)
   
   def stop() = {
     beforeStopBlock()
@@ -102,7 +107,8 @@ object Https {
 }
 
 /** ChannelPipelineFactory for secure Http connections */
-class SecureServerPipelineFactory(channels: ChannelGroup, handlers: List[ChannelHandler], security: Security) 
+class SecureServerPipelineFactory(channels: ChannelGroup, handlers: List[ChannelHandler], 
+                                  security: Security) 
     extends ChannelPipelineFactory {
   import org.jboss.netty.handler.ssl.SslHandler
   def getPipeline(): ChannelPipeline = {

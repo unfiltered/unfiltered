@@ -6,10 +6,10 @@ case class Https(port: Int, host: String) extends Server with Ssl {
   sslConn.setHost(host)
 }
 
-/** Provides ssl support to a Server. This trait only requires a x509 keystore cert.
+/** Provides ssl support for Servers. This trait only requires a x509 keystore cert.
   * A keyStore, keyStorePassword are required and default to using the system property values
   * "jetty.ssl.keyStore" and "jetty.ssl.keyStorePassword" respectively.
-  * For added truststore support, mix in the Trusted trait */
+  * For added trust store support, mix in the Trusted trait */
 trait Ssl { self: Server =>
   import org.eclipse.jetty.server.ssl.SslSocketConnector
   
