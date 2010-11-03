@@ -10,11 +10,15 @@ object ServerSpec extends unfiltered.spec.netty.Served {
   
   def setup = NHttp(_).handler(cycle.Planify({
     case GET(UFPath("/", _)) => ResponseString("test") ~> Ok
+    case GET(UFPath("/addr", r)) => ResponseString(r.remoteAddr) ~> Ok
   }))
   
   "A Server" should {
     "respond to requests" in {
       Http(host as_str) must_=="test"
+    }
+    "provide a remote address" in {
+      Http(host / "addr" as_str) must_=="127.0.0.1"
     }
   }
 }

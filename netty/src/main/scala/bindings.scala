@@ -71,6 +71,7 @@ private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(m
       Nil
     }
   }
+  def remoteAddr = msg.context.getChannel.getRemoteAddress.asInstanceOf[java.net.InetSocketAddress].getAddress.getHostAddress
 }
 /** Extension of basic request binding to expose Netty-specific attributes */
 case class ReceivedMessage(

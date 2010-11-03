@@ -14,4 +14,5 @@ abstract class HttpRequest[T](val underlying: T) {
   def parameterValues(param: String) : Seq[String]
   def headers(name: String) : Iterator[String]
   def cookies: Seq[Cookie]
+  def remoteAddr: String
 }
