@@ -22,8 +22,8 @@ object ServerSpec extends Specification with unfiltered.spec.jetty.Served {
     "provide a remote address" in {
       Http(host / "addr" as_str) must_=="127.0.0.1"
     }
-    "provide a remote address" in {
-      Http(host / "addr" as_str) must_=="127.0.0.1"
+    "provide a remote address accounting for X-Forwared-For header" in {
+      Http(host / "addr_extractor" <:< Map("X-Forwarded-For" -> "66.108.150.228") as_str) must_=="66.108.150.228"
     }
   }
 }
