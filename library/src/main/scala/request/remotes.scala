@@ -18,7 +18,7 @@ object RemoteAddr {
     case XForwardedFor(forwarded,  _) =>
       forwarded.filterNot(TrustedProxies.findFirstMatchIn(_).isDefined) match {
         case addr :: _ => addr
-        case e => req.remoteAddr
+        case _ => req.remoteAddr
       }
     case _ => req.remoteAddr
   }, req))
