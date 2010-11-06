@@ -10,11 +10,22 @@ object ServerSpec extends unfiltered.spec.netty.Served {
   
   def setup = NHttp(_).handler(cycle.Planify({
     case GET(UFPath("/", _)) => ResponseString("test") ~> Ok
+    case GET(UFPath("/addr", r)) => ResponseString(r.remoteAddr) ~> Ok
+    case GET(UFPath("/addr_extractor", RemoteAddr(addr, _))) => ResponseString(addr) ~> Ok
   }))
   
   "A Server" should {
     "respond to requests" in {
       Http(host as_str) must_=="test"
+    }
+    "provide a remote address" in {
+      Http(host / "addr" as_str) must_=="127.0.0.1"
+    }
+    "provide a remote address accounting for X-Forwared-For header" in {
+      Http(host / "addr_extractor" <:< Map("X-Forwarded-For" -> "66.108.150.228") as_str) must_=="66.108.150.228"
+    }
+    "provide a remote address accounting for X-Forwared-For header filtering private addresses" in {
+      Http(host / "addr_extractor" <:< Map("X-Forwarded-For" -> "172.31.255.255") as_str) must_=="127.0.0.1"
     }
   }
 }

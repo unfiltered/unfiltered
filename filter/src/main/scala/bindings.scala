@@ -25,6 +25,7 @@ private [filter] class RequestBinding(req: HttpServletRequest) extends HttpReque
     (List[Cookie]() /: req.getCookies)((l, c) => 
       Cookie(c.getName, c.getValue, NonNull(c.getDomain), NonNull(c.getPath), NonNull(c.getMaxAge), NonNull(c.getSecure)) :: l)
   def isSecure = req.isSecure
+  def remoteAddr = req.getRemoteAddr
 }
 
 private [filter] class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {

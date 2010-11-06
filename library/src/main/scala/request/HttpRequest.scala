@@ -15,4 +15,5 @@ abstract class HttpRequest[T](val underlying: T) {
   def headers(name: String) : Iterator[String]
   def cookies: Seq[Cookie]
   def isSecure: Boolean
+  def remoteAddr: String
 }
