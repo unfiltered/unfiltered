@@ -107,9 +107,10 @@ object Https {
 }
 
 /** ChannelPipelineFactory for secure Http connections */
-class SecureServerPipelineFactory(channels: ChannelGroup, handlers: List[ChannelHandler], 
-                                  security: Security) 
-    extends ChannelPipelineFactory {
+class SecureServerPipelineFactory(val channels: ChannelGroup, 
+                                  val handlers: List[ChannelHandler], 
+                                  val security: Security) 
+    extends ChannelPipelineFactory with DefaultPipelineFactory {
   import org.jboss.netty.handler.ssl.SslHandler
   def getPipeline(): ChannelPipeline = {
     val line = Channels.pipeline
@@ -117,11 +118,6 @@ class SecureServerPipelineFactory(channels: ChannelGroup, handlers: List[Channel
     val engine = security.createSslContext.createSSLEngine
     engine.setUseClientMode(false)
     line.addLast("ssl", new SslHandler(engine))
-    line.addLast("housekeeping", new HouseKeepingChannelHandler(channels))
-    line.addLast("decoder", new HttpRequestDecoder)
-    line.addLast("encoder", new HttpResponseEncoder)
-    handlers.reverse.foreach { h => line.addLast("handler", h) }
-
-    line
+    complete(line)
   }
 }

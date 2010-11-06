@@ -77,16 +77,20 @@ object Http {
     Http(port, "0.0.0.0")
 }
 
-class ServerPipelineFactory(channels: ChannelGroup, handlers: List[ChannelHandler]) 
-    extends ChannelPipelineFactory {
-  def getPipeline(): ChannelPipeline = {
-    val line = Channels.pipeline
+class ServerPipelineFactory(val channels: ChannelGroup, 
+                            val handlers: List[ChannelHandler]) 
+    extends ChannelPipelineFactory with DefaultPipelineFactory {
+  def getPipeline(): ChannelPipeline = complete(Channels.pipeline)
+}
 
+trait DefaultPipelineFactory {
+  def channels: ChannelGroup
+  def handlers: List[ChannelHandler]
+  protected def complete(line: ChannelPipeline) = {
     line.addLast("housekeeping", new HouseKeepingChannelHandler(channels))
     line.addLast("decoder", new HttpRequestDecoder)
     line.addLast("encoder", new HttpResponseEncoder)
     handlers.reverse.foreach { h => line.addLast("handler", h) }
-
     line
   }
 }
