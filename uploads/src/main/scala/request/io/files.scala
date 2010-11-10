@@ -1,11 +1,6 @@
 package unfiltered.request.io
 
-trait IO {
-  def use[A <: { def close(): Unit }, B](closable: A)(f: A => B): B =
-    try { f(closable) } finally { closable.close() }
-}
-
-trait FileIO extends IO {
+trait FileIO extends unfiltered.util.IO {
   import java.io.{File => JFile, InputStream, FileOutputStream}
   
   def toFile(from: InputStream)(to: JFile) {
