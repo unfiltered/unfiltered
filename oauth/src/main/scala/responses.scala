@@ -29,7 +29,7 @@ case class TokenResponse(oauth_token: String, oauth_token_secret: String, oauth_
 }
 
 /** response to the client after a user authorizes a token */
-case class AuthorizeResponse(oauth_callback: String, oauth_token: String, oauth_verifier: String)
+case class AuthorizeResponse(oauth_callback: String, oauth_token: String, oauth_verifier: String) extends OAuthResponse
 
 /** response to the client after verifying authorized token and client request */
 case class AccessResponse(oauth_token: String, oauth_token_secret: String) extends OAuthResponseWriter {

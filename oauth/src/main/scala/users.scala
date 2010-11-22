@@ -15,9 +15,16 @@ trait UserHost extends OAuthTemplates {
   
   /** @return true if app logic determines this request was accepted, false otherwise */
   def accepted[T](token: String, r: Req[T]): Boolean
+
+  /** @return true if app logic determines this request was denied, false otherwise */
+  def denied[T](token: String, r: Req[T]): Boolean
   
   /** return the html to display to the user to log in */
   def login(token: String): unfiltered.response.Html 
+  
+  def deniedConfirmation = layout(
+    <div>You have denied a 3rd party access to your data</div>
+  )
   
   /** @todo more flexibilty wrt exensibility */
   def requestAcceptance(token: String) = layout(

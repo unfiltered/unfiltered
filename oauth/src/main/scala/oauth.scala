@@ -66,7 +66,7 @@ trait OAuthed extends OAuthProvider with Messages with unfiltered.filter.Plan { 
         
         // verify version is set to 1.0 if present
         if(combined.isDefinedAt(Version) && combined(Version)(0) != "1.0") {
-          fail(400, "invalid oauth version %s" format(combined("oauth_version")(0)))
+          fail(400, "invalid oauth version %s" format(combined(Version)(0)))
         } else {
           // TODO how to extract the full url
           requestToken("POST", request.underlying.getRequestURL.toString, combined) match {
@@ -177,6 +177,9 @@ trait OAuthProvider { self: OAuthStores =>
               val verifier = tokens.generateVerifier
               tokens.put(AuthorizedRequestToken(key, secret, consumerKey, user.id, verifier))
               AuthorizeResponse(callback, key, verifier)
+            } else if(users.denied(tokenKey, request) {
+              tokens.delete(tokenKey)
+              PageResponse(users.deniedConfirmation)
             } else PageResponse(users.requestAcceptance(tokenKey))
           case _ =>
             // ask user to sign in

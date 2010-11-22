@@ -31,9 +31,8 @@ trait MockOAuthStores extends OAuthStores {
 
   val users = new UserHost {
     def current[T](r: Req[T]) = Some(new UserLike { val id = "test_user" })
-    
     def accepted[T](token: String, r: Req[T]) = true
-
+    def denied[T](token: String, r: Req[T]) = false
     def login(token: String) = unfiltered.response.Html(<form action="#"><input type="hidden" name="token" value={token}/><label for="n">username</label> <input type="text" name="n"></input> <label form="p">password</label><input type="password" name="p"></input></form>)
   }
 }
