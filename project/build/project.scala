@@ -84,6 +84,12 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   lazy val websockets = project("websockets", "Unfiltered Websockets", 
     new UnfilteredModule(_), netty_server)
   
+  /** oauth */
+  lazy val oauth = project("oauth", "Unfiltered OAuth",
+    new UnfilteredModule(_) with IntegrationTesting {
+    lazy val dispatchOAuth = dispatchOAuthDependency % "test"
+  },jetty, filter_p)
+    
   def specsDependency =
     if (buildScalaVersion startsWith "2.7.")
       "org.scala-tools.testing" % "specs" % "1.6.2.2"
@@ -94,6 +100,11 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
       "net.databinder" % "dispatch-mime_2.8.0" % "0.7.6"
     else
       "net.databinder" %% "dispatch-mime" % "0.7.6"
+  
+  def dispatchOAuthDependency = if(buildScalaVersion startsWith "2.8.1")
+      "net.databinder" % "dispatch-oauth_2.8.0" % "0.7.6"
+    else
+      "net.databinder" %% "dispatch-oauth" % "0.7.6"
   
   def jettyDependency = "org.eclipse.jetty" % "jetty-webapp" % jetty_version
 
