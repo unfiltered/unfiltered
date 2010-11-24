@@ -75,7 +75,7 @@ trait OAuthed extends OAuthProvider with Messages with unfiltered.filter.Plan { 
           }
         }
       }
-      println("raw params %s" format(headers ++ params))
+
       expected(headers ++ params) orFail { fails =>
         BadRequest ~> ResponseString(fails.map { _.error } mkString(". "))
       }
@@ -161,7 +161,7 @@ trait OAuthProvider { self: OAuthStores =>
     } yield {
       if(Signatures.verify(method, url, p, consumer.secret, "")) {
          val (key, secret) = tokens.generate
-         tokens.put(RequestToken(key, secret, consumer.key, p(Callback)(0)))
+         tokens.put(RequestToken(key, secret, consumer.key, java.net.URLDecoder.decode(p(Callback)(0))))
          TokenResponse(key, secret, true)
       } else challenge(400, "invalid signature")
     }) getOrElse challenge(400, "invalid consumer")
@@ -177,7 +177,7 @@ trait OAuthProvider { self: OAuthStores =>
               val verifier = tokens.generateVerifier
               tokens.put(AuthorizedRequestToken(key, secret, consumerKey, user.id, verifier))
               AuthorizeResponse(callback, key, verifier)
-            } else if(users.denied(tokenKey, request) {
+            } else if(users.denied(tokenKey, request)) {
               tokens.delete(tokenKey)
               PageResponse(users.deniedConfirmation)
             } else PageResponse(users.requestAcceptance(tokenKey))
