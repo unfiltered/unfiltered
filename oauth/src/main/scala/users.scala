@@ -32,7 +32,7 @@ trait UserHost extends OAuthTemplates {
       <p>
         A 3rd party application has requested access to your data.
       </p>
-      <form action={"/authorize?%s" format(token)} method="POST">
+      <form action={"/oauth/authorize?%s" format(token)} method="POST">
         <input type="hidden" name="oauth_token" value={token} />
         <input type="submit" value="Approve"/>
         <input type="submit" value="Deny"/>
