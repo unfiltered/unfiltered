@@ -68,7 +68,7 @@ trait OAuthed extends OAuthProvider with Messages with unfiltered.filter.Plan { 
         if(combined.isDefinedAt(Version) && combined(Version)(0) != "1.0") {
           fail(400, "invalid oauth version %s" format(combined(Version)(0)))
         } else {
-          // TODO how to extract the full url
+          // TODO how to extract the full url and not rely on underlying
           requestToken("POST", request.underlying.getRequestURL.toString, combined) match {
             case Failure(status, msg) => fail(status, msg)
             case resp: OAuthResponseWriter => resp ~> FormEncodedContent
@@ -170,20 +170,23 @@ trait OAuthProvider { self: OAuthStores =>
   def authorize[T](tokenKey: String, request: Req[T]): OAuthResponse =
     tokens.get(tokenKey) match {
       case Some(RequestToken(key, secret, consumerKey, callback)) =>
-        users.current(request) match {
-          case Some(user) =>
-            // user is signed in, ask politely
-            if(users.accepted(tokenKey, request)) {
-              val verifier = tokens.generateVerifier
-              tokens.put(AuthorizedRequestToken(key, secret, consumerKey, user.id, verifier))
-              AuthorizeResponse(callback, key, verifier)
-            } else if(users.denied(tokenKey, request)) {
-              tokens.delete(tokenKey)
-              PageResponse(users.deniedConfirmation)
-            } else PageResponse(users.requestAcceptance(tokenKey))
-          case _ =>
-            // ask user to sign in
-            PageResponse(users.login(tokenKey))
+        consumers.get(consumerKey) match {
+          case Some(consumer) =>
+            users.current(request) match {
+              case Some(user) =>
+                if(users.accepted(tokenKey, request)) {
+                  val verifier = tokens.generateVerifier
+                  tokens.put(AuthorizedRequestToken(key, secret, consumerKey, user.id, verifier))
+                  AuthorizeResponse(callback, key, verifier)
+                } else if(users.denied(tokenKey, request)) {
+                  tokens.delete(tokenKey)
+                  PageResponse(users.deniedConfirmation)
+                } else PageResponse(users.requestAcceptance(tokenKey))
+              case _ =>
+                // ask user to sign in
+                PageResponse(users.login(tokenKey))
+            }
+          case _ => challenge(400, "invalid consumer")
         }
       case _ => challenge(400, "invalid token")
     }
