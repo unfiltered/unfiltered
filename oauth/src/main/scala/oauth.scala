@@ -124,7 +124,7 @@ trait OAuthed extends OAuthProvider with Messages with unfiltered.filter.Plan { 
             zip ((consumer_key :: oauth_signature_method :: timestamp :: nonce :: signature :: token :: verifier :: version :: Nil) map { s: Option[String] => Seq(s.get) })
         val combined = params ++ oparams
         
-        // verify versioni is set to 1.0 if present
+        // verify version is set to 1.0 if present
         if(combined.isDefinedAt(Version) && combined(Version)(0) != "1.0")
           fail(400, "invalid oauth version %s" format(combined(Version)(0)))
         else {
