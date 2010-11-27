@@ -32,8 +32,8 @@ object OAuth {
 }
 
 trait Messages {
-  def blankMsg(param: String)
-  def requiredMsg(param: String)
+  def blankMsg(param: String): String
+  def requiredMsg(param: String): String
 }
 
 trait DefaultMessages extends Messages {
@@ -62,23 +62,13 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         signature <- lookup(Sig) is
           nonempty(blankMsg(Sig)) is required(requiredMsg(Sig))
         version <- lookup(Version) is
-          nonempty(blankMsg(Version)) is required(requiredMsg(Version))
+          pred { (_: String) == "1.0" } {"invalid oauth version " + _ } is optional
       } yield {
-        // todo: handle optional Version in expected param handling
-        val oparams = 
-          (ConsumerKey :: SignatureMethod :: Timestamp :: Nonce :: Callback :: Sig :: Version :: Nil).
-            zip ((consumer_key :: oauth_signature_method :: timestamp :: nonce :: callback :: signature :: version :: Nil) map { s: Option[String] => Seq(s.get) })
-        val combined = params ++ oparams
-        
-        // verify version is set to 1.0 if present
-        if(combined.isDefinedAt(Version) && combined(Version)(0) != "1.0") {
-          fail(400, "invalid oauth version %s" format(combined(Version)(0)))
-        } else {
-          // TODO how to extract the full url and not rely on underlying
-          requestToken(request.method, request.underlying.getRequestURL.toString, combined) match {
-            case Failure(status, msg) => fail(status, msg)
-            case resp: OAuthResponseWriter => resp ~> FormEncodedContent
-          }
+        val combined = params ++ headers
+        // TODO how to extract the full url and not rely on underlying
+        requestToken(request.method, request.underlying.getRequestURL.toString, combined) match {
+          case Failure(status, msg) => fail(status, msg)
+          case resp: OAuthResponseWriter => resp ~> FormEncodedContent
         }
       }
 
@@ -122,30 +112,21 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         signature <- lookup(Sig) is
           nonempty(blankMsg(Sig)) is required(requiredMsg(Sig))
         version <- lookup(Version) is
-          nonempty(blankMsg(Version)) is required(requiredMsg(Version))
+          pred { (_: String) == "1.0" } {"invalid oauth version " + _ } is optional
       } yield {
-        // todo: handle optional Version param in expected param handling
-        val oparams = 
-          (ConsumerKey :: SignatureMethod :: Timestamp :: Nonce :: Sig :: TokenKey :: Verifier :: Version :: Nil).
-            zip ((consumer_key :: oauth_signature_method :: timestamp :: nonce :: signature :: token :: verifier :: version :: Nil) map { s: Option[String] => Seq(s.get) })
-        val combined = params ++ oparams
+        val combined = params ++ headers
         
-        // verify version is set to 1.0 if present
-        if(combined.isDefinedAt(Version) && combined(Version)(0) != "1.0")
-          fail(400, "invalid oauth version %s" format(combined(Version)(0)))
-        else {
-          accessToken(request.method, request.underlying.getRequestURL.toString, combined) match {
-            case Failure(code, msg) => fail(code, msg)
-            case resp@AccessResponse(_, _) => resp ~> FormEncodedContent
-          }          
-        }
+        accessToken(request.method, request.underlying.getRequestURL.toString, combined) match {
+          case Failure(code, msg) => fail(code, msg)
+          case resp@AccessResponse(_, _) => resp ~> FormEncodedContent
+        }          
       }
       
       expected(headers ++ params) orFail { fails =>
         BadRequest ~> ResponseString(fails.map { _.error } mkString(". "))
       }
   }
-  
+
   def fail(status: Int, msg: String) = 
     Status(status) ~> ResponseString(msg)
 }
