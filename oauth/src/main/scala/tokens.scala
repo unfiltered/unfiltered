@@ -27,10 +27,10 @@ trait TokenStore {
 
 /** Provides random generation of token attributes  */
 trait TokenGenerator {
-  val generatorLength = 10
+  val generatorLength = 42
   def generate = (gen(generatorLength), gen(generatorLength))
   def generateVerifier = gen(generatorLength)
-  implicit val tokenChars = ((0 to 9) ++ ('a' to 'z'))
+  implicit val tokenChars = ((0 to 9) ++ ('a' to 'z') ++ ('A' to 'Z'))
   /** gen an n length string or random chars 0-9,a-z or provided set of seq characters */
   protected def gen(n: Int)(implicit tokenChars: Seq[AnyVal]) = 
    (((List[AnyVal](), tokenChars.toList, new java.util.Random) /: (0 until n)) ((a,e) => 
