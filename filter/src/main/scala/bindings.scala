@@ -21,9 +21,13 @@ private [filter] class RequestBinding(req: HttpServletRequest) extends HttpReque
   def headers(name: String) = new JEnumerationIterator(
     req.getHeaders(name).asInstanceOf[java.util.Enumeration[String]]
   )
-  lazy val cookies =
-    (List[Cookie]() /: req.getCookies)((l, c) => 
-      Cookie(c.getName, c.getValue, NonNull(c.getDomain), NonNull(c.getPath), NonNull(c.getMaxAge), NonNull(c.getSecure)) :: l)
+  lazy val cookies = req.getCookies match {
+    case null => Nil
+    case jcookies =>
+      (List[Cookie]() /: jcookies)((l, c) => 
+        Cookie(c.getName, c.getValue, NonNull(c.getDomain), NonNull(c.getPath), NonNull(c.getMaxAge), NonNull(c.getSecure)) :: l)
+  }
+    
   def isSecure = req.isSecure
   def remoteAddr = req.getRemoteAddr
 }
