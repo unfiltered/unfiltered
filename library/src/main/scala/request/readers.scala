@@ -25,4 +25,6 @@ object Bytes {
       case ba => Some(ba, req)
     }
   }
+  /** Results in side effect of consuming the request body contents */
+  def apply[T](req: HttpRequest[T]) = unapply(req)
 }
