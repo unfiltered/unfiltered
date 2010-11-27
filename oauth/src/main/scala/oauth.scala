@@ -69,7 +69,7 @@ trait OAuthed extends OAuthProvider with Messages with unfiltered.filter.Plan { 
           fail(400, "invalid oauth version %s" format(combined(Version)(0)))
         } else {
           // TODO how to extract the full url and not rely on underlying
-          requestToken("POST", request.underlying.getRequestURL.toString, combined) match {
+          requestToken(request.method, request.underlying.getRequestURL.toString, combined) match {
             case Failure(status, msg) => fail(status, msg)
             case resp: OAuthResponseWriter => resp ~> FormEncodedContent
           }
@@ -128,7 +128,7 @@ trait OAuthed extends OAuthProvider with Messages with unfiltered.filter.Plan { 
         if(combined.isDefinedAt(Version) && combined(Version)(0) != "1.0")
           fail(400, "invalid oauth version %s" format(combined(Version)(0)))
         else {
-          accessToken("POST", request.underlying.getRequestURL.toString, combined) match {
+          accessToken(request.method, request.underlying.getRequestURL.toString, combined) match {
             case Failure(code, msg) => fail(code, msg)
             case resp@AccessResponse(_, _) => resp ~> FormEncodedContent
           }          
@@ -161,7 +161,7 @@ trait OAuthProvider { self: OAuthStores =>
     } yield {
       if(Signatures.verify(method, url, p, consumer.secret, "")) {
          val (key, secret) = tokens.generate
-         tokens.put(RequestToken(key, secret, consumer.key, java.net.URLDecoder.decode(p(Callback)(0))))
+         tokens.put(RequestToken(key, secret, consumer.key, java.net.URLDecoder.decode(p(Callback)(0), "utf-8")))
          TokenResponse(key, secret, true)
       } else challenge(400, "invalid signature")
     }) getOrElse challenge(400, "invalid consumer")
