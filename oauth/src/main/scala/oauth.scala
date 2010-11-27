@@ -19,11 +19,11 @@ object OAuth {
   /** Authorization: OAuth header extractor */  
   object Header {
     val KeyVal = """(\w+)="([\w|:|\/|.|%|-]+)" """.trim.r
-    val keys = "realm" :: ConsumerKey :: TokenKey :: SignatureMethod :: Sig ::
-      Timestamp :: Nonce :: Callback :: Verifier :: Version :: Nil
+    val keys = Set.empty + "realm" + ConsumerKey + TokenKey + SignatureMethod + 
+      Sig + Timestamp + Nonce + Callback + Verifier + Version
     
     def unapply(hvals: Seq[String]) = {
-      Some(Map((hvals map(_.replace("OAuth ", "")) flatMap {
+      Some(Map((hvals map { _.replace("OAuth ", "") } flatMap {
         case KeyVal(k, v) if(keys.contains(k)) => Seq((k -> Seq(v)))
         case _ => Nil
       }): _*))
@@ -32,11 +32,17 @@ object OAuth {
 }
 
 trait Messages {
+  def blankMsg(param: String)
+  def requiredMsg(param: String)
+}
+
+trait DefaultMessages extends Messages {
   def blankMsg(param: String) = "%s can not be blank" format param
   def requiredMsg(param: String) = "%s is required" format param
 }
 
-trait OAuthed extends OAuthProvider with Messages with unfiltered.filter.Plan { self: OAuthStores =>
+trait OAuthed extends OAuthProvider with unfiltered.filter.Plan { 
+  self: OAuthStores with Messages =>
   import QParams._
   import OAuth._
   
@@ -144,8 +150,9 @@ trait OAuthed extends OAuthProvider with Messages with unfiltered.filter.Plan { 
     Status(status) ~> ResponseString(msg)
 }
 
-/** Configured OAuthed class that statifies requirements for OAuthStores */
-case class OAuth(stores: OAuthStores) extends OAuthed with OAuthStores {
+/** Configured OAuthed class that satisfies requirements for OAuthStores */
+case class OAuth(stores: OAuthStores) extends OAuthed 
+     with OAuthStores with DefaultMessages  {
   val nonces = stores.nonces
   val tokens = stores.tokens
   val consumers = stores.consumers
