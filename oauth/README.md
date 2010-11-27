@@ -26,9 +26,6 @@ From a high level
 # TODO
 
 * work on non-oob testing
-* test for utf-8 all the way down
-* decode params before ordering them in signature phases
-* support plain text sig method
 * support rsa sig method
 * use QParam for `optional` param checking for oauth_version
 * refactor user host support

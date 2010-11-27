@@ -9,8 +9,9 @@ object OAuthSpec extends Specification with unfiltered.spec.jetty.Served {
   import unfiltered.request.{Path => UFPath}
   import dispatch._
   import dispatch.oauth._
-  import dispatch.oauth.OAuth._
-  
+  import dispatch.oauth.OAuth._  
+
+  System.setProperty("file.encoding", "UTF-8")
   val consumer = dispatch.oauth.Consumer("key", "secret")
   
   def setup = { 
@@ -36,17 +37,17 @@ object OAuthSpec extends Specification with unfiltered.spec.jetty.Served {
   }
   
   "oauth" should {
-    "authenticate a validate consumers request" in {
+    "authenticate a valid consumers request using a HMAC-SHA1 signature with oob workflow" in {
       val h = new Http
       val payload = Map("identité" -> "caché", "identity" -> "hidden", "アイデンティティー" -> "秘密", 
         "pita" -> "-._~*")
-      println("consumer => %s" format consumer)
-      val request_token = h(host.POST / "request_token" << OAuth.callback(OAuth.oob) <@ consumer as_token)
-      println("request_token -> %s" format request_token)
+      println("OAuthSpec consumer -> %s" format consumer)
+      val request_token = h(host.POST / "request_token" << OAuth.callback(OAuth.oob) ++ payload <@ consumer as_token)
+      println("OAuthSpec request_token -> %s" format request_token)
       val verifier = h(host / "authorize" <<? request_token as_str)
-      println("verifier -> %s" format verifier)
+      println("OAuthSpec verifier -> %s" format verifier)
       val access_token = h(host.POST / "access_token" <@ (consumer, request_token, verifier) as_token)
-      println("access_token -> %s" format access_token)
+      println("OAuthSpec access_token -> %s" format access_token)
       "1" must_=="1"
     }
   }

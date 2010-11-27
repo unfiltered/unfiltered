@@ -22,20 +22,21 @@ trait UserHost extends OAuthTemplates {
   /** return the html to display to the user to log in */
   def login(token: String): unfiltered.response.Html 
   
+  /** http response for confirming the user's denial was processed */
   def deniedConfirmation = layout(
     <div>You have denied a 3rd party access to your data</div>
   )
   
   /** @todo more flexibilty wrt exensibility */
-  def requestAcceptance(token: String) = layout(
+  def requestAcceptance(token: String, consumer: Consumer) = layout(
     <div>
       <p>
         A 3rd party application has requested access to your data.
       </p>
-      <form action={"/oauth/authorize?%s" format(token)} method="POST">
+      <form action="/oauth/authorize" method="POST">
         <input type="hidden" name="oauth_token" value={token} />
-        <input type="submit" value="Approve"/>
-        <input type="submit" value="Deny"/>
+        <input type="submit" name="submit" value="Approve"/>
+        <input type="submit" name="submit" value="Deny"/>
       </form>
     </div>)
   
