@@ -80,7 +80,7 @@ trait OAuthed extends OAuthProvider with Messages with unfiltered.filter.Plan { 
         BadRequest ~> ResponseString(fails.map { _.error } mkString(". "))
       }
     
-    case GET(Path("/authorize", Params(params, request))) =>
+    case Path("/authorize", Params(params, request)) =>
       val expected = for {
         token <- lookup(TokenKey) is
           nonempty(blankMsg(TokenKey)) is required(requiredMsg(TokenKey))
@@ -181,7 +181,7 @@ trait OAuthProvider { self: OAuthStores =>
                 } else if(users.denied(tokenKey, request)) {
                   tokens.delete(tokenKey)
                   PageResponse(users.deniedConfirmation)
-                } else PageResponse(users.requestAcceptance(tokenKey))
+                } else PageResponse(users.requestAcceptance(tokenKey, consumer))
               case _ =>
                 // ask user to sign in
                 PageResponse(users.login(tokenKey))
