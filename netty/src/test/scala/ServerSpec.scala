@@ -9,9 +9,9 @@ object ServerSpec extends unfiltered.spec.netty.Served {
   import dispatch._
   
   def setup = NHttp(_).handler(cycle.Planify({
-    case GET(UFPath("/", _)) => ResponseString("test") ~> Ok
-    case GET(UFPath("/addr", r)) => ResponseString(r.remoteAddr) ~> Ok
-    case GET(UFPath("/addr_extractor", RemoteAddr(addr, _))) => ResponseString(addr) ~> Ok
+    case GET(UFPath("/")) => ResponseString("test") ~> Ok
+    case r @ GET(UFPath("/addr")) => ResponseString(r.remoteAddr) ~> Ok
+    case GET(UFPath("/addr_extractor") & RemoteAddr(addr)) => ResponseString(addr) ~> Ok
   }))
   
   "A Server" should {

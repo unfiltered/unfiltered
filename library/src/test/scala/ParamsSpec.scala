@@ -21,20 +21,20 @@ trait ParamsSpec extends unfiltered.spec.Hosted {
   object Number extends Params.Extract("number", Params.first ~> Params.int)
 
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = {
-    case UFPath("/basic", Params(params, _)) => params("foo") match {
+    case UFPath("/basic") & Params(params) => params("foo") match {
       case Seq(foo) => ResponseString("foo is %s" format foo)
       case _ =>  ResponseString("what's foo?")
     }
 
-    case POST(UFPath("/extract", Params(Number(num, _), _))) =>
+    case POST(UFPath("/extract") & Params(Number(num, _))) =>
       ResponseString(num.toString)
 
-    case POST(UFPath("/extract",_)) =>
+    case POST(UFPath("/extract")) =>
       ResponseString("passed")
 
     // QParam test paths:
 
-    case GET(UFPath("/int", Params(params, _))) =>
+    case GET(UFPath("/int") & Params(params)) =>
       val expected = for {
         even <- lookup("number") is(int(_ => ()))
       } yield ResponseString(even.get.toString)
@@ -44,7 +44,7 @@ trait ParamsSpec extends unfiltered.spec.Hosted {
         )
       }
 
-    case GET(UFPath("/even", Params(params, _))) => 
+    case GET(UFPath("/even") & Params(params)) => 
       val expected = for {
         even <- lookup("number") is(int(in => "%s is not a number".format(in))) is 
           (pred { (_: Int) % 2 == 0} { i => "%d is odd".format(i) }) is(required("missing"))
@@ -56,7 +56,7 @@ trait ParamsSpec extends unfiltered.spec.Hosted {
         )
       }
     
-    case GET(UFPath("/str", Params(params, _))) => 
+    case GET(UFPath("/str") & Params(params)) => 
       val expected = for {
         str <- lookup("param") is(int(_ => 400)) is(optional[Int,Int]) // note: 2.8 can infer type on optional
         req <- lookup("req") is(required(400))

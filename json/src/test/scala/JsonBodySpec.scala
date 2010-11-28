@@ -10,7 +10,7 @@ object JsonBodySpec extends Specification  with unfiltered.spec.jetty.Served {
   import dispatch._
 
   class TestPlan extends unfiltered.filter.Planify({
-    case POST(UFPath("/", r)) => ResponseString(JsonBody(r) match {
+    case r @ POST(UFPath("/")) => ResponseString(JsonBody(r) match {
       case Some(net.liftweb.json.JsonAST.JArray(a :: b :: Nil)) => "array of 2"
       case _ => "expected json array of 2"
     })

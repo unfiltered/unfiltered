@@ -12,7 +12,7 @@ class RequestHeader(val name: String) {
     
     headers(req.headers(name)) match {
       case Nil => None
-      case hs => Some(hs, req)
+      case hs => Some(hs)
     }
   }
 }

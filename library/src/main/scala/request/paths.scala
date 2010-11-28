@@ -1,7 +1,7 @@
 package unfiltered.request
 
 object Path {
-  def unapply[T](req: HttpRequest[T]) = Some((req.requestURI.substring(req.contextPath.length), req))
+  def unapply[T](req: HttpRequest[T]) = Some(req.requestURI.substring(req.contextPath.length))
 }
 object Seg {
   def unapply(path: String): Option[List[String]] = path.split("/").toList match {

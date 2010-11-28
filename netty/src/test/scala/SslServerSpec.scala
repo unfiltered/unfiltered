@@ -32,7 +32,7 @@ object SslServerSpec extends Specification with spec.netty.Served with spec.Secu
       val securePlan = new unfiltered.netty.cycle.Plan with Secured {
         import org.jboss.netty.channel.{ChannelHandlerContext, ExceptionEvent}
         
-        def intent = { case GET(UFPath("/", _)) => ResponseString("secret") ~> Ok }
+        def intent = { case GET(UFPath("/")) => ResponseString("secret") ~> Ok }
         
         override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) =
           ctx.getChannel.close

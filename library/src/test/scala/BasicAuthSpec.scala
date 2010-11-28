@@ -18,7 +18,7 @@ trait BasicAuthSpec extends unfiltered.spec.Hosted {
   import dispatch._
   
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = {
-    case GET(UFPath("/secret", BasicAuth(creds, _))) => creds match {
+    case GET(UFPath("/secret") & BasicAuth(name, pass)) => (name, pass) match {
       case ("test", "secret") => ResponseString("pass")
       case _ => ResponseString("fail")
     }

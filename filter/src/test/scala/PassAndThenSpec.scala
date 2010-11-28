@@ -11,17 +11,17 @@ object PassAndThenSpec extends Specification with unfiltered.spec.jetty.Served {
   import dispatch._
   
   class Around extends Planify({
-    case GET(UFPath("/h", _)) => PassAndThen after {
+    case GET(UFPath("/h")) => PassAndThen after {
       case _ => new HeaderName("x-test")("passed")
     }
-    case GET(UFPath("/b", _)) => PassAndThen after {
+    case GET(UFPath("/b")) => PassAndThen after {
       case _ => ResponseString("""[{"msg":"howdy partner"}]""")
     }
   })
   
   class TestPlan extends Planify({
-    case GET(UFPath("/h", _)) => JsonContent ~> ResponseString("""[{"msg":"howdy partner"}]""")
-    case GET(UFPath("/b", _)) => JsonContent
+    case GET(UFPath("/h")) => JsonContent ~> ResponseString("""[{"msg":"howdy partner"}]""")
+    case GET(UFPath("/b")) => JsonContent
   })
   
   def setup = { _.filter(new Around).filter(new TestPlan) }

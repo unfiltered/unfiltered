@@ -12,47 +12,47 @@ object PlanSpec extends Specification with unfiltered.spec.jetty.Served {
   
   def setup = { 
     _.filter(Planify {
-      case GET(UFPath("/filter", _)) => Pass
+      case GET(UFPath("/filter")) => Pass
       case _ => println("nonmatching first"); Pass
     }).filter(Planify {
-      case GET(UFPath("/filter", _)) => ResponseString("test") ~> Ok
+      case GET(UFPath("/filter")) => ResponseString("test") ~> Ok
     }).context("/filter2") {
       _.filter(Planify {
-        case GET(UFPath("/test2", _)) => ResponseString("test2") ~> Ok
+        case GET(UFPath("/test2")) => ResponseString("test2") ~> Ok
       })
     }.context("/filter3") {
       _.filter(new Plan { def intent = {
-        case GET(UFPath(Seg("aplan" :: Nil), r)) =>
+        case GET(UFPath(Seg("aplan" :: Nil))) =>
           Ok ~> ContentType("text/html") ~> ResponseString("Plan A")
       }})
       .filter(new Plan { def intent = {
-        case GET(UFPath(Seg("bplan" :: Nil), r)) =>
+        case GET(UFPath(Seg("bplan" :: Nil))) =>
           Ok ~> ContentType("text/html") ~> ResponseString("Plan B")
       }})
     }.context("/filter4") {
       _.filter(new unfiltered.filter.Planify({
-        case GET(UFPath(Seg("aplan" :: Nil), r)) =>
+        case GET(UFPath(Seg("aplan" :: Nil))) =>
           Ok ~> ContentType("text/html") ~> ResponseString("Plan A")
       }))
       .filter(new unfiltered.filter.Planify({
-        case GET(UFPath(Seg("bplan" :: Nil), r)) =>
+        case GET(UFPath(Seg("bplan" :: Nil))) =>
           Ok ~> ContentType("text/html") ~> ResponseString("Plan B")
       }))
       .filter(new unfiltered.filter.Planify({
-        case GET(UFPath(Seg("cplan" :: Nil), r)) =>
+        case GET(UFPath(Seg("cplan" :: Nil))) =>
           Ok ~> ContentType("text/html") ~> ResponseString("Plan C")
       }))
     }.context("/filter5") {
       _.filter(unfiltered.filter.Planify {
-        case GET(UFPath(Seg("aplan" :: Nil), r)) =>
+        case GET(UFPath(Seg("aplan" :: Nil))) =>
           Ok ~> ContentType("text/html") ~> ResponseString("Plan A")
       })
       .filter(unfiltered.filter.Planify {
-        case GET(UFPath(Seg("bplan" :: Nil), r)) =>
+        case GET(UFPath(Seg("bplan" :: Nil))) =>
           Ok ~> ContentType("text/html") ~> ResponseString("Plan B")
       })
       .filter(unfiltered.filter.Planify {
-        case GET(UFPath(Seg("cplan" :: Nil), r)) =>
+        case GET(UFPath(Seg("cplan" :: Nil))) =>
           Ok ~> ContentType("text/html") ~> ResponseString("Plan C")
       })
     }

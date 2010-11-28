@@ -47,7 +47,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
   import OAuth._
   
   def intent = {
-    case POST(Path("/request_token", Authorization(OAuth.Header(headers), Params(params, request)))) =>
+    case POST(Path("/request_token") & Authorization(OAuth.Header(headers)) & Params(params)) & request =>
       val expected = for {
         consumer_key <- lookup(ConsumerKey) is
           nonempty(blankMsg(ConsumerKey)) is required(requiredMsg(ConsumerKey))
@@ -77,7 +77,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         BadRequest ~> ResponseString(fails.map { _.error } mkString(". "))
       }
     
-    case Path("/authorize", Params(params, request)) =>
+    case Path("/authorize") & Params(params) & request =>
       val expected = for {
         token <- lookup(TokenKey) is
           nonempty(blankMsg(TokenKey)) is required(requiredMsg(TokenKey))
@@ -96,7 +96,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         BadRequest ~> ResponseString(fails.map { _.error } mkString(". "))
       }
     
-    case POST(Path("/access_token", Authorization(OAuth.Header(headers), Params(params, request)))) =>
+    case request @ POST(Path("/access_token") & Authorization(OAuth.Header(headers)) & Params(params)) =>
       val expected = for {
         consumer_key <- lookup(ConsumerKey) is
           nonempty(blankMsg(ConsumerKey)) is required(requiredMsg(ConsumerKey))

@@ -26,7 +26,7 @@ object SslServerSpec extends Specification with spec.jetty.Served with spec.Secu
   })
   
   def setup = { _.filter(unfiltered.filter.Planify {
-    case GET(UFPath("/", _)) => ResponseString("secret") ~> Ok
+    case GET(UFPath("/")) => ResponseString("secret") ~> Ok
   })}
   
   "A Secure Server" should {

@@ -27,10 +27,10 @@ object MixedServerSpec extends Specification with spec.jetty.Served with spec.Se
   })
   
   def setup = { _.filter(unfiltered.filter.Planify {
-    case GET(UFPath("/", r)) => ResponseString("public") ~> Ok
-    case HTTP(GET(UFPath("/https_only", r))) => Redirect("https://localhost/https_only")
-    case HTTPS(GET(UFPath("/https_only", r))) => ResponseString("secret") ~> Ok
-    case HTTPS(GET(UFPath("/tryme", r))) => ResponseString("secret") ~> Ok
+    case GET(UFPath("/")) => ResponseString("public") ~> Ok
+    case HTTP(GET(UFPath("/https_only"))) => Redirect("https://localhost/https_only")
+    case HTTPS(GET(UFPath("/https_only"))) => ResponseString("secret") ~> Ok
+    case HTTPS(GET(UFPath("/tryme"))) => ResponseString("secret") ~> Ok
   })}
   
   "A Mixed Secure Server" should {

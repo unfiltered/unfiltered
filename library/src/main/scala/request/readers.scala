@@ -1,18 +1,18 @@
 package unfiltered.request
 
 object InStream {
-  def unapply[T](req: HttpRequest[T]) = Some(req.inputStream, req)
+  def unapply[T](req: HttpRequest[T]) = Some(req.inputStream)
 }
 
 object Read {
-  def unapply[T](req: HttpRequest[T]) = Some(req.reader, req)
+  def unapply[T](req: HttpRequest[T]) = Some(req.reader)
 }
 
 object Bytes {
   /** This extractor has a side effect and will go away soon */
   @deprecated
   def unapply[T](req: HttpRequest[T]) = {
-    val InStream(in, _) = req
+    val InStream(in) = req
     val bos = new java.io.ByteArrayOutputStream
     val ba = new Array[Byte](4096)
     /* @scala.annotation.tailrec */ def read {

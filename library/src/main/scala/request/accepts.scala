@@ -11,7 +11,7 @@ object Accepts {
     def unapply[T](r: HttpRequest[T]) = {
       val pathSuffix = r.requestURI.substring(r.contextPath.length).split("[.]").lastOption
       r match {
-        case Accept(values, _) =>
+        case Accept(values) =>
           if(values.exists { _.equalsIgnoreCase(contentType) })
             Some(r)
           else if (values.exists { _ == "*/*" } && pathSuffix.exists { ext == _ })

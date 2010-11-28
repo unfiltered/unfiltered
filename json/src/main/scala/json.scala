@@ -33,7 +33,7 @@ object Jsonp {
       is provided else (emptywrapper, req) tuple is no callback param is provided */
   object Optional {
     def unapply[T](r: HttpRequest[T]) = r match {
-      case Accepts.Jsonp(Params(p, req)) => 
+      case Accepts.Jsonp(Params(p)) => 
         Some(p match {
         case Callback(cb, _) => new CallbackWrapper(cb)
         case _ => EmptyWrapper
@@ -45,7 +45,7 @@ object Jsonp {
   /** @return (callbackwrapper, req) tuple if request accepts json and a callback 
       param is provided  */
   def unapply[T](r: HttpRequest[T]) = r match {
-    case Accepts.Jsonp(Params(Callback(cb, _), _)) => Some(new CallbackWrapper(cb), r)
+    case Accepts.Jsonp(Params(Callback(cb, _))) => Some(new CallbackWrapper(cb), r)
     case _ => None
   }
 }

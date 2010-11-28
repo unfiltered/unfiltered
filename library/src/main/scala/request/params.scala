@@ -14,7 +14,7 @@ object Params {
     val names = req.parameterNames
     Some(((Map.empty[String, Seq[String]] /: names) ((m, n) =>
         m + (n -> req.parameterValues(n))
-      )).withDefaultValue(Nil), req)
+      )).withDefaultValue(Nil))
   }
 
   /**
