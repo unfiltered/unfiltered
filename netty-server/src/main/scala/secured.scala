@@ -7,6 +7,31 @@ import org.jboss.netty.channel._
 import group.ChannelGroup
 import unfiltered._
 
+object Https {
+  def apply(port: Int, host: String): Https = 
+    Https(port, host, Nil, () => ())
+  def apply(port: Int): Https =
+    Https(port, "0.0.0.0")
+}
+
+/** Http + Ssl implementation of the Server trait. */
+case class Https(port: Int, host: String,
+                handlers: List[ChannelHandler],
+                beforeStopBlock: () => Unit) extends Server with RunnableServer with Ssl {
+  def pipelineFactory: ChannelPipelineFactory =
+    new SecureServerPipelineFactory(channels, handlers, this)
+  
+  def stop() = {
+    beforeStopBlock()
+    closeConnections()
+    destroy()
+  }
+  def handler(h: ChannelHandler) = 
+    Https(port, host, h :: handlers, beforeStopBlock)
+  def beforeStop(block: => Unit) =
+    Https(port, host, handlers, { () => beforeStopBlock(); block })
+}
+
 /** Provides security dependencies */
 trait Security {
   import javax.net.ssl.SSLContext
@@ -79,31 +104,6 @@ trait Trusted { self: Ssl =>
     trustManFact.init(trusts)
     trustManFact.getTrustManagers
   }
-}
-
-/** Http + Ssl implementation of the Server trait. */
-case class Https(port: Int, host: String,
-                handlers: List[ChannelHandler],
-                beforeStopBlock: () => Unit) extends Server with RunnableServer with Ssl {
-  def pipelineFactory: ChannelPipelineFactory =
-    new SecureServerPipelineFactory(channels, handlers, this)
-  
-  def stop() = {
-    beforeStopBlock()
-    closeConnections()
-    destroy()
-  }
-  def handler(h: ChannelHandler) = 
-    Https(port, host, h :: handlers, beforeStopBlock)
-  def beforeStop(block: => Unit) =
-    Https(port, host, handlers, { () => beforeStopBlock(); block })
-}
-
-object Https {
-  def apply(port: Int, host: String): Https = 
-    Https(port, host, Nil, () => ())
-  def apply(port: Int): Https =
-    Https(port, "0.0.0.0")
 }
 
 /** ChannelPipelineFactory for secure Http connections */

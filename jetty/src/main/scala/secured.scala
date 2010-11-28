@@ -1,5 +1,14 @@
 package unfiltered.jetty
 
+object Https {
+  /** bind to the given port for any host */
+  def apply(port: Int): Https = Https(port, "0.0.0.0")
+  /** bind to a the loopback interface only */
+  def local(port: Int) = Https(port, "127.0.0.1")
+  /** bind to any available port on the loopback interface */
+  def anylocal = local(unfiltered.util.Port.any)
+}
+
 case class Https(port: Int, host: String) extends Server with Ssl {
   val url = "http://%s:%d/" format (host, port)
   def sslPort = port
@@ -42,13 +51,4 @@ trait Trusted { self: Ssl =>
   lazy val trustStorePassword = tryProperty("jetty.ssl.trustStorePassword")
   sslConn.setTruststore(trustStore)
   sslConn.setTrustPassword(trustStorePassword)
-}
-
-object Https {
-  /** bind to the given port for any host */
-  def apply(port: Int): Https = Https(port, "0.0.0.0")
-  /** bind to a the loopback interface only */
-  def local(port: Int) = Https(port, "127.0.0.1")
-  /** bind to any available port on the loopback interface */
-  def anylocal = local(unfiltered.util.Port.any)
 }

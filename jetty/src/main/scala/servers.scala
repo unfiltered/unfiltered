@@ -7,6 +7,15 @@ import org.eclipse.jetty.server.bio.SocketConnector
 import org.eclipse.jetty.util.resource.Resource
 import java.util.concurrent.atomic.AtomicInteger
 
+object Http {
+  /** bind to the given port for any host */
+  def apply(port: Int): Http = Http(port, "0.0.0.0")
+  /** bind to a the loopback interface only */
+  def local(port: Int) = Http(port, "127.0.0.1")
+  /** bind to any available port on the loopback interface */
+  def anylocal = local(unfiltered.util.Port.any)
+}
+
 case class Http(port: Int, host: String) extends Server {
   /** use the factory method */
   @deprecated def this(port: Int) = this(port, "0.0.0.0")
@@ -35,15 +44,6 @@ trait ContextBuilder {
     current.setBaseResource(Resource.newResource(path))
     this
   }
-}
-
-object Http {
-  /** bind to the given port for any host */
-  def apply(port: Int): Http = Http(port, "0.0.0.0")
-  /** bind to a the loopback interface only */
-  def local(port: Int) = Http(port, "127.0.0.1")
-  /** bind to any available port on the loopback interface */
-  def anylocal = local(unfiltered.util.Port.any)
 }
 
 trait Server extends ContextBuilder with unfiltered.util.RunnableServer { self =>
