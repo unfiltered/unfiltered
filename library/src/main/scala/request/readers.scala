@@ -9,6 +9,8 @@ object Read {
 }
 
 object Bytes {
+  /** This extractor has a side effect and will go away soon */
+  @deprecated
   def unapply[T](req: HttpRequest[T]) = {
     val InStream(in, _) = req
     val bos = new java.io.ByteArrayOutputStream
