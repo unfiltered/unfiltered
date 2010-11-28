@@ -62,7 +62,8 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         signature <- lookup(Sig) is
           nonempty(blankMsg(Sig)) is required(requiredMsg(Sig))
         version <- lookup(Version) is
-          pred { (_: String) == "1.0" } {"invalid oauth version " + _ } is optional
+          pred { (_: String) == "1.0" } {"invalid oauth version " + _ } is 
+          optional[String,String]
       } yield {
         val combined = params ++ headers
         // TODO how to extract the full url and not rely on underlying
@@ -112,7 +113,8 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         signature <- lookup(Sig) is
           nonempty(blankMsg(Sig)) is required(requiredMsg(Sig))
         version <- lookup(Version) is
-          pred { (_: String) == "1.0" } {"invalid oauth version " + _ } is optional
+          pred { (_: String) == "1.0" } {"invalid oauth version " + _ } is 
+          optional[String,String]
       } yield {
         val combined = params ++ headers
         
