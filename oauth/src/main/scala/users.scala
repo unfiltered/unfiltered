@@ -9,7 +9,7 @@ trait UserLike {
 }
 
 trait UserHost extends OAuthTemplates {
-  
+
   /** @return Some(user) if user is logged in, None otherwise */
   def current[T](r: Req[T]): Option[UserLike]
   
@@ -19,16 +19,19 @@ trait UserHost extends OAuthTemplates {
   /** @return true if app logic determines this request was denied, false otherwise */
   def denied[T](token: String, r: Req[T]): Boolean
   
-  /** return the html to display to the user to log in */
-  def login(token: String): unfiltered.response.Html 
+  /** @return the html to display to the user to log in */
+  def login(token: String): Html 
+
+  /** @return the html to show a user to provide a consumer with a verifier */
+  def oobResponse(verifier: String): Html
   
-  /** http response for confirming the user's denial was processed */
-  def deniedConfirmation = layout(
+  /** @return http response for confirming the user's denial was processed */
+  def deniedConfirmation(consumer: Consumer): Html = layout(
     <div>You have denied a 3rd party access to your data</div>
   )
   
   /** @todo more flexibilty wrt exensibility */
-  def requestAcceptance(token: String, consumer: Consumer) = layout(
+  def requestAcceptance(token: String, consumer: Consumer): Html = layout(
     <div>
       <p>
         A 3rd party application has requested access to your data.
@@ -38,13 +41,5 @@ trait UserHost extends OAuthTemplates {
         <input type="submit" name="submit" value="Approve"/>
         <input type="submit" name="submit" value="Deny"/>
       </form>
-    </div>)
-  
-  /** @todo more flexibilty wrt exensibility */
-  def accessDenied = layout(
-    <div>
-      <p>
-        You have denied this 3rd party application access to your data.
-      </p>
     </div>)
 }

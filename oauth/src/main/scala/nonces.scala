@@ -1,5 +1,6 @@
 package unfiltered.oauth
 
 trait NonceStore {
-  def put(consumer: String, timestamp: String, nonce: String): (String, Int)
+  /** @return true if unique, false otherwise */
+  def put(consumer: String, timestamp: String, nonce: String): Boolean 
 }

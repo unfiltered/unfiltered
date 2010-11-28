@@ -86,7 +86,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
           case Failure(code, msg) => fail(code, msg)
           case PageResponse(page) => page
           case AuthorizeResponse(callback, token, verifier) => callback match {
-            case "oob" => ResponseString(verifier) // todo: hook for oob ui template
+            case "oob" => users.oobResponse(verifier) // todo: hook for oob ui template
             case _ => Redirect("%s%soauth_token=%s&oauth_verifier=%s" format(callback, if(callback.contains("?")) "&" else "?", token, verifier))
           }
         }
@@ -170,7 +170,7 @@ trait OAuthProvider { self: OAuthStores =>
                   AuthorizeResponse(callback, key, verifier)
                 } else if(users.denied(tokenKey, request)) {
                   tokens.delete(tokenKey)
-                  PageResponse(users.deniedConfirmation)
+                  PageResponse(users.deniedConfirmation(consumer))
                 } else PageResponse(users.requestAcceptance(tokenKey, consumer))
               case _ =>
                 // ask user to sign in
@@ -204,8 +204,5 @@ trait OAuthProvider { self: OAuthStores =>
   def challenge(status: Int, msg: String): OAuthResponse = Failure(status, msg)
 
   def nonceValid(consumer: String, timestamp: String, nonce: String) =
-    nonces.put(consumer, timestamp, nonce) match {
-      case (_, 201) => true
-      case _ => false
-    }
+    nonces.put(consumer, timestamp, nonce)
 }

@@ -44,7 +44,11 @@ object OAuthSpec extends Specification with unfiltered.spec.jetty.Served {
       println("OAuthSpec consumer -> %s" format consumer)
       val request_token = h(host.POST / "request_token" << OAuth.callback(OAuth.oob) ++ payload <@ consumer as_token)
       println("OAuthSpec request_token -> %s" format request_token)
-      val verifier = h(host / "authorize" <<? request_token as_str)
+      val VerifierRE = """<p id="verifier">(.+)</p>""".r
+      val verifier = h(host / "authorize" <<? request_token as_str) match {
+        case VerifierRE(v) => v
+        case _ => "?"
+      }
       println("OAuthSpec verifier -> %s" format verifier)
       val access_token = h(host.POST / "access_token" <@ (consumer, request_token, verifier) as_token)
       println("OAuthSpec access_token -> %s" format access_token)

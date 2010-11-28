@@ -2,6 +2,7 @@ package unfiltered.oauth
 
 import unfiltered.request.{HttpRequest => Req}
 
+/** OAuth dependencies */
 trait OAuthStores {
   val nonces: NonceStore
   val tokens: TokenStore
@@ -9,10 +10,11 @@ trait OAuthStores {
   val users: UserHost
 }
 
+/** Mock OAuthStores used for testing */
 trait MockOAuthStores extends OAuthStores {
   val nonces = new NonceStore {
-    def put(consumer: String, timestamp: String, nonce: String) =
-     ("ok", 201)
+    /** all nonces are considered unique */
+    def put(consumer: String, timestamp: String, nonce: String) = true
   }
   
   val tokens: TokenStore = new DefaultTokenStore {
@@ -30,9 +32,11 @@ trait MockOAuthStores extends OAuthStores {
   }
 
   val users = new UserHost {
+    import unfiltered.response.Html
     def current[T](r: Req[T]) = Some(new UserLike { val id = "test_user" })
     def accepted[T](token: String, r: Req[T]) = true
     def denied[T](token: String, r: Req[T]) = false
-    def login(token: String) = unfiltered.response.Html(<form action="#"><input type="hidden" name="token" value={token}/><label for="n">username</label> <input type="text" name="n"></input> <label form="p">password</label><input type="password" name="p"></input></form>)
+    def login(token: String) = Html(<form action="#"><input type="hidden" name="token" value={token}/><label for="n">username</label> <input type="text" name="n"></input> <label form="p">password</label><input type="password" name="p"></input></form>)
+    def oobResponse(verifier: String) = Html(<p id="verifier">{verifier}</p>)
   }
 }
