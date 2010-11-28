@@ -27,7 +27,6 @@ From a high level
 
 * work on non-oob testing
 * support rsa sig method
-* use QParam for `optional` param checking for oauth_version
 * refactor user host support
 * examples
 * more tests
