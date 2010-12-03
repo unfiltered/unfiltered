@@ -1,0 +1,24 @@
+Request Chaining Refactor
+-------------------------
+
+In prior versions of Unfiltered, extractors generally passed their
+source object into the extracted tuple, to support chaining by nesting
+extractors. This provided the needed flexibility, but it littered
+client code with `_`'s for unneeded request and map references. (Also,
+it's rather un-fun to maintain in every extractor in the library.)
+
+It was pointed out to us that Scala's pattern matching can be extended
+to support this need with as a general operation.
+
+    object & { def unapply[A](a: A) = Some(a, a) }
+
+With this in scope, we can do:
+
+    case GET(Path("/secret") & BasicAuth(name, pass)) =>
+
+Because (if you're curious) that evaluates as:
+
+    case GET(&(Path("/secret"), BasicAuth(name, pass))) =>
+
+Refactoring client code from 0.2.x extractors is a bit painful, but
+the improved readability should be worth it.
