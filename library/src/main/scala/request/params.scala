@@ -34,9 +34,7 @@ object Params {
   class Extract[E,T](f: Map => Option[T]) {
     def this(name: String, f: Seq[String] => Option[T]) =
       this({ params: Map => f(params(name)) })
-    def unapply(params: Map) = f(params) map {
-      (_, params)
-    }
+    def unapply(params: Map) = f(params)
   }
   def pred[E,A](p: A => Boolean): Option[A] => Option[A] =
     opt => opt filter p
