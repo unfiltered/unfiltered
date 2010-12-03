@@ -45,7 +45,7 @@ object Jsonp {
   /** @return (callbackwrapper, req) tuple if request accepts json and a callback 
       param is provided  */
   def unapply[T](r: HttpRequest[T]) = r match {
-    case Accepts.Jsonp(Params(Callback(cb))) => Some(new CallbackWrapper(cb), r)
+    case Accepts.Jsonp(Params(Callback(cb))) => Some(new CallbackWrapper(cb))
     case _ => None
   }
 }

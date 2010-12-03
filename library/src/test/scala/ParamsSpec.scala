@@ -26,7 +26,7 @@ trait ParamsSpec extends unfiltered.spec.Hosted {
       case _ =>  ResponseString("what's foo?")
     }
 
-    case POST(UFPath("/extract") & Params(Number(num, _))) =>
+    case POST(UFPath("/extract") & Params(Number(num))) =>
       ResponseString(num.toString)
 
     case POST(UFPath("/extract")) =>

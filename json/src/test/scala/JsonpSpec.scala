@@ -10,8 +10,8 @@ object JsonpSpec extends Specification  with unfiltered.spec.jetty.Served {
   import dispatch._
 
   class TestPlan extends unfiltered.filter.Planify({
-    case GET(UFPath("/jsonp/with-callback") & Jsonp(cb, _)) => ResponseString(cb.wrap("[42]"))
-    case GET(UFPath("/jsonp/with-optional-callback") & Jsonp.Optional(cb, _)) => ResponseString(cb.wrap("[42]"))
+    case GET(UFPath("/jsonp/with-callback") & Jsonp(cb)) => ResponseString(cb.wrap("[42]"))
+    case GET(UFPath("/jsonp/with-optional-callback") & Jsonp.Optional(cb)) => ResponseString(cb.wrap("[42]"))
     case _ => ResponseString("bad req")
   })
   
