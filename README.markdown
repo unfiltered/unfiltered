@@ -143,7 +143,7 @@ A minimal server websocket interface build on netty
 
 Unfiltered is a [cross built](http://code.google.com/p/simple-build-tool/wiki/CrossBuild) project, currently for the following Scala versions
 
-    2.7.7, 2.8.0, 2.8.1.RC1
+    2.7.7, 2.8.0, 2.8.1
     
 ### via sbt
 
