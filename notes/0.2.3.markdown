@@ -3,9 +3,11 @@ Features
 
 * Support for HTTPS in Jetty and Netty server modules, testable through an `HTTPS` extractor. ([softprops][softprops])
 * Extractor `RemoteAddr` for remote addresses whether direct or `X-Forwarded-For`. ([softprops][softprops])
+* `PdfContent` header response function, and `ContentType` refactored to not assume character content, and `CharContentType` for encoded characters. ([chrislewis][chrislewis])
 
 [extractor]: http://databinder.3617998.n2.nabble.com/Path-and-match-order-td5776065.html
 [softprops]: https://github.com/softprops/
+[chrislewis]: https://github.com/chrislewis/
 
 Fixes
 -----
