@@ -12,4 +12,4 @@ Features
 Fixes
 -----
 
-* Fix for json extractor side effect [reported on mailing list][extractor].
+* Fix for json extractor side effect [reported on mailing list][extractor]. ([softprops][softprops])
