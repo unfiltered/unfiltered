@@ -76,7 +76,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
       expected(headers ++ params) orFail { fails =>
         BadRequest ~> ResponseString(fails.map { _.error } mkString(". "))
       }
-    
+
     case Path("/authorize", Params(params, request)) =>
       val expected = for {
         token <- lookup(TokenKey) is
@@ -87,7 +87,8 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
           case PageResponse(page) => page
           case AuthorizeResponse(callback, token, verifier) => callback match {
             case "oob" => users.oobResponse(verifier)
-            case _ => Redirect("%s%soauth_token=%s&oauth_verifier=%s" format(callback, if(callback.contains("?")) "&" else "?", token, verifier))
+            case _ => Redirect("%s%soauth_token=%s&oauth_verifier=%s" format(
+              callback, if(callback.contains("?")) "&" else "?", token, verifier))
           }
         }
       }
