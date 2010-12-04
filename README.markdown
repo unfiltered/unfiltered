@@ -152,15 +152,15 @@ binding module:
 
     import sbt._
     class Project(info) extends DefaultProject(info) {
-      val uf = "net.databinder" %% "unfiltered-jetty" % "0.2.2"
-      val uf = "net.databinder" %% "unfiltered-filter" % "0.2.2"
+      val uf = "net.databinder" %% "unfiltered-jetty" % "0.2.3"
+      val uf = "net.databinder" %% "unfiltered-filter" % "0.2.3"
     }
     
 To specify individual modules, specify the module name in the dependency.
 
     import sbt._
     class Project(info) extends DefaultProject(info) {
-      val ufx = "net.databinder" %% "unfiltered-{module}" % "0.2.2"
+      val ufx = "net.databinder" %% "unfiltered-{module}" % "0.2.3"
     }
     
 See the [template](http://github.com/n8han/Unfiltered/tree/master/demo/) application for an example of a basic Unfiltered application.
