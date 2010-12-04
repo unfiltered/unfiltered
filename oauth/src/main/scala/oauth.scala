@@ -87,7 +87,8 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
           case PageResponse(page) => page
           case AuthorizeResponse(callback, token, verifier) => callback match {
             case "oob" => users.oobResponse(verifier)
-            case _ => Redirect("%s%soauth_token=%s&oauth_verifier=%s" format(callback, if(callback.contains("?")) "&" else "?", token, verifier))
+            case _ => Redirect("%s%soauth_token=%s&oauth_verifier=%s" format(
+              callback, if(callback.contains("?")) "&" else "?", token, verifier))
           }
         }
       }

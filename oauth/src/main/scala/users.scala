@@ -25,7 +25,7 @@ trait UserHost extends OAuthTemplates {
   /** @return the html to show a user to provide a consumer with a verifier */
   def oobResponse(verifier: String): Html
   
-  /** @return http response for confirming the user's denial was processed */
+  /** @Return http response for confirming the user's denial was processed */
   def deniedConfirmation(consumer: Consumer): Html = layout(
     <div>You have denied a 3rd party access to your data</div>
   )
