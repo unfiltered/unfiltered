@@ -1,13 +1,22 @@
 Features
 --------
 
-* Support for HTTPS in Jetty and Netty server modules, testable through an `HTTPS` extractor. ([softprops][softprops])
-* Extractor `RemoteAddr` for remote addresses whether direct or `X-Forwarded-For`. ([softprops][softprops])
+* Support for HTTPS in Jetty and Netty server modules, testable through an [HTTPS][https] extractor. ([softprops][softprops])
+* Extractor [RemoteAddr][remote] for remote addresses whether direct or `X-Forwarded-For`. ([softprops][softprops])
+* `PdfContent` header response function, and `ContentType` [refactored][types] to not assume character content, and `CharContentType` for encoded characters. ([chrislewis][chrislewis])
 
 [extractor]: http://databinder.3617998.n2.nabble.com/Path-and-match-order-td5776065.html
 [softprops]: https://github.com/softprops/
+[chrislewis]: https://github.com/chrislewis/
+[https]: http://sourced.implicit.ly/net.databinder/unfiltered/0.2.3/request/schemes.scala.html
+[remote]: http://sourced.implicit.ly/net.databinder/unfiltered/0.2.3/request/remotes.scala.html
+[types]: http://sourced.implicit.ly/net.databinder/unfiltered/0.2.3/response/types.scala.html
+
+
 
 Fixes
 -----
 
-* Fix for json extractor side effect [reported on mailing list][extractor].
+* Fix for [json extractor][json] (now just a function) side effect [reported on mailing list][extractor]. ([softprops][softprops])
+
+[json]: http://sourced.implicit.ly/net.databinder/unfiltered-json/0.2.3/json.scala.html#9558
