@@ -45,9 +45,13 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
   self: OAuthStores with Messages =>
   import QParams._
   import OAuth._
-  
+
+  val RequestTokenPath = "/request_token"
+  val AuthorizationPath = "/authorize"
+  val AccessTokenPath = "/access_token"
+
   def intent = {
-    case POST(Path("/request_token") & Authorization(OAuth.Header(headers)) & Params(params)) & request =>
+    case POST(Path(RequestTokenPath) & Authorization(OAuth.Header(headers)) & Params(params)) & request =>
       val expected = for {
         consumer_key <- lookup(ConsumerKey) is
           nonempty(blankMsg(ConsumerKey)) is required(requiredMsg(ConsumerKey))
@@ -77,7 +81,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         BadRequest ~> ResponseString(fails.map { _.error } mkString(". "))
       }
     
-    case Path("/authorize") & Params(params) & request =>
+    case Path(AuthorizationPath) & Params(params) & request =>
       val expected = for {
         token <- lookup(TokenKey) is
           nonempty(blankMsg(TokenKey)) is required(requiredMsg(TokenKey))
@@ -97,7 +101,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         BadRequest ~> ResponseString(fails.map { _.error } mkString(". "))
       }
     
-    case request @ POST(Path("/access_token") & Authorization(OAuth.Header(headers)) & Params(params)) =>
+    case request @ POST(Path(AccessTokenPath) & Authorization(OAuth.Header(headers)) & Params(params)) =>
       val expected = for {
         consumer_key <- lookup(ConsumerKey) is
           nonempty(blankMsg(ConsumerKey)) is required(requiredMsg(ConsumerKey))

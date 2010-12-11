@@ -15,7 +15,7 @@ object OAuthSpec extends Specification with unfiltered.spec.jetty.Served {
   val consumer = dispatch.oauth.Consumer("key", "secret")
   
   def setup = { 
-    _.filter(unfiltered.oauth.OAuth(new MockOAuthStores {
+    _.filter(new unfiltered.oauth.OAuth(new MockOAuthStores {
       var tokenMap = scala.collection.mutable.Map.empty[String, unfiltered.oauth.Token]
 
       override val consumers = new ConsumerStore {
@@ -33,7 +33,11 @@ object OAuthSpec extends Specification with unfiltered.spec.jetty.Served {
         }
         override def delete(key: String) = tokenMap -= key
       }
-    }))
+    }) {
+      override val RequestTokenPath = "/requests"
+      override val AuthorizationPath = "/auth"
+      override val AccessTokenPath = "/access"
+    })
   }
   
   "oauth" should {
@@ -42,15 +46,15 @@ object OAuthSpec extends Specification with unfiltered.spec.jetty.Served {
       val payload = Map("identité" -> "caché", "identity" -> "hidden", "アイデンティティー" -> "秘密", 
         "pita" -> "-._~*")
       println("OAuthSpec consumer -> %s" format consumer)
-      val request_token = h(host.POST / "request_token" << OAuth.callback(OAuth.oob) ++ payload <@ consumer as_token)
+      val request_token = h(host.POST / "requests" << OAuth.callback(OAuth.oob) ++ payload <@ consumer as_token)
       println("OAuthSpec request_token -> %s" format request_token)
       val VerifierRE = """<p id="verifier">(.+)</p>""".r
-      val verifier = h(host / "authorize" <<? request_token as_str) match {
+      val verifier = h(host / "auth" <<? request_token as_str) match {
         case VerifierRE(v) => v
         case _ => "?"
       }
       println("OAuthSpec verifier -> %s" format verifier)
-      val access_token = h(host.POST / "access_token" <@ (consumer, request_token, verifier) as_token)
+      val access_token = h(host.POST / "access" <@ (consumer, request_token, verifier) as_token)
       println("OAuthSpec access_token -> %s" format access_token)
       "1" must_=="1"
     }
