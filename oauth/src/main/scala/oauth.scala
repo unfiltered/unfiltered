@@ -69,9 +69,8 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
           pred { (_: String) == "1.0" } {"invalid oauth version " + _ } is 
           optional[String,String]
       } yield {
-        val combined = params ++ headers
         // TODO how to extract the full url and not rely on underlying
-        requestToken(request.method, request.underlying.getRequestURL.toString, combined) match {
+        requestToken(request.method, request.underlying.getRequestURL.toString, params ++ headers) match {
           case Failure(status, msg) => fail(status, msg)
           case resp: OAuthResponseWriter => resp ~> FormEncodedContent
         }
@@ -121,9 +120,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
           pred { (_: String) == "1.0" } {"invalid oauth version " + _ } is 
           optional[String,String]
       } yield {
-        val combined = params ++ headers
-        
-        accessToken(request.method, request.underlying.getRequestURL.toString, combined) match {
+        accessToken(request.method, request.underlying.getRequestURL.toString, params ++ headers) match {
           case Failure(code, msg) => fail(code, msg)
           case resp@AccessResponse(_, _) => resp ~> FormEncodedContent
         }          
