@@ -11,7 +11,7 @@ case class Failure(status: Int, msg: String) extends OAuthResponse
 
 case object LoginResponse extends OAuthResponse
 
-case class PageResponse(p: unfiltered.response.Html) extends OAuthResponse
+case class HostResponse[T](p: unfiltered.response.ResponseFunction[T]) extends OAuthResponse
 
 /** writes the response of to an oauth request to response body */
 trait OAuthResponseWriter extends OAuthResponse with ResponseWriter with Encoding with Combining {

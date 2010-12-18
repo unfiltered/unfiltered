@@ -16,6 +16,9 @@ object OAuth {
   val Verifier = "oauth_verifier"
   val Version = "oauth_version"
 
+  /** out-of-bounds callback value */
+  val Oob = "oob"
+
   /** Authorization: OAuth header extractor */  
   object Header {
     val KeyVal = """(\w+)="([\w|:|\/|.|%|-]+)" """.trim.r
@@ -87,9 +90,9 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
       } yield {
         authorize(token.get, request) match {
           case Failure(code, msg) => fail(code, msg)
-          case PageResponse(page) => page
+          case HostResponse(resp) => Ok ~> resp
           case AuthorizeResponse(callback, token, verifier) => callback match {
-            case "oob" => users.oobResponse(verifier)
+            case OAuth.Oob => users.oobResponse(verifier)
             case _ => Redirect("%s%soauth_token=%s&oauth_verifier=%s" format(
               callback, if(callback.contains("?")) "&" else "?", token, verifier))
           }
@@ -136,12 +139,24 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
 }
 
 /** Configured OAuthed class that satisfies requirements for OAuthStores */
-case class OAuth(stores: OAuthStores) extends OAuthed 
-     with OAuthStores with DefaultMessages  {
+case class OAuth(stores: OAuthStores)(implicit val responses: HostResponses) extends OAuthed 
+     with OAuthStores with DefaultMessages with HostResponses {
   val nonces = stores.nonces
   val tokens = stores.tokens
   val consumers = stores.consumers
   val users = stores.users
+
+  /** @Return the html to display to the user to log in */
+  def login[A](token: String) = responses.login(token)
+
+  /** @return the html to show a user to provide a consumer with a verifier */
+  def oobResponse[A](verifier: String) = responses.oobResponse(verifier)
+  
+  /** @return http response for confirming the user's denial was processed */
+  def deniedConfirmation[A](consumer: Consumer) = responses.deniedConfirmation(consumer)
+  
+  /** @todo more flexibilty wrt exensibility */
+  def requestAcceptance[A](token: String, consumer: Consumer) = responses.requestAcceptance(token, consumer)
 }
 
 trait OAuthProvider { self: OAuthStores =>
@@ -172,11 +187,11 @@ trait OAuthProvider { self: OAuthStores =>
                   AuthorizeResponse(callback, key, verifier)
                 } else if(users.denied(tokenKey, request)) {
                   tokens.delete(tokenKey)
-                  PageResponse(users.deniedConfirmation(consumer))
-                } else PageResponse(users.requestAcceptance(tokenKey, consumer))
+                  HostResponse(users.deniedConfirmation(consumer))
+                } else HostResponse(users.requestAcceptance(tokenKey, consumer))
               case _ =>
                 // ask user to sign in
-                PageResponse(users.login(tokenKey))
+                HostResponse(users.login(tokenKey))
             }
           case _ => challenge(400, "invalid consumer")
         }
