@@ -15,7 +15,7 @@ From a high level
       }
     }
 ### OAuthStores
-    
+
 `OAuthStores` defines an interface for querying and creating externally dependent objects within the follow types of stores
 
 #### NonceStore: Storage for nonces
@@ -45,7 +45,6 @@ This trait defines the following methods a provider must implement
      /** @return Some(Consumer) if available, None otherwise */
      def get(key: String): Option[Consumer]
 
-
 #### UserHost: Host Application hooks and UI templates
 
 This trait defines the following methods  a provider must implement
@@ -68,8 +67,8 @@ This trait defines the following methods  a provider must implement
 ## Implementation Notes
 
 ### n access_tokens per user + consumer
-  The OAuth [final 1.0 version][oauth_1_0] spec does not specify the behavior for a provider in the case 
-  of the same consumer requesting multiple access_tokens for the same user. One option is to always return the same token. Another option is to delete previous access tokens. While these are both viable options, if a provider would choose to delete previous access tokens the user may be forced to reauthenticate if they were authenticaated with the same consumer in multiple locations. If the server always returned the same access token for the same consumer and user combination, the same consumer used a separate location would have to go through a few needless steps in requesting request_tokens adding additional overhead for the provider. 
+  The OAuth [final 1.0 version][oauth_1_0] spec does not specify the behavior for a provider in the case
+  of the same consumer requesting multiple access_tokens for the same user. One option is to always return the same token. Another option is to delete previous access tokens. While these are both viable options, if a provider would choose to delete previous access tokens the user may be forced to reauthenticate if they were authenticaated with the same consumer in multiple locations. If the server always returned the same access token for the same consumer and user combination, the same consumer used a separate location would have to go through a few needless steps in requesting request_tokens adding additional overhead for the provider.
 
   This implementation opts to not stand in the way and allows for multiple access_tokens per user and consumer combination. This can be usefull in the case were a user may be authenticated under the same application in multiple locations, each location having its own access_token. This provides a little more flexibility with respect to providing the end user the capability to revoke access to a targetted consumer verses all at once. The only drawback to this approach is that the user host of the provider will be responsible for indicating that there can be multiple connections for a given user and consumer and being able to differentiate them. This decision base based on a discussion on the [twitter api mailing list](http://code.google.com/p/twitter-api/issues/detail?id=372).
 
@@ -77,7 +76,6 @@ This trait defines the following methods  a provider must implement
 
 * work on non-oob testing
 * support rsa sig method
-* refactor user host support
 * examples
 * more tests
 

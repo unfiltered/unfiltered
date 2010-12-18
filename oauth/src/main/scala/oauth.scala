@@ -19,12 +19,12 @@ object OAuth {
   /** out-of-bounds callback value */
   val Oob = "oob"
 
-  /** Authorization: OAuth header extractor */  
+  /** Authorization: OAuth header extractor */
   object Header {
     val KeyVal = """(\w+)="([\w|:|\/|.|%|-]+)" """.trim.r
-    val keys = Set.empty + "realm" + ConsumerKey + TokenKey + SignatureMethod + 
+    val keys = Set.empty + "realm" + ConsumerKey + TokenKey + SignatureMethod +
       Sig + Timestamp + Nonce + Callback + Verifier + Version
-    
+
     def unapply(hvals: Seq[String]) = {
       Some(Map((hvals map { _.replace("OAuth ", "") } flatMap {
         case KeyVal(k, v) if(keys.contains(k)) => Seq((k -> Seq(v)))
@@ -34,6 +34,20 @@ object OAuth {
   }
 }
 
+/** Defines end points for oauth interation */
+trait OAuthPaths {
+  val RequestTokenPath: String
+  val AuthorizationPath: String
+  val AccessTokenPath: String
+}
+
+trait DefaultOAuthPaths extends OAuthPaths {
+  val RequestTokenPath = "/request_token"
+  val AuthorizationPath = "/authorize"
+  val AccessTokenPath = "/access_token"
+}
+
+/** Formatting for validation messages */
 trait Messages {
   def blankMsg(param: String): String
   def requiredMsg(param: String): String
@@ -44,21 +58,17 @@ trait DefaultMessages extends Messages {
   def requiredMsg(param: String) = "%s is required" format param
 }
 
-trait OAuthed extends OAuthProvider with unfiltered.filter.Plan { 
-  self: OAuthStores with Messages =>
+trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
+  self: OAuthStores with Messages with OAuthPaths =>
   import QParams._
   import OAuth._
-
-  val RequestTokenPath = "/request_token"
-  val AuthorizationPath = "/authorize"
-  val AccessTokenPath = "/access_token"
 
   def intent = {
     case POST(Path(RequestTokenPath) & Authorization(OAuth.Header(headers)) & Params(params)) & request =>
       val expected = for {
         consumer_key <- lookup(ConsumerKey) is
           nonempty(blankMsg(ConsumerKey)) is required(requiredMsg(ConsumerKey))
-        oauth_signature_method <- lookup(SignatureMethod) is 
+        oauth_signature_method <- lookup(SignatureMethod) is
           nonempty(blankMsg(SignatureMethod)) is required(requiredMsg(SignatureMethod))
         timestamp <- lookup(Timestamp) is
           nonempty(blankMsg(Timestamp)) is required(requiredMsg(Timestamp))
@@ -69,7 +79,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         signature <- lookup(Sig) is
           nonempty(blankMsg(Sig)) is required(requiredMsg(Sig))
         version <- lookup(Version) is
-          pred { (_: String) == "1.0" } {"invalid oauth version " + _ } is 
+          pred { (_: String) == "1.0" } {"invalid oauth version " + _ } is
           optional[String,String]
       } yield {
         // TODO how to extract the full url and not rely on underlying
@@ -82,7 +92,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
       expected(headers ++ params) orFail { fails =>
         BadRequest ~> ResponseString(fails.map { _.error } mkString(". "))
       }
-    
+
     case Path(AuthorizationPath) & Params(params) & request =>
       val expected = for {
         token <- lookup(TokenKey) is
@@ -98,16 +108,16 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
           }
         }
       }
-      
+
       expected(params) orFail { fails =>
         BadRequest ~> ResponseString(fails.map { _.error } mkString(". "))
       }
-    
+
     case request @ POST(Path(AccessTokenPath) & Authorization(OAuth.Header(headers)) & Params(params)) =>
       val expected = for {
         consumer_key <- lookup(ConsumerKey) is
           nonempty(blankMsg(ConsumerKey)) is required(requiredMsg(ConsumerKey))
-        oauth_signature_method <- lookup(SignatureMethod) is 
+        oauth_signature_method <- lookup(SignatureMethod) is
           nonempty(blankMsg(SignatureMethod)) is required(requiredMsg(SignatureMethod))
         timestamp <- lookup(Timestamp) is
           nonempty(blankMsg(Timestamp)) is required(requiredMsg(Timestamp))
@@ -120,48 +130,36 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         signature <- lookup(Sig) is
           nonempty(blankMsg(Sig)) is required(requiredMsg(Sig))
         version <- lookup(Version) is
-          pred { (_: String) == "1.0" } {"invalid oauth version " + _ } is 
+          pred { (_: String) == "1.0" } {"invalid oauth version " + _ } is
           optional[String,String]
       } yield {
         accessToken(request.method, request.underlying.getRequestURL.toString, params ++ headers) match {
           case Failure(code, msg) => fail(code, msg)
           case resp@AccessResponse(_, _) => resp ~> FormEncodedContent
-        }          
+        }
       }
-      
+
       expected(headers ++ params) orFail { fails =>
         BadRequest ~> ResponseString(fails.map { _.error } mkString(". "))
       }
   }
 
-  def fail(status: Int, msg: String) = 
+  def fail(status: Int, msg: String) =
     Status(status) ~> ResponseString(msg)
 }
 
 /** Configured OAuthed class that satisfies requirements for OAuthStores */
-case class OAuth(stores: OAuthStores)(implicit val responses: HostResponses) extends OAuthed 
-     with OAuthStores with DefaultMessages with HostResponses {
+case class OAuth(stores: OAuthStores) extends OAuthed
+     with OAuthStores with DefaultMessages with DefaultOAuthPaths {
   val nonces = stores.nonces
   val tokens = stores.tokens
   val consumers = stores.consumers
   val users = stores.users
-
-  /** @Return the html to display to the user to log in */
-  def login[A](token: String) = responses.login(token)
-
-  /** @return the html to show a user to provide a consumer with a verifier */
-  def oobResponse[A](verifier: String) = responses.oobResponse(verifier)
-  
-  /** @return http response for confirming the user's denial was processed */
-  def deniedConfirmation[A](consumer: Consumer) = responses.deniedConfirmation(consumer)
-  
-  /** @todo more flexibilty wrt exensibility */
-  def requestAcceptance[A](token: String, consumer: Consumer) = responses.requestAcceptance(token, consumer)
 }
 
 trait OAuthProvider { self: OAuthStores =>
   import OAuth._
-  
+
   def requestToken(method: String, url: String, p: Map[String, Seq[String]]): OAuthResponse =
     if(nonceValid(p(ConsumerKey)(0), p(Timestamp)(0), p(Nonce)(0))) (for {
       consumer <- consumers.get(p(ConsumerKey)(0))
@@ -173,7 +171,7 @@ trait OAuthProvider { self: OAuthStores =>
       } else challenge(400, "invalid signature")
     }) getOrElse challenge(400, "invalid consumer")
     else challenge(400, "invalid nonce")
-    
+
   def authorize[T](tokenKey: String, request: Req[T]): OAuthResponse =
     tokens.get(tokenKey) match {
       case Some(RequestToken(key, secret, consumerKey, callback)) =>
@@ -197,7 +195,7 @@ trait OAuthProvider { self: OAuthStores =>
         }
       case _ => challenge(400, "invalid token")
     }
-  
+
   def accessToken(method: String, url: String, p: Map[String, Seq[String]]): OAuthResponse =
     if(nonceValid(p(ConsumerKey)(0), p(Timestamp)(0), p(Nonce)(0))) (for {
       consumer <- consumers.get(p(ConsumerKey)(0))
@@ -217,7 +215,7 @@ trait OAuthProvider { self: OAuthStores =>
       }
     }) getOrElse challenge(400, "invalid consumer or token")
     else challenge(400, "invalid nonce")
-  
+
   def challenge(status: Int, msg: String): OAuthResponse = Failure(status, msg)
 
   def nonceValid(consumer: String, timestamp: String, nonce: String) =

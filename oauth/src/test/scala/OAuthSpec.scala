@@ -3,29 +3,36 @@ package unfiltered.oauth
 import org.specs._
 
 object OAuthSpec extends Specification with unfiltered.spec.jetty.Served {
-  
+
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
   import dispatch._
   import dispatch.oauth._
-  import dispatch.oauth.OAuth._  
+  import dispatch.oauth.OAuth._
 
   System.setProperty("file.encoding", "UTF-8")
   val consumer = dispatch.oauth.Consumer("key", "secret")
-  
-  def setup = { 
-    _.filter(new unfiltered.oauth.OAuth(new MockOAuthStores {
+
+  def setup = {
+
+    trait CustomPaths extends OAuthPaths {
+      override val RequestTokenPath = "/requests"
+      override val AuthorizationPath = "/auth"
+      override val AccessTokenPath = "/access"
+    }
+
+    _.filter(new OAuth(new MockOAuthStores {
       var tokenMap = scala.collection.mutable.Map.empty[String, unfiltered.oauth.Token]
 
       override val consumers = new ConsumerStore {
-        def get(key: String) = Some(new unfiltered.oauth.Consumer { 
+        def get(key: String) = Some(new unfiltered.oauth.Consumer {
           val key = consumer.key
-          val secret = consumer.secret 
+          val secret = consumer.secret
         })
       }
-      
-      override val tokens: TokenStore = new DefaultTokenStore {
+
+      override val tokens = new DefaultTokenStore {
         override def get(key: String) = tokenMap.get(key)
         override def put(token: unfiltered.oauth.Token) = {
           tokenMap += (token.key -> token)
@@ -33,17 +40,13 @@ object OAuthSpec extends Specification with unfiltered.spec.jetty.Served {
         }
         override def delete(key: String) = tokenMap -= key
       }
-    }) {
-      override val RequestTokenPath = "/requests"
-      override val AuthorizationPath = "/auth"
-      override val AccessTokenPath = "/access"
-    })
+    }) with CustomPaths)
   }
-  
+
   "oauth" should {
     "authenticate a valid consumers request using a HMAC-SHA1 signature with oob workflow" in {
       val h = new Http
-      val payload = Map("identité" -> "caché", "identity" -> "hidden", "アイデンティティー" -> "秘密", 
+      val payload = Map("identité" -> "caché", "identity" -> "hidden", "アイデンティティー" -> "秘密",
         "pita" -> "-._~*")
       println("OAuthSpec consumer -> %s" format consumer)
       val request_token = h(host.POST / "requests" << OAuth.callback(OAuth.oob) ++ payload <@ consumer as_token)

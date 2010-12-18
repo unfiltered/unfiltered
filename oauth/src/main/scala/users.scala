@@ -3,23 +3,25 @@ package unfiltered.oauth
 import unfiltered.response._
 import unfiltered.request.{HttpRequest => Req}
 
-/** minimal user identity */
+/** Respresents the `User` in an oauth interaction */
 trait UserLike {
   val id: String
 }
 
+/** Provides a means of host-specific hooks into providing user interfaces */
 trait HostResponses {
-  /** @return the html to display to the user to log in */
-  def login[T](token: String): Responder[T]
+  /** @return a function that provides a means of logging a user in */
+  def login(token: String): ResponseFunction[Any]
 
-  /** @return the html to show a user to provide a consumer with a verifier */
-  def oobResponse[T](verifier: String): Responder[T]
+  /** @return a function that provides a consumer with a means of accessing verifier */
+  def oobResponse(verifier: String): ResponseFunction[Any]
 
-  /** @return http response for confirming the user's denial was processed */
-  def deniedConfirmation[T](consumer: Consumer): Responder[T]
+  /** @return a function that provides a user with a means of confirming the user's denial was processed */
+  def deniedConfirmation(consumer: Consumer): ResponseFunction[Any]
 
-  /** @todo more flexibilty wrt exensibility */
-  def requestAcceptance[T](token: String, consumer: Consumer): Responder[T]
+  /** @return a function that provides a user with a means of asking for accepting a consumer's
+   *    request for access to their private resources */
+  def requestAcceptance(token: String, consumer: Consumer): ResponseFunction[Any]
 }
 
 trait UserHost extends HostResponses {

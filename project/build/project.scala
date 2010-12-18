@@ -15,7 +15,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     override def testClasspath = (super.testClasspath /: testDeps) {
       _ +++ _.projectClasspath(Configurations.Compile)
     }
-    override def testCompileAction = super.testCompileAction dependsOn 
+    override def testCompileAction = super.testCompileAction dependsOn
       (testDeps map { _.compile } : _*)
     lazy val specs = specsDependency % "test"
     lazy val dispatch = dispatchDependency % "test"
@@ -46,13 +46,13 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   lazy val jetty_ajp = project("jetty-ajp", "Unfiltered Jetty AJP", new UnfilteredModule(_) {
     val jetty7 = "org.eclipse.jetty" % "jetty-ajp" % jetty_version
   }, jetty)
-  
+
   lazy val netty_server = project("netty-server", "Unfiltered Netty Server",
     new UnfilteredModule(_) {
       val netty = "org.jboss.netty" % "netty" % "3.2.2.Final" withSources()
     }, util
   )
-  lazy val netty = project("netty", "Unfiltered Netty", new UnfilteredModule(_) with IntegrationTesting, 
+  lazy val netty = project("netty", "Unfiltered Netty", new UnfilteredModule(_) with IntegrationTesting,
     netty_server, library)
 
   /** Marker for Scala 2.8-only projects that shouldn't be cross compiled or published */
@@ -64,7 +64,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     lazy val dispatch = dispatchDependency
   }, jetty, netty)
   /** json extractors */
-  lazy val json = project("json", "Unfiltered Json", 
+  lazy val json = project("json", "Unfiltered Json",
       new UnfilteredModule(_) with IntegrationTesting {
     val lift_json = if (buildScalaVersion startsWith "2.8.1")
       "net.liftweb" % "lift-json_2.8.0" % "2.1-M1"
@@ -73,7 +73,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   }, library)
   def servletApiDependency = "javax.servlet" % "servlet-api" % "2.3" % "provided"
 
-  lazy val scalate = project("scalate", "Unfiltered Scalate", 
+  lazy val scalate = project("scalate", "Unfiltered Scalate",
       new UnfilteredModule(_) with Only28 with IntegrationTesting {
     val scalateLibs = "org.fusesource.scalate" % "scalate-core" % "1.3.1"
     val scalaCompiler = "org.scala-lang" % "scala-compiler" % "2.8.0" % "test"
@@ -81,15 +81,15 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     override def repositories = Set(ScalaToolsSnapshots)
   }, library)
   /** websockets */
-  lazy val websockets = project("websockets", "Unfiltered Websockets", 
+  lazy val websockets = project("websockets", "Unfiltered Websockets",
     new UnfilteredModule(_), netty_server)
-  
+
   /** oauth */
   lazy val oauth = project("oauth", "Unfiltered OAuth",
     new UnfilteredModule(_) with IntegrationTesting {
     lazy val dispatchOAuth = dispatchOAuthDependency % "test"
   },jetty, filter_p)
-    
+
   def specsDependency =
     if (buildScalaVersion startsWith "2.7.")
       "org.scala-tools.testing" % "specs" % "1.6.2.2"
@@ -97,19 +97,19 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
       "org.scala-tools.testing" % "specs_2.8.0" % "1.6.5"
 
   def dispatchDependency = if(buildScalaVersion startsWith "2.8.1")
-      "net.databinder" % "dispatch-mime_2.8.0" % "0.7.6"
+      "net.databinder" % "dispatch-mime_2.8.0" % "0.7.8"
     else
-      "net.databinder" %% "dispatch-mime" % "0.7.6"
-  
+      "net.databinder" %% "dispatch-mime" % "0.7.8"
+
   def dispatchOAuthDependency = if(buildScalaVersion startsWith "2.8.1")
-      "net.databinder" % "dispatch-oauth_2.8.0" % "0.7.6"
+      "net.databinder" % "dispatch-oauth_2.8.0" % "0.7.8"
     else
-      "net.databinder" %% "dispatch-oauth" % "0.7.6"
-  
+      "net.databinder" %% "dispatch-oauth" % "0.7.8"
+
   def jettyDependency = "org.eclipse.jetty" % "jetty-webapp" % jetty_version
 
   /** Exclude 2.8 projects from cross-buiding actions run from parent */
-  override def dependencies = super.dependencies.filter { 
+  override def dependencies = super.dependencies.filter {
     case _: Only28 => buildScalaVersion startsWith "2.8.0"
     case _ => true
   }
@@ -119,7 +119,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   lazy val repo = "jboss repo" at "http://repository.jboss.org/nexus/content/groups/public-jboss/"
 
   override def managedStyle = ManagedStyle.Maven
-  val publishTo = "Scala Tools Nexus" at 
+  val publishTo = "Scala Tools Nexus" at
     "http://nexus.scala-tools.org/content/repositories/releases/"
   Credentials(Path.userHome / ".ivy2" / ".credentials", log)
 }
