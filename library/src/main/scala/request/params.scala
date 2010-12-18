@@ -42,6 +42,9 @@ object Params {
   def int(os: Option[String]) = 
     try { os map { _.toInt } } catch { case _ => None }
 
+  def long(os: Option[String]) = 
+    try { os map { _.toLong } } catch { case _ => None }
+
   val even = pred { (_:Int) % 2 == 0 }
   val odd = pred { (_:Int) % 2 == 1 }
 
@@ -147,6 +150,7 @@ object QParams {
     opt => Right(f(opt))
 
   def int[E](e: String => E) = watch(Params.int, e)
+  def long[E](e: String => E) = watch(Params.long, e)
   def even[E](e: Int => E) = watch(Params.even, e)
   def odd[E](e: Int => E) = watch(Params.odd, e)
   def trimmed[E] = ignore[E,String](Params.trimmed)
