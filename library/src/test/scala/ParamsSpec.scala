@@ -47,7 +47,7 @@ trait ParamsSpec extends unfiltered.spec.Hosted {
     case GET(UFPath("/even") & Params(params)) => 
       val expected = for {
         even <- lookup("number") is(int(in => "%s is not a number".format(in))) is 
-          (pred { (_: Int) % 2 == 0} { i => "%d is odd".format(i) }) is(required("missing"))
+          (pred( _ % 2 == 0, i => "%d is odd".format(i) )) is(required("missing"))
         whatever <- lookup("what") is(required("bad"))
       } yield ResponseString(even.get.toString)
       expected(params) orFail { fails =>
