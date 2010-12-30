@@ -120,10 +120,18 @@ object QParams {
     def apply(params: Params.Map) = exec(params, None, Nil)._3
   }
 
+  /** Lookup a value from the input Params.Map */
   def lookup[E](key: String): QueryM[E,Option[String]] =
     QueryM {
       (params, _, log0) =>
         (Some(key), log0, params.get(key).flatMap { _.firstOption })
+    }
+
+  /** Insert a value in the validation process that does not depend on the input Params.Map */
+  def declare[E, A](key: String, value: A): QueryM[E,Option[A]] =
+    QueryM {
+      (params, _, log0) =>
+        (Some(key), log0, Some(value))
     }
 
   /* Functions that are useful arguments to QueryM.is */
