@@ -14,7 +14,7 @@ object OAuthSpec extends Specification with unfiltered.spec.jetty.Served {
   System.setProperty("file.encoding", "UTF-8")
   val consumer = dispatch.oauth.Consumer("key", "secret")
 
-  def setup = {
+  def setup = { server =>
 
     trait CustomPaths extends OAuthPaths {
       override val RequestTokenPath = "/requests"
@@ -22,7 +22,7 @@ object OAuthSpec extends Specification with unfiltered.spec.jetty.Served {
       override val AccessTokenPath = "/access"
     }
 
-    _.filter(new OAuth(new MockOAuthStores {
+    server.filter(new OAuth(new MockOAuthStores {
       var tokenMap = scala.collection.mutable.Map.empty[String, unfiltered.oauth.Token]
 
       override val consumers = new ConsumerStore {
