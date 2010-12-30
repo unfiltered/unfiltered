@@ -141,8 +141,11 @@ object QParams {
     case Some(a) => c(Some(a)).map { b => Right(Some(b)) } getOrElse Left(err(a))
   }
 
+  /** @deprecated use uncurried pred */
+  def pred[E,A](p: A => Boolean)(err: A => E): Reporter[E,A,A] = pred(p, err)
+
   /** Convert a predicate into an error reporter */
-  def pred[E,A](p: A => Boolean)(err: A => E): Reporter[E,A,A] =
+  def pred[E,A](p: A => Boolean, err: A => E): Reporter[E,A,A] =
     watch({_ filter p}, err)
 
   /** Convert f into an error reporter that never reports errors */
