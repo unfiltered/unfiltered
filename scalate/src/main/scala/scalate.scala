@@ -12,7 +12,7 @@ private[scalate] object ScalateDefaults{
   val defaultTemplateDirs = List(new java.io.File("src/main/resources/templates"))
   implicit val engine = new TemplateEngine(defaultTemplateDirs)
   
-  implicit def renderContext[A, B](req: HttpRequest[A], res: HttpResponse[B], engine: TemplateEngine) =
+  implicit def renderContext(req: HttpRequest[_], res: HttpResponse[_], engine: TemplateEngine) =
     new DefaultRenderContext(req.requestURI, engine, res.getWriter)
 }
 
