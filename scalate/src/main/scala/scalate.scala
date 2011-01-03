@@ -17,7 +17,7 @@ import unfiltered.request.HttpRequest
  * An implicit Engine and Bindings can be passed to the constructor via
  * its alternate parameters set.  This is described further in demo-scalate
 */
-case class Scalate(request: HttpRequest[_], template: String, attributes:(String,Any)*)
+case class Scalate[A](request: HttpRequest[A], template: String, attributes:(String,Any)*)
   (
     implicit engine: TemplateEngine = ScalateDefaults.engine, 
     bindings: List[Binding] = List[Binding](),
