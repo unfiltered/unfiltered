@@ -5,7 +5,6 @@ import org.specs._
 
 // java
 import java.io.{StringWriter, PrintWriter, File}
-import javax.servlet.http.HttpServletRequest
 
 // scalate
 import org.fusesource.scalate.{TemplateEngine, Binding}
@@ -13,12 +12,14 @@ import org.fusesource.scalate.support.FileResourceLoader
 
 // Unfiltered
 import unfiltered.request.HttpRequest
+import unfiltered.response.HttpResponse
 
 class ScalateSpec extends Specification {
   
   import org.mockito.Mockito._
   
-  val requestStub = mock(classOf[HttpRequest[HttpServletRequest]])
+  val requestStub = mock(classOf[HttpRequest[_]])
+  val responseStub = mock(classOf[HttpResponse[Nothing]])
   
   "A Template" should {
     "load" in {
@@ -26,7 +27,8 @@ class ScalateSpec extends Specification {
         
       val buffer = new StringWriter
       val writer = new PrintWriter(buffer)
-      scalate.write(writer)
+      when(responseStub.getWriter).thenReturn(writer);
+      scalate.respond(responseStub)
         
       buffer.toString must_== ("<h1>Hello, World!</h1>")
     }
@@ -37,7 +39,8 @@ class ScalateSpec extends Specification {
         
       val buffer = new StringWriter
       val writer = new PrintWriter(buffer)
-      scalate.write(writer)
+      when(responseStub.getWriter).thenReturn(writer);
+      scalate.respond(responseStub)
         
       buffer.toString must_== ("<h1>Another Template!</h1>")
     }
@@ -50,8 +53,9 @@ class ScalateSpec extends Specification {
         
       val buffer = new StringWriter
       val writer = new PrintWriter(buffer)
-      scalate.write(writer)
-        
+      when(responseStub.getWriter).thenReturn(writer);
+      scalate.respond(responseStub)
+      
       buffer.toString must_== ("bar")
     }
   }
