@@ -76,7 +76,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   lazy val scalate = project("scalate", "Unfiltered Scalate",
       new UnfilteredModule(_) with Only28 with IntegrationTesting {
     val scalateLibs = "org.fusesource.scalate" % "scalate-core" % "1.3.1"
-    val scalaCompiler = "org.scala-lang" % "scala-compiler" % "2.8.0" % "test"
+    val scalaCompiler = "org.scala-lang" % "scala-compiler" % buildScalaVersion % "test"
     val mockito = "org.mockito" % "mockito-core" % "1.8.5" % "test"
     override def repositories = Set(ScalaToolsSnapshots)
   }, library)
