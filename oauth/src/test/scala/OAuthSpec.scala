@@ -49,7 +49,7 @@ object OAuthSpec extends Specification with unfiltered.spec.jetty.Served {
       val payload = Map("identité" -> "caché", "identity" -> "hidden", "アイデンティティー" -> "秘密",
         "pita" -> "-._~*")
       println("OAuthSpec consumer -> %s" format consumer)
-      val request_token = h(host.POST / "requests" << OAuth.callback(OAuth.oob) ++ payload <@ consumer as_token)
+      val request_token = h(host.POST / "requests" << payload <@(consumer, OAuth.oob) as_token)
       println("OAuthSpec request_token -> %s" format request_token)
       val VerifierRE = """<p id="verifier">(.+)</p>""".r
       val verifier = h(host / "auth" <<? request_token as_str) match {
