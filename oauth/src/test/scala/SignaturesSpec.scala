@@ -2,33 +2,6 @@ package unfiltered.oauth
 
 import org.specs._
 
-package a {
-
-  class A
-
-  object A {
-    import b
-    implicit def (a: A): B = new B(a)
-  }
-
-}
-
---
-
-package b {
- class B(a: A) {
-   def notInA
- }
-}
-
---
-
-import a
-
-new A().notInA
-
-
-
 object SignaturesSpec extends Specification with Encoding {
   "Signatures" should {
     val consumerKey = "dpf43f3p2l4k3l03"
