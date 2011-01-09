@@ -27,8 +27,6 @@ OAuth Module
 ------------
 
 Support for the official [OAuth](http://oauth.net/) final [1.0](http://tools.ietf.org/html/rfc5849) provider specification.
-See the [readme](https://github.com/n8han/Unfiltered/tree/master/oauth/#readme) for more information
-on OAuth.
 
 An example [client](https://github.com/softprops/unfiltered-oauth-client.g8/#readme)
-and [server](https://github.com/softprops/unfiltered-oauth-server.g8/#readme) example has been provided as a set of [g8](https://github.com/n8han/giter8/#readme) templates. Otherwise please see the OAuth module's [readme](https://github.com/n8han/Unfiltered/tree/master/oauth/#readme)
+and [server](https://github.com/softprops/unfiltered-oauth-server.g8/#readme) have been provided as [g8](https://github.com/n8han/giter8/#readme) templates. Otherwise please see the OAuth module's [readme](https://github.com/n8han/Unfiltered/tree/master/oauth/#readme)
