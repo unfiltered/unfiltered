@@ -30,3 +30,20 @@ Support for the official [OAuth](http://oauth.net/) final [1.0](http://tools.iet
 
 An example [client](https://github.com/softprops/unfiltered-oauth-client.g8/#readme)
 and [server](https://github.com/softprops/unfiltered-oauth-server.g8/#readme) have been provided as [g8](https://github.com/n8han/giter8/#readme) templates. Otherwise please see the OAuth module's [readme](https://github.com/n8han/Unfiltered/tree/master/oauth/#readme)
+
+Parameter validation
+--------------------
+
+Values from outside the parameters map can easily participate in
+QParams validation using `QParams.external` as an alternative to
+`QParams.lookup`.
+
+For example, to fail if a User-Agent header is not present:
+
+    agent <- external("UA", UserAgent(request).firstOption) is
+      required("missing header")
+
+This would generate a `Fail` named "UA" with the error message
+"missing header" when a request comes in without this header. The
+failure would be processed and reported along with other validation
+failures.

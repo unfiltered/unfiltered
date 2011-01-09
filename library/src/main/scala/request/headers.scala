@@ -15,6 +15,7 @@ class RequestHeader(val name: String) {
       case hs => Some(hs)
     }
   }
+  def apply[T](req: HttpRequest[T]) = req.headers(name).toList
 }
 
 // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.10
