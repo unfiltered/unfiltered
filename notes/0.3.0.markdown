@@ -47,3 +47,7 @@ This would generate a `Fail` named "UA" with the error message
 "missing header" when a request comes in without this header. The
 failure would be processed and reported along with other validation
 failures.
+
+Breaking change: The method `QParams.pred` now takes its predicate
+function and error function in a single parameter list, to facilitate
+inference of its two type parameters.
