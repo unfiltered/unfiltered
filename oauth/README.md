@@ -11,9 +11,18 @@ From a high level
         val stores = new OAuthStores {
           // ...
         }
-        unfiltered.jetty.Http(8080).filter(OAuth(oauthStores)).filter(new YourApp).run
+        unfiltered.jetty.Http(8080)
+          .context("/oauth/") {
+           // oauth dance
+            _.filter(OAuth(stores))
+          }.context("/api") {
+           // auth filter
+            _.filter(Protected(stores))
+             .filter(new YourApi)
+          }.run
       }
     }
+
 ### OAuthStores
 
 `OAuthStores` defines an interface for querying and creating externally dependent objects within the follow types of stores
@@ -47,7 +56,7 @@ This trait defines the following methods a provider must implement
 
 #### UserHost: Host Application hooks and UI templates
 
-This trait defines the following methods  a provider must implement
+This trait defines the following methods a provider must implement
 
       /** @return Some(user) if user is logged in, None otherwise */
       def current[T](r: HttpRequest[T]): Option[UserLike]

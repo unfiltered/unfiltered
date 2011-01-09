@@ -19,6 +19,8 @@ object OAuth {
   /** out-of-bounds callback value */
   val Oob = "oob"
 
+  val XAuthorizedIdentity = "X-Authorized-Identity"
+
   /** Authorization: OAuth header extractor */
   object Header {
     val KeyVal = """(\w+)="([\w|:|\/|.|%|-]+)" """.trim.r
@@ -58,6 +60,50 @@ trait DefaultMessages extends Messages {
   def requiredMsg(param: String) = "%s is required" format param
 }
 
+trait Protected extends OAuthProvider with unfiltered.filter.Plan {
+  self: OAuthStores with Messages =>
+  import QParams._
+  import OAuth._
+
+  def intent = {
+    case Path(path) & Authorization(OAuth.Header(headers)) & Params(params) & request =>
+      val expected = for {
+        oauth_consumer_key <- lookup(ConsumerKey) is
+          nonempty(blankMsg(ConsumerKey)) is required(requiredMsg(ConsumerKey))
+        oauth_signature_method <- lookup(SignatureMethod) is
+          nonempty(blankMsg(SignatureMethod)) is required(requiredMsg(SignatureMethod))
+        timestamp <- lookup(Timestamp) is
+          nonempty(blankMsg(Timestamp)) is required(requiredMsg(Timestamp))
+        nonce <- lookup(Nonce) is
+          nonempty(blankMsg(Nonce)) is required(requiredMsg(Nonce))
+        token <- lookup(TokenKey) is
+          nonempty(blankMsg(TokenKey)) is required(requiredMsg(TokenKey))
+        signature <- lookup(Sig) is
+          nonempty(blankMsg(Sig)) is required(requiredMsg(Sig))
+        version <- lookup(Version) is
+          pred ( _ == "1.0", "invalid oauth version " + _ ) is
+          optional[String,String]
+        realm <- lookup("realm") is optional[String, String]
+      } yield {
+        protect(request.method, request.underlying.getRequestURL.toString, params ++ headers) match {
+          case Failure(_, _) =>
+            Unauthorized ~> WWWAuthenticate("OAuth realm=\"%s\"" format(realm match {
+              case Some(value) => value
+              case _ => request.underlying.getRequestURL.toString
+            }))
+          case Authorized(user) =>
+            request.underlying.setAttribute(XAuthorizedIdentity, user)
+            Pass
+        }
+      }
+
+      expected(params ++ headers) orFail { errors =>
+        BadRequest ~> ResponseString(errors.map { _.error } mkString(". "))
+      }
+
+  }
+}
+
 trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
   self: OAuthStores with Messages with OAuthPaths =>
   import QParams._
@@ -89,8 +135,8 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         }
       }
 
-      expected(headers ++ params) orFail { fails =>
-        BadRequest ~> ResponseString(fails.map { _.error } mkString(". "))
+      expected(headers ++ params) orFail { errors =>
+        BadRequest ~> ResponseString(errors.map { _.error } mkString(". "))
       }
 
     case Path(AuthorizationPath) & Params(params) & request =>
@@ -109,8 +155,8 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         }
       }
 
-      expected(params) orFail { fails =>
-        BadRequest ~> ResponseString(fails.map { _.error } mkString(". "))
+      expected(params) orFail { errors =>
+        BadRequest ~> ResponseString(errors.map { _.error } mkString(". "))
       }
 
     case request @ POST(Path(AccessTokenPath) & Authorization(OAuth.Header(headers)) & Params(params)) =>
@@ -135,11 +181,12 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
       } yield {
         accessToken(request.method, request.underlying.getRequestURL.toString, params ++ headers) match {
           case Failure(code, msg) => fail(code, msg)
-          case resp@AccessResponse(_, _) => resp ~> FormEncodedContent
+          case resp@AccessResponse(_, _) =>
+            resp ~> FormEncodedContent
         }
       }
 
-      expected(headers ++ params) orFail { fails =>
+      expected(params ++ headers) orFail { fails =>
         BadRequest ~> ResponseString(fails.map { _.error } mkString(". "))
       }
   }
@@ -157,8 +204,32 @@ case class OAuth(stores: OAuthStores) extends OAuthed
   val users = stores.users
 }
 
+case class Protection(stores: OAuthStores) extends Protected
+    with OAuthStores with DefaultMessages {
+  val nonces = stores.nonces
+  val tokens = stores.tokens
+  val consumers = stores.consumers
+  val users = stores.users
+}
+
 trait OAuthProvider { self: OAuthStores =>
   import OAuth._
+
+  def protect(method: String, url: String, p: Map[String, Seq[String]]): OAuthResponse =
+    if(nonceValid(p(ConsumerKey)(0), p(Timestamp)(0), p(Nonce)(0))) (for {
+      consumer <- consumers.get(p(ConsumerKey)(0))
+    } yield {
+      tokens.get(p(TokenKey)(0)) match {
+        case Some(AccessToken(tokenKey, tokenSecret, user, consumerKey)) =>
+          if(consumerKey == consumer.key) {
+            if(Signatures.verify(method, url, p, consumer.secret, tokenSecret)) {
+              Authorized(user)
+            } else challenge(400, "invalid signature")
+          } else challenge(400, "invalid token")
+        case _ => challenge(400, "invalid token")
+      }
+    }) getOrElse challenge(400, "invalid consumer")
+    else challenge(400, "invalid nonce")
 
   def requestToken(method: String, url: String, p: Map[String, Seq[String]]): OAuthResponse =
     if(nonceValid(p(ConsumerKey)(0), p(Timestamp)(0), p(Nonce)(0))) (for {
