@@ -51,3 +51,9 @@ failures.
 Breaking change: The method `QParams.pred` now takes its predicate
 function and error function in a single parameter list, to facilitate
 inference of its two type parameters.
+
+Scalate Interface
+----------------
+
+Client applications can now override the creation of a DefaultRenderContext
+to use a servlet-specific rendering context, if required.
