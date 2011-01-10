@@ -35,8 +35,10 @@ Parameter validation
 --------------------
 
 Values from outside the parameters map can easily participate in
-QParams validation using `QParams.external` as an alternative to
-`QParams.lookup`.
+QParams validation using [QParams.external][external] as an
+alternative to `QParams.lookup`.
+
+[external]: http://sourced.implicit.ly/net.databinder/unfiltered/0.3.0/request/params.scala.html#20390
 
 For example, to fail if a User-Agent header is not present:
 
@@ -48,12 +50,17 @@ This would generate a `Fail` named "UA" with the error message
 failure would be processed and reported along with other validation
 failures.
 
-Breaking change: The method `QParams.pred` now takes its predicate
+Breaking change: The method [QParams.pred][pred] now takes its predicate
 function and error function in a single parameter list, to facilitate
 inference of its two type parameters.
+
+[pred]: http://sourced.implicit.ly/net.databinder/unfiltered/0.3.0/request/params.scala.html#20412
 
 Scalate Interface
 ----------------
 
-Client applications can now override the creation of a DefaultRenderContext
-to use a servlet-specific rendering context, if required.
+Applications using the built-in [Scalate responder][scalate] can now
+override the creation of a DefaultRenderContext to use a
+servlet-specific rendering context, if required.
+
+[scalate]: http://sourced.implicit.ly/net.databinder/unfiltered-scalate/0.3.0/scalate.scala.html#18615
