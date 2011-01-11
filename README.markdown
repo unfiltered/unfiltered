@@ -26,7 +26,7 @@ Intent functions pattern match against incoming requests and return a function t
 
 Plans assign an Intent to particular request and response
 bindings. For example, the trait `unfiltered.filter.Plan` defines a
-`javax.servlet.Filter` that delegates to its`intent` method. The class `unfiltered.netty.Plan` defines a channel handler similarly. A future Plan trait might define a Servlet. Plan is a convention (and not currently a common interface) to apply an Intent to any request handling framework.
+`javax.servlet.Filter` that delegates to its`intent` method. The class `unfiltered.netty.cycle.Plan` defines a channel handler similarly. A future Plan trait might define a Servlet. Plan is a convention (and not currently a common interface) to apply an Intent to any request handling framework.
 
 ## Request Extractors
 
@@ -151,16 +151,16 @@ For standalone projects,  you'll want `unfiltered-jetty` as well as a
 binding module:
 
     import sbt._
-    class Project(info) extends DefaultProject(info) {
-      val uf = "net.databinder" %% "unfiltered-jetty" % "0.2.3"
-      val uf = "net.databinder" %% "unfiltered-filter" % "0.2.3"
+    class Project(info:ProjectInfo) extends DefaultProject(info) {
+      val ufj = "net.databinder" %% "unfiltered-jetty" % "0.3.0"
+      val uff = "net.databinder" %% "unfiltered-filter" % "0.3.0"
     }
     
 To specify individual modules, specify the module name in the dependency.
 
     import sbt._
-    class Project(info) extends DefaultProject(info) {
-      val ufx = "net.databinder" %% "unfiltered-{module}" % "0.2.3"
+    class Project(info:ProjectInfo) extends DefaultProject(info) {
+      val ufx = "net.databinder" %% "unfiltered-{module}" % "0.3.0"
     }
     
 See the [template](http://github.com/n8han/Unfiltered/tree/master/demo/) application for an example of a basic Unfiltered application.
