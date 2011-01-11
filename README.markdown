@@ -1,6 +1,6 @@
 # Unfiltered
 
-Unfiltered embraces the HTTP protocol, Scala, type-safety, and minimalism. It enables applications to handle HTTP requests as partially applied functions that take requests and return functions to respond to them. Typically, applications [pattern-match](http://en.wikipedia.org/wiki/Pattern_matching) requests against nested extractor objects. HTTP responses are defined with response [combinator functions](http://en.wikipedia.org/wiki/Combinatory_logic).
+Unfiltered embraces the HTTP protocol, Scala, type-safety, and minimalism. It enables applications to handle HTTP requests as partial functions that take requests and return functions to respond to them. Typically, applications [pattern-match](http://en.wikipedia.org/wiki/Pattern_matching) requests against nested extractor objects. HTTP responses are defined with response [combinator functions](http://en.wikipedia.org/wiki/Combinatory_logic).
 
 The request response cycle reduces to a pattern matching clause similar to message handling in the Scala [actors](http://www.scala-lang.org/node/242) library.
 
@@ -173,7 +173,7 @@ Join the [Unfiltered mailing list on Nabble](http://databinder.3617998.n2.nabble
 
 ### overly complex extractors 
     
-If you design your partially applied functions in such a way that they become overly complex you might run into the following exception
+If you design your partial functions in such a way that they become overly complex you might run into the following exception
     
     Exception in thread "main" java.lang.Error: ch.epfl.lamp.fjbg.JCode$OffsetTooBigException: offset to
     o big to fit in 16 bits
