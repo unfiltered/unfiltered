@@ -49,7 +49,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
 
   lazy val netty_server = project("netty-server", "Unfiltered Netty Server",
     new UnfilteredModule(_) {
-      val netty = "org.jboss.netty" % "netty" % "3.2.2.Final" withSources()
+      val netty = "org.jboss.netty" % "netty" % "3.2.3.Final" withSources()
     }, util
   )
   lazy val netty = project("netty", "Unfiltered Netty", new UnfilteredModule(_) with IntegrationTesting,
