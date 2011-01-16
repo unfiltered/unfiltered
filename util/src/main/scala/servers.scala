@@ -4,6 +4,7 @@ trait RunnableServer {
   def start(): this.type
   def stop(): this.type
   def destroy(): this.type
+  val port:  Int
   /** Calls run with no afterStart or afterStop functions */
   def run() {
     run { _ => () }
@@ -21,10 +22,10 @@ trait RunnableServer {
    */
   def run(afterStart: this.type => Unit, afterStop: this.type => Unit) {
     Thread.currentThread.getName match {
-      case "main" => 
+      case "main" =>
         Runtime.getRuntime.addShutdownHook(new Thread {
-          override def run() { 
-            RunnableServer.this.stop() 
+          override def run() {
+            RunnableServer.this.stop()
             afterStop(RunnableServer.this)
           }
         })
@@ -32,10 +33,10 @@ trait RunnableServer {
         afterStart(RunnableServer.this)
         val lock = new AnyRef
         lock.synchronized { lock.wait() }
-      case _ => 
+      case _ =>
         start()
         afterStart(RunnableServer.this)
-        println("Embedded server running. Press any key to stop.")
+        println("Embedded server running on port %d. Press any key to stop." format port)
         def doWait() {
           try { Thread.sleep(1000) } catch { case _: InterruptedException => () }
           if(System.in.available() <= 0)
