@@ -141,8 +141,8 @@ case class WebSocketHandler(path: String, intent: WebSocketHandler.Intent,
       case _ => pass(ctx, event) /* some other http method */
     }
 
-  /** By default, when a websocket handler `passes` to writes an Http Forbidden response
-   *  to the channel. To override that behavior. call this method with a function to handle
+  /** By default, when a websocket handler `passes` it writes an Http Forbidden response
+   *  to the channel. To override that behavior, call this method with a function to handle
    *  the MessageEvent with custom behavior */
   def onPass(handler: (ChannelHandlerContext, MessageEvent) => Unit) = WebSocketHandler(path, intent, handler)
 
