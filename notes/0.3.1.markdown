@@ -2,4 +2,4 @@ netty-server module
 -------------------
 
 * Fixed [issue](https://github.com/n8han/Unfiltered/issues/issue/5) with chaining multiple ChannelHandlers
-
+* Updated Netty dependency to 3.2.3
