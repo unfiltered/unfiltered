@@ -6,7 +6,7 @@ import unfiltered.request.{HttpRequest,POST,RequestContentType,Charset}
 import java.net.URLDecoder
 import org.jboss.netty.handler.codec.http._
 import java.io._
-import org.jboss.netty.buffer.{ChannelBuffers, ChannelBufferOutputStream, 
+import org.jboss.netty.buffer.{ChannelBuffers, ChannelBufferOutputStream,
   ChannelBufferInputStream}
 import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.http.HttpVersion._
@@ -57,7 +57,7 @@ private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(m
   def parameterValues(param: String) = params(param)
 
   def headers(name: String) = new JIteratorIterator(req.getHeaders(name).iterator)
-  
+
   lazy val cookies = {
     import org.jboss.netty.handler.codec.http.{Cookie => NCookie, CookieDecoder}
     import unfiltered.Cookie
@@ -65,8 +65,8 @@ private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(m
     if (cookieString != null) {
       val cookieDecoder = new CookieDecoder
       val decCookies = Set(cookieDecoder.decode(cookieString).toArray(new Array[NCookie](0)): _*)
-      (List[Cookie]() /: decCookies)((l, c) => 
-        Cookie(c.getName, c.getValue, NonNull(c.getDomain), NonNull(c.getPath), NonNull(c.getMaxAge), NonNull(c.isSecure)) :: l)  
+      (List[Cookie]() /: decCookies)((l, c) =>
+        Cookie(c.getName, c.getValue, NonNull(c.getDomain), NonNull(c.getPath), NonNull(c.getMaxAge), NonNull(c.isSecure)) :: l)
     } else {
       Nil
     }
@@ -79,7 +79,7 @@ private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(m
 }
 /** Extension of basic request binding to expose Netty-specific attributes */
 case class ReceivedMessage(
-  request: DefaultHttpRequest, 
+  request: NHttpRequest,
   context: ChannelHandlerContext,
   event: MessageEvent) {
   import org.jboss.netty.handler.codec.http.{HttpResponse => NHttpResponse}
@@ -112,7 +112,7 @@ case class ReceivedMessage(
     }
     val future = event.getChannel.write(
       defaultResponse(
-        unfiltered.response.Server("Scala Netty Unfiltered Server") ~> rf ~> closer 
+        unfiltered.response.Server("Scala Netty Unfiltered Server") ~> rf ~> closer
       )
     )
     if (!keepAlive)
@@ -120,7 +120,7 @@ case class ReceivedMessage(
   }
 }
 
-private [netty] class ResponseBinding[U <: NHttpResponse](res: U) 
+private [netty] class ResponseBinding[U <: NHttpResponse](res: U)
     extends HttpResponse(res) {
   private lazy val outputStream = new ByteArrayOutputStream {
     override def close = {
@@ -140,7 +140,7 @@ private [netty] class ResponseBinding[U <: NHttpResponse](res: U)
 
   def getWriter() = writer
   def getOutputStream() = outputStream
-  
+
   def cookies(resCookies: Seq[Cookie]) = {
     import org.jboss.netty.handler.codec.http.{DefaultCookie, CookieEncoder}
     if(!resCookies.isEmpty) {
