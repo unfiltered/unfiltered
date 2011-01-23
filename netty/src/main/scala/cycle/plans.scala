@@ -13,7 +13,7 @@ object Plan {
   type Intent = unfiltered.Cycle.Intent[ReceivedMessage,NHttpResponse]
 }
 /** A Netty Plan for request cycle handling. */
-abstract class Plan extends SimpleChannelUpstreamHandler {
+trait Plan extends SimpleChannelUpstreamHandler {
   def intent: Plan.Intent
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     val request = e.getMessage().asInstanceOf[DefaultHttpRequest]
