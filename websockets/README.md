@@ -61,7 +61,7 @@ An example of a subscription based service where clients receive msgs as they ar
 To mix in websockets in with a Netty HTTP server, use the full `Plan.Intent` function to build a `Plan` with `Planify`
 
     netty.Http(8080)
-       .handler(netty.websockets.Plan({
+       .handler(netty.websockets.Planify({
           case Path("/foo") => {
              case Open(socket) =>
                socket.send("push!")
