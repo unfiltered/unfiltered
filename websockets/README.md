@@ -24,7 +24,7 @@ Under the covers a this generates a Netty handler that is driven by the followin
 
 The above example compiles into a handler of the format
 
-     netty.websockets.Plan({
+     netty.websockets.Planify({
        case GET(Path("/")) => {
          case Open(socket) => ...
          case Message(s, Text(str) => ..
