@@ -56,7 +56,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     netty_server, library)
 
   /** Marker for Scala 2.8-only projects that shouldn't be cross compiled or published */
-  trait Only28
+  trait Only28AndUp
 
   /** specs  helper */
   lazy val spec = project("spec", "Unfiltered Spec", new DefaultProject(_) with sxr.Publish {
@@ -74,8 +74,9 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   def servletApiDependency = "javax.servlet" % "servlet-api" % "2.3" % "provided"
 
   lazy val scalate = project("scalate", "Unfiltered Scalate",
-      new UnfilteredModule(_) with Only28 with IntegrationTesting {
-    val scalateLibs = "org.fusesource.scalate" % "scalate-core" % "1.3.1"
+      new UnfilteredModule(_) with Only28AndUp with IntegrationTesting {
+    val scalateLibs = "org.fusesource.scalate" % "scalate-core" % "1.3.2"
+    val scalateUtils = "org.fusesource.scalate" % "scalate-util" % "1.3.2" % "test"
     val scalaCompiler = "org.scala-lang" % "scala-compiler" % buildScalaVersion % "test"
     val mockito = "org.mockito" % "mockito-core" % "1.8.5" % "test"
     override def repositories = Set(ScalaToolsSnapshots)
@@ -110,7 +111,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
 
   /** Exclude 2.8 projects from cross-buiding actions run from parent */
   override def dependencies = super.dependencies.filter {
-    case _: Only28 => buildScalaVersion startsWith "2.8.0"
+    case _: Only28AndUp => buildScalaVersion startsWith "2.8"
     case _ => true
   }
 

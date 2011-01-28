@@ -8,7 +8,7 @@ import java.io.{StringWriter, PrintWriter, File}
 
 // scalate
 import org.fusesource.scalate.{TemplateEngine, Binding}
-import org.fusesource.scalate.support.FileResourceLoader
+import org.fusesource.scalate.util.FileResourceLoader
 
 // Unfiltered
 import unfiltered.request.HttpRequest
