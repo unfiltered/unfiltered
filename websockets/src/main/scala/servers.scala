@@ -1,29 +1,32 @@
-package unfiltered.websockets
+package unfiltered.netty.websockets
 
 import unfiltered.netty.{Server => NServer, HouseKeepingChannelHandler}
 
 object WebSocketServer {
-  def apply(path: String, port: Int)(intent: PartialFunction[SocketCallback, Unit]) =
-     new WebSocketServer(port, path, intent).run
-  def apply(host: String, path: String, port: Int)(intent: PartialFunction[SocketCallback, Unit]) =
-      new WebSocketServer(port, host, path, intent).run
+  import unfiltered.request.{Path=>UFPath}
+
+  def apply(Path: String, port: Int)(intent: Plan.SocketIntent) =
+    new WebSocketServer(port, ({ case UFPath(Path) => intent}: Plan.Intent))
+
+  def apply(host: String, Path: String,  port: Int)(intent: Plan.SocketIntent) =
+    new WebSocketServer(host, port, ({ case UFPath(Path) => intent }: Plan.Intent))
+
 }
 
-case class WebSocketServer(port: Int, host: String, path: String,
-                           intent: PartialFunction[SocketCallback, Unit])
+class WebSocketServer(val host: String, val port: Int, intent: Plan.Intent)
     extends NServer with unfiltered.util.RunnableServer {
-  import org.jboss.{netty => netty}
-  import netty.channel.{ChannelPipeline, ChannelPipelineFactory, ChannelStateEvent}
-  import netty.handler.codec.http.{HttpChunkAggregator, HttpRequestDecoder, HttpResponseEncoder}
-  import netty.channel.Channels._
+  import org.jboss.{netty => jnetty}
+  import jnetty.channel.{ChannelPipeline, ChannelPipelineFactory, ChannelStateEvent}
+  import jnetty.handler.codec.http.{HttpChunkAggregator, HttpRequestDecoder, HttpResponseEncoder}
+  import jnetty.channel.Channels._
 
   def stop() = {
     closeConnections()
     destroy()
   }
 
-  def this(port: Int, path: String, intent: PartialFunction[SocketCallback, Unit]) =
-    this(port, "0.0.0.0", path, intent)
+  def this(port: Int, intent: Plan.Intent) =
+    this("0.0.0.0", port, intent)
 
   lazy val pipelineFactory = new ChannelPipelineFactory {
     def getPipeline = (pipeline /: pipings) ((p, e) => { p.addLast(e._1, e._2); p })
@@ -31,7 +34,7 @@ case class WebSocketServer(port: Int, host: String, path: String,
       "decoder" -> new HttpRequestDecoder,
       "aggregator" -> new HttpChunkAggregator(65536),
       "encoder" -> new HttpResponseEncoder,
-      "handler" -> WebSocketHandler(path, intent),
+      "handler" -> Planify(intent),
       "housekeeping" -> new HouseKeepingChannelHandler(channels)
     )
   }
