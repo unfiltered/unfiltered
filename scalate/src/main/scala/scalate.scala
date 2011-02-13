@@ -41,7 +41,7 @@ case class Scalate[A, B](request: HttpRequest[A], template: String, attributes:(
       val context = contextBuilder(request, res, engine)
       for(attr <- additionalAttributes) context.attributes(attr._1) = attr._2
       for(attr <- attributes) context.attributes(attr._1) = attr._2
-      scalateTemplate.render(context)
+      engine.layout(scalateTemplate, context) 
     }
     finally { writer.close() }
   }
