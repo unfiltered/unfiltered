@@ -1,4 +1,10 @@
-websockets module
+Binding modules
+---------------
+
+* Netty dependency updated to 3.2.4
+* Jetty dependency updated to 7.2.2.v20101205
+
+WebSockets module
 -----------------
 
 * Refactor into a more Plan-friendly design

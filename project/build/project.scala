@@ -37,7 +37,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   }, filter_p)
   /** Base module for Unfiltered library and servers */
   lazy val util = project("util", "Unfiltered Utils", new UnfilteredModule(_))
-  val jetty_version = "7.1.6.v20100715"
+  val jetty_version = "7.2.2.v20101205"
   /** embedded server*/
   lazy val jetty = project("jetty", "Unfiltered Jetty", new UnfilteredModule(_) {
     val jetty7 = jettyDependency
@@ -49,7 +49,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
 
   lazy val netty_server = project("netty-server", "Unfiltered Netty Server",
     new UnfilteredModule(_) {
-      val netty = "org.jboss.netty" % "netty" % "3.2.3.Final" withSources()
+      val netty = "org.jboss.netty" % "netty" % "3.2.4.Final" withSources()
     }, util
   )
   lazy val netty = project("netty", "Unfiltered Netty", new UnfilteredModule(_) with IntegrationTesting,
