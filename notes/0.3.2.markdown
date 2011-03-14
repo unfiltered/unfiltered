@@ -3,7 +3,9 @@ WebSockets module
 
 * Refactor into a more Plan-friendly design
 
-The HTTP side of websocket handlers now uses Netty HTTP [RequestBindings](http://sourced.implicit.ly/net.databinder/unfiltered-netty/0.3.0/bindings.scala.html)
+The HTTP side of websocket handlers now uses Netty HTTP [RequestBindings][rb]
+
+[rb]: http://sourced.implicit.ly/net.databinder/unfiltered-netty/0.3.2/bindings.scala.html#9177
 
     PartialFunction[netty.RequestBinding => PartialFunction[netty.websocket.SocketCallback => Unit]]
 
