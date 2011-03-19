@@ -15,18 +15,24 @@ object JsonBody {
 
 /** jsonp extractor(s). Useful for extracting a callback out of a request */
 object Jsonp {
+  import net.liftweb.json.JsonAST._
+  import net.liftweb.json.JsonDSL._
+  
   object Callback extends Params.Extract("callback", Params.first)
   
   trait Wrapper {
     def wrap(body: String): String
+    def respond(json: => JValue): unfiltered.response.ChainResponse[Any]
   }
   
   object EmptyWrapper extends Wrapper {
     def wrap(body: String) = body
+    def respond(json: => JValue) = unfiltered.response.Json(json)
   }
   
   class CallbackWrapper(cb: String) extends Wrapper {
     def wrap(body: String) = "%s(%s)" format(cb, body)
+    def respond(json: => JValue) = unfiltered.response.Json(json, cb)  
   }
   
   /** @return if request accepts json, (callbackwrapper, req) tuple if a callback param
