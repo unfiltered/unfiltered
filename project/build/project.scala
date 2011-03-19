@@ -90,7 +90,13 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   lazy val oauth = project("oauth", "Unfiltered OAuth",
     new UnfilteredModule(_) with IntegrationTesting {
     lazy val dispatchOAuth = dispatchOAuthDependency % "test"
-  },jetty, filter_p)
+  }, jetty, filter_p)
+
+  lazy val oauth2 = project("oauth2", "Unfiltered OAuth2",
+    new UnfilteredModule(_) with IntegrationTesting {
+    lazy val dispatchOAuth = dispatchOAuthDependency % "test"
+  }, jetty, filter_p)
+
 
   def specsDependency =
     if (buildScalaVersion startsWith "2.7.")
