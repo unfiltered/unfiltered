@@ -29,16 +29,25 @@ object Accepts {
     val contentType = "application/json"
     val ext = "json"
   }
-
+  
+  /** Lenient matcher for application/javascript and text/javascript */
   object JavaScript extends Accepting {
     val contentType = "text/javascript"
     val ext = "js"
+    
+    override def unapply[T](r: HttpRequest[T]) =
+      AppJavaScript.unapply(r) orElse {super.unapply(r)}
   }
-
-  /** Lenient matcher for application/json and text/javascript */
+  
+  object AppJavaScript extends Accepting {
+    val contentType = "application/javascript"
+    val ext = "js"
+  }
+  
+  /** Lenient matcher for application/json, application/javascript, and text/javascript */
   object Jsonp {
     def unapply[T](r: HttpRequest[T]) = 
-      Json.unapply(r).orElse(JavaScript.unapply(r))
+      Json.unapply(r) orElse {JavaScript.unapply(r)}
   }
 
   object Xml extends Accepting {
