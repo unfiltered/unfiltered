@@ -1,0 +1,17 @@
+library module
+--------------
+* [eed3si9n][eed3si9n] `Accepts.Javascript` now accepts `text/javascript` or `application/javascript`
+* [eed3si9n][eed3si9n] `Accepts.Jsonp` now accepts `application/json`, `text/javascript`, or `application/javascript`
+
+json-p module
+-------------
+* [eed3si9n][eed3si9n] The jsonp wrapper object now defines a `respond` method that returns a `ChainResponse` that handles a
+by-name parameter which produces a lift-json `JValue`.
+
+    case GET(UFPath("/jsonp/lift-json/optional") & Jsonp.Optional(callback)) => callback respond {
+      import net.liftweb.json.JsonAST._
+      import net.liftweb.json.JsonDSL._
+      "answer" -> Seq(42)
+    }
+
+[eed3si9n]: https://github.com/eed3si9n/Unfiltered/commit/08916e9fec9e6479f0b07c76551c718079b5dd4f
