@@ -19,12 +19,17 @@ trait AcceptsSpec extends unfiltered.spec.Hosted {
 
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = {
     case GET(UFPath(Seg(ext :: Nil)) & Accepts.Json(_)) => ResponseString("json")
+    case GET(UFPath(Seg(ext :: Nil)) & Accepts.Jsonp(_)) => ResponseString("javascript")
     case GET(UFPath(Seg(ext :: Nil)) & Accepts.Xml(_)) => ResponseString("xml")
     case GET(UFPath(Seg(ext :: Nil)) & Accepts.Csv(_)) => ResponseString("csv")
     case GET(UFPath(Seg(ext :: Nil)) & Accepts.Html(_)) => ResponseString("html")
   }
   
   "Accepts should" should {
+    "match an application/javascript accepts request as jsonp" in {
+      val resp = Http(host / "test" <:< Map("Accept" -> "application/javascript")  as_str)
+      resp must_=="javascript"
+    }
     "match an application/json accepts request as json" in {
       val resp = Http(host / "test" <:< Map("Accept" -> "application/json")  as_str)
       resp must_=="json"

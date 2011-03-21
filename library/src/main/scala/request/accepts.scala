@@ -2,7 +2,7 @@ package unfiltered.request
 
 /** Accepts request header extractor */
 object Accepts {
-  
+
   trait Accepting {
     val contentType: String
 
@@ -30,27 +30,36 @@ object Accepts {
     val ext = "json"
   }
 
+  /** Lenient matcher for application/javascript and text/javascript */
   object JavaScript extends Accepting {
     val contentType = "text/javascript"
     val ext = "js"
+
+    override def unapply[T](r: HttpRequest[T]) =
+      AppJavaScript.unapply(r) orElse {super.unapply(r)}
   }
 
-  /** Lenient matcher for application/json and text/javascript */
+  object AppJavaScript extends Accepting {
+    val contentType = "application/javascript"
+    val ext = "js"
+  }
+
+  /** Lenient matcher for application/json, application/javascript, and text/javascript */
   object Jsonp {
-    def unapply[T](r: HttpRequest[T]) = 
-      Json.unapply(r).orElse(JavaScript.unapply(r))
+    def unapply[T](r: HttpRequest[T]) =
+      Json.unapply(r) orElse {JavaScript.unapply(r)}
   }
 
   object Xml extends Accepting {
     val contentType = "text/xml"
     val ext = "xml"
   }
-  
+
   object Html extends Accepting {
     val contentType = "text/html"
     val ext = "html"
   }
-  
+
   object Csv extends Accepting {
     val contentType = "text/csv"
     val ext = "csv"
