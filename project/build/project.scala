@@ -63,6 +63,13 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     lazy val specs = specsDependency
     lazy val dispatch = dispatchDependency
   }, jetty, netty)
+
+  /** scala test  helper */
+  lazy val scalatest = project("scalatest", "Unfiltered Scalatest", new DefaultProject(_) with sxr.Publish {
+    lazy val specs = scalatestDependency
+    lazy val dispatch = dispatchDependency
+  }, jetty, netty)
+
   /** json extractors */
   lazy val json = project("json", "Unfiltered Json",
       new UnfilteredModule(_) with IntegrationTesting {
@@ -97,6 +104,9 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
       "org.scala-tools.testing" % "specs" % "1.6.2.2"
     else
       "org.scala-tools.testing" % "specs_2.8.0" % "1.6.5"
+
+  def scalatestDependency =
+    "org.scalatest" % "scalatest" % "1.3"
 
   def dispatchDependency = if(buildScalaVersion startsWith "2.8.1")
       "net.databinder" % "dispatch-mime_2.8.0" % "0.7.8"
