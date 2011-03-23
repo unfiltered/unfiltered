@@ -1,7 +1,6 @@
 package unfiltered.scalatest.jetty
 
 import _root_.unfiltered.scalatest.Hosted
-import org.scalatest.fixture.FixtureFeatureSpec
 import org.scalatest.FeatureSpec
 
 trait Served extends FeatureSpec with Hosted {
