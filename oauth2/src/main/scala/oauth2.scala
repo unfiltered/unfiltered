@@ -41,6 +41,7 @@ object OAuth2 {
 
   /** in an oauthorized request, this represents resource owner's identity */
   val XAuthorizedIdentity = "X-Authorized-Identity"
+
   /** in an oauthorized request, this represents the scopes of data acess available */
   val XAuthorizedScopes = "X-Authorized-Scopes"
 }
@@ -191,44 +192,7 @@ trait OAuthed extends AuthorizationServerProvider
   }
 }
 
-trait Protected extends ResourceServerProvider with unfiltered.filter.Plan with Formatting {
-  import OAuth2._
-  import QParams._
-
-  def intent = {
-
-    case req @ Params(params) =>
-      val expected = for {
-        token <- lookup(AccessTokenKey) is required("%s is required" format AccessTokenKey)
-        scope <- lookup(Scope) is optional[String, String]
-      } yield {
-        rsrcSvr(req, token.get, scope.get) match {
-          case AuthorizedPass(owner, scopes) =>
-            req.underlying.setAttribute(XAuthorizedIdentity, owner)
-            req.underlying.setAttribute(XAuthorizedScopes, scopes.getOrElse(""))
-            Pass
-          case ErrorResponse(error, desc, euri, state) =>
-            ResponseString(
-              jsbody(
-                (Error -> error) :: (ErrorDescription -> desc) :: Nil ++
-                euri.map (ErrorURI -> (_: String)) ++
-                state.map (State -> _)
-              )
-            ) ~> BadRequest ~> CacheControl("no-store") ~> JsonContent
-        }
-      }
-
-      expected(params) orFail { errs =>
-        ResponseString(
-          jsbody(
-            (Error -> InvalidRequest) ::
-            (ErrorDescription -> errs.map { _.error }.mkString(", ")) :: Nil
-          )
-        ) ~> BadRequest ~> CacheControl("no-store") ~> JsonContent
-      }
-  }
-}
-
 trait ResourceOwner {
   def id: String
 }
+
