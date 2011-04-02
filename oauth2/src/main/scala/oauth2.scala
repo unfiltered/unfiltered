@@ -175,41 +175,7 @@ trait OAuthed extends AuthorizationServerProvider with unfiltered.filter.Plan wi
   }
 }
 
-
-trait Protected extends ResourceServerProvider with unfiltered.filter.Plan with Helpers {
-  import OAuth2._
-  import QParams._
-
-  def intent = {
-    case req @ Params(params) =>
-      val expected = for {
-        token <- lookup(AccessTokenKey) is required("%s is required" format AccessTokenKey)
-        scope <- lookup(Scope) is optional[String, String]
-      } yield {
-        rsrcSvr(req, token.get, scope.get) match {
-          case AuthorizedPass(owner, scopes) =>
-            req.underlying.setAttribute(XAuthorizedIdentity, owner)
-            req.underlying.setAttribute(XAuthorizedScopes, scopes.getOrElse(""))
-            Pass
-          case ErrorResponse(error, desc, euri, state) =>
-            ResponseString(
-              jsbody(
-                (Error -> error) :: (ErrorDescription -> desc) :: Nil ++
-                euri.map (ErrorURI -> (_: String)) ++
-                state.map (State -> _)
-              )
-            ) ~> BadRequest ~> CacheControl("no-store") ~> JsonContent
-        }
-      }
-      expected(params) orFail { errs =>
-        ResponseString(errs.map { _.error } mkString(". "))
-      }
-  }
-}
-
 trait AuthorizationServerProvider { val authSvr: AuthorizationServer }
-
-trait ResourceServerProvider { val rsrcSvr: ResourceServer }
 
 /** Request for obtaining an authorization grant */
 sealed trait AuthorizationRequest
@@ -362,18 +328,4 @@ trait AuthorizationServer { self: ClientStore with TokenStore with Host =>
         case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, None, scope)
       }
   }
-}
-
-trait ResourceServer { self: TokenStore =>
-  import OAuth2._
-  def validScope[T](r: Req[T], scopes: Option[String]): Boolean = true
-  def apply[T](r: Req[T], token: String, scopes: Option[String]): OAuthResponse =
-    accessToken(token) match {
-      case Some(at) =>
-        if(!validScope(r, scopes)) ErrorResponse(InvalidScope, "invalid scope", None, None)
-        else {
-          AuthorizedPass(at.owner, at.scopes)
-        }
-      case _ => ErrorResponse(InvalidRequest, "invalid token", None, None)
-    }
 }
