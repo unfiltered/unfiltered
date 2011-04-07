@@ -169,6 +169,9 @@ See the [template](http://github.com/n8han/Unfiltered/tree/master/demo/) applica
 
 Join the [Unfiltered mailing list on Nabble](http://databinder.3617998.n2.nabble.com/Unfiltered-f5560764.html).
 
+## Examples
+There's an in-progress example app using Unfiltered made by [klaeufer](https://github.com/klaeufer), [unfiltered-example-bookmarks](https://github.com/webservices-cs-luc-edu/unfiltered-example-bookmarks). Also, most [giter8](https://github.com/n8han/giter8) templates for Unfiltered contain a bit of example code.
+
 ## Troubleshooting
 
 ### overly complex extractors 
