@@ -1,7 +1,6 @@
 package unfiltered.request
 
 import org.specs._
-import unfiltered.response.Json._
 
 object JsonpSpec extends Specification  with unfiltered.spec.jetty.Served {
   import unfiltered.response._
@@ -21,8 +20,7 @@ object JsonpSpec extends Specification  with unfiltered.spec.jetty.Served {
     case GET(UFPath("/jsonp/lift-json/optional") & Jsonp.Optional(callback)) => callback respond {
       import net.liftweb.json.JsonAST._
       import net.liftweb.json.JsonDSL._
-      val obj: JObject = ("answer" -> Seq(42))
-      obj
+      "answer" -> Seq(42)
     }
 
     case _ => ResponseString("bad req")

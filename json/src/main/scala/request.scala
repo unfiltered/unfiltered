@@ -19,20 +19,20 @@ object Jsonp {
   import net.liftweb.json.JsonDSL._
 
   object Callback extends Params.Extract("callback", Params.first)
-  import unfiltered.response.Json._
+
   trait Wrapper {
     def wrap(body: String): String
-    def respond[J <: JValue](json: => J)(implicit ser: JSerializable[J]): unfiltered.response.ChainResponse[Any]
+    def respond(json: => JValue): unfiltered.response.ChainResponse[Any]
   }
-  
+
   object EmptyWrapper extends Wrapper {
     def wrap(body: String) = body
-    def respond[J <: JValue](json: => J)(implicit ser: JSerializable[J]) = unfiltered.response.Json(json)
+    def respond(json: => JValue) = unfiltered.response.Json(json)
   }
 
   class CallbackWrapper(cb: String) extends Wrapper {
     def wrap(body: String) = "%s(%s)" format(cb, body)
-    def respond[J <: JValue](json: => J)(implicit ser: JSerializable[J]) = unfiltered.response.Json(json, cb)
+    def respond(json: => JValue) = unfiltered.response.Json(json, cb)
   }
 
   /** @return if request accepts json, (callbackwrapper, req) tuple if a callback param

@@ -1,7 +1,6 @@
 package unfiltered.response
 
 import org.specs._
-import unfiltered.response.Json._
 
 object JsonSpec extends Specification  with unfiltered.spec.jetty.Served {
   import unfiltered.response._
