@@ -18,7 +18,7 @@ trait Plan extends SimpleChannelUpstreamHandler {
     if (intent.isDefinedAt(messageBinding)) {
       intent(messageBinding)
     } else {
-      messageBinding.underlying.respond(NotFound)
+      ctx.sendUpstream(e)
     }
   }
 }

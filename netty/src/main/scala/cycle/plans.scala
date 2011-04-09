@@ -18,11 +18,11 @@ trait Plan extends SimpleChannelUpstreamHandler {
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     val request = e.getMessage().asInstanceOf[DefaultHttpRequest]
     val requestBinding = new RequestBinding(ReceivedMessage(request, ctx, e))
-
+    
     if (intent.isDefinedAt(requestBinding)) {
       requestBinding.underlying.respond(intent(requestBinding))
     } else {
-      requestBinding.underlying.respond(NotFound)
+      ctx.sendUpstream(e)
     }
   }
 }
