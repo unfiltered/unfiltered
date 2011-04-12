@@ -14,4 +14,8 @@ by-name parameter which produces a lift-json `JValue`.
       "answer" -> Seq(42)
     }
 
+netty module
+------------
+* [gh-15](https://github.com/n8han/Unfiltered/issues/15) Fixed issue with undecoded parameter keys
+
 [eed3si9n]: https://github.com/eed3si9n/
