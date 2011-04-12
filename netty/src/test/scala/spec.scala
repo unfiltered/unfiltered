@@ -70,10 +70,11 @@ class ResponseSpec extends Specification {
       URLParser.urldecode(url) must be empty
     }
     "return correctly decoded parameters when given" in {
-      val url = "param1=value%201&param2=value%202&param2=value%202%20again"
+      val url = "param1=value%201&param2=value%202&param2=value%202%20again&param%3A3=value%203"
       val m = URLParser.urldecode(url)
       m("param1") must_== List("value 1")
       m("param2") must_== List("value 2", "value 2 again")
+      m("param:3") must_== List("value 3")
     }
   }
 
