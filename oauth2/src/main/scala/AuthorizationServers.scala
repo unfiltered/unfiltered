@@ -9,24 +9,24 @@ object AuthorizationServer {
 
 trait AuthorizationServer {
   self: ClientStore with TokenStore with Host =>
-  import OAuth2._
+  import OAuthorization._
   import AuthorizationServer._
 
   def apply(r: AuthorizationRequest): AuthorizationResponse = r match {
 
-    case AuthorizationCodeRequest(req, rt, cid, ruri, scope, state) =>
-      client(cid, None) match {
-        case Some(client) =>
-          if(client.redirectURI != ruri) HostResponse(
-            invalidRedirectUri(ruri, client)
+    case AuthorizationCodeRequest(req, responseType, clientId, redirectUri, scope, state) =>
+      client(clientId, None) match {
+        case Some(c) =>
+          if(c.redirectUri != redirectUri) HostResponse(
+            invalidRedirectUri(redirectUri, c)
           )
           else {
-            currentUser match {
+            resourceOwner match {
               case Some(owner) =>
-                 if(denied(req)) HostResponse(deniedConfirmation(client))
+                 if(denied(req)) HostResponse(deniedConfirmation(c))
                  else if(accepted(req)) {
-                    val c = generateCodeToken(owner, client, ruri)
-                    AuthorizationCodeResponse(c.code, state)
+                    val token = generateCodeToken(owner, c, scope, redirectUri)
+                    AuthorizationCodeResponse(token, state)
                  }
                  else error("need to approve or deny request")
               case _ => HostResponse(login("?"))
@@ -36,20 +36,20 @@ trait AuthorizationServer {
         case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, None, state)
       }
 
-    case ImplicitAuthorizationRequest(req, rt, cid, ruri, scope, state) =>
-      client(cid, None) match {
-        case Some(client) =>
-          if(client.redirectURI != ruri) HostResponse(
-            invalidRedirectUri(ruri, client)
+    case ImplicitAuthorizationRequest(req, responseType, clientId, redirectUri, scope, state) =>
+      client(clientId, None) match {
+        case Some(c) =>
+          if(c.redirectUri != redirectUri) HostResponse(
+            invalidRedirectUri(redirectUri, c)
           )
           else {
-            currentUser match {
+            resourceOwner match {
               case Some(owner) =>
-                if(denied(req)) HostResponse(deniedConfirmation(client))
+                if(denied(req)) HostResponse(deniedConfirmation(c))
                 else if(accepted(req)) {
-                  val at = generateImplicitAccessToken(owner, client, ruri)
+                  val t = generateImplicitAccessToken(owner, c, scope, redirectUri)
                   ImplicitAccessTokenResponse(
-                    at.code, "access", at.expiresIn, scope, state
+                    t.value, t.tokenType, t.expiresIn, scope, state
                   )
                 }
                 else error("need to approve or deny request")
@@ -62,23 +62,23 @@ trait AuthorizationServer {
 
   def apply(r: AccessRequest): AccessResponse = r match {
 
-    case AccessTokenRequest(gt, code, ruri, cid, csec) =>
-      client(cid, Some(csec)) match {
-        case Some(client) =>
-          if(client.redirectURI != ruri) HostResponse(
-            invalidRedirectUri(ruri, client)
+    case AccessTokenRequest(grantType, code, redirectUri, clientId, clientSecret) =>
+      client(clientId, Some(clientSecret)) match {
+        case Some(c) =>
+          if(c.redirectUri != redirectUri) HostResponse(
+            invalidRedirectUri(redirectUri, c)
           )
           else  {
             token(code) match {
               case Some(token) =>
-                if(token.clientId != client.id || token.redirectURI != ruri)
+                if(token.clientId != c.id || token.redirectUri != redirectUri)
                   ErrorResponse(
                     UnauthorizedClient, "client not authorized", None, None
                   )
                 else {
-                  val at = generateAccessToken(token)
+                  val t = generateAccessToken(token)
                   AccessTokenResponse(
-                    at.code, "access", at.expiresIn, at.refresh, None, None
+                    t.value, t.tokenType, t.expiresIn, t.refresh, None, None
                   )
                 }
               case _ => ErrorResponse(
@@ -88,11 +88,26 @@ trait AuthorizationServer {
           }
         case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, None, None)
       }
-
-    case ClientCredsAccessTokenRequest(gt, cid,  sec, scope) =>
-      client(cid, Some(sec)) match {
-        case Some(client) =>
-          clientToken(client.id) match {
+    case RefreshTokenRequest(grantType, refreshToken, clientId, clientSecret, scope) =>
+        client(clientId, Some(clientSecret)) match {
+          case Some(c) =>
+             clientToken(c.id) match {
+               case Some(t) =>
+                 if(t.refresh == refreshToken) {
+                   val r = refresh(t)
+                   AccessTokenResponse(
+                     t.value, t.tokenType, t.expiresIn, t.refresh, None, scope
+                   )
+                 }
+                 else ErrorResponse(UnauthorizedClient, "...", None, scope)
+                 case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, None, scope)
+             }
+          case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, None, scope)
+        }
+    case ClientCredsAccessTokenRequest(grantType, clientId, clientSecret, scope) =>
+      client(clientId, Some(clientSecret)) match {
+        case Some(c) =>
+          clientToken(c.id) match {
             case Some(token) => ErrorResponse(
               InvalidRequest, "TODO", None, scope
             )

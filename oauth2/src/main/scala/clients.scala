@@ -3,7 +3,7 @@ package unfiltered.oauth2
 trait Client {
   def id: String
   def secret: String
-  def redirectURI: String
+  def redirectUri: String
 }
 
 trait ClientStore {

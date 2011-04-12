@@ -9,7 +9,7 @@ import unfiltered.filter.Plan
  *
  * To call API using HTTP header.
  *
- *     GET /api/1//feeds.js HTTP/1.1
+ *     GET /api/1/feeds.js HTTP/1.1
  *     Authorization: OAuth YOUR_ACCESS_TOKEN
  *     Host: www.example.com
  */

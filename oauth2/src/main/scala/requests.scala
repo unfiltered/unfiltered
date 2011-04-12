@@ -36,5 +36,5 @@ case class ClientCredsAccessTokenRequest(
 ) extends AccessRequest
 
 case class RefreshTokenRequest(
-  grantType: String, refreshToken: String, scope: Option[String]
+  grantType: String, refreshToken: String, clientId: String, clientSecret: String, scope: Option[String]
 ) extends AccessRequest
