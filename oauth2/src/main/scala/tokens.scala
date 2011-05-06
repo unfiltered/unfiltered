@@ -12,11 +12,13 @@ trait Token {
 }
 
 trait TokenStore {
-  def refresh(t: Token): Token
+  def refresh(other: Token): Token
   def token(code: String): Option[Token]
   def clientToken(clientId: String): Option[Token]
   def accessToken(code: String): Option[Token]
-  def generateAccessToken(other: Token): Token
+  def generateAccessToken(codeToken: Token): Token
+  /** @return an access token for a given client, not tied to a given resource owner */
+  def generateClientToken(client: Client, scope: Option[String]): Option[Token]
   /** @return a short lived Token bound to a client and redirect uri for a given resource owner. */
   def generateCodeToken(owner: ResourceOwner, client: Client, scope: Option[String], redirectUri: String): String
   def generateImplicitAccessToken(owner: ResourceOwner, client: Client, scope: Option[String], redirectUri: String): Token

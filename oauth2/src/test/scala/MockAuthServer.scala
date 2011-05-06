@@ -14,7 +14,7 @@ case class MockToken(val value: String, val clientId: String,
 }
 
 case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
-  extends AuthorizationServerProvider {
+  extends AuthorizationProvider {
 
   trait MockClients extends ClientStore {
     def client(clientId: String, secret: Option[String]) = Some(cli)
@@ -28,41 +28,61 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
     def token(code: String): Option[Token] = Some(mock)
     def clientToken(clientId: String): Option[Token] = Some(mock)
     def accessToken(code: String): Option[Token] = Some(mock)
+
     def generateAccessToken(other: Token): Token = mock
+
     def generateCodeToken(owner: ResourceOwner, client: Client,
                           scope: Option[String], redirectURI: String) =
                             mock.value
+    def generateClientToken(client: Client, scope: Option[String]) = Some(mock)
     def generateImplicitAccessToken(owner: ResourceOwner, client: Client,
                                     scope: Option[String], redirectURI: String) =
-                                      mock
+                                        mock
   }
 
-  trait MockHost extends Host {
+  trait MockContainer extends Container {
     import unfiltered.request._
     import unfiltered.response._
     import unfiltered.request.{HttpRequest => Req}
 
-    def login(token: String): ResponseFunction[Any] = Ok
+    def login[T](bundle: RequestBundle[T]): ResponseFunction[Any] = {
+      // would normally show login here
+      Ok
+    }
 
-    def deniedConfirmation(consumer: Client): ResponseFunction[Any] = Ok
+    def requestAuthorization[T](bundle: RequestBundle[T]): ResponseFunction[Any] = {
+      // would normally prompt for auth here
+      Ok
+    }
 
-    def requestAcceptance(token: String, responseType: String,
-                          client: Client, scope: Option[String]) = Ok
+    def invalidRedirectUri(uri: Option[String], client: Option[Client]) = {
+      ResponseString("missing or invalid redirect_uri")
+    }
 
-    def invalidRedirectUri(uri: String, client: Client) = Ok
+    def resourceOwner: Option[ResourceOwner] = {
+      // would normally look for a resource owners session here
+      Some(owner)
+    }
 
-    def resourceOwner: Option[ResourceOwner] = Some(owner)
+    def accepted[T](r: Req[T]) = {
+      // would normally inspect the request for user approval here
+      true
+    }
 
-    def accepted[T](r: Req[T]) = true
+    def denied[T](r: Req[T]) = {
+      // would normally inspect the reuqest for user denial here
+      false
+    }
 
-    def denied[T](r: Req[T]) = false
-
-    def validScopes[T](owner: ResourceOwner, scopes: Option[String], req: Req[T]) = true
+    def validScopes[T](owner: ResourceOwner, scopes: Option[String], req: Req[T]) = {
+      // would normally validate that the scopes are valid for the owner here
+      true
+    }
   }
 
   object MockAuthorizationServer
      extends AuthorizationServer
-     with MockClients with MockTokens with MockHost
+     with MockClients with MockTokens with MockContainer
 
-  val authSvr = MockAuthorizationServer
+  val auth = MockAuthorizationServer
 }

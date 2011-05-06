@@ -25,6 +25,7 @@ object OAuthorization {
   val TokenKey = "token"
 
   val Error = "error"
+  val InvalidClient = "invalid_client"
   val InvalidRequest = "invalid_request"
   val UnauthorizedClient = "unauthorized_client"
   val AccessDenied = "access_denied"
@@ -45,16 +46,18 @@ object OAuthorization {
   val XAuthorizedScopes = "X-Authorized-Scopes"
 }
 
+/** Paths for authorization and token access */
 trait AuthorizationEndpoints {
   val AuthorizePath: String
-  val AccessPath: String
+  val TokenPath: String
 }
 
 trait DefaultAuthorizationPaths extends AuthorizationEndpoints {
   val AuthorizePath = "/authorize"
-  val AccessPath = "/token"
+  val TokenPath = "/token"
 }
 
+/** Customized parameter validation message */
 trait ValidationMessages {
   def requiredMsg(what: String): String
 }
@@ -63,10 +66,11 @@ trait DefaultValidationMessages extends ValidationMessages {
   def requiredMsg(what: String) = "%s is required" format what
 }
 
-class OAuthorization(val authSvr: AuthorizationServer) extends Authorized
+/** Configured Authorization server */
+class OAuthorization(val auth: AuthorizationServer) extends Authorized
      with DefaultAuthorizationPaths with DefaultValidationMessages
 
-trait Authorized extends AuthorizationServerProvider
+trait Authorized extends AuthorizationProvider
   with unfiltered.filter.Plan with AuthorizationEndpoints
   with Formatting with ValidationMessages {
   import QParams._
@@ -76,69 +80,85 @@ trait Authorized extends AuthorizationServerProvider
      def ?(qs: String) = "%s%s%s" format(uri, if(uri.indexOf("?") > 0) "&" else "?", qs)
   }
 
+  protected def accessResponder(accessToken: String, kind: String,
+                      expiresIn: Option[Int], refreshToken: Option[String],
+                      scope: Option[String]): ResponseFunction[Any] =
+    Json(
+        (AccessTokenKey -> accessToken) :: (TokenType -> kind) :: Nil ++
+        expiresIn.map (ExpiresIn -> (_:Int).toString) ++
+        refreshToken.map (RefreshToken -> _) ++
+        scope.map(Scope -> _)
+    ) ~> CacheControl("no-store")
+
+  protected def errorResponder(error: String, desc: String, euri: Option[String],
+                               state: Option[String]): ResponseFunction[Any] =
+    Json(
+        (Error -> error) :: (ErrorDescription -> desc) :: Nil ++
+        euri.map (ErrorURI -> (_: String)) ++
+        state.map (State -> _)
+    ) ~> BadRequest ~> CacheControl("no-store")
+
   def intent = {
 
     case req @ Path(AuthorizePath) & Params(params) =>
       val expected = for {
         responseType <- lookup(ResponseType) is required(requiredMsg(ResponseType))
-        clientId <- lookup(ClientId) is required(requiredMsg(ClientId))
-        secret <- lookup(ClientSecret) is optional[String, String]
-        redirectURI <- lookup(RedirectURI) is required(requiredMsg(RedirectURI))
-        scope  <- lookup(Scope) is optional[String, String]
-        state <- lookup(State) is optional[String, String]
+        clientId     <- lookup(ClientId) is required(requiredMsg(ClientId))
+        secret       <- lookup(ClientSecret) is optional[String, String]
+        redirectURI  <- lookup(RedirectURI) is required(requiredMsg(RedirectURI))
+        scope        <- lookup(Scope) is optional[String, String]
+        state        <- lookup(State) is optional[String, String]
       } yield {
 
          val ruri = redirectURI.get
          responseType.get match {
+
            case Code =>
-             println("auth request for code")
-             authSvr(AuthorizationCodeRequest(
-               req, responseType.get, clientId.get,
+             auth(AuthorizationCodeRequest(
+               req, clientId.get,
                redirectURI.get, scope.get, state.get)) match {
-               case HostResponse(resp) => resp
+               case ContainerResponse(resp) => resp
                case AuthorizationCodeResponse(code, state) =>
-                  println("got auth code")
                   Redirect(ruri ? "code=%s%s".format(
                     code, state.map("&state=%s".format(_)).getOrElse(""))
                   )
                case ErrorResponse(error, desc, euri, state) =>
-                 println("error getting oauth code")
-                 val qs = qstr(
-                    (Error -> error) :: (ErrorDescription -> desc) :: Nil ++
-                    euri.map(ErrorURI -> (_:String)) ++
-                    state.map(State -> _)
-                 )
-                 Redirect(ruri ? qs)
+                 Redirect(ruri ? qstr(
+                   (Error -> error) ::
+                   (ErrorDescription -> desc) :: Nil ++
+                   euri.map(ErrorURI -> (_:String)) ++
+                   state.map(State -> _)
+                 ))
                case _ => error("invalid response")
              }
+
            case TokenKey =>
-             println("auth request for token")
-             authSvr(ImplicitAuthorizationRequest(
-                 req, responseType.get, clientId.get,
-                 redirectURI.get, scope.get, state.get)) match {
-               case HostResponse(resp) => resp
+             // responses should be encoded in url fragment
+             auth(ImplicitAuthorizationRequest(
+               req, clientId.get,
+               redirectURI.get, scope.get, state.get)) match {
+               case ContainerResponse(resp) => resp
                case ImplicitAccessTokenResponse(
                  accessToken, tokenType,
                  expiresIn, scope, state) =>
-                 println("implicit token granted")
-                 val frag = qstr(
-                     (AccessTokenKey -> accessToken) :: (TokenType -> tokenType) :: Nil ++
+                   val frag = qstr(
+                     (AccessTokenKey -> accessToken) ::
+                     (TokenType -> tokenType) :: Nil ++
                      expiresIn.map(ExpiresIn -> (_:Int).toString) ++
-                     scope.map(Scope -> _) ++ state.map(State -> _ )
+                     scope.map(Scope -> _) ++
+                     state.map(State -> _ )
                  )
                  Redirect("%s#%s" format(ruri, frag))
                case ErrorResponse(error, desc, euri, state) =>
-                 println("error response for implicit token request")
-                 val qs = qstr(
+                 Redirect("%s#%s" format(ruri, qstr(
                     ((Error -> error) :: (ErrorDescription -> desc) :: Nil) ++
                     euri.map(ErrorURI -> (_:String)) ++
                     state.map(State -> _)
-                 )
-                 Redirect(ruri ? qs)
+                 )))
                case _ => error("invalid response")
              }
+
            case unsupported =>
-             println("unsupported response type %s" format unsupported)
              val qs = qstr(
                (Error -> UnsupportedResponseType) :: Nil
              )
@@ -147,106 +167,98 @@ trait Authorized extends AuthorizationServerProvider
       }
 
       expected(params) orFail { errs =>
-        ResponseString(
-          jsbody(
-            (Error -> InvalidRequest) ::
-            (ErrorDescription -> errs.map { _.error }.mkString(", ")) :: Nil
-          )
-        ) ~> BadRequest ~> CacheControl("no-store") ~> JsonContent
+        params(RedirectURI) match {
+          case Seq(uri) =>
+            val qs = qstr(
+              (Error -> InvalidRequest) ::
+              (ErrorDescription ->  errs.map { _.error }.mkString(", ")) ::
+              Nil
+            )
+            params(ResponseType) match {
+              case Seq(TokenKey) =>
+                 // encode in fragment
+                 Redirect("%s#%s" format(
+                   uri, qs
+                 ))
+              case _ =>
+                 // uncode in query string
+                Redirect(uri ? qs)
+            }
+          case _ => auth.mismatchedRedirectUri
+
+        }
       }
 
-    case POST(Path(AccessPath)) & Params(params) =>
+    case POST(Path(TokenPath)) & Params(params) =>
       val expected = for {
-
-        grantType <- lookup(GrantType) is required(requiredMsg(GrantType))
-        code <- lookup(Code) is optional[String, String] // req when access
-        redirectURI <- lookup(RedirectURI) is optional[String, String] // req when access/opt when refresh
-        clientId <- lookup(ClientId) is required(requiredMsg(ClientId))
-        clientSecret <- lookup(ClientSecret) is required(requiredMsg(ClientSecret))
-        refreshToken <- lookup(RefreshToken) is optional[String, String] // req when access
-        scope <- lookup(Scope) is optional[String, String]
-
+        grantType     <- lookup(GrantType) is required(requiredMsg(GrantType))
+        code          <- lookup(Code) is optional[String, String]
+        redirectURI   <- lookup(RedirectURI) is optional[String, String]
+        clientId      <- lookup(ClientId) is required(requiredMsg(ClientId))
+        clientSecret  <- lookup(ClientSecret) is required(requiredMsg(ClientSecret))
+        refreshToken  <- lookup(RefreshToken) is optional[String, String]
+        scope         <- lookup(Scope) is  optional[String, String]
       } yield {
 
         val ruri = redirectURI.get
         grantType.get match {
+
+          case ClientCredentials =>
+            auth(ClientCredentialsRequest(clientId.get,
+                                          clientSecret.get,
+                                          scope.get)) match {
+              case AccessTokenResponse(accessToken, kind, expiresIn,
+                                       refreshToken, scope, _) =>
+                   accessResponder(
+                     accessToken, kind, expiresIn, refreshToken, scope
+                   )
+              case ErrorResponse(error, desc, euri, state) =>
+                errorResponder(error, desc, euri, state)
+            }
+
           case RefreshToken =>
             refreshToken.get match {
               case Some(rtoken) =>
-                authSvr(RefreshTokenRequest(
-                  grantType.get, rtoken,
-                  clientId.get, clientSecret.get, scope.get)) match {
+                auth(RefreshTokenRequest(
+                  rtoken, clientId.get, clientSecret.get, scope.get)) match {
                   case AccessTokenResponse(accessToken, kind, expiresIn,
-                                           refreshToken, scope, state) =>
-                                             ResponseString(
-                                               jsbody(
-                                                 (AccessTokenKey -> accessToken) :: (TokenType -> kind) :: Nil ++
-                                                 expiresIn.map (ExpiresIn -> (_:Int).toString) ++
-                                                 refreshToken.map (RefreshToken -> _)
-                                               )
-                                             ) ~> CacheControl("no-store") ~> JsonContent
+                                           refreshToken, scope, _) =>
+                     accessResponder(
+                       accessToken, kind, expiresIn, refreshToken, scope
+                     )
                   case ErrorResponse(error, desc, euri, state) =>
-                    ResponseString(
-                      jsbody(
-                        (Error -> error) :: (ErrorDescription -> desc) :: Nil ++
-                        euri.map (ErrorURI -> (_: String)) ++
-                        state.map (State -> _)
-                      )
-                    ) ~> BadRequest ~> CacheControl("no-store") ~> JsonContent
+                    errorResponder(error, desc, euri, state)
                 }
-              case _ => Ok
+              case _ => errorResponder(InvalidRequest, requiredMsg(RefreshToken), None, None)
             }
+
           case AuthorizationCode =>
             (code.get, ruri) match {
               case (Some(c), Some(r)) =>
-                authSvr(AccessTokenRequest(
-                  grantType.get, c, r,
-                  clientId.get, clientSecret.get)) match {
-                  case HostResponse(resp) => resp
+                auth(AccessTokenRequest(
+                  c, r, clientId.get, clientSecret.get)) match {
                   case AccessTokenResponse(accessToken, kind, expiresIn,
-                                           refreshToken, scope, state) =>
-                      ResponseString(
-                        jsbody(
-                            (AccessTokenKey -> accessToken) :: (TokenType -> kind) :: Nil ++
-                            expiresIn.map (ExpiresIn -> (_:Int).toString) ++
-                            refreshToken.map (RefreshToken -> _)
-                        )
-                      ) ~> CacheControl("no-store") ~> JsonContent
-                  case ErrorResponse(error, desc, euri, state) =>
-                    ResponseString(
-                      jsbody(
-                        (Error -> error) :: (ErrorDescription -> desc) :: Nil ++
-                        euri.map (ErrorURI -> (_: String)) ++
-                        state.map (State -> _)
+                                           refreshToken, scope, _) =>
+                      accessResponder(
+                        accessToken, kind, expiresIn, refreshToken, scope
                       )
-                    ) ~> BadRequest ~> CacheControl("no-store") ~> JsonContent
+                  case ErrorResponse(error, desc, euri, state) =>
+                    errorResponder(error, desc, euri, state)
                 }
               case _ =>
-                ResponseString(
-                  jsbody(
-                    (Error -> InvalidRequest) ::
-                    (ErrorDescription -> (requiredMsg(Code) :: requiredMsg(RedirectURI) :: Nil).mkString(" and ")) ::
-                    Nil
-                  )
-                ) ~> BadRequest ~> CacheControl("no-store") ~> JsonContent
+                errorResponder(
+                  InvalidRequest,
+                  (requiredMsg(Code) :: requiredMsg(RedirectURI) :: Nil).mkString(" and "),
+                  None, None
+                )
             }
-          case _ =>
-            ResponseString(
-              jsbody(
-                (Error -> UnsupportedGrantType) :: Nil
-              )
-            ) ~> BadRequest ~> CacheControl("no-store") ~> JsonContent
+          case unsupported =>
+            errorResponder(UnsupportedGrantType, "%s is unsupported" format unsupported, None, None)
         }
       }
 
       expected(params) orFail { errs =>
-        ResponseString(
-          jsbody(
-            (Error -> InvalidRequest) ::
-            (ErrorDescription -> errs.map { _.error }.mkString(", ")) :: Nil
-          )
-        ) ~> BadRequest ~> CacheControl("no-store") ~> JsonContent
+        errorResponder(InvalidRequest, errs.map { _.error }.mkString(", "), None, None)
       }
   }
 }
-
