@@ -38,12 +38,6 @@ object OAuthorization {
   val AccessTokenKey = "access_token"
   val TokenType = "token_type"
   val ExpiresIn = "expires_in"
-
-  /** in an oauthorized request, this represents resource owner's identity */
-  val XAuthorizedIdentity = "X-Authorized-Identity"
-
-  /** in an oauthorized request, this represents the scopes of data acess available */
-  val XAuthorizedScopes = "X-Authorized-Scopes"
 }
 
 /** Paths for authorization and token access */

@@ -19,7 +19,7 @@ case class Protection(source: AuthSource) extends ProtectionLike {
 
 /** Provides OAuth2 protection implementation. Extend this trait to customize query string `oauth_token`, etc. */
 trait ProtectionLike extends Plan {
-  import javax.servlet.http.{HttpServletRequest}
+  import javax.servlet.http.HttpServletRequest
 
   val source: AuthSource
   val schemes: Seq[AuthScheme]
@@ -31,8 +31,9 @@ trait ProtectionLike extends Plan {
   def authenticate[T <: HttpServletRequest](token: AccessToken, request: HttpRequest[T]) =
     source.authenticateToken(token, request) match {
       case Left(msg)   => errorResponse(Unauthorized, msg, request)
-      case Right(user) =>
-        request.underlying.setAttribute(OAuth2.XAuthorizedIdentity, user)
+      case Right((user, scopes)) =>
+        request.underlying.setAttribute(OAuth2.XAuthorizedIdentity, user.id)
+        scopes.map(request.underlying.setAttribute(OAuth2.XAuthorizedScopes, _))
         Pass
     }
 
@@ -56,7 +57,7 @@ trait AccessToken
 
 /** Represents the authorization source that issued the access token. */
 trait AuthSource {
-  def authenticateToken[T](token: AccessToken, request: HttpRequest[T]): Either[String, UserLike]
+  def authenticateToken[T](token: AccessToken, request: HttpRequest[T]): Either[String, (ResourceOwner, Option[String])]
 
   def realm: Option[String] = None
 }
@@ -152,8 +153,3 @@ case class MacAuthToken(token: String,
   nonce: String,
   bodyhash: String,
   signature: String) extends AccessToken
-
-/** Represents the `User` in an oauth interaction. */
-trait UserLike {
-  val id: String
-}
