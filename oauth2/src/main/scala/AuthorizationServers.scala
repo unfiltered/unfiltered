@@ -29,15 +29,15 @@ trait AuthorizationServer {
             invalidRedirectUri(Some(redirectUri), Some(c))
           )
           else {
-            resourceOwner match {
+            resourceOwner(req) match {
               case Some(owner) =>
                  if(denied(req)) ErrorResponse(AccessDenied, "user denied request", None, state)
                  else if(accepted(req)) {
                     val token = generateCodeToken(owner, c, scope, redirectUri)
                     AuthorizationCodeResponse(token, state)
                  }
-                 else ContainerResponse(requestAuthorization(RequestBundle(req, Code, c, Some(owner), scope, state)))
-              case _ => ContainerResponse(login(RequestBundle(req, Code, c, None, scope, state)))
+                 else ContainerResponse(requestAuthorization(RequestBundle(req, Code, c, Some(owner), redirectUri, scope, state)))
+              case _ => ContainerResponse(login(RequestBundle(req, Code, c, None, redirectUri, scope, state)))
             }
 
           }
@@ -51,7 +51,7 @@ trait AuthorizationServer {
             invalidRedirectUri(Some(redirectUri), Some(c))
           )
           else {
-            resourceOwner match {
+            resourceOwner(req) match {
               case Some(owner) =>
                 if(denied(req)) ErrorResponse(AccessDenied, "user denied request", None, state)
                 else if(accepted(req)) {
@@ -60,8 +60,8 @@ trait AuthorizationServer {
                     t.value, t.tokenType, t.expiresIn, scope, state
                   )
                 }
-                else ContainerResponse(requestAuthorization(RequestBundle(req, TokenKey, c, Some(owner), scope, state)))
-             case _ => ContainerResponse(login(RequestBundle(req, TokenKey, c, None, scope, state)))
+                else ContainerResponse(requestAuthorization(RequestBundle(req, TokenKey, c, Some(owner), redirectUri,  scope, state)))
+             case _ => ContainerResponse(login(RequestBundle(req, TokenKey, c, None, redirectUri, scope, state)))
             }
           }
         case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, None, state)
@@ -87,7 +87,7 @@ trait AuthorizationServer {
                   val t = generateAccessToken(token)
                   AccessTokenResponse(
                     t.value, t.tokenType, t.expiresIn, t.refresh, None, None
-                  )
+                 )
                 }
               case _ => ErrorResponse(
                 InvalidRequest, "unknown code", None, None
@@ -97,36 +97,31 @@ trait AuthorizationServer {
         case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, None, None)
       }
 
-    case RefreshTokenRequest(refreshToken, clientId, clientSecret, scope) =>
+    case RefreshTokenRequest(rToken, clientId, clientSecret, scope) =>
         client(clientId, Some(clientSecret)) match {
           case Some(c) =>
-             clientToken(c.id) match {
+             refreshToken(rToken) match {
                case Some(t) =>
-                 if(t.refresh.get /* todo handle NOT supporting refresh */ == refreshToken) {
+                 if(t.clientId == clientId) {
                    val r = refresh(t)
                    AccessTokenResponse(
                      t.value, t.tokenType, t.expiresIn, t.refresh, None, scope
                    )
                  } else ErrorResponse(
-                   UnauthorizedClient, "refresh token did not match", None, scope
+                   UnauthorizedClient, "refresh token does not belong to client", None, scope
                  )
-               case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, None, scope)
+               case _ => ErrorResponse(InvalidRequest, "unknown request token", None, scope)
              }
-          case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, None, scope)
+          case _ => ErrorResponse(InvalidClient, UnknownClientMsg, None, scope)
         }
 
     case ClientCredentialsRequest(clientId, clientSecret, scope) =>
       client(clientId, Some(clientSecret)) match {
         case Some(c) =>
-           generateClientToken(c, scope) match {
-            case Some(token) =>
-              AccessTokenResponse(
-                token.value, token.tokenType, token.expiresIn, token.refresh, None, None
-              )
-            case _ => ErrorResponse(
-              InvalidRequest, UnknownClientMsg, None, scope
-            )
-          }
+           val tok = generateClientToken(c, scope)
+           AccessTokenResponse(
+             tok.value, tok.tokenType, tok.expiresIn, tok.refresh, None, None
+           )
         case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, None, scope)
       }
   }

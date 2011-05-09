@@ -26,15 +26,15 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
        other.value, other.clientId, other.redirectUri, other.owner
     )
     def token(code: String): Option[Token] = Some(mock)
-    def clientToken(clientId: String): Option[Token] = Some(mock)
-    def accessToken(code: String): Option[Token] = Some(mock)
+    def refreshToken(refreshToken: String): Option[Token] = Some(mock)
+    def accessToken(value: String): Option[Token] = Some(mock)
 
     def generateAccessToken(other: Token): Token = mock
 
     def generateCodeToken(owner: ResourceOwner, client: Client,
                           scope: Option[String], redirectURI: String) =
                             mock.value
-    def generateClientToken(client: Client, scope: Option[String]) = Some(mock)
+    def generateClientToken(client: Client, scope: Option[String]) = mock
     def generateImplicitAccessToken(owner: ResourceOwner, client: Client,
                                     scope: Option[String], redirectURI: String) =
                                         mock
@@ -59,7 +59,7 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
       ResponseString("missing or invalid redirect_uri")
     }
 
-    def resourceOwner: Option[ResourceOwner] = {
+    def resourceOwner[T](r: Req[T]): Option[ResourceOwner] = {
       // would normally look for a resource owners session here
       Some(owner)
     }

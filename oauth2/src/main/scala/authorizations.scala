@@ -61,7 +61,7 @@ trait DefaultValidationMessages extends ValidationMessages {
 }
 
 /** Configured Authorization server */
-class OAuthorization(val auth: AuthorizationServer) extends Authorized
+case class OAuthorization(val auth: AuthorizationServer) extends Authorized
      with DefaultAuthorizationPaths with DefaultValidationMessages
 
 trait Authorized extends AuthorizationProvider

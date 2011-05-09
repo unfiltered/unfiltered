@@ -8,7 +8,8 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
   import unfiltered.request.{Path => UFPath}
   import dispatch._
 
-  class User(val id: String) extends UserLike
+  class User(val id: String) extends ResourceOwner
+
   object User {
     import javax.servlet.http.{HttpServletRequest}
 
@@ -21,10 +22,10 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
 
   def setup = { server =>
     val source = new AuthSource {
-      def authenticateToken[T](access_token: AccessToken, request: HttpRequest[T]): Either[String, UserLike] =
+      def authenticateToken[T](access_token: AccessToken, request: HttpRequest[T]): Either[String, (ResourceOwner, Option[String])] =
         access_token match {
-          case BearerToken("good_token")          => Right(new User("test_user"))
-          case MacAuthToken("good_token", _, _, _, _) => Right(new User("test_user"))
+          case BearerToken("good_token")          => Right(new User("test_user"), None)
+          case MacAuthToken("good_token", _, _, _, _) => Right(new User("test_user"), None)
           case _ => Left("bad token")
         }
 

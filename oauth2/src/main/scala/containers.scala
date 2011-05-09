@@ -12,8 +12,8 @@ trait ResourceOwner {
  *  need to be repeated after authentication, account creation, or other container
  *  behavior before an authorization request can be processed */
 case class RequestBundle[T](request: Req[T], responseType: String, client: Client,
-                            owner: Option[ResourceOwner], scope: Option[String],
-                            state: Option[String])
+                            owner: Option[ResourceOwner], redirectUri: String,
+                            scope: Option[String], state: Option[String])
 
 /** Request responses a Container must implement to complete OAuth flows */
 trait ContainerResponses {
@@ -36,7 +36,7 @@ trait ContainerResponses {
 trait Container extends ContainerResponses {
 
   /** @return Some(resourceOwner) if one is authenticated, None otherwise. None will trigger a login request */
-  def resourceOwner: Option[ResourceOwner]
+  def resourceOwner[T](r: Req[T]): Option[ResourceOwner]
 
     /** @return true if application-specific logic determines this request was accepted, false otherwise */
   def accepted[T](r: Req[T]): Boolean

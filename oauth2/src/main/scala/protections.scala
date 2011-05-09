@@ -30,7 +30,7 @@ trait ProtectionLike extends Plan {
 
   def authenticate[T <: HttpServletRequest](token: AccessToken, request: HttpRequest[T]) =
     source.authenticateToken(token, request) match {
-      case Left(msg)   => errorResponse(Unauthorized, msg, request)
+      case Left(msg) => errorResponse(Unauthorized, msg, request)
       case Right((user, scopes)) =>
         request.underlying.setAttribute(OAuth2.XAuthorizedIdentity, user.id)
         scopes.map(request.underlying.setAttribute(OAuth2.XAuthorizedScopes, _))
@@ -52,9 +52,6 @@ trait ProtectionLike extends Plan {
   }
 }
 
-/** Represents the access token. */
-trait AccessToken
-
 /** Represents the authorization source that issued the access token. */
 trait AuthSource {
   def authenticateToken[T](token: AccessToken, request: HttpRequest[T]): Either[String, (ResourceOwner, Option[String])]
@@ -66,8 +63,9 @@ trait AuthSource {
 trait AuthScheme {
   def intent(protection: ProtectionLike): Plan.Intent
 }
+trait AccessToken
 
-case class BearerToken(token: String) extends AccessToken
+case class BearerToken(value: String) extends AccessToken
 
 /** Represents Bearer auth. */
 trait BearerAuth extends AuthScheme {
@@ -148,7 +146,7 @@ trait MacAuth extends AuthScheme {
 
 object MacAuth extends MacAuth {}
 
-case class MacAuthToken(token: String,
+case class MacAuthToken(value: String,
   timestamp: String,
   nonce: String,
   bodyhash: String,

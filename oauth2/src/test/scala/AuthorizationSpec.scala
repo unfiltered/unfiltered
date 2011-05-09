@@ -26,7 +26,7 @@ object AuthorizationSpec
   def setup = { server =>
     val authProvider = new MockAuthServerProvider(client, owner)
     server.context("/oauth") {
-      _.filter(new OAuthorization(authProvider.auth))
+      _.filter(OAuthorization(authProvider.auth))
     }
     .context("/echo") {
       _.filter(unfiltered.filter.Planify {
