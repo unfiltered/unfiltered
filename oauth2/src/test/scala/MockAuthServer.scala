@@ -29,9 +29,9 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
     def refreshToken(refreshToken: String): Option[Token] = Some(mock)
     def accessToken(value: String): Option[Token] = Some(mock)
 
-    def generateAccessToken(other: Token): Token = mock
+    def exchangeAuthorizationCode(other: Token): Token = mock
 
-    def generateCodeToken(owner: ResourceOwner, client: Client,
+    def generateAuthorizationCode(owner: ResourceOwner, client: Client,
                           scope: Option[String], redirectURI: String) =
                             mock.value
     def generateClientToken(client: Client, scope: Option[String]) = mock

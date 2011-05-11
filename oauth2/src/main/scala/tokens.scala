@@ -19,12 +19,12 @@ trait TokenStore {
   /** query for Token by client */
   def refreshToken(refreshToken: String): Option[Token]
   /** create an access token given a code token */
-  def generateAccessToken(codeToken: Token): Token
+  def exchangeAuthorizationCode(codeToken: Token): Token
   /** @return an access token for a given client, not tied to a given resource owner */
   def generateClientToken(client: Client, scope: Option[String]): Token
   /** @return a short lived authorization code bound to a client
    *  and redirect uri for a given resource owner. */
-  def generateCodeToken(owner: ResourceOwner, client: Client,
+  def generateAuthorizationCode(owner: ResourceOwner, client: Client,
                         scope: Option[String], redirectUri: String): String
   /** @return a access token for an implicit client */
   def generateImplicitAccessToken(owner: ResourceOwner, client: Client,
