@@ -33,8 +33,8 @@ trait AuthorizationServer {
               case Some(owner) =>
                  if(denied(req)) ErrorResponse(AccessDenied, "user denied request", None, state)
                  else if(accepted(req)) {
-                    val token = generateCodeToken(owner, c, scope, redirectUri)
-                    AuthorizationCodeResponse(token, state)
+                    val code = generateAuthorizationCode(owner, c, scope, redirectUri)
+                    AuthorizationCodeResponse(code, state)
                  }
                  else ContainerResponse(requestAuthorization(RequestBundle(req, Code, c, Some(owner), redirectUri, scope, state)))
               case _ => ContainerResponse(login(RequestBundle(req, Code, c, None, redirectUri, scope, state)))
@@ -84,7 +84,7 @@ trait AuthorizationServer {
                     UnauthorizedClient, "client not authorized", None, None
                   )
                 else {
-                  val t = generateAccessToken(token)
+                  val t = exchangeAuthorizationCode(token)
                   AccessTokenResponse(
                     t.value, t.tokenType, t.expiresIn, t.refresh, None, None
                  )
