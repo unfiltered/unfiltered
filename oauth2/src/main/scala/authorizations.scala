@@ -111,11 +111,14 @@ trait Authorized extends AuthorizationProvider
              auth(AuthorizationCodeRequest(
                req, clientId.get,
                redirectURI.get, scope.get, state.get)) match {
+
                case ContainerResponse(resp) => resp
+
                case AuthorizationCodeResponse(code, state) =>
                   Redirect(ruri ? "code=%s%s".format(
                     code, state.map("&state=%s".format(_)).getOrElse(""))
                   )
+
                case ErrorResponse(error, desc, euri, state) =>
                  Redirect(ruri ? qstr(
                    (Error -> error) ::
@@ -123,6 +126,7 @@ trait Authorized extends AuthorizationProvider
                    euri.map(ErrorURI -> (_:String)) ++
                    state.map(State -> _)
                  ))
+
                case _ => error("invalid response")
              }
 
@@ -141,22 +145,33 @@ trait Authorized extends AuthorizationProvider
                      expiresIn.map(ExpiresIn -> (_:Int).toString) ++
                      scope.map(Scope -> _) ++
                      state.map(State -> _ )
-                 )
-                 Redirect("%s#%s" format(ruri, frag))
+                   )
+               Redirect("%s#%s" format(ruri, frag))
                case ErrorResponse(error, desc, euri, state) =>
                  Redirect("%s#%s" format(ruri, qstr(
-                    ((Error -> error) :: (ErrorDescription -> desc) :: Nil) ++
-                    euri.map(ErrorURI -> (_:String)) ++
-                    state.map(State -> _)
+                   ((Error -> error) :: (ErrorDescription -> desc) :: Nil) ++
+                   euri.map(ErrorURI -> (_:String)) ++
+                   state.map(State -> _)
                  )))
                case _ => error("invalid response")
              }
 
            case unsupported =>
-             val qs = qstr(
-               (Error -> UnsupportedResponseType) :: Nil
-             )
-             Redirect(ruri ? qs)
+             auth(IndeterminateAuthorizationRequest(
+               req, unsupported, clientId.get,
+               redirectURI.get, scope.get, state.get)) match {
+               case ContainerResponse(cr) => cr
+               case ErrorResponse(error, desc, euri, state) =>
+                 Redirect(ruri ? qstr(
+                   (Error -> error) ::
+                   (ErrorDescription -> desc) :: Nil ++
+                   euri.map(ErrorURI -> (_:String)) ++
+                   state.map(State -> _)
+                 ))
+               case _ => error("invalid response")
+             }
+
+
          }
       }
 

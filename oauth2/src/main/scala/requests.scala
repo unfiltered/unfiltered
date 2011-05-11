@@ -22,6 +22,15 @@ case class ImplicitAuthorizationRequest[T](
   state: Option[String]
 ) extends AuthorizationRequest
 
+case class IndeterminateAuthorizationRequest[T](
+  req: Req[T],
+  responseType: String,
+  clientId: String,
+  redirectURI: String,
+  scope: Option[String],
+  state: Option[String]
+) extends AuthorizationRequest
+
 case class AccessTokenRequest(
   code: String,
   redirectURI: String,

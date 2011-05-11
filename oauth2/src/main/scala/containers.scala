@@ -31,6 +31,9 @@ trait ContainerResponses {
   /** @return a function that provides a user notification that a provided redirect
    *          uri was invalid or not present */
   def invalidRedirectUri(uri: Option[String], client: Option[Client]): ResponseFunction[Any]
+
+  /** @return a function that provides a user notification that a request was made with an invalid client */
+  def invalidClient: ResponseFunction[Any]
 }
 
 trait Container extends ContainerResponses {

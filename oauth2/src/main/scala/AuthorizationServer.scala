@@ -41,7 +41,7 @@ trait AuthorizationServer {
             }
 
           }
-        case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, None, state)
+        case _ => ContainerResponse(invalidClient)
       }
 
     case ImplicitAuthorizationRequest(req, clientId, redirectUri, scope, state) =>
@@ -64,8 +64,17 @@ trait AuthorizationServer {
              case _ => ContainerResponse(login(RequestBundle(req, TokenKey, c, None, redirectUri, scope, state)))
             }
           }
-        case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, None, state)
+        case _ => ContainerResponse(invalidClient)
       }
+    case IndeterminateAuthorizationRequest(req, responseType, clientId, redirectUri, scope, state) =>
+        client(clientId, None) match {
+          case Some(c) =>
+            if(!validRedirectUri(redirectUri, c)) ContainerResponse(
+              invalidRedirectUri(Some(redirectUri), Some(c))
+            )
+            else ErrorResponse(UnsupportedResponseType, "unsupported response type %s" format responseType, scope, state)
+          case _ => ContainerResponse(invalidClient)
+        }
   }
 
   def apply(r: AccessRequest): AccessResponse = r match {

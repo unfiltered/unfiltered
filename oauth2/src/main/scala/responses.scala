@@ -44,6 +44,7 @@ case class ErrorResponse(
   state: Option[String]
 ) extends AuthorizationResponse with AccessResponse
 
+
 trait Formatting {
   import java.net.URLEncoder
   def qstr(kvs: Seq[(String, String)]) =
