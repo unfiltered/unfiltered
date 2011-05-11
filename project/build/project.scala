@@ -73,7 +73,11 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
   /** json extractors */
   lazy val json = project("json", "Unfiltered Json",
       new UnfilteredModule(_) with IntegrationTesting {
-    val lift_json = "net.liftweb" %% "lift-json" % "2.2"
+    val lift_json =
+      if (buildScalaVersion.startsWith("2.7"))
+        "net.liftweb" % "lift-json_2.7.7" % "2.2"
+      else
+        "net.liftweb" % "lift-json_2.8.1" % "2.2"
   }, library)
   def servletApiDependency = "javax.servlet" % "servlet-api" % "2.3" % "provided"
 
