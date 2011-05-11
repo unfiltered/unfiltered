@@ -92,6 +92,22 @@ object AuthorizationSpec
          case uri => fail("invalid redirect %s" format uri)
        }
     }
+    "not redirect to an unknown client" in {
+      val body = http.x(authorize <<? Map(
+        "response_type" -> "token",
+        "client_id" -> "bogus",
+        "redirect_uri" -> "bogus"
+      ) as_str)
+      body must_==("invalid client")
+    }
+    "not redirect to an invalid redirect_uri" in {
+      val body = http.x(authorize <<? Map(
+        "response_type" -> "token",
+         "client_id" -> client.id,
+        "redirect_uri" -> "bogus"
+      ) as_str)
+      body must_==("missing or invalid redirect_uri")
+    }
     // http://tools.ietf.org/html/draft-ietf-oauth-v2-15#section-4.2.2.1
     "require a `redirect_uri`, encoding errors by notifying the resource owner" in {
        val body = http.x(authorize <<? Map(
@@ -134,6 +150,22 @@ object AuthorizationSpec
          map must havePair("error", "invalid_request")
          map must havePair("error_description", "client_id is required")
        }
+    }
+    "not redirect to an unknown client" in {
+      val body = http.x(authorize <<? Map(
+        "response_type" -> "token",
+        "client_id" -> "bogus",
+        "redirect_uri" -> "bogus"
+      ) as_str)
+      body must_==("invalid client")
+    }
+    "not redirect to an invalid redirect_uri" in {
+      val body = http.x(authorize <<? Map(
+        "response_type" -> "token",
+        "client_id" -> client.id,
+         "redirect_uri" -> "bogus"
+      ) as_str)
+      body must_==("missing or invalid redirect_uri")
     }
     "require a client_secret" in {
        val (head, body) = http(token << Map(
