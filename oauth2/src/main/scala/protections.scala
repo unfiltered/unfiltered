@@ -69,7 +69,7 @@ case class BearerToken(value: String) extends AccessToken
 
 /** Represents Bearer auth. */
 trait BearerAuth extends AuthScheme {
-  val defaultBearerHeader = """Bearer ([\w|:|\/|.|%|-]+)""".r
+  val defaultBearerHeader = """Bearer ([\w\d!#$%&'\(\)\*+\-\.\/:<=>?@\[\]^_`{|}~\\,;]+)""".r
   def header = defaultBearerHeader
 
   object BearerHeader {
