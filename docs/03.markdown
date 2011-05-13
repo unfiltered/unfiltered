@@ -1,0 +1,21 @@
+Bindings Modules
+----------------
+
+The core Unfiltered library does not depend on or reference any server
+backend. It defines internal abstractions for requests and responses
+and provides common matchers and writers in those terms.
+
+An application or library that depends only on the core library would
+be used with any backend that Unfiltered supports. In most cases you
+will choose a *binding* module, which links Unfiltered's request and
+response vocabulary to the backend.
+
+### Servlet Filters (unfiltered-filter)
+
+The Java Servlet API enables you to write applications that run on
+servlet containers, anything from Tomcat to Google App Engine. With
+Unfiltered you can write these filter classes in a few lines of Scala,
+and run them almost anywhere.
+
+### Netty Channels (unfiltered-netty)
+
