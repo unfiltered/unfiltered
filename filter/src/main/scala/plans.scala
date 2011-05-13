@@ -17,6 +17,12 @@ object Plan {
   type Intent = unfiltered.Cycle.Intent[HttpServletRequest,HttpServletResponse]
 }
 
+/** Object to facilitate Plan.Intent definitions. Type annotations
+ *  are another option. */
+object Intent {
+  def apply(intent: Plan.Intent) = intent
+}
+
 /**
  * Servlet filter that wraps an Intent and adheres to standard filter chain behaviour.
  */

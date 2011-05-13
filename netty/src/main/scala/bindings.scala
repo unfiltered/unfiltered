@@ -161,10 +161,11 @@ private [netty] class ResponseBinding[U <: NHttpResponse](res: U)
 private [netty] object URLParser {
 
   def urldecode(enc: String) : Map[String, Seq[String]] = {
+    def decode(raw: String) = URLDecoder.decode(raw, HttpConfig.DEFAULT_CHARSET)
     val pairs = enc.split('&').flatMap {
       _.split('=') match {
-        case Array(key, value) => List((key, URLDecoder.decode(value, HttpConfig.DEFAULT_CHARSET)))
-        case Array(key) if key != "" => List((key, ""))
+        case Array(key, value) => List((decode(key), decode(value)))
+        case Array(key) if key != "" => List((decode(key), ""))
         case _ => Nil
       }
     }.reverse

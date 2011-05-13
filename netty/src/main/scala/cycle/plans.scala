@@ -12,6 +12,11 @@ import unfiltered.request.HttpRequest
 object Plan {
   type Intent = unfiltered.Cycle.Intent[ReceivedMessage,NHttpResponse]
 }
+/** Object to facilitate Plan.Intent definitions. Type annotations
+ *  are another option. */
+object Intent {
+  def apply(intent: Plan.Intent) = intent
+}
 /** A Netty Plan for request cycle handling. */
 trait Plan extends SimpleChannelUpstreamHandler {
   def intent: Plan.Intent
