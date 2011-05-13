@@ -1,3 +1,4 @@
+
 package unfiltered.oauth2
 
 import org.specs._
@@ -15,18 +16,24 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
 
     def unapply[T <: HttpServletRequest](request: HttpRequest[T]): Option[User] =
       request.underlying.getAttribute(unfiltered.oauth2.OAuth2.XAuthorizedIdentity) match {
-        case user: User => Some(user)
+        case id: String => Some(new User(id))
         case _ => None
       }
   }
+
+  val GoodBearerToken = """!#$%&'()*+=./:<=>?@[]^_`{|}~\good_token7""" // note had issues parsing as header with , and ;
+  val GoodMacToken = "good_token"
 
   def setup = { server =>
     val source = new AuthSource {
       def authenticateToken[T](access_token: AccessToken, request: HttpRequest[T]): Either[String, (ResourceOwner, Option[String])] =
         access_token match {
-          case BearerToken("good_token")          => Right(new User("test_user"), None)
-          case MacAuthToken("good_token", _, _, _, _) => Right(new User("test_user"), None)
-          case _ => Left("bad token")
+          case BearerToken(GoodBearerToken) =>
+            Right((new User("test_user"), None))
+          case MacAuthToken(GoodMacToken, _, _, _, _) =>
+            Right((new User("test_user"), None))
+          case _ =>
+            Left("bad token")
         }
 
       override def realm: Option[String] = Some("Mock Source")
@@ -40,23 +47,32 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
 
   "oauth 2" should {
     "authenticate a valid access token via query parameter" in {
-      val oauth_token = Map("oauth_token" -> "good_token")
-      Http(host / "user" <<? oauth_token as_str) must_== "test_user"
+      val oauth_token = Map("oauth_token" -> GoodBearerToken)
+      try {
+        Http.x(host / "user" <<? oauth_token as_str) must_== "test_user"
+      } catch {
+        case dispatch.StatusCode(code, _) =>
+          fail("got unexpected status code %s" format code)
+      }
     }
 
     "authenticate a valid access token via Bearer header" in {
-      val bearer_header = Map("Authorization" -> "Bearer good_token")
-      Http(host / "user" <:< bearer_header as_str) must_== "test_user"
+      val bearer_header = Map("Authorization" -> "Bearer %s".format(GoodBearerToken))
+      try {
+        Http.x(host / "user" <:< bearer_header as_str) must_== "test_user"
+      } catch {
+        case dispatch.StatusCode(code, _) =>
+          fail("got unexpected status code %s" format code)
+      }
     }
 
     "fail on a bad Bearer header" in {
       val bearer_header = Map("Authorization" -> "Bearer bad_token")
-      Http.when(_ == 401)(host / "user" <:< bearer_header as_str) must_== """error="%s" error_description="%s" """.trim.format(
-        "invalid_token", "bad token")
+      Http.when(_ == 401)(host / "user" <:< bearer_header as_str) must_== """error="%s" error_description="%s" """.trim.format("invalid_token", "bad token")
     }
 
     "authenticate a valid access token via MAC header" in {
-      val mac_header = Map("Authorization" -> """MAC token="good_token",timestamp="x",nonce="x",bodyhash="x",signature="x" """.trim)
+      val mac_header = Map("Authorization" -> """MAC token="%s",timestamp="x",nonce="x",bodyhash="x",signature="x" """.format(GoodMacToken).trim)
       Http(host / "user" <:< mac_header as_str) must_== "test_user"
     }
   }
