@@ -1,32 +1,73 @@
 Bindings and Servers
 --------------------
 
-The core Unfiltered library does not depend on or reference any
+The core module unfiltered-library does not depend on or reference any
 particular server backend. It defines internal abstractions for
-requests and responses and defines matchers and writers in those
-terms.
+requests and responses, with higher level abstractions on top.
 
 An application or library that depends only on the core library could
-be used with any backend that Unfiltered supports, but in most cases you
-will choose a *binding* module.
+be used with any backend that Unfiltered supports, but in most cases it
+will depend on a *binding* module.
 
 ### Binding Modules
 
-These bind Unfiltered's request and response vocabulary to lower
-level implementations.
+These bind Unfiltered's generic request and response interfaces to a
+given implementation, as well as intent types and plan traits.
 
 #### Servlet Filters (unfiltered-filter)
 
 The Java Servlet API enables you to write applications that run on
-servlet containers, anything from Tomcat to Google App Engine. With
-Unfiltered you can write these filter classes in a few lines of Scala,
-and run them almost anywhere.
+servlet containers, anything from Tomcat to Google App Engine. Its
+plan trait is a servlet filter.
 
 #### Netty Channels (unfiltered-netty)
 
 Netty defines *channels* for network I/O and implements them using
-Java's Native I/O (NIO) interface. Channels are a better match than
-the Servlet API for web applications that do follow an immediate
-request-response pattern.
+Java's Native I/O (NIO) interface. Its plan traits are upstream
+channel handlers, and the module defines intents and plans in separate
+`cycle` and `channel` subpackages, the former for traditional
+request-response cycles and the latter for open-ended interaction.
 
+### Server Modules
 
+Server modules define runnable servers to execute your plans. They are
+entirely optional. Applications can instead use Unfiltered's binding
+modules with external containers, or they can interface directly with
+server libraries.
+
+#### unfiltered-jetty
+
+Includes builders for Jetty servers that implement the HTTP and HTTPS
+protocols. With this server it is particularly easy serve a web
+browser interface for a local process. Unfiltered even gives you a
+shortcut to open a browser window, if the user is on a 1.6+ JVM that
+supports it.
+
+    import unfiltered.request._
+    import unfiltered.response._
+    val hello = unfiltered.filter.Planify {
+       case _ => ResponseString("hello world")
+    }
+    unfiltered.jetty.Http.anylocal.filter(hello).run { s =>
+      unfiltered.util.Browser.open(
+          "http://127.0.0.1:%d/".format(s.port)
+      )
+    }
+
+#### unfiltered-jetty-ajp
+
+A Jetty server configured for the [Apache JServ Protocol][ajp], a
+binary protocol for proxying web requests.
+
+[ajp]: http://en.wikipedia.org/wiki/Apache_JServ_Protocol
+
+#### unfiltered-netty-server
+
+Bootstraps and binds a server for your channel handlers.
+
+    import unfiltered.request._
+    import unfiltered.response._
+    val hello = unfiltered.netty.cycle.Planify {
+       case _ => ResponseString("hello world")
+    }
+    unfiltered.netty.Http(8080).handler(hello).run()

@@ -9,7 +9,7 @@ trait RunnableServer {
   def run() {
     run { _ => () }
   }
-  /** Starts the server then takes and action */
+  /** Starts the server then takes an action */
   def run(afterStart: this.type => Unit) {
     run(afterStart, { _ => () })
   }
