@@ -1,32 +1,51 @@
-Bindings and Servers
---------------------
+Plans and Intents
+-----------------
 
-The core Unfiltered library does not depend on or reference any
-particular server backend. It defines internal abstractions for
-requests and responses and defines matchers and writers in those
-terms.
+Unfiltered conditionally handles incoming requests with partial
+functions. From the application's perspective, requests are
+mapped to code paths with pattern matching. The library uses
+a particular vocabulary to refer to the agents of this process
+without ambiguity.
 
-An application or library that depends only on the core library could
-be used with any backend that Unfiltered supports, but in most cases you
-will choose a *binding* module.
+An *intent* is a partial function for matching requests. It is
+therefore always of type `PartialFunction`, but its type parameters
+vary. The core module unfiltered-library defines one type of intent
+for typical request-response cycles, `unfiltered.Cycle.Intent[A,B]`,
+which binding modules can use to define a concrete type for their
+underlying request and response types. They can also define
+independent intent types; "intent" is a concept and not an interface.
 
-### Binding Modules
+A *plan* binds an intent to a particular server interface. The core
+module does not define any plans. Binding modules define plans for
+their particular intent types and server interfaces. For example, the
+unfiltered-filter module defines a `unfiltered.filter.Plan` trait that
+is an extension of `javax.servlet.Filter` interface. Its abstract
+method `intent` is where the key partial function will be defined.
 
-These bind Unfiltered's request and response vocabulary to lower
-level implementations.
+### Making Plans of Intents
 
-#### Servlet Filters (unfiltered-filter)
+Looking back at the example on the previous page, you might wonder
+where the plan ends and the intent begins.
 
-The Java Servlet API enables you to write applications that run on
-servlet containers, anything from Tomcat to Google App Engine. With
-Unfiltered you can write these filter classes in a few lines of Scala,
-and run them almost anywhere.
+    import unfiltered.request._
+    import unfiltered.response._
+    val echo = unfiltered.filter.Planify {
+       case Path(Seg(p :: Nil)) => ResponseString(p)
+    }
 
-#### Netty Channels (unfiltered-netty)
+In this case a plan is constructed directly from an anonymous partial
+function—that function is the intent. We can define the same plan in
+more explicit parts, as is usually necessary in a larger application.
 
-Netty defines *channels* for network I/O and implements them using
-Java's Native I/O (NIO) interface. Channels are a better match than
-the Servlet API for web applications that do follow an immediate
-request-response pattern.
+    object Echo extends unfiltered.filter.Plan {
+      def intent = {
+        case Path(Seg(p :: Nil)) => ResponseString(p)
+      }
+    }
 
+Since a plan in this binding module is an implementation of the
+servlet filter interface, we can pass it directly to a
+servlet container.
+
+    unfiltered.jetty.Http.anylocal.filter(Echo).run()
 
