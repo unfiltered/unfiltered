@@ -41,8 +41,8 @@ choices. One option is to *pass* on the request:
 
 The `Pass` response function is a signal for the plan act as if the
 request was not defined for this intent. If no other plan responds to
-the request, the server may respond with a 404 eror. We can improve on
-that by ensuring that any request to this path that is not an
-expected method receives an appropriate response:
+the request, the server may respond with a 404 eror. But we can
+improve on that by ensuring that any request to this path that is not
+an expected method receives an appropriate response:
 
       case _ => MethodNotAllowed ~> ResponseString("Must be GET or PUT")
