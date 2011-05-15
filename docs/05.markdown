@@ -1,0 +1,51 @@
+Project Setup
+-------------
+
+### Modules and Artifacts
+
+Unfiltered's core, binding, server, and other modules are published
+with references to their underlying dependencies, so that applications
+need only explicitly depend on Unfiltered and other top-level
+dependencies. Keep in mind that server modules and binding modules are
+not generally co-dependent, so that if you are using for example
+unfiltered-jetty, you will also need to specify unfiltered-filter.
+
+Each module is [cross-built][sbt] against several versions of Scala
+and published to the [scala-tools][st] repository with the
+organization-id "net.databinder". The modules have the Scala version
+they are built against appended. For Scala $scala$, the full artifact
+names are as follows:
+
+* unfiltered_$scala$
+* unfiltered-filter_$scala$
+* unfiltered-netty_$scala$
+* unfiltered-websockets_$scala$
+* unfiltered-jetty_$scala$
+* unfiltered-jetty-ajp_$scala$
+* unfiltered-netty-server_$scala$
+* unfiltered-uploads_$scala$
+* unfiltered-utils_$scala$
+* unfiltered-spec_$scala$
+* unfiltered-scalatest_$scala$
+* unfiltered-json_$scala$
+* unfiltered-scalate_$scala$
+* unfiltered-oauth_$scala$
+
+[st]: http://scala-tools.org/repo-releases/net/databinder/
+[sbt]: http://code.google.com/p/simple-build-tool/wiki/CrossBuild
+
+### Build Tools
+
+With **simple-build-tool** it's best to have the Scala version
+[automatically appended][sbt] so it will always match your
+project's. In a sbt 0.7.4 project:
+
+    val uf_filter = "net.databinder" %% "unfiltered-filter" % "$version$"
+
+For **Maven**, specify the full artifact name:
+
+    <dependency>
+      <groupId>net.databinder</groupId>
+      <artifactId>unfiltered-filter_$scala$</artifactId>
+      <version>$version$</version>
+    </dependency>

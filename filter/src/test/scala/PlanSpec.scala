@@ -7,57 +7,54 @@ object PlanSpec extends Specification with unfiltered.spec.jetty.Served {
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
   import unfiltered.filter._
-  
+  import request.ContextPath
+
   import dispatch._
-  
-  def setup = { 
+  import dispatch.Http._
+
+  def setup = {
     _.filter(Planify {
-      case GET(UFPath("/filter")) => Pass
-      case _ => println("nonmatching first"); Pass
+      case UFPath("/filter") => Pass
     }).filter(Planify {
-      case GET(UFPath("/filter")) => ResponseString("test") ~> Ok
+      case UFPath("/filter") => ResponseString("test")
     }).context("/filter2") {
       _.filter(Planify {
-        case GET(UFPath("/test2")) => ResponseString("test2") ~> Ok
+        case ContextPath(_, "/test2") => ResponseString("test2")
       })
     }.context("/filter3") {
       _.filter(new Plan { def intent = {
-        case GET(UFPath(Seg("aplan" :: Nil))) =>
-          Ok ~> ContentType("text/html") ~> ResponseString("Plan A")
+        case ContextPath(_, Seg("aplan" :: Nil)) => ResponseString("Plan A")
       }})
       .filter(new Plan { def intent = {
-        case GET(UFPath(Seg("bplan" :: Nil))) =>
-          Ok ~> ContentType("text/html") ~> ResponseString("Plan B")
+        case ContextPath(_, Seg("bplan" :: Nil)) => ResponseString("Plan B")
       }})
     }.context("/filter4") {
       _.filter(new unfiltered.filter.Planify({
-        case GET(UFPath(Seg("aplan" :: Nil))) =>
-          Ok ~> ContentType("text/html") ~> ResponseString("Plan A")
+        case ContextPath(_, Seg("aplan" :: Nil)) =>  ResponseString("Plan A")
       }))
       .filter(new unfiltered.filter.Planify({
-        case GET(UFPath(Seg("bplan" :: Nil))) =>
-          Ok ~> ContentType("text/html") ~> ResponseString("Plan B")
+        case ContextPath(_, Seg("bplan" :: Nil)) => ResponseString("Plan B")
       }))
       .filter(new unfiltered.filter.Planify({
-        case GET(UFPath(Seg("cplan" :: Nil))) =>
-          Ok ~> ContentType("text/html") ~> ResponseString("Plan C")
+        case ContextPath(_, Seg("cplan" :: Nil)) => ResponseString("Plan C")
       }))
     }.context("/filter5") {
       _.filter(unfiltered.filter.Planify {
-        case GET(UFPath(Seg("aplan" :: Nil))) =>
-          Ok ~> ContentType("text/html") ~> ResponseString("Plan A")
+        case ContextPath(_, Seg("aplan" :: Nil)) => ResponseString("Plan A")
       })
       .filter(unfiltered.filter.Planify {
-        case GET(UFPath(Seg("bplan" :: Nil))) =>
-          Ok ~> ContentType("text/html") ~> ResponseString("Plan B")
+        case ContextPath(_, Seg("bplan" :: Nil)) => ResponseString("Plan B")
       })
       .filter(unfiltered.filter.Planify {
-        case GET(UFPath(Seg("cplan" :: Nil))) =>
-          Ok ~> ContentType("text/html") ~> ResponseString("Plan C")
+        case ContextPath(_, Seg("cplan" :: Nil)) => ResponseString("Plan C")
+      })
+    }.context("/query") {
+      _.filter(unfiltered.filter.Planify {
+        case ContextPath(_, "/qplan") & QueryString(qs) => ResponseString(qs)
       })
     }
   }
-  
+
   "A Plan" should {
     "filter on the same context path" in {
       Http(host / "filter" as_str)  must_=="test"
@@ -78,6 +75,9 @@ object PlanSpec extends Specification with unfiltered.spec.jetty.Served {
       Http(host / "filter5" / "aplan" as_str) must_=="Plan A"
       Http(host / "filter5" / "bplan" as_str) must_=="Plan B"
       Http(host / "filter5" / "cplan" as_str) must_=="Plan C"
+    }
+    "filter must extract query string" in {
+      Http(host / "query" / "qplan" <<? Map("foo"->"bar", "baz"->"boom") as_str) must_=="foo=bar&baz=boom"
     }
   }
 }

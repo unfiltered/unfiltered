@@ -5,7 +5,7 @@ It's not hard to write a request handler in the Scala console using
 Unfiltered. The tricky part is getting everything you need on the
 classpath.
 
-### A Play Project
+### Play Project
 
 The approach recommended here uses [giter8][g8], a tool for setting up
 projects based on templates stored in github. Assuming you don't have
@@ -16,14 +16,17 @@ easy to fix that.
 
     curl https://github.com/n8han/conscript/raw/master/setup.sh | sh
 
-That is [conscript][conscript], and that script puts its executable
-script in `~/bin/cs`. It's great to have that directory on your
-executable path, but these instructions will not count on that.
+That is [conscript][conscript]. Its `setup.sh` places a permanent
+(assuming you don't delete it) executable script in `~/bin/cs`. At
+some point you may want to add `~/bin` to your executable search path,
+but these instructions will not assume it is.
+
+[conscript]: https://github.com/n8han/conscript#readme
 
     ~/bin/cs n8han/giter8
 
-This installs a `g8` command. For the next step you should be working
-in a directory where you want to create a new project directory.
+That installs a `g8`. Now you have a script to run giter8. The next
+step creates a new project under the current working directory.
 
     ~/bin/g8 softprops/unfiltered --name=justplayin
 
