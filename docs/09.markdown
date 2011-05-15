@@ -29,9 +29,9 @@ key-value store.
       }
     }
 
-Go ahead and paste that into a console. Then, execute the plan with a
-server, adjusting the port if your system does not have 8080
-available.
+Go ahead and paste that into a [console](Try+Unfiltered.html). Then,
+execute the plan with a server, adjusting the port if your system does
+not have 8080 available.
 
     unfiltered.jetty.Http.local(8080).filter(SillyStore).run()
 
