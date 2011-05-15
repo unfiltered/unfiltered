@@ -5,15 +5,16 @@ import unfiltered.response.HttpResponse
 import unfiltered.request.HttpRequest
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import unfiltered.Cookie
-import unfiltered.util.NonNull
+import unfiltered.util.Optional
 
 private [filter] class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   def inputStream = req.getInputStream
   def reader = req.getReader
   def protocol = req.getProtocol
   def method = req.getMethod
-  def requestURI = req.getRequestURI
-  def contextPath = req.getContextPath
+  def uri = req.getRequestURI :: Nil ++ Optional(req.getQueryString).map("?%s".format(_)) mkString("")
+  @deprecated def requestURI = req.getRequestURI
+  @deprecated def contextPath = req.getContextPath
   def parameterNames = new JEnumerationIterator(
     req.getParameterNames.asInstanceOf[java.util.Enumeration[String]]
   )
@@ -24,10 +25,10 @@ private [filter] class RequestBinding(req: HttpServletRequest) extends HttpReque
   lazy val cookies = req.getCookies match {
     case null => Nil
     case jcookies =>
-      (List[Cookie]() /: jcookies)((l, c) => 
-        Cookie(c.getName, c.getValue, NonNull(c.getDomain), NonNull(c.getPath), NonNull(c.getMaxAge), NonNull(c.getSecure)) :: l)
+      (List[Cookie]() /: jcookies)((l, c) =>
+        Cookie(c.getName, c.getValue, Optional(c.getDomain), Optional(c.getPath), Optional(c.getMaxAge), Optional(c.getSecure)) :: l)
   }
-    
+
   def isSecure = req.isSecure
   def remoteAddr = req.getRemoteAddr
 }

@@ -41,7 +41,7 @@ class RequestSpec extends Specification {
       req.reader.readLine must_== payload
     }
     "return the request URI without params" in {
-      req.requestURI must_== "/seg1/seg2"
+      req.uri.split('?')(0) must_== "/seg1/seg2"
     }
     "be able to get the Path extracted correctly" in {
       val unfiltered.request.Path(path) = req

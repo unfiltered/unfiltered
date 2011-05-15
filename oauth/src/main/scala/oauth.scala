@@ -62,11 +62,12 @@ trait DefaultMessages extends Messages {
 
 trait Protected extends OAuthProvider with unfiltered.filter.Plan {
   self: OAuthStores with Messages =>
+  import unfiltered.filter.request.ContextPath
   import QParams._
   import OAuth._
 
   def intent = {
-    case Path(path) & Authorization(OAuth.Header(headers)) & Params(params) & request =>
+    case ContextPath(_, path) & Authorization(OAuth.Header(headers)) & Params(params) & request =>
       val expected = for {
         oauth_consumer_key <- lookup(ConsumerKey) is
           nonempty(blankMsg(ConsumerKey)) is required(requiredMsg(ConsumerKey))
@@ -106,11 +107,12 @@ trait Protected extends OAuthProvider with unfiltered.filter.Plan {
 
 trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
   self: OAuthStores with Messages with OAuthPaths =>
+  import unfiltered.filter.request.ContextPath
   import QParams._
   import OAuth._
 
   def intent = {
-    case POST(Path(RequestTokenPath) & Authorization(OAuth.Header(headers)) & Params(params)) & request =>
+    case POST(ContextPath(_, RequestTokenPath) & Authorization(OAuth.Header(headers)) & Params(params)) & request =>
       val expected = for {
         consumer_key <- lookup(ConsumerKey) is
           nonempty(blankMsg(ConsumerKey)) is required(requiredMsg(ConsumerKey))
@@ -139,7 +141,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         BadRequest ~> ResponseString(errors.map { _.error } mkString(". "))
       }
 
-    case Path(AuthorizationPath) & Params(params) & request =>
+    case ContextPath(_, AuthorizationPath) & Params(params) & request =>
       val expected = for {
         token <- lookup(TokenKey) is
           nonempty(blankMsg(TokenKey)) is required(requiredMsg(TokenKey))
@@ -159,7 +161,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         BadRequest ~> ResponseString(errors.map { _.error } mkString(". "))
       }
 
-    case request @ POST(Path(AccessTokenPath) & Authorization(OAuth.Header(headers)) & Params(params)) =>
+    case request @ POST(ContextPath(_, AccessTokenPath) & Authorization(OAuth.Header(headers)) & Params(params)) =>
       val expected = for {
         consumer_key <- lookup(ConsumerKey) is
           nonempty(blankMsg(ConsumerKey)) is required(requiredMsg(ConsumerKey))

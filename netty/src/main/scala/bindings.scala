@@ -15,7 +15,7 @@ import org.jboss.netty.handler.codec.http.{HttpResponse=>NHttpResponse,
                                            HttpRequest=>NHttpRequest}
 import java.nio.charset.{Charset => JNIOCharset}
 import unfiltered.Cookie
-import unfiltered.util.NonNull
+import unfiltered.util.Optional
 
 object HttpConfig {
    val DEFAULT_CHARSET = "UTF-8"
@@ -43,15 +43,15 @@ private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(m
     new BufferedReader(new InputStreamReader(inputStream, charset))
   }
 
-
   def protocol = req.getProtocolVersion match {
     case HttpVersion.HTTP_1_0 => "HTTP/1.0"
     case HttpVersion.HTTP_1_1 => "HTTP/1.1"
   }
   def method = req.getMethod.toString
 
-  def requestURI = req.getUri.split('?').toList.head
-  def contextPath = "" // No contexts here
+  def uri = req.getUri
+  @deprecated def requestURI = req.getUri.split('?').toList.head
+  @deprecated def contextPath = "" // No contexts here
 
   def parameterNames = params.keySet.elements
   def parameterValues(param: String) = params(param)
@@ -66,7 +66,7 @@ private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(m
       val cookieDecoder = new CookieDecoder
       val decCookies = Set(cookieDecoder.decode(cookieString).toArray(new Array[NCookie](0)): _*)
       (List[Cookie]() /: decCookies)((l, c) =>
-        Cookie(c.getName, c.getValue, NonNull(c.getDomain), NonNull(c.getPath), NonNull(c.getMaxAge), NonNull(c.isSecure)) :: l)
+        Cookie(c.getName, c.getValue, Optional(c.getDomain), Optional(c.getPath), Optional(c.getMaxAge), Optional(c.isSecure)) :: l)
     } else {
       Nil
     }
