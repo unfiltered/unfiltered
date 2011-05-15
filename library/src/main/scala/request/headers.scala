@@ -6,10 +6,10 @@ class RequestHeader(val name: String) {
     def split(raw: String) = raw.split(",") map {
       _.trim.takeWhile { _ != ';' } mkString
     }
-    
+
     def headers(e: Iterator[String]): List[String] =
       List.fromIterator(e).flatMap(split)
-    
+
     headers(req.headers(name)) match {
       case Nil => None
       case hs => Some(hs)
@@ -43,14 +43,24 @@ object TE extends RequestHeader("TE")
 object Upgrade extends RequestHeader("Upgrade")
 object UserAgent extends RequestHeader("User-Agent")
 object Via extends RequestHeader("Via")
-object XForwardedFor extends RequestHeader("X-Forwarded-For") 
+object XForwardedFor extends RequestHeader("X-Forwarded-For")
 
 object Charset {
   val Setting = """.*;.*\bcharset=(\S+).*""".r
-  def unapply[T](req: HttpRequest[T]) = {
+  def unapply[T](req: HttpRequest[T]) =
     List.fromIterator(req.headers(RequestContentType.name)).flatMap {
       case Setting(cs) => (cs, req) :: Nil
       case _ => Nil
     }.firstOption
-  }
+}
+
+object HostPort {
+  val Port = """^\S+[:](\d{4})$""".r
+  def unapply[T](req: HttpRequest[T]): Option[(String, Int)] =
+    req match {
+      case Host(Seq(hostname)) => hostname match {
+        case Port(port) => Some(hostname, port.toInt)
+        case _ => Some(hostname, if(req.isSecure) 443 else 80)
+      }
+    }
 }
