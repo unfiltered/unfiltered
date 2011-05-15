@@ -64,7 +64,7 @@ trait Plan extends SimpleChannelUpstreamHandler {
   }
 
   object WSLocation {
-    def apply[T](r: HttpRequest[T]) = "ws://%s%s" format(Host(r)(0), r.uri)
+    def apply[T](r: HttpRequest[T]) = "ws://%s%s" format(Host(r)(0), r.uri.split('?')(0))
   }
 
   private def upgrade(ctx: ChannelHandlerContext, request: NHttpRequest, event: MessageEvent) = {

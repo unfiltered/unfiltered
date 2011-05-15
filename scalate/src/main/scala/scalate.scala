@@ -13,7 +13,7 @@ private[scalate] object ScalateDefaults{
   implicit val engine = new TemplateEngine(defaultTemplateDirs)
 
   implicit def renderContext(req: HttpRequest[_], res: HttpResponse[_], engine: TemplateEngine) =
-    new DefaultRenderContext(req.uri, engine, res.getWriter)
+    new DefaultRenderContext(req.uri.split('?')(0), engine, res.getWriter)
 }
 
 object Scalate {
