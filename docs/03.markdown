@@ -40,3 +40,5 @@ interface, we can pass it directly to a servlet container.
 
     unfiltered.jetty.Http.anylocal.filter(Echo).run()
 
+If a plan does not handle a request, the server may chain to the next
+plan if there is one, or produce its own error response.
