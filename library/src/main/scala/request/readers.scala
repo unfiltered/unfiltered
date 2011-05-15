@@ -1,18 +1,11 @@
 package unfiltered.request
 
-object InStream {
-  def unapply[T](req: HttpRequest[T]) = Some(req.inputStream)
-}
-
-object Read {
-  def unapply[T](req: HttpRequest[T]) = Some(req.reader)
-}
-
-object Bytes {
-  /** This extractor has a side effect and will go away soon */
-  @deprecated
-  def unapply[T](req: HttpRequest[T]) = {
-    val InStream(in) = req
+/** Utility for working with the request body. */
+object Body {
+  def stream[T](req: HttpRequest[T]) = req.inputStream
+  def reader[T](req: HttpRequest[T]) = req.reader
+  def bytes[T](req: HttpRequest[T]) = {
+    val in = stream(req)
     val bos = new java.io.ByteArrayOutputStream
     val ba = new Array[Byte](4096)
     /* @scala.annotation.tailrec */ def read {
@@ -22,11 +15,27 @@ object Bytes {
     }
     read
     in.close
-    bos.toByteArray match {
-      case Array() => None
-      case ba => Some(ba, req)
-    }
+    bos.toByteArray
   }
-  /** Results in side effect of consuming the request body contents */
-  def apply[T](req: HttpRequest[T]) = unapply(req)
+}
+
+object InStream {
+  @deprecated
+  /** Use Body */
+  def unapply[T](req: HttpRequest[T]) = Some(req.inputStream)
+}
+
+object Read {
+  @deprecated
+  /** Use Body */
+  def unapply[T](req: HttpRequest[T]) = Some(req.reader)
+}
+
+object Bytes {
+  @deprecated
+  /** Use Body */
+  def apply[T](req: HttpRequest[T]) = Body.bytes(req) match {
+    case Array() => None
+    case ba => Some(ba, req)
+  }
 }
