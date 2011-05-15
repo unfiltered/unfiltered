@@ -1,21 +1,42 @@
-Bindings Modules
-----------------
+Plans and Intents
+-----------------
 
-The core Unfiltered library does not depend on or reference any server
-backend. It defines internal abstractions for requests and responses
-and provides common matchers and writers in those terms.
+Unfiltered conditionally handles incoming requests using partial
+functions. From the application's perspective, requests are
+mapped to code paths by pattern matching. The library uses
+a particular vocabulary to refer to the agents of this process
+without ambiguity.
 
-An application or library that depends only on the core library would
-be used with any backend that Unfiltered supports. In most cases you
-will choose a *binding* module, which links Unfiltered's request and
-response vocabulary to the backend.
+* An *intent* is a partial function for matching requests.
+* A *plan* binds an intent to a particular server interface.
 
-### Servlet Filters (unfiltered-filter)
+For example, the `unfiltered.filter.Plan` trait extends the
+`javax.servlet.Filter` interface. It declares an abstract `intent`
+method for clients to define the intent partial function.
 
-The Java Servlet API enables you to write applications that run on
-servlet containers, anything from Tomcat to Google App Engine. With
-Unfiltered you can write these filter classes in a few lines of Scala,
-and run them almost anywhere.
+### Making Plans of Intents
 
-### Netty Channels (unfiltered-netty)
+Looking back at the example on the previous page, you might wonder
+where the plan ends and the intent begins.
+
+    import unfiltered.request._
+    import unfiltered.response._
+    val echo = unfiltered.filter.Planify {
+       case Path(Seg(p :: Nil)) => ResponseString(p)
+    }
+
+In this case a plan is constructed directly from an anonymous partial
+function—that function is the intent. We can define the same plan in
+more explicit parts, as is usually necessary in a larger application.
+
+    object Echo extends unfiltered.filter.Plan {
+      def intent = {
+        case Path(Seg(p :: Nil)) => ResponseString(p)
+      }
+    }
+
+Since this kind of plan is an implementation of the servlet filter
+interface, we can pass it directly to a servlet container.
+
+    unfiltered.jetty.Http.anylocal.filter(Echo).run()
 
