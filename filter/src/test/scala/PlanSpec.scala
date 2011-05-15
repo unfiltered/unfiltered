@@ -10,6 +10,7 @@ object PlanSpec extends Specification with unfiltered.spec.jetty.Served {
   import request.ContextPath
 
   import dispatch._
+  import dispatch.Http._
 
   def setup = {
     _.filter(Planify {
@@ -47,6 +48,10 @@ object PlanSpec extends Specification with unfiltered.spec.jetty.Served {
       .filter(unfiltered.filter.Planify {
         case ContextPath(_, Seg("cplan" :: Nil)) => ResponseString("Plan C")
       })
+    }.context("/query") {
+      _.filter(unfiltered.filter.Planify {
+        case ContextPath(_, "/qplan") & QueryString(qs) => ResponseString(qs)
+      })
     }
   }
 
@@ -70,6 +75,9 @@ object PlanSpec extends Specification with unfiltered.spec.jetty.Served {
       Http(host / "filter5" / "aplan" as_str) must_=="Plan A"
       Http(host / "filter5" / "bplan" as_str) must_=="Plan B"
       Http(host / "filter5" / "cplan" as_str) must_=="Plan C"
+    }
+    "filter must extract query string" in {
+      Http(host / "query" / "qplan" <<? Map("foo"->"bar", "baz"->"boom") as_str) must_=="foo=bar&baz=boom"
     }
   }
 }
