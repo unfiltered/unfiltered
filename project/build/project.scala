@@ -104,10 +104,15 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info)
     lazy val dispatchOAuth = dispatchOAuthDependency % "test"
   }, jetty, filter_p)
 
+
+  lazy val mac = project("mac", "Unfiltered Mac Auth",
+    new UnfilteredModule(_) with IntegrationTesting {
+  }, library)
+
   lazy val oauth2 = project("oauth2", "Unfiltered OAuth2",
     new UnfilteredModule(_) with IntegrationTesting {
     lazy val dispatchOAuth = dispatchOAuthDependency % "test"
-  }, jetty, filter_p)
+  }, jetty, filter_p, mac)
 
 
   def specsDependency =

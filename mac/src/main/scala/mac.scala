@@ -1,8 +1,58 @@
-package unfiltered.oauth2
+package unfiltered.mac
 
 import unfiltered.request._
 import unfiltered.response._
-import unfiltered.filter.request.ContextPath // work on removing this dep
+
+object Mac {
+  def Challenge = Unauthorized ~> WWWAuthenticate("MAC")
+}
+
+/** MAC Authorization extractor */
+object MacAuthorization {
+  val Id = "id"
+  val Nonce = "nonce"
+  val BodyHash = "bodyhash"
+  val Ext = "ext"
+  val MacKey = "mac"
+
+  object MacHeader {
+    import QParams._
+    val KeyVal = """(\w+)="([\w|:|\/|.|%|-]+)" """.trim.r
+    val keys = Id :: Nonce :: BodyHash :: Ext :: MacKey :: Nil
+    val headerSpace = "MAC" + " "
+
+    def unapply(hvals: List[String]) = hvals match {
+      case x :: xs if x startsWith headerSpace =>
+        val map = Map(hvals map { _.replace(headerSpace, "") } flatMap {
+          case KeyVal(k, v) if(keys.contains(k)) => Seq((k -> Seq(v)))
+          case _ => Nil
+        }: _*)
+        println(map)
+        val expect = for {
+          id <- lookup(Id) is nonempty("") is required("")
+          nonce <- lookup(Nonce) is nonempty("") is required("")
+          bodyhash <- lookup(BodyHash) is optional[String, String]
+          ext <- lookup(Ext) is optional[String, String]
+          mac <- lookup(MacKey) is nonempty("") is required("")
+        } yield {
+          Some(id.get, nonce.get, bodyhash.get, ext.get, mac.get)
+        }
+        expect(map) orFail { f => None }
+      case _ => None
+    }
+  }
+
+  /** @return (id, nonce, Option[bodyhash], Option[ext], mac)*/
+  def unapply[T](r: HttpRequest[T]) = r match {
+    case Authorization(vals) =>
+      vals match {
+        case MacHeader(id, nonce, bodyhash, ext, mac) =>
+          Some(id, nonce, bodyhash, ext, mac)
+        case _ => None
+      }
+    case _ => None
+  }
+}
 
 /** MAC request signing as defined by
  *  http://tools.ietf.org/html/draft-hammer-oauth-v2-mac-token-05
@@ -12,7 +62,7 @@ import unfiltered.filter.request.ContextPath // work on removing this dep
  *  3. MAC algorithm - one of ("hmac-sha-1" or "hmac-sha-256")
  *  4. Issue time - time when credentials were issued to calculate the age
  */
-object Mac {
+object Signing {
   import org.apache.commons.codec.binary.Base64.encodeBase64
 
   val HmacSha1 = "HmacSHA1"

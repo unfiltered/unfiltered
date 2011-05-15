@@ -1,4 +1,3 @@
-
 package unfiltered.oauth2
 
 import org.specs._

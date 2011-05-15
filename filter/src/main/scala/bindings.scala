@@ -11,7 +11,7 @@ private [filter] class RequestBinding(req: HttpServletRequest) extends HttpReque
   def inputStream = req.getInputStream
   def reader = req.getReader
   def protocol = req.getProtocol
-  def method = req.getMethod
+  def method = req.getMethod.toUpperCase
   def uri = req.getRequestURI :: Nil ++ Optional(req.getQueryString).map("?%s".format(_)) mkString("")
   @deprecated def requestURI = req.getRequestURI
   @deprecated def contextPath = req.getContextPath

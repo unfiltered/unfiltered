@@ -8,6 +8,7 @@ object Read {
   def unapply[T](req: HttpRequest[T]) = Some(req.reader)
 }
 
+/** TODO no need to return a tuple here. also remove the extractor! */
 object Bytes {
   /** This extractor has a side effect and will go away soon */
   @deprecated

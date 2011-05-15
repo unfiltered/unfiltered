@@ -47,7 +47,7 @@ private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(m
     case HttpVersion.HTTP_1_0 => "HTTP/1.0"
     case HttpVersion.HTTP_1_1 => "HTTP/1.1"
   }
-  def method = req.getMethod.toString
+  def method = req.getMethod.toString.toUpperCase
 
   def uri = req.getUri
   @deprecated def requestURI = req.getUri.split('?').toList.head

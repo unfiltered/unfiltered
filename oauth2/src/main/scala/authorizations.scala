@@ -4,6 +4,7 @@ import unfiltered._
 import unfiltered.request._
 import unfiltered.response._
 import unfiltered.request.{HttpRequest => Req}
+import unfiltered.filter.request.ContextPath // work on removing this dep
 
 object OAuthorization {
 
@@ -94,7 +95,7 @@ trait Authorized extends AuthorizationProvider
 
   def intent = {
 
-    case req @ Path(AuthorizePath) & Params(params) =>
+    case req @ ContextPath(_, AuthorizePath) & Params(params) =>
       val expected = for {
         responseType <- lookup(ResponseType) is required(requiredMsg(ResponseType))
         clientId     <- lookup(ClientId) is required(requiredMsg(ClientId))
@@ -198,7 +199,7 @@ trait Authorized extends AuthorizationProvider
         }
       }
 
-    case POST(Path(TokenPath)) & Params(params) =>
+    case POST(ContextPath(_, TokenPath)) & Params(params) =>
       val expected = for {
         grantType     <- lookup(GrantType) is required(requiredMsg(GrantType))
         code          <- lookup(Code) is optional[String, String]
