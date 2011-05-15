@@ -9,9 +9,8 @@ object Read {
 }
 
 object Bytes {
-  /** This extractor has a side effect and will go away soon */
-  @deprecated
-  def unapply[T](req: HttpRequest[T]) = {
+  /** Results in side effect of consuming the request body contents */
+  def apply[T](req: HttpRequest[T]) = {
     val InStream(in) = req
     val bos = new java.io.ByteArrayOutputStream
     val ba = new Array[Byte](4096)
@@ -27,6 +26,4 @@ object Bytes {
       case ba => Some(ba, req)
     }
   }
-  /** Results in side effect of consuming the request body contents */
-  def apply[T](req: HttpRequest[T]) = unapply(req)
 }
