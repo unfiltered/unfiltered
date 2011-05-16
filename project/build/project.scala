@@ -108,7 +108,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info)
     if (buildScalaVersion startsWith "2.7.")
       "org.scala-tools.testing" % "specs" % "1.6.2.2"
     else
-      "org.scala-tools.testing" % "specs_2.8.0" % "1.6.5"
+      "org.scala-tools.testing" % "specs_2.8.1" % "1.6.7"
 
   def scalatestDependency =
     "org.scalatest" % "scalatest" % "1.3"
