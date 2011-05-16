@@ -55,11 +55,11 @@ object Charset {
 }
 
 object HostPort {
-  val Port = """^\S+[:](\d{4})$""".r
+  val Port = """^(\S+)[:](\d+)$""".r
   def unapply[T](req: HttpRequest[T]): Option[(String, Int)] =
     req match {
       case Host(Seq(hostname)) => hostname match {
-        case Port(port) => Some(hostname, port.toInt)
+        case Port(hn, port) => Some(hn, port.toInt)
         case _ => Some(hostname, if(req.isSecure) 443 else 80)
       }
     }
