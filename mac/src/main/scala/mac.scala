@@ -42,7 +42,7 @@ object MacAuthorization {
           ext <- lookup(Ext) is optional[String, String]
           mac <- lookup(MacKey) is nonempty("mac is nempty") is required("mac is required")
         } yield {
-          Some(id.get(0), nonce.get, bodyhash.get, ext.get, mac.get)
+          Some(id.get, nonce.get, bodyhash.get, ext.get, mac.get)
         }
         expect(map) orFail { f =>
           println(f.map(_.error) mkString(" and "))
