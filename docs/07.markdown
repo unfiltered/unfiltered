@@ -15,8 +15,7 @@ and `Path` match against Unfiltered's generic `HttpRequest`
 type. Since `GET` has nothing particular to extract, it extracts the
 request itself so that you can nest other extractors below it.
 
-The case above will only match a specific path. To test for path
-segments, we can nest one additional extractor:
+To match against path segments, we can nest one additional extractor:
 
     case GET(Path(Seg("record" :: id :: Nil))) => ...
 
@@ -54,7 +53,7 @@ An alternative is to match first on the path, then on the method:
     case req @ Path(Seg("record" :: id :: Nil)) => req match {
       case GET(_) => ...
       case PUT(_) => ...
-      case _ =>
+      case _ => ...
     }
 
 This approach eliminates the duplicated code, but it's important to
