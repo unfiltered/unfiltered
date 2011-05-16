@@ -36,7 +36,7 @@ object MacAuthorization {
         }: _*)
         val expect = for {
           id <- lookup(Id) is nonempty("id is empty") is required("id is required")
-          nonce <- lookup(Nonce) is nonempty("nounce is empty") is required("nonce is required") is
+          nonce <- lookup(Nonce) is nonempty("nonce is empty") is required("nonce is required") is
             pred({NonceFormat.findFirstIn(_).isDefined}, _ + " is an invalid format")
           bodyhash <- lookup(BodyHash) is optional[String, String]
           ext <- lookup(Ext) is optional[String, String]
