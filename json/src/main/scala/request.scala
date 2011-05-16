@@ -7,7 +7,7 @@ object JsonBody {
 
   /** @return Some(JsValue) if request contains a valid json body. */
   def apply[T](r: HttpRequest[T]) = try {
-    Some(parse(new String(Body.bytes(r))))
+    Some(parse(Body.string(r)))
   } catch { case _ => None }
 }
 

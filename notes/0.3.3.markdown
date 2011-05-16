@@ -5,6 +5,7 @@ library module
 * Deprecating `HttpRequest.requestURI` and `HttpRequest.contextPath` and replacing with `HttpRequest.uri`. `HttpRequest.contextPath` only existed to suit the `HttpServletRequest` spec and had no context in the `Netty` module and thus should not be in the base `HttpRequest` interface.
 * Added `QueryString(qs)` extractor for extracting the raw query string from a request
 * Added `HostPort(hostname, port)` extractor for extracting out a request's host and port
+* New `unfiltered.request.Body` object for working with request bodies explicitly, not as an extractor as these operations generally have side effects.
 
 filter module
 -------------
@@ -34,3 +35,16 @@ netty module
 * [gh-15](https://github.com/n8han/Unfiltered/issues/15) Fixed issue with undecoded parameter keys
 
 [eed3si9n]: https://github.com/eed3si9n/
+
+all intents
+-----------
+
+* [n8han][n8han] A function object `Intent#apply` in each binding
+module, to explicitly construct an intent without the somewhat awkward
+type annotations.
+
+[n8han]: https://github.com/n8han/
+
+    val anIntent = unfiltered.filter.Intent {
+      case GET(req) => ...
+    }
