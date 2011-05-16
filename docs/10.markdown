@@ -84,7 +84,7 @@ split it arbitrarily with default cases:
       }
     }
 
-Be aware that this last intent is defined for all requests. Because it
+Be aware that this last intent is *defined* for all requests. Because it
 includes a top-level default case, its `orElse` method will never call
 a partial function passed to it. The `Pass` object however will instruct
 a plan to treat requests that fall to the end as non-matching.
