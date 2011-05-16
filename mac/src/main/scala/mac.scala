@@ -128,7 +128,7 @@ trait Signing {
           case HostPort(hostname, port) & r =>
             bodyHash match {
               case Some(bh) => // calculate bodyhash
-                 val body = Bytes(r).getOrElse((Array[Byte](), r))._1
+                 val body = Body.bytes(r)
                  bodyhash(body)(macAlg).fold({ Left(_) }, { bhash =>
                    Right(requestString(nonce, r.method, r.uri,
                                     hostname, port,
