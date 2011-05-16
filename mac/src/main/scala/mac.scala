@@ -3,8 +3,12 @@ package unfiltered.mac
 import unfiltered.request._
 import unfiltered.response._
 
-object Mac {
-  def Challenge = Unauthorized ~> WWWAuthenticate("MAC")
+object Mac extends Signing {
+  def challenge: Responder[Any] = challenge(None)
+  def challenge(err: Option[String]) = Unauthorized ~> WWWAuthenticate("%s%s" format("MAC", err match {
+    case Some(e) => """ error="%s"""" format e
+    case _ => ""
+  }))
 }
 
 /** MAC Authorization extractor */
@@ -17,7 +21,8 @@ object MacAuthorization {
 
   object MacHeader {
     import QParams._
-    val KeyVal = """(\w+)="([\w|:|\/|.|%|-]+)" """.trim.r
+    val NonceFormat = """^(\d+)[:](\S+)$""".r
+    val KeyVal = """(\w+)="([\w|=|:|\/|.|%|-|+]+)" """.trim.r
     val keys = Id :: Nonce :: BodyHash :: Ext :: MacKey :: Nil
     val headerSpace = "MAC" + " "
 
@@ -25,19 +30,24 @@ object MacAuthorization {
       case x :: xs if x startsWith headerSpace =>
         val map = Map(hvals map { _.replace(headerSpace, "") } flatMap {
           case KeyVal(k, v) if(keys.contains(k)) => Seq((k -> Seq(v)))
-          case _ => Nil
+          case e =>
+            println("malformed %s" format e)
+            Nil
         }: _*)
-        println(map)
         val expect = for {
-          id <- lookup(Id) is nonempty("") is required("")
-          nonce <- lookup(Nonce) is nonempty("") is required("")
+          id <- lookup(Id) is nonempty("id is empty") is required("id is required")
+          nonce <- lookup(Nonce) is nonempty("nounce is empty") is required("nonce is required") is
+            pred({NonceFormat.findFirstIn(_).isDefined}, _ + " is an invalid format")
           bodyhash <- lookup(BodyHash) is optional[String, String]
           ext <- lookup(Ext) is optional[String, String]
-          mac <- lookup(MacKey) is nonempty("") is required("")
+          mac <- lookup(MacKey) is nonempty("mac is nempty") is required("mac is required")
         } yield {
-          Some(id.get, nonce.get, bodyhash.get, ext.get, mac.get)
+          Some(id.get(0), nonce.get, bodyhash.get, ext.get, mac.get)
         }
-        expect(map) orFail { f => None }
+        expect(map) orFail { f =>
+          println(f.map(_.error) mkString(" and "))
+          None
+        }
       case _ => None
     }
   }
@@ -62,12 +72,12 @@ object MacAuthorization {
  *  3. MAC algorithm - one of ("hmac-sha-1" or "hmac-sha-256")
  *  4. Issue time - time when credentials were issued to calculate the age
  */
-object Signing {
+trait Signing {
   import org.apache.commons.codec.binary.Base64.encodeBase64
 
   val HmacSha1 = "HmacSHA1"
   val HmacSha256 = "HmacSHA256"
-  val charset = "utf8"
+  val charset = "UTF8"
   val MacAlgorithms = Map("hmac-sha-1" -> HmacSha1, "hmac-sha-256" -> HmacSha256)
   private val JAlgorithms = Map(HmacSha1 -> "SHA-1", HmacSha256 -> "SHA-256")
 
@@ -89,7 +99,7 @@ object Signing {
        val macAlg = MacAlgorithms(alg)
        val mac = javax.crypto.Mac.getInstance(macAlg)
        mac.init(new javax.crypto.spec.SecretKeySpec(key, macAlg))
-       Right(new String(mac.doFinal(body), charset))
+       Right(new String(encodeBase64(mac.doFinal(body)), charset))
     }
     else Left("unsupported mac algorithm %s" format alg)
 
@@ -98,8 +108,8 @@ object Signing {
 
   /** @return signed request for a given key, request, and algorithm */
   def sign[T](r: HttpRequest[T], nonce: String, ext: Option[String],
-              key: String, alg: String): Either[String, String] =
-    requestString(r, alg, nonce, ext).fold({ Left(_) }, { rstr =>
+              bodyHash: Option[String], key: String, alg: String): Either[String, String] =
+    requestString(r, alg, nonce, ext, bodyHash).fold({ Left(_) }, { rstr =>
        sign(key, rstr, alg)
     })
 
@@ -109,20 +119,26 @@ object Signing {
 
   /** calculates the normalized the request string from a request */
   def requestString[T](r: HttpRequest[T], alg: String,
-                       nonce: String, ext: Option[String]):
+                       nonce: String, ext: Option[String], bodyHash: Option[String]):
                          Either[String, String] =
     MacAlgorithms.get(alg) match {
       case None => Left("unsupported mac algorithm %s" format alg)
       case Some(macAlg) =>
         r match {
           case HostPort(hostname, port) & r =>
-            val body = Bytes(r).getOrElse((Array[Byte](), r))._1
-            bodyhash(body)(macAlg).fold({ Left(_) }, { bhash =>
-               Right(requestString(nonce, r.method, r.uri,
-                          hostname, port,
-                          bhash,
-                          ext.getOrElse("")))
-            })
+            bodyHash match {
+              case Some(bh) => // calculate bodyhash
+                 val body = Bytes(r).getOrElse((Array[Byte](), r))._1
+                 bodyhash(body)(macAlg).fold({ Left(_) }, { bhash =>
+                   Right(requestString(nonce, r.method, r.uri,
+                                    hostname, port,
+                                    bhash,
+                                    ext.getOrElse("")))
+                 })
+              case _ => // don't calculate bodyhash
+                Right(requestString(nonce, r.method, r.uri,
+                                   hostname, port, "", ext.getOrElse("")))
+            }
        }
     }
 
@@ -130,5 +146,5 @@ object Signing {
   def requestString(nonce: String, method: String, uri: String, hostname: String,
                     port: Int, bodyhash: String, ext: String): String =
                       nonce :: method :: uri :: hostname :: port ::
-                      bodyhash :: ext :: Nil mkString("\n")
+                      bodyhash :: ext :: Nil mkString("","\n","\n")
 }

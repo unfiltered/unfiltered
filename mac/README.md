@@ -1,0 +1,19 @@
+# Unfiltered Mac Auth
+
+[Mac](http://tools.ietf.org/html/draft-hammer-oauth-v2-mac-token-05) request authentication
+
+Mac is a generic HTTP Authentication based on request signatures. It may be used to access protected resource in the OAuth2 protocol
+or in other HTTP based protocols using the Set-Cookie response header and thus is defined in it's own module
+
+The 3 components of a mac that should be provided by a server are
+
+     1 MAC key identifier (OAuth2 access_token)
+     2 MAC key - used as the key along with the algoritm as the key of the hmac sig (OAuth2 access_token secret)
+     3 MAC algorithm - one of hmac-sha-1 or hmac-sha-256
+     4 Issue time - used to calculate the age of a set of credentials
+
+
+## TODO
+
+  * Non-oauth2 stuff
+  * More tests (header parsing regex, body hashing, ect)
