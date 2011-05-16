@@ -106,48 +106,40 @@ object QParamBearerAuth extends QParamBearerAuth {}
 
 /** Represents MAC auth. */
 trait MacAuth extends AuthScheme {
-  val defaultMacHeader = "MAC"
-  def header = defaultMacHeader
+  import unfiltered.mac.{Mac, MacAuthorization}
 
-  val TokenKey = "token"
-  val Timestamp = "timestamp"
-  val Nonce = "nonce"
-  val BodyHash = "bodyhash"
-  val Sig = "signature"
+  def algorithm: String
 
-  /** Authorization: MAC header extractor */
-  object MacHeader {
-    val KeyVal = """(\w+)="([\w|:|\/|.|%|-]+)" """.trim.r
-    val keys = Set.empty + TokenKey + Timestamp + Nonce + BodyHash + Sig
-    val headerSpace = header + " "
-
-    def unapply(hvals: List[String]) = hvals match {
-      case x :: xs if x startsWith headerSpace =>
-        Some(Map(hvals map { _.replace(headerSpace, "") } flatMap {
-          case KeyVal(k, v) if(keys.contains(k)) => Seq((k -> Seq(v)))
-          case _ => Nil
-        }: _*))
-
-      case _ => None
-    }
-  }
+  def tokenSecret(key: String): Option[String]
 
   def intent(protection: ProtectionLike) = {
-    case Authorization(MacHeader(p)) & request =>
+    case MacAuthorization(id, nonce, bodyhash, ext, mac) & req =>
       try {
-        val token = MacAuthToken(p(TokenKey)(0), p(Timestamp)(0), p(Nonce)(0), p(BodyHash)(0), p(Sig)(0))
-        protection.authenticate(token, request)
+         tokenSecret(id) match {
+           case Some(key) =>
+              Mac.sign(req, nonce, ext, bodyhash, key, algorithm).fold({
+                protection.errorResponse(BadRequest, _, req)
+              }, { sig =>
+                if(sig == mac) protection.authenticate(MacAuthToken(id, key, nonce, bodyhash, ext), req)
+                else protection.errorResponse(BadRequest, "invalid MAC signature", req)
+             })
+           case _ => protection.errorResponse(BadRequest, "invalid token", req)
+         }
       }
       catch {
-        case e: Exception => protection.errorResponse(BadRequest, "invalid MAC header.", request)
+        case e: Exception => protection.errorResponse(BadRequest, "invalid MAC header.", req)
       }
   }
 }
 
-object MacAuth extends MacAuth {}
+object MacAuth extends MacAuth {
+  def algorithm = "hmac-sha-1"
+  def tokenSecret(key: String) = None
+}
 
-case class MacAuthToken(value: String,
-  timestamp: String,
+case class MacAuthToken(id: String,
+  secret: String,
   nonce: String,
-  bodyhash: String,
-  signature: String) extends AccessToken
+  bodyhash: Option[String],
+  ext: Option[String]
+  ) extends AccessToken
