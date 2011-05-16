@@ -1,7 +1,7 @@
-Documentation!
---------------
+Documentation
+-------------
 
-Unfiltered documentation is now available at [unfiltered.databinder.net](http://unfiltered.databinder.net/)
+Unfiltered documentation is [now available](http://unfiltered.databinder.net/).
 
 library module
 --------------
@@ -26,7 +26,8 @@ To accomplish the same match in this release and beyond,
 
 json-p module
 -------------
-* [eed3si9n][eed3si9n] The jsonp wrapper object now defines a `respond` method that returns a `ChainResponse` that handles a
+
+[eed3si9n][eed3si9n] The jsonp wrapper object now defines a `respond` method that returns a `ChainResponse` that handles a
 by-name parameter which produces a lift-json `JValue`.
 
     case GET(UFPath("/jsonp/lift-json/optional") & Jsonp.Optional(callback)) => callback respond {
