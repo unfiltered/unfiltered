@@ -1,7 +1,7 @@
 Documentation!
 --------------
 
-Unfiltered documentation at [unfiltered.databinder.net](http://unfiltered.databinder.net/)
+Unfiltered documentation is now available at [unfiltered.databinder.net](http://unfiltered.databinder.net/)
 
 library module
 --------------
