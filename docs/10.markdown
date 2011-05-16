@@ -52,7 +52,7 @@ singleton objects holding logically divided intents.
       }
     }
     object FooBar extends unfiltered.filter.Plan {
-      def intent = foos.orElse(bars)
+      def intent = Foos.intent.orElse(Bars.intent)
     }
 
 You could also make use of separate plans, to be chained together by
