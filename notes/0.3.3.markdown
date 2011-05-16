@@ -2,6 +2,21 @@ library module
 --------------
 * [eed3si9n][eed3si9n] `Accepts.Javascript` now accepts `text/javascript` or `application/javascript`
 * [eed3si9n][eed3si9n] `Accepts.Jsonp` now accepts `application/json`, `text/javascript`, or `application/javascript`
+* Deprecating `HttpRequest.requestURI` and `HttpRequest.contextPath` and replacing with `HttpRequest.uri`. `HttpRequest.contextPath` only existed to suit the `HttpServletRequest` spec and had no context in the `Netty` module and thus should not be in the base `HttpRequest` interface.
+* Added `QueryString(qs)` extractor for extracting the raw query string from a request
+* Added `HostPort(hostname, port)` extractor for extracting out a request's host and port
+
+filter module
+-------------
+* Added `ContextPath(ctx, path)` module to suit filter plans mounted on a context path. Note, the `Path` extractor will contain the context path. To remove redundancy in filter plans, use `ContextPath(ctx, path)`
+
+Prior to this release, you used matched filters on context paths with
+
+    jettySvr.context("/foo") { _.filter(Planify { case Path("/bar") => ... } }
+
+To accomplish the same match in this release and beyond,
+
+    jettySvr.context("/foo") { _.filter(Planify { case ContextPath(_, "/bar") => ... } }
 
 json-p module
 -------------

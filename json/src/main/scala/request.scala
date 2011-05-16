@@ -6,11 +6,9 @@ object JsonBody {
   implicit val formats = net.liftweb.json.DefaultFormats
 
   /** @return Some(JsValue) if request contains a valid json body. */
-  def apply[T](r: HttpRequest[T]) = r match {
-    case Bytes(body, _) =>
-      try { Some(parse(new String(body))) } catch { case _ => None }
-    case _ => None
-  }
+  def apply[T](r: HttpRequest[T]) = try {
+    Some(parse(new String(Body.bytes(r))))
+  } catch { case _ => None }
 }
 
 /** jsonp extractor(s). Useful for extracting a callback out of a request */
