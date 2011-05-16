@@ -5,16 +5,26 @@ Unfiltered documentation is [now available](http://unfiltered.databinder.net/).
 
 library module
 --------------
-* [eed3si9n][eed3si9n] `Accepts.Javascript` now accepts `text/javascript` or `application/javascript`
-* [eed3si9n][eed3si9n] `Accepts.Jsonp` now accepts `application/json`, `text/javascript`, or `application/javascript`
-* Deprecating `HttpRequest.requestURI` and `HttpRequest.contextPath` and replacing with `HttpRequest.uri`. `HttpRequest.contextPath` only existed to suit the `HttpServletRequest` spec and had no context in the `Netty` module and thus should not be in the base `HttpRequest` interface.
-* Added `QueryString(qs)` extractor for extracting the raw query string from a request
-* Added `HostPort(hostname, port)` extractor for extracting out a request's host and port
-* New `unfiltered.request.Body` object for working with request bodies explicitly, not as an extractor as these operations generally have side effects.
+* [eed3si9n][eed3si9n] [Accepts.Javascript](http://sourced.implicit.ly/net.databinder/unfiltered/0.3.3/request/accepts.scala.html#14945) now accepts `text/javascript` or `application/javascript`
+* [eed3si9n][eed3si9n] [Accepts.Jsonp](http://sourced.implicit.ly/net.databinder/unfiltered/0.3.3/request/accepts.scala.html#14949) now accepts `application/json`, `text/javascript`, or `application/javascript`
+* Deprecating `HttpRequest.requestURI` and `HttpRequest.contextPath` and replacing with [HttpRequest.uri](http://sourced.implicit.ly/net.databinder/unfiltered/0.3.3/request/HttpRequest.scala.html#12230). `HttpRequest.contextPath` only existed to suit the `HttpServletRequest` spec and had no context in the `Netty` module and thus should not be in the base `HttpRequest` interface.
+* Added [QueryString(qs)](http://sourced.implicit.ly/net.databinder/unfiltered/0.3.3/request/paths.scala.html#9209) extractor for extracting the raw query string from a request
+* Added [HostPort(hostname, port)](http://sourced.implicit.ly/net.databinder/unfiltered/0.3.3/request/headers.scala.html#9174) extractor for extracting out a request's host and port
+* New [unfiltered.request.Body](http://sourced.implicit.ly/net.databinder/unfiltered/0.3.3/request/readers.scala.html#9224) object for working with request bodies explicitly, not as an extractor as these operations generally have side effects.
+
+### json-p
+
+[eed3si9n][eed3si9n] The [Jsonp wrapper object](http://sourced.implicit.ly/net.databinder/unfiltered-json/0.3.3/request.scala.html#9594) now defines a `respond` method that returns a `ChainResponse` that handles a by-name parameter which produces a lift-json `JValue`.
+
+    case GET(UFPath("/jsonp/lift-json/optional") & Jsonp.Optional(callback)) => callback respond {
+      import net.liftweb.json.JsonAST._
+      import net.liftweb.json.JsonDSL._
+      "answer" -> Seq(42)
+    }
 
 filter module
 -------------
-* Added `ContextPath(ctx, path)` module to suit filter plans mounted on a context path. Note, the `Path` extractor will contain the context path. To remove redundancy in filter plans, use `ContextPath(ctx, path)`
+* Added [ContextPath(ctx, path)](http://sourced.implicit.ly/net.databinder/unfiltered-filter/0.3.3/request/paths.scala.html) extractor to suit filter plans mounted on a context path. Note, the `Path` extractor will contain the context path. To remove redundancy in filter plans, use `ContextPath(ctx, path)`
 
 Prior to this release, you used matched filters on context paths with
 
@@ -23,18 +33,6 @@ Prior to this release, you used matched filters on context paths with
 To accomplish the same match in this release and beyond,
 
     jettySvr.context("/foo") { _.filter(Planify { case ContextPath(_, "/bar") => ... } }
-
-json-p module
--------------
-
-[eed3si9n][eed3si9n] The jsonp wrapper object now defines a `respond` method that returns a `ChainResponse` that handles a
-by-name parameter which produces a lift-json `JValue`.
-
-    case GET(UFPath("/jsonp/lift-json/optional") & Jsonp.Optional(callback)) => callback respond {
-      import net.liftweb.json.JsonAST._
-      import net.liftweb.json.JsonDSL._
-      "answer" -> Seq(42)
-    }
 
 netty module
 ------------
@@ -45,11 +43,7 @@ netty module
 all intents
 -----------
 
-* [n8han][n8han] A function object `Intent#apply` in each binding
-module, to explicitly construct an intent without the somewhat awkward
-type annotations.
-
-[n8han]: https://github.com/n8han/
+A function object `Intent#apply` to [filter](http://sourced.implicit.ly/net.databinder/unfiltered-filter/0.3.3/plans.scala.html#9130) and other intent types, to explicitly construct an intent without the somewhat awkward type annotations.
 
     val anIntent = unfiltered.filter.Intent {
       case GET(req) => ...
