@@ -69,7 +69,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info)
   }, jetty, netty)
 
   /** scala test  helper */
-  lazy val scalatest = project("scalatest", "Unfiltered Scalatest", new DefaultProject(_) with sxr.Publish {
+  lazy val scalatest = project("scalatest", "Unfiltered Scalatest", new DefaultProject(_) with sxr.Publish with Only28AndUp {
     lazy val specs = scalatestDependency
     lazy val dispatch = dispatchDependency
   }, jetty, netty)
