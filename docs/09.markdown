@@ -19,7 +19,7 @@ key-value store.
               NotFound ~> ResponseString("No record: " + id)
             }
           case PUT(_) =>
-            store.synchronized {
+            SillyStore.synchronized {
               store = store + (id -> Body.bytes(req))
             }
             Created ~> ResponseString("Created record: " + id)
