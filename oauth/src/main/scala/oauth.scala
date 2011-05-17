@@ -27,8 +27,8 @@ object OAuth {
     val keys = Set.empty + "realm" + ConsumerKey + TokenKey + SignatureMethod +
       Sig + Timestamp + Nonce + Callback + Verifier + Version
 
-    def unapply(hvals: Seq[String]) = {
-      Some(Map((hvals map { _.replace("OAuth ", "") } flatMap {
+    def unapply(hvals: String) = {
+      Some(Map((hvals.split(",") map { _.replace("OAuth ", "") } flatMap {
         case KeyVal(k, v) if(keys.contains(k)) => Seq((k -> Seq(v)))
         case _ => Nil
       }): _*))

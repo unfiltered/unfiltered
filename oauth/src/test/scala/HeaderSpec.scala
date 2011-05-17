@@ -18,7 +18,7 @@ object HeaderSpec extends Specification {
         "oauth_callback=\"oob\"" ::
         "oauth_verifier=\"asdfasdfasd\"" ::
         "oauth_version=\"1.0\"" ::
-        "non_protocol_param=\"bogus\"":: Nil
+        "non_protocol_param=\"bogus\"":: Nil mkString(",")
       val extractedOpt = OAuth.Header.unapply(values)
       extractedOpt must beSomething
       val extracted = extractedOpt.get.map {

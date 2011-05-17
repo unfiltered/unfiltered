@@ -49,8 +49,8 @@ trait Plan extends SimpleChannelUpstreamHandler {
 
   object ConnectionUpgrade {
     def unapply[T](r: HttpRequest[T]) = r match {
-      case unfiltered.request.Connection(values) =>
-        if(values.exists { _.equalsIgnoreCase(Values.UPGRADE) }) Some(r)
+      case unfiltered.request.Connection(value) =>
+        if(value.equalsIgnoreCase(Values.UPGRADE)) Some(r)
         else None
     }
   }
@@ -64,7 +64,7 @@ trait Plan extends SimpleChannelUpstreamHandler {
   }
 
   object WSLocation {
-    def apply[T](r: HttpRequest[T]) = "ws://%s%s" format(Host(r)(0), r.uri.split('?')(0))
+    def apply[T](r: HttpRequest[T]) = "ws://%s%s" format(Host(r).get, r.uri.split('?')(0))
   }
 
   private def upgrade(ctx: ChannelHandlerContext, request: NHttpRequest, event: MessageEvent) = {
@@ -81,8 +81,8 @@ trait Plan extends SimpleChannelUpstreamHandler {
 
           val Protocol = new Responder[NHttpResponse] {
             def respond(res: HttpResponse[NHttpResponse]) {
-              new RequestHeader(SEC_WEBSOCKET_PROTOCOL)(binding) match {
-                case Seq(protocol) =>
+              new StringParsedHeader(SEC_WEBSOCKET_PROTOCOL)(binding) match {
+                case Some(protocol) =>
                   res.addHeader(SEC_WEBSOCKET_PROTOCOL, protocol)
                 case _ => ()
               }
@@ -91,14 +91,15 @@ trait Plan extends SimpleChannelUpstreamHandler {
 
           val HandShake = new Responder[NHttpResponse] {
             def respond(res: HttpResponse[NHttpResponse]) {
-              (new RequestHeader(SEC_WEBSOCKET_KEY1)(binding) :: new RequestHeader(SEC_WEBSOCKET_KEY2)(binding) :: Nil) match {
-                case List(k1) :: List(k2) :: Nil =>
+              (new StringParsedHeader(SEC_WEBSOCKET_KEY1)(binding), new StringParsedHeader(SEC_WEBSOCKET_KEY2)(binding)) match {
+                case (Some(k1), Some(k2)) =>
                   val buff = ChannelBuffers.buffer(16)
                   (k1 :: k2 :: Nil).foreach( k =>
                     buff.writeInt((k.replaceAll("[^0-9]", "").toLong / k.replaceAll("[^ ]", "").length).toInt)
                   )
                   buff.writeLong(request.getContent().readLong)
                   res.underlying.setContent(ChannelBuffers.wrappedBuffer(MessageDigest.getInstance("MD5").digest(buff.array)))
+                case _ => ()
               }
             }
           }
@@ -113,7 +114,7 @@ trait Plan extends SimpleChannelUpstreamHandler {
             response(
               new HeaderName(UPGRADE)(Values.WEBSOCKET) ~>
               new HeaderName(CONNECTION)(Values.UPGRADE) ~>
-              new HeaderName(SEC_WEBSOCKET_ORIGIN)(new RequestHeader(ORIGIN)(binding).head) ~>
+              new HeaderName(SEC_WEBSOCKET_ORIGIN)(new StringParsedHeader(ORIGIN)(binding).head) ~>
               new HeaderName(SEC_WEBSOCKET_LOCATION)(WSLocation(binding)) ~>
               Protocol ~> HandShake)
           )

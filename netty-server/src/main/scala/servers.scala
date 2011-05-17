@@ -84,6 +84,8 @@ class ServerPipelineFactory(val channels: ChannelGroup,
   def getPipeline(): ChannelPipeline = complete(Channels.pipeline)
 }
 
+/**  HTTP Netty pipline builder. Uses Netty defaults: maxHeaderSize 8192 and
+ *   maxChunkSize 8192 */
 trait DefaultPipelineFactory {
   def channels: ChannelGroup
   def handlers: List[ChannelHandler]
