@@ -9,10 +9,14 @@ object ServerSpec extends unfiltered.spec.netty.Served {
   import dispatch._
   
   def setup = NHttp(_).handler(cycle.Planify({
+    case GET(UFPath("/pass")) => Pass
     case GET(UFPath("/")) => ResponseString("test") ~> Ok
     case r @ GET(UFPath("/addr")) => ResponseString(r.remoteAddr) ~> Ok
     case GET(UFPath("/addr_extractor") & RemoteAddr(addr)) => ResponseString(addr) ~> Ok
-  }))
+  })).handler(cycle.Planify {
+    case GET(UFPath("/planb")) => ResponseString("planb") ~> Ok
+    case GET(UFPath("/pass")) => ResponseString("pass") ~> Ok
+  })
   
   "A Server" should {
     "respond to requests" in {
@@ -26,6 +30,12 @@ object ServerSpec extends unfiltered.spec.netty.Served {
     }
     "provide a remote address accounting for X-Forwared-For header filtering private addresses" in {
       Http(host / "addr_extractor" <:< Map("X-Forwarded-For" -> "172.31.255.255") as_str) must_=="127.0.0.1"
+    }
+    "respond to requests in second channel handler" in {
+      Http(host / "planb" as_str) must_=="planb"
+    }
+    "pass upstream on Pass, respond in second handler" in {
+      Http(host / "pass" as_str) must_=="pass"
     }
   }
 }

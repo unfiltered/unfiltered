@@ -6,7 +6,7 @@ import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.http.HttpResponseStatus._
 import org.jboss.netty.handler.codec.http.HttpVersion._
 import unfiltered.netty._
-import unfiltered.response.{ResponseFunction,NotFound}
+import unfiltered.response.{ResponseFunction, Pass}
 import unfiltered.request.HttpRequest
 
 object Plan {
@@ -24,10 +24,9 @@ trait Plan extends SimpleChannelUpstreamHandler {
     val request = e.getMessage().asInstanceOf[DefaultHttpRequest]
     val requestBinding = new RequestBinding(ReceivedMessage(request, ctx, e))
     
-    if (intent.isDefinedAt(requestBinding)) {
-      requestBinding.underlying.respond(intent(requestBinding))
-    } else {
-      ctx.sendUpstream(e)
+    intent.orElse({ case _ => Pass }: Plan.Intent)(requestBinding) match {
+      case Pass => ctx.sendUpstream(e)
+      case responseFunction => requestBinding.underlying.respond(responseFunction)
     }
   }
 }
