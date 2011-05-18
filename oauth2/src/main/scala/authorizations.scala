@@ -78,20 +78,16 @@ trait Authorized extends AuthorizationProvider
   protected def accessResponder(accessToken: String, kind: String,
                       expiresIn: Option[Int], refreshToken: Option[String],
                       scope: Option[String]): ResponseFunction[Any] =
-    Json(
-        (AccessTokenKey -> accessToken) :: (TokenType -> kind) :: Nil ++
+    Json((AccessTokenKey -> accessToken) :: (TokenType -> kind) :: Nil ++
         expiresIn.map (ExpiresIn -> (_:Int).toString) ++
         refreshToken.map (RefreshToken -> _) ++
-        scope.map(Scope -> _)
-    ) ~> CacheControl("no-store")
+        scope.map(Scope -> _)) ~> CacheControl("no-store")
 
   protected def errorResponder(error: String, desc: String, euri: Option[String],
                                state: Option[String]): ResponseFunction[Any] =
-    Json(
-        (Error -> error) :: (ErrorDescription -> desc) :: Nil ++
+    Json((Error -> error) :: (ErrorDescription -> desc) :: Nil ++
         euri.map (ErrorURI -> (_: String)) ++
-        state.map (State -> _)
-    ) ~> BadRequest ~> CacheControl("no-store")
+        state.map (State -> _)) ~> BadRequest ~> CacheControl("no-store")
 
   def intent = {
 
@@ -99,7 +95,6 @@ trait Authorized extends AuthorizationProvider
       val expected = for {
         responseType <- lookup(ResponseType) is required(requiredMsg(ResponseType))
         clientId     <- lookup(ClientId) is required(requiredMsg(ClientId))
-        secret       <- lookup(ClientSecret) is optional[String, String]
         redirectURI  <- lookup(RedirectURI) is required(requiredMsg(RedirectURI))
         scope        <- lookup(Scope) is optional[String, String]
         state        <- lookup(State) is optional[String, String]
