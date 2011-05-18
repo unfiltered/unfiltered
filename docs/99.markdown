@@ -13,24 +13,25 @@ Entire web layer of the [Novus](https://www.novus.com/) real-time financial anal
 
 #### Trust Metrics
 
-[Trust Metrics](http://www.trustmetrics.com) uses Unfiltered everywhere.  We use it in our API, our client facing app, our intranet, and even our web crawler. We use it because it's simple and nonintrusive - it lets us decide how to add web to our app, unlike other frameworks (Grails/Rails/Django), which do all of the deciding for you.  
+[Trust Metrics](http://www.trustmetrics.com) uses Unfiltered everywhere.  We use it in our API, our client facing app, our intranet, and even our web crawler. We use it because it's simple and nonintrusive — it lets us decide how to add web to our app, unlike other frameworks (Grails/Rails/Django), which do all of the deciding for you.  
 
 #### pamflet
 
 The documentation preview server in [pamflet](https://github.com/n8han/pamflet/) is Unfiltered.
 
-#### unplanned
-
-A super simple run anywhere [adhoc HTTP server](https://github.com/softprops/unplanned#readme) using [conscript](https://github.com/n8han/conscript#readme) and the Unfiltered jetty module.
-
 #### picture show
 
-Self-contained slide show presentations authorized in basic markdown and css served by Unfiltered. [gh](https://github.com/softprops/picture-show#readme)
+[Self-contained slide-show presentations](https://github.com/softprops/picture-show#readme) authored in basic markdown, served in html and css served by Unfiltered.
 
-#### http://nescala.org/
+#### nescala.org
 
-[GAE](http://code.google.com/appengine/) Hosted event site for the North East Scala Symposium written in Unfiltered's filter Plans.
+The [event site](http://nescala.org/) for the North East Scala Symposium is written using Unfiltered's filter plans and hosted on [Google App Engine](http://code.google.com/appengine/).
 
 #### scalaxb
 
 [scalaxb-appengine](http://scalaxb.org/scalaxb-appengine) is an Unfiltered API to run scalaxb over the web on appengine.
+
+#### unplanned
+
+A super simple run anywhere [adhoc HTTP server](https://github.com/softprops/unplanned#readme) using [conscript](https://github.com/n8han/conscript#readme) and the Unfiltered jetty module.
+
