@@ -19,11 +19,12 @@ private [request] object DateFormatting {
   /** Sun Nov  6 08:49:37 1994 */
   def ANSICTime = parseAs("EEE MMM  d HH:mm:ss yyyy")_
 
+  /** @return various date coersion formats falling back on None value */
   def parseDate(raw: String) = RFC1123(raw) orElse RFC1036(raw) orElse ANSICTime(raw)
 }
 
-/** a header with a seq of values */
-class SeqRequestHeader[T](val name: String)(parser: Iterator[String] => List[T]) {
+/** a header with comma delimited values */
+private [request] class SeqRequestHeader[T](val name: String)(parser: Iterator[String] => List[T]) {
   def unapply[T](req: HttpRequest[T]) = parser(req.headers(name)) match {
     case Nil => None
     case hs => Some(hs)
@@ -32,7 +33,7 @@ class SeqRequestHeader[T](val name: String)(parser: Iterator[String] => List[T])
 }
 
 /** a header with a single value */
-class RequestHeader[A](val name: String)(parser: Iterator[String] => List[A]) {
+private [request] class RequestHeader[A](val name: String)(parser: Iterator[String] => List[A]) {
    def unapply[T](req: HttpRequest[T]) =  parser(req.headers(name)) match {
      case head :: _ => Some(head)
      case _ => None
@@ -40,24 +41,24 @@ class RequestHeader[A](val name: String)(parser: Iterator[String] => List[A]) {
    def apply[T](req: HttpRequest[T]) = parser(req.headers(name)).headOption
 }
 
-object DateValueParser extends (Iterator[String] => List[java.util.Date]) {
+private [request] object DateValueParser extends (Iterator[String] => List[java.util.Date]) {
   import DateFormatting._
   def apply(values: Iterator[String]) =
     List.fromIterator(values).flatMap(parseDate)
 }
 
-object IntValueParser extends (Iterator[String] => List[Int]) {
+private [request] object IntValueParser extends (Iterator[String] => List[Int]) {
    def tryInt(raw: String) = try { Some(raw.toInt) } catch { case _ => None }
    def apply(values: Iterator[String]) =
      List.fromIterator(values).flatMap(tryInt)
 }
 
-object StringValueParser extends (Iterator[String] => List[String]) {
+private [request] object StringValueParser extends (Iterator[String] => List[String]) {
   def apply(values: Iterator[String]) =
     List.fromIterator(values)
 }
 
-object UriValueParser extends (Iterator[String] => List[java.net.URI]) {
+private [request] object UriValueParser extends (Iterator[String] => List[java.net.URI]) {
   def toUri(raw: String) =
     try { Some(new java.net.URI(raw)) }
     catch { case _ => None }
@@ -66,7 +67,7 @@ object UriValueParser extends (Iterator[String] => List[java.net.URI]) {
     List.fromIterator(values).flatMap(toUri)
 }
 
-object SeqValueParser extends (Iterator[String] => List[String]) {
+private [request] object SeqValueParser extends (Iterator[String] => List[String]) {
    def apply(values: Iterator[String]) = {
      def split(raw: String): List[String] =
        (raw.split(",") map {
@@ -76,39 +77,39 @@ object SeqValueParser extends (Iterator[String] => List[String]) {
    }
 }
 
-class DateParsedHeader(name: String) extends RequestHeader(name)(DateValueParser)
-class SeqParsedHeader(name: String) extends SeqRequestHeader(name)(SeqValueParser)
-class UriParsedHeader(name: String) extends RequestHeader(name)(UriValueParser)
-class StringParsedHeader(name: String) extends RequestHeader(name)(StringValueParser)
-class IntParsedHeader(name: String) extends RequestHeader(name)(IntValueParser)
+class DateHeader(name: String) extends RequestHeader(name)(DateValueParser)
+class RepeatableHeader(name: String) extends SeqRequestHeader(name)(SeqValueParser)
+class UriHeader(name: String) extends RequestHeader(name)(UriValueParser)
+class StringHeader(name: String) extends RequestHeader(name)(StringValueParser)
+class IntHeader(name: String) extends RequestHeader(name)(IntValueParser)
 
 // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.10
 
-object Accept extends SeqParsedHeader("Accept")
-object AcceptCharset extends SeqParsedHeader("Accept-Charset")
-object AcceptEncoding extends SeqParsedHeader("Accept-Encoding")
-object AcceptLanguage extends SeqParsedHeader("Accept-Language")
-object Authorization extends StringParsedHeader("Authorization")
-object Connection extends StringParsedHeader("Connection")
+object Accept extends RepeatableHeader("Accept")
+object AcceptCharset extends RepeatableHeader("Accept-Charset")
+object AcceptEncoding extends RepeatableHeader("Accept-Encoding")
+object AcceptLanguage extends RepeatableHeader("Accept-Language")
+object Authorization extends StringHeader("Authorization")
+object Connection extends StringHeader("Connection")
 // may want opt added parser i.e for charset
-object RequestContentType extends StringParsedHeader("Content-Type")
-object Expect extends StringParsedHeader("Expect")
-object From extends StringParsedHeader("From")
-object Host extends StringParsedHeader("Host")
-object IfMatch extends SeqParsedHeader("If-Match")
-object IfModifiedSince extends DateParsedHeader("If-Modified-Since")
-object IfNoneMatch extends SeqParsedHeader("If-None-Match")
-object IfRange extends SeqParsedHeader("If-Range") // can also be an http date
-object IfUnmodifiedSince extends DateParsedHeader("If-Unmodified-Since")
-object MaxForwards extends IntParsedHeader("Max-Forwards")
-object ProxyAuthorization extends StringParsedHeader("Proxy-Authorization")
-object Range extends SeqParsedHeader("Range")// there more structure here
-object Referer extends UriParsedHeader("Referer")
-object TE extends SeqParsedHeader("TE")
-object Upgrade extends SeqParsedHeader("Upgrade")
-object UserAgent extends StringParsedHeader("User-Agent")// maybe a bit more structure here
-object Via extends SeqParsedHeader("Via")
-object XForwardedFor extends SeqParsedHeader("X-Forwarded-For")
+object RequestContentType extends StringHeader("Content-Type")
+object Expect extends StringHeader("Expect")
+object From extends StringHeader("From")
+object Host extends StringHeader("Host")
+object IfMatch extends RepeatableHeader("If-Match")
+object IfModifiedSince extends DateHeader("If-Modified-Since")
+object IfNoneMatch extends RepeatableHeader("If-None-Match")
+object IfRange extends RepeatableHeader("If-Range") // can also be an http date
+object IfUnmodifiedSince extends DateHeader("If-Unmodified-Since")
+object MaxForwards extends IntHeader("Max-Forwards")
+object ProxyAuthorization extends StringHeader("Proxy-Authorization")
+object Range extends RepeatableHeader("Range")// there more structure here
+object Referer extends UriHeader("Referer")
+object TE extends RepeatableHeader("TE")
+object Upgrade extends RepeatableHeader("Upgrade")
+object UserAgent extends StringHeader("User-Agent")// maybe a bit more structure here
+object Via extends RepeatableHeader("Via")
+object XForwardedFor extends RepeatableHeader("X-Forwarded-For")
 
 object Charset {
   val Setting = """.*;.*\bcharset=(\S+).*""".r
