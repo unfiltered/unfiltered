@@ -37,7 +37,8 @@ trait ProtectionLike extends Plan {
         Pass
     }
 
-  def errorString(status: String, description: String) = """error="%s" error_description="%s" """.trim format(status, description)
+  def errorString(status: String, description: String) =
+    """error="%s" error_description="%s" """.trim format(status, description)
 
   def errorResponse[T](status: Status, description: String,
       request: HttpRequest[T]): Responder[Any] = (status, description) match {
@@ -82,7 +83,8 @@ trait BearerAuth extends AuthScheme {
   }
 
   def intent(protection: ProtectionLike) = {
-    case Authorization(BearerHeader(token)) & request => protection.authenticate(BearerToken(token), request)
+    case Authorization(BearerHeader(token)) & request =>
+      protection.authenticate(BearerToken(token), request)
   }
 }
 
@@ -90,15 +92,16 @@ object BearerAuth extends BearerAuth {}
 
 /** Represents Bearer auth. */
 trait QParamBearerAuth extends AuthScheme {
-  val defaultQueryParam = "oauth_token"
+  val defaultQueryParam = "bearer_token"
   def queryParam = defaultQueryParam
 
   object BearerParam {
-    def unapply(params: Map[String, Seq[String]]) = params.getOrElse(queryParam, Nil).headOption
+    def unapply(params: Map[String, Seq[String]]) = params.get(queryParam)
   }
 
   def intent(protection: ProtectionLike) = {
-    case Params(BearerParam(token)) & request => protection.authenticate(BearerToken(token), request)
+    case Params(BearerParam(token)) & request =>
+      protection.authenticate(BearerToken(token), request)
   }
 }
 
