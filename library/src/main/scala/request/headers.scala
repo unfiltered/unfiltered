@@ -78,6 +78,9 @@ private [request] object SeqValueParser extends (Iterator[String] => List[String
 }
 
 class DateHeader(name: String) extends RequestHeader(name)(DateValueParser)
+/** A repeatable header may be specified in more than one header k-v pair and
+ *  whose values are a list delimited by comma
+ *  see also http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2 */
 class RepeatableHeader(name: String) extends SeqRequestHeader(name)(SeqValueParser)
 class UriHeader(name: String) extends RequestHeader(name)(UriValueParser)
 class StringHeader(name: String) extends RequestHeader(name)(StringValueParser)
@@ -99,7 +102,7 @@ object Host extends StringHeader("Host")
 object IfMatch extends RepeatableHeader("If-Match")
 object IfModifiedSince extends DateHeader("If-Modified-Since")
 object IfNoneMatch extends RepeatableHeader("If-None-Match")
-object IfRange extends RepeatableHeader("If-Range") // can also be an http date
+object IfRange extends StringHeader("If-Range") // can also be an http date
 object IfUnmodifiedSince extends DateHeader("If-Unmodified-Since")
 object MaxForwards extends IntHeader("Max-Forwards")
 object ProxyAuthorization extends StringHeader("Proxy-Authorization")
