@@ -37,3 +37,7 @@ The documentation preview server in [pamflet](https://github.com/n8han/pamflet/)
 #### unplanned
 
 A super simple run anywhere [adhoc HTTP server](https://github.com/softprops/unplanned#readme) using [conscript](https://github.com/n8han/conscript#readme) and the Unfiltered jetty module.
+
+#### Remember The Milk
+
+Unfiltered is used in Remember The Milk's [public API](http://www.rememberthemilk.com/services/api/).
