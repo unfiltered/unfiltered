@@ -7,10 +7,10 @@ These are some projects and companies that have used Unfiltered.
 
 Unfiltered, Netty, and RabbitMQ run [Meetup's real-time APIs](http://making.meetup.com/post/2929945070/real-life-meetups-deserve-real-time-apis).
 
-#### pamflet
-
-The documentation preview server in [pamflet](https://github.com/n8han/pamflet/) is Unfiltered.
-
 #### Novus
 
 Entire web layer of the [Novus](https://www.novus.com/) real-time financial analytics platform has been built by [maxaf](https://github.com/maxaf) using Unfiltered. We have a myriad custom request unapplies and use Scalate extensively. There's no better way to express web application concerns than using Scala idioms. High engineer productivity and type safety have contributed a lot to our product's bottom line.
+
+#### pamflet
+
+The documentation preview server in [pamflet](https://github.com/n8han/pamflet/) is Unfiltered.
