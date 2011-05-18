@@ -15,6 +15,10 @@ Entire web layer of the [Novus](https://www.novus.com/) real-time financial anal
 
 [Trust Metrics](http://www.trustmetrics.com) uses Unfiltered everywhere.  We use it in our API, our client facing app, our intranet, and even our web crawler. We use it because it's simple and nonintrusive — it lets us decide how to add web to our app, unlike other frameworks (Grails/Rails/Django), which do all of the deciding for you.  
 
+#### nescala.org
+
+The [event site](http://nescala.org/) for the North East Scala Symposium is written using Unfiltered's filter plans and hosted on [Google App Engine](http://code.google.com/appengine/).
+
 #### pamflet
 
 The documentation preview server in [pamflet](https://github.com/n8han/pamflet/) is Unfiltered.
@@ -22,10 +26,6 @@ The documentation preview server in [pamflet](https://github.com/n8han/pamflet/)
 #### picture show
 
 [Self-contained slide-show presentations](https://github.com/softprops/picture-show#readme) authored in basic markdown, served in html and css served by Unfiltered.
-
-#### nescala.org
-
-The [event site](http://nescala.org/) for the North East Scala Symposium is written using Unfiltered's filter plans and hosted on [Google App Engine](http://code.google.com/appengine/).
 
 #### scalaxb
 
