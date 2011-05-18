@@ -26,13 +26,13 @@ At a high level, your application configuration may looks something like the fol
 
 ### Authorization
 
-Authorization requires interation with a `Container` or context server and access to stores with access to Clients, ResourceOwners and Tokens
+Authorization requires interation with a `Container` server and stores with access to Clients, ResourceOwners and Access Grants. It exposes 2 points, `/authoization` and `/token` which represent a user authorization endpoint and token access endpoint. The paths for these endpoints are overridable.
 
-The `Container` represents the abstract server containing the Authorization module.
+The `Container` represents the abstract server containing the OAuthorization module.
 
-The Host and stores are injected into the Authorization as an `AuthorizationServer`. An AuthorizationServer respresents the actual authorization server logic while the Authorization module provides the extraction of data from the Http request.
+The Container and stores are injected into the OAuthorization module as an `AuthorizationServer`. An AuthorizationServer respresents the actual authorization server logic while the OAuthorization module provides the extraction of data from Http requests.
 
-An AuthorizationServers definition is
+An AuthorizationServer definition is
 
      trait AuthorizationServer {
         self: ClientStore with TokenStore with Container =>
@@ -41,11 +41,10 @@ An AuthorizationServers definition is
 To implement your own, provide implementations of these traits and mix them together into an
 AuthorizationServer that can be injected into the AuthorizationModule
 
-     object YourAuthorizationServer
-        extends AuthorizationServer
+     object YourAuthorizationServer extends AuthorizationServer
         with YourClients with YourTokens with YourContainer
 
-An execute as a Plan.
+And filter the server as a Plan.
 
      http.filter(Authorization(YourAuthorizationServer))
 
@@ -57,6 +56,20 @@ Protection requires an `AuthSource` defined as
       def authenticateToken[T](token: AccessToken, request: HttpRequest[T]): Either[String, UserLike]
       def realm: Option[String] = None
     }
+
+The `Protection` trait handles the OAuth protected access verification in front of other Plans.
+
+After a a successfull authorization verification, your Plans can extract the resource owner's identity and access scopes from the requets with the `OAuthResourceOwner` extractor
+
+
+    svr
+     .filter(Protection(authSrc))
+     .filter(Planify {
+       case OAuthResourceOwner(idenitity, scopes) => ResponseString("authed as %s" format identity)
+     })
+
+
+
 
 ### Implementation Notes
 
