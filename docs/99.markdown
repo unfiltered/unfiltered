@@ -26,3 +26,7 @@ Self-contained slide show presentations authorized in basic markdown and css ser
 #### http://nescala.org/
 
 [GAE](http://code.google.com/appengine/) Hosted event site for the North East Scala Symposium written in Unfiltered's filter Plans.
+
+#### scalaxb
+
+[scalaxb-appengine](http://scalaxb.org/scalaxb-appengine) is an Unfiltered API to run scalaxb over the web on appengine.
