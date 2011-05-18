@@ -14,3 +14,15 @@ Entire web layer of the [Novus](https://www.novus.com/) real-time financial anal
 #### pamflet
 
 The documentation preview server in [pamflet](https://github.com/n8han/pamflet/) is Unfiltered.
+
+#### unplanned
+
+A super simple run anywhere [adhoc HTTP server](https://github.com/softprops/unplanned#readme) using [conscript](https://github.com/n8han/conscript#readme) and the Unfiltered jetty module.
+
+#### picture show
+
+Self-contained slide show presentations authorized in basic markdown and css served by Unfiltered. [gh](https://github.com/softprops/picture-show#readme)
+
+#### http://nescala.org/
+
+[GAE](http://code.google.com/appengine/) Hosted event site for the North East Scala Symposium written in Unfiltered's filter Plans.
