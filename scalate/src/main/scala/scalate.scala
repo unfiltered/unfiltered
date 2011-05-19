@@ -1,3 +1,4 @@
+
 package unfiltered.scalate
 
 import org.fusesource.scalate.{TemplateEngine, Binding, DefaultRenderContext, RenderContext}
@@ -11,9 +12,9 @@ import unfiltered.request.HttpRequest
 private[scalate] object ScalateDefaults{
   val defaultTemplateDirs = List(new java.io.File("src/main/resources/templates"))
   implicit val engine = new TemplateEngine(defaultTemplateDirs)
-  
+
   implicit def renderContext(req: HttpRequest[_], res: HttpResponse[_], engine: TemplateEngine) =
-    new DefaultRenderContext(req.requestURI, engine, res.getWriter)
+    new DefaultRenderContext(unfiltered.util.Optional(req.uri).getOrElse("").split('?')(0), engine, res.getWriter)
 }
 
 object Scalate {
@@ -33,7 +34,7 @@ case class Scalate[A, B](request: HttpRequest[A], template: String, attributes:(
     bindings: List[Binding] = List[Binding](),
     additionalAttributes: List[(String, Any)] = List[(String, Any)]()
   ) extends Responder[B]{
-  
+
   def respond(res: HttpResponse[B]) {
     val writer = res.getWriter()
     try {
@@ -41,7 +42,7 @@ case class Scalate[A, B](request: HttpRequest[A], template: String, attributes:(
       val context = contextBuilder(request, res, engine)
       for(attr <- additionalAttributes) context.attributes(attr._1) = attr._2
       for(attr <- attributes) context.attributes(attr._1) = attr._2
-      engine.layout(scalateTemplate, context) 
+      engine.layout(scalateTemplate, context)
     }
     finally { writer.close() }
   }

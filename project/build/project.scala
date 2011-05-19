@@ -1,8 +1,12 @@
 import sbt._
 
-class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.Publish {
-
-  class UnfilteredModule(info: ProjectInfo) extends DefaultProject(info) with sxr.Publish {
+class Unfiltered(info: ProjectInfo) extends ParentProject(info)
+  with posterous.Publish
+  with pamflet.Actions
+{
+  class UnfilteredModule(info: ProjectInfo) extends DefaultProject(info)
+    with sxr.Publish
+  {
     override def packageSrcJar= defaultJarPath("-sources.jar")
     lazy val sourceArtifact = Artifact.sources(artifactID)
     override def packageToPublishActions = super.packageToPublishActions ++ Seq(packageSrc)
@@ -63,10 +67,21 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
     lazy val specs = specsDependency
     lazy val dispatch = dispatchDependency
   }, jetty, netty)
+
+  /** scala test  helper */
+  lazy val scalatest = project("scalatest", "Unfiltered Scalatest", new DefaultProject(_) with sxr.Publish with Only28AndUp {
+    lazy val specs = scalatestDependency
+    lazy val dispatch = dispatchDependency
+  }, jetty, netty)
+
   /** json extractors */
   lazy val json = project("json", "Unfiltered Json",
       new UnfilteredModule(_) with IntegrationTesting {
-    val lift_json = "net.liftweb" %% "lift-json" % "2.2"
+    val lift_json =
+      if (buildScalaVersion.startsWith("2.7"))
+        "net.liftweb" % "lift-json_2.7.7" % "2.2"
+      else
+        "net.liftweb" % "lift-json_2.8.1" % "2.2"
   }, library)
   def servletApiDependency = "javax.servlet" % "servlet-api" % "2.3" % "provided"
 
@@ -91,9 +106,12 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info) with posterous.P
 
   def specsDependency =
     if (buildScalaVersion startsWith "2.7.")
-      "org.scala-tools.testing" % "specs" % "1.6.2.2"
+      "org.scala-tools.testing" % "specs" % "1.6.2.2_1.5.0"
     else
-      "org.scala-tools.testing" % "specs_2.8.0" % "1.6.5"
+      "org.scala-tools.testing" % "specs_2.8.1" % "1.6.7"
+
+  def scalatestDependency =
+    "org.scalatest" % "scalatest" % "1.3"
 
   def dispatchDependency = if(buildScalaVersion startsWith "2.8.1")
       "net.databinder" % "dispatch-mime_2.8.0" % "0.7.8"

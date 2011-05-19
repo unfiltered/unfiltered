@@ -17,9 +17,9 @@ class RequestSpec extends Specification {
   val req = new RequestBinding(ReceivedMessage(nettyReq, null, null))
 
   "Request Binding" should {
-     "return the correct method" in {
-       req.method must_== "GET"
-     }
+    "return the correct method" in {
+      req.method must_== "GET"
+    }
     "return an empty enumeration for a missing header" in {
       req.headers("N/A").hasNext must beFalse
     }
@@ -41,11 +41,15 @@ class RequestSpec extends Specification {
       req.reader.readLine must_== payload
     }
     "return the request URI without params" in {
-      req.requestURI must_== "/seg1/seg2"
+      req.uri.split('?')(0) must_== "/seg1/seg2"
     }
     "be able to get the Path extracted correctly" in {
       val unfiltered.request.Path(path) = req
       path must_== "/seg1/seg2"
+    }
+    "extract QueryString correctly" in {
+      val unfiltered.request.QueryString(qs) = req
+      qs must_=="param1=value%201&param2=value%202&param2=value%202%20again"
     }
   }
 }
@@ -70,10 +74,11 @@ class ResponseSpec extends Specification {
       URLParser.urldecode(url) must be empty
     }
     "return correctly decoded parameters when given" in {
-      val url = "param1=value%201&param2=value%202&param2=value%202%20again"
+      val url = "param1=value%201&param2=value%202&param2=value%202%20again&param%3A3=value%203"
       val m = URLParser.urldecode(url)
       m("param1") must_== List("value 1")
       m("param2") must_== List("value 2", "value 2 again")
+      m("param:3") must_== List("value 3")
     }
   }
 

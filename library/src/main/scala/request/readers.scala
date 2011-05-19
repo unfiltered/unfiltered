@@ -1,32 +1,54 @@
 package unfiltered.request
 
-object InStream {
-  def unapply[T](req: HttpRequest[T]) = Some(req.inputStream)
-}
-
-object Read {
-  def unapply[T](req: HttpRequest[T]) = Some(req.reader)
-}
-
-object Bytes {
-  /** This extractor has a side effect and will go away soon */
-  @deprecated
-  def unapply[T](req: HttpRequest[T]) = {
-    val InStream(in) = req
+/** Utility for working with the request body. */
+object Body {
+  def stream[T](req: HttpRequest[T]) = req.inputStream
+  def reader[T](req: HttpRequest[T]) = req.reader
+  def bytes[T](req: HttpRequest[T]) = {
+    val in = stream(req)
     val bos = new java.io.ByteArrayOutputStream
     val ba = new Array[Byte](4096)
-    /* @scala.annotation.tailrec */ def read {
+    /* @scala.annotation.tailrec */ def read() {
       val len = in.read(ba)
       if (len > 0) bos.write(ba, 0, len)
       if (len >= 0) read
     }
-    read
+    read()
     in.close
-    bos.toByteArray match {
-      case Array() => None
-      case ba => Some(ba, req)
-    }
+    bos.toByteArray
   }
-  /** Results in side effect of consuming the request body contents */
-  def apply[T](req: HttpRequest[T]) = unapply(req)
+  def string[T](req: HttpRequest[T]) = {
+    val reader = Body.reader(req)
+    val writer = new java.io.StringWriter
+    val ca = new Array[Char](4096)
+    /* @scala.annotation.tailrec */ def read() {
+      val len = reader.read(ca)
+      if (len > 0) writer.write(ca, 0, len)
+      if (len >= 0) read
+    }
+    read()
+    reader.close
+    writer.toString
+  }
+}
+
+object InStream {
+  @deprecated
+  /** Use Body */
+  def unapply[T](req: HttpRequest[T]) = Some(req.inputStream)
+}
+
+object Read {
+  @deprecated
+  /** Use Body */
+  def unapply[T](req: HttpRequest[T]) = Some(req.reader)
+}
+
+object Bytes {
+  @deprecated
+  /** Use Body */
+  def apply[T](req: HttpRequest[T]) = Body.bytes(req) match {
+    case Array() => None
+    case ba => Some(ba, req)
+  }
 }

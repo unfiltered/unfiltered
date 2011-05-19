@@ -15,7 +15,7 @@ import org.jboss.netty.handler.codec.http.{HttpResponse=>NHttpResponse,
                                            HttpRequest=>NHttpRequest}
 import java.nio.charset.{Charset => JNIOCharset}
 import unfiltered.Cookie
-import unfiltered.util.NonNull
+import unfiltered.util.Optional
 
 object HttpConfig {
    val DEFAULT_CHARSET = "UTF-8"
@@ -43,15 +43,15 @@ private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(m
     new BufferedReader(new InputStreamReader(inputStream, charset))
   }
 
-
   def protocol = req.getProtocolVersion match {
     case HttpVersion.HTTP_1_0 => "HTTP/1.0"
     case HttpVersion.HTTP_1_1 => "HTTP/1.1"
   }
-  def method = req.getMethod.toString
+  def method = req.getMethod.toString.toUpperCase
 
-  def requestURI = req.getUri.split('?').toList.head
-  def contextPath = "" // No contexts here
+  def uri = req.getUri
+  @deprecated def requestURI = req.getUri.split('?').toList.head
+  @deprecated def contextPath = "" // No contexts here
 
   def parameterNames = params.keySet.elements
   def parameterValues(param: String) = params(param)
@@ -66,7 +66,7 @@ private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(m
       val cookieDecoder = new CookieDecoder
       val decCookies = Set(cookieDecoder.decode(cookieString).toArray(new Array[NCookie](0)): _*)
       (List[Cookie]() /: decCookies)((l, c) =>
-        Cookie(c.getName, c.getValue, NonNull(c.getDomain), NonNull(c.getPath), NonNull(c.getMaxAge), NonNull(c.isSecure)) :: l)
+        Cookie(c.getName, c.getValue, Optional(c.getDomain), Optional(c.getPath), Optional(c.getMaxAge), Optional(c.isSecure)) :: l)
     } else {
       Nil
     }
@@ -93,11 +93,7 @@ case class ReceivedMessage(
   val defaultResponse = response(new DefaultHttpResponse(HTTP_1_1, OK))_
   /** Applies rf to a new `defaultResponse` and writes it out */
   def respond(rf: ResponseFunction[NHttpResponse]) = {
-    val ch = request.getHeader("Connection")
-    val keepAlive = request.getProtocolVersion match {
-      case HTTP_1_1 => !"close".equalsIgnoreCase(ch)
-      case HTTP_1_0 => "Keep-Alive".equals(ch)
-    }
+    val keepAlive = HttpHeaders.isKeepAlive(request)
     val closer = new unfiltered.response.Responder[NHttpResponse] {
       def respond(res: HttpResponse[NHttpResponse]) {
         res.getOutputStream.close()
@@ -161,10 +157,11 @@ private [netty] class ResponseBinding[U <: NHttpResponse](res: U)
 private [netty] object URLParser {
 
   def urldecode(enc: String) : Map[String, Seq[String]] = {
+    def decode(raw: String) = URLDecoder.decode(raw, HttpConfig.DEFAULT_CHARSET)
     val pairs = enc.split('&').flatMap {
       _.split('=') match {
-        case Array(key, value) => List((key, URLDecoder.decode(value, HttpConfig.DEFAULT_CHARSET)))
-        case Array(key) if key != "" => List((key, ""))
+        case Array(key, value) => List((decode(key), decode(value)))
+        case Array(key) if key != "" => List((decode(key), ""))
         case _ => Nil
       }
     }.reverse
