@@ -22,6 +22,14 @@ Unfiltered is used in Remember The Milk's [public API](http://www.rememberthemil
 
 [Trust Metrics](http://www.trustmetrics.com) uses Unfiltered everywhere.  We use it in our API, our client facing app, our intranet, and even our web crawler. We use it because it's simple and nonintrusive — it lets us decide how to add web to our app, unlike other frameworks (Grails/Rails/Django), which do all of the deciding for you.  
 
+#### EAT.PRAY.MOVE
+
+[EAT.PRAY.MOVE](http://www.eatpraymove.com/) organizes, facilitates, and instructs yoga retreats in Italy and other Mediterranean areas. This is a simple crud website hosted on Google App Engine using [Scalate](http://scalate.fusesource.org/) for templating and [highchair](https://github.com/chrislewis/highchair) for persisting scala objects to the Google data store. Unfiltered runs the show.
+
+#### lssn.me
+
+[lssn.me](http://www.lssn.me/) is a simple URL shortening service hosted on Google App Engine. Unfiltered services the requests and [highchair](https://github.com/chrislewis/highchair) handles persistence.
+
 #### nescala.org
 
 The [event site](http://nescala.org/) for the North East Scala Symposium is written using Unfiltered's filter plans and hosted on [Google App Engine](http://code.google.com/appengine/).
@@ -41,11 +49,3 @@ The documentation preview server in [pamflet](https://github.com/n8han/pamflet/)
 #### unplanned
 
 A super simple run anywhere [adhoc HTTP server](https://github.com/softprops/unplanned#readme) using [conscript](https://github.com/n8han/conscript#readme) and the Unfiltered jetty module.
-
-#### [EAT.PRAY.MOVE](http://www.eatpraymove.com/)
-
-EAT.PRAY.MOVE organizes, facilitates, and instructs yoga retreats in Italy and other Mediterranean areas. This is a simple crud website hosted on Google App Engine using [Scalate](http://scalate.fusesource.org/) for templating and [highchair](https://github.com/chrislewis/highchair) for persisting scala objects to the Google data store. Unfiltered runs the show.
-
-#### [lssn.me](http://www.lssn.me/)
-
-lssn.me is a simple URL shortening service hosted on Google App Engine. Unfiltered services the requests and [highchair](https://github.com/chrislewis/highchair) handles persistence.
