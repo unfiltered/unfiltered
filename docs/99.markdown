@@ -41,3 +41,11 @@ The documentation preview server in [pamflet](https://github.com/n8han/pamflet/)
 #### unplanned
 
 A super simple run anywhere [adhoc HTTP server](https://github.com/softprops/unplanned#readme) using [conscript](https://github.com/n8han/conscript#readme) and the Unfiltered jetty module.
+
+#### [EAT.PRAY.MOVE](http://www.eatpraymove.com/)
+
+EAT.PRAY.MOVE organizes, facilitates, and instructs yoga retreats in Italy and other Mediterranean areas. This is a simple crud website hosted on Google App Engine using [Scalate](http://scalate.fusesource.org/) for templating and [highchair](https://github.com/chrislewis/highchair) for persisting scala objects to the Google data store. Unfiltered runs the show.
+
+#### [lssn.me](http://www.lssn.me/)
+
+lssn.me is a simple URL shortening service hosted on Google App Engine. Unfiltered services the requests and [highchair](https://github.com/chrislewis/highchair) handles persistence.
