@@ -3,12 +3,12 @@ Pattern Matching Pitfalls
 
 Java methods have a finite size, and the Scala compiler generates very
 large methods for complex pattern matching. It can be surprisingly
-easy to hit this limit and produce and exception in compilation. There
-is [an open bug][1133] to address this problem in Scala.
+easy to hit Java's limit and produce and exception in compilation. There
+is [an open bug][1133] to address the problem in Scala.
 
 [1133]: https://lampsvn.epfl.ch/trac/scala/ticket/1133
 
-There are several techniques for avoiding this problem when writing
+There are several techniques for avoiding this limitation when writing
 Unfiltered applications. One is to restructure matches so that common
 cases are handled in one case, and differentiated in subsequent
 matches. Instead of this:
@@ -52,7 +52,7 @@ singleton objects holding logically divided intents.
       }
     }
     object FooBar extends unfiltered.filter.Plan {
-      def intent = foos.orElse(bars)
+      def intent = Foos.intent.orElse(Bars.intent)
     }
 
 You could also make use of separate plans, to be chained together by
@@ -84,7 +84,7 @@ split it arbitrarily with default cases:
       }
     }
 
-Be aware that this last intent is defined for all requests. Because it
+Be aware that this last intent is *defined* for all requests. Because it
 includes a top-level default case, its `orElse` method will never call
 a partial function passed to it. The `Pass` object however will instruct
 a plan to treat requests that fall to the end as non-matching.

@@ -69,7 +69,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info)
   }, jetty, netty)
 
   /** scala test  helper */
-  lazy val scalatest = project("scalatest", "Unfiltered Scalatest", new DefaultProject(_) with sxr.Publish {
+  lazy val scalatest = project("scalatest", "Unfiltered Scalatest", new DefaultProject(_) with sxr.Publish with Only28AndUp {
     lazy val specs = scalatestDependency
     lazy val dispatch = dispatchDependency
   }, jetty, netty)
@@ -117,9 +117,9 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info)
 
   def specsDependency =
     if (buildScalaVersion startsWith "2.7.")
-      "org.scala-tools.testing" % "specs" % "1.6.2.2"
+      "org.scala-tools.testing" % "specs" % "1.6.2.2_1.5.0"
     else
-      "org.scala-tools.testing" % "specs_2.8.0" % "1.6.5"
+      "org.scala-tools.testing" % "specs_2.8.1" % "1.6.7"
 
   def scalatestDependency =
     "org.scalatest" % "scalatest" % "1.3"

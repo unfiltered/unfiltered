@@ -19,7 +19,7 @@ key-value store.
               NotFound ~> ResponseString("No record: " + id)
             }
           case PUT(_) =>
-            store.synchronized {
+            SillyStore.synchronized {
               store = store + (id -> Body.bytes(req))
             }
             Created ~> ResponseString("Created record: " + id)
@@ -69,5 +69,5 @@ And lastly, test the method error message:
 
     curl -i http://127.0.0.1:8080/record/my+file -X DELETE
 
-405 Method Not Allowed. But It's a shame, really. DELETE support would
+405 Method Not Allowed. But it's a shame, really. DELETE support would
 be easy to add. Why don't you give it a try?

@@ -93,11 +93,7 @@ case class ReceivedMessage(
   val defaultResponse = response(new DefaultHttpResponse(HTTP_1_1, OK))_
   /** Applies rf to a new `defaultResponse` and writes it out */
   def respond(rf: ResponseFunction[NHttpResponse]) = {
-    val ch = request.getHeader("Connection")
-    val keepAlive = request.getProtocolVersion match {
-      case HTTP_1_1 => !"close".equalsIgnoreCase(ch)
-      case HTTP_1_0 => "Keep-Alive".equals(ch)
-    }
+    val keepAlive = HttpHeaders.isKeepAlive(request)
     val closer = new unfiltered.response.Responder[NHttpResponse] {
       def respond(res: HttpResponse[NHttpResponse]) {
         res.getOutputStream.close()
