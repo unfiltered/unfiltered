@@ -7,33 +7,37 @@ Using the request matchers and response functions outlined over the
 last couple of pages, we have everything we need to build a naive
 key-value store.
 
-    import unfiltered.request._
-    import unfiltered.response._
-    
-    object SillyStore extends unfiltered.filter.Plan {
-      @volatile private var store = Map.empty[String, Array[Byte]]
-      def intent = {
-        case req @ Path(Seg("record" :: id :: Nil)) => req match {
-          case GET(_) =>
-            store.get(id).map(ResponseBytes).getOrElse {
-              NotFound ~> ResponseString("No record: " + id)
-            }
-          case PUT(_) =>
-            SillyStore.synchronized {
-              store = store + (id -> Body.bytes(req))
-            }
-            Created ~> ResponseString("Created record: " + id)
-          case _ =>
-            MethodNotAllowed ~> ResponseString("Must be GET or PUT")
+```scala
+import unfiltered.request._
+import unfiltered.response._
+
+object SillyStore extends unfiltered.filter.Plan {
+  @volatile private var store = Map.empty[String, Array[Byte]]
+  def intent = {
+    case req @ Path(Seg("record" :: id :: Nil)) => req match {
+      case GET(_) =>
+        store.get(id).map(ResponseBytes).getOrElse {
+          NotFound ~> ResponseString("No record: " + id)
         }
-      }
+      case PUT(_) =>
+        SillyStore.synchronized {
+          store = store + (id -> Body.bytes(req))
+        }
+        Created ~> ResponseString("Created record: " + id)
+      case _ =>
+        MethodNotAllowed ~> ResponseString("Must be GET or PUT")
     }
+  }
+}
+```
 
 Go ahead and paste that into a [console](Try+Unfiltered.html). Then,
 execute the plan with a server, adjusting the port if your system does
 not have 8080 available.
 
-    unfiltered.jetty.Http.local(8080).filter(SillyStore).run()
+```scala
+unfiltered.jetty.Http.local(8080).filter(SillyStore).run()
+```
 
 The method `local`, like `anylocal`, binds only to the loopback
 interface, for safety. SillyStore is not quite "web-scale".
