@@ -215,6 +215,26 @@ object AuthorizationSpec
        ) as_str)
        body must_==("missing or invalid redirect_uri")
     }
+    "not accept invalid credentials in a basic auth header" in {
+       val head = http.x(authorize <<? Map(
+         "response_type" -> "code",
+         "client_id" -> client.id,
+         "redirect_uri" -> client.redirectUri
+       )  >:> { h => h })
+       val Code = """code=(\S+)""".r
+       new java.net.URI(head("Location").head).getQuery match {
+          case Code(code) =>
+             val invalid = http.x(token << Map(
+               "grant_type" -> "authorization_code",
+               "client_id" -> "bogus",
+               "redirect_uri" -> client.redirectUri
+             ) as_!(client.id, client.secret) as_str)
+            json(invalid) { map =>
+              map must haveKey("error")
+            }
+          case _ => fail("failed to retrieve authorization code")
+       }
+    }
     "provide a web server flow" in {
        val head = http.x(authorize <<? Map(
          "response_type" -> "code",
@@ -231,10 +251,9 @@ object AuthorizationSpec
              http.x(token << Map(
                "grant_type" -> "authorization_code",
                "client_id" -> client.id,
-               "client_secret" -> client.secret,
                "redirect_uri" -> client.redirectUri,
                "code" -> code
-             ) as_str)
+             ) as_!(client.id, client.secret) as_str)
            json(ares) { map =>
              map must haveKey("access_token")
              map must haveKey("expires_in")

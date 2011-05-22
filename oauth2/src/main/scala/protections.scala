@@ -96,7 +96,7 @@ trait QParamBearerAuth extends AuthScheme {
   def queryParam = defaultQueryParam
 
   object BearerParam {
-    def unapply(params: Map[String, Seq[String]]) = params.get(queryParam)
+    def unapply(params: Map[String, Seq[String]]) = params(queryParam).headOption
   }
 
   def intent(protection: ProtectionLike) = {
@@ -123,6 +123,8 @@ trait MacAuth extends AuthScheme {
               Mac.sign(req, nonce, ext, bodyhash, key, algorithm).fold({
                 protection.errorResponse(BadRequest, _, req)
               }, { sig =>
+                println(sig)
+                println(mac)
                 if(sig == mac) protection.authenticate(MacAuthToken(id, key, nonce, bodyhash, ext), req)
                 else protection.errorResponse(BadRequest, "invalid MAC signature", req)
              })

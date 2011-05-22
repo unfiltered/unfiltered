@@ -17,8 +17,11 @@ object OAuthorization {
 
   val GrantType = "grant_type"
   val AuthorizationCode = "authorization_code"
+  val PasswordType = "password"
   val Password = "password"
+  val Username = "username"
   val ClientCredentials = "client_credentials"
+  val OwnerCredentials = "password"
   val RefreshToken = "refresh_token"
 
   val ResponseType = "response_type"
@@ -123,11 +126,10 @@ trait Authorized extends AuthorizationProvider
                    state.map(State -> _)
                  ))
 
-               case _ => error("invalid response")
+               case _ => BadRequest
              }
 
            case TokenKey =>
-             // responses should be encoded in url fragment
              auth(ImplicitAuthorizationRequest(
                req, clientId.get,
                redirectURI.get, scope.get, state.get)) match {
@@ -149,7 +151,7 @@ trait Authorized extends AuthorizationProvider
                    euri.map(ErrorURI -> (_:String)) ++
                    state.map(State -> _)
                  )))
-               case _ => error("invalid response")
+               case _ => BadRequest
              }
 
            case unsupported =>
@@ -164,10 +166,8 @@ trait Authorized extends AuthorizationProvider
                    euri.map(ErrorURI -> (_:String)) ++
                    state.map(State -> _)
                  ))
-               case _ => error("invalid response")
+               case _ => BadRequest
              }
-
-
          }
       }
 
@@ -194,7 +194,7 @@ trait Authorized extends AuthorizationProvider
         }
       }
 
-    case POST(ContextPath(_, TokenPath)) & Params(params) =>
+    case req @ POST(ContextPath(_, TokenPath)) & Params(params) =>
       val expected = for {
         grantType     <- lookup(GrantType) is required(requiredMsg(GrantType))
         code          <- lookup(Code) is optional[String, String]
@@ -262,8 +262,26 @@ trait Authorized extends AuthorizationProvider
         }
       }
 
-      expected(params) orFail { errs =>
-        errorResponder(InvalidRequest, errs.map { _.error }.mkString(", "), None, None)
-      }
+
+     val all = ((Right(params): Either[String, Map[String, Seq[String]]]) /: BasicAuth(req))((a,e) => e match {
+       case (cid, csec) =>
+         val pref = Right(a.right.get ++ Map(ClientId -> Seq(cid), ClientSecret-> Seq(csec)))
+         a.right.get(ClientId) match {
+           case Seq(id) =>
+             if(id == cid) pref else Left("client ids did not match")
+           case _ => pref
+         }
+       case _ => a
+     })
+
+     all fold({ err =>
+       errorResponder(InvalidRequest, err, None, None)
+     }, { mixed =>
+       expected(mixed) orFail { errs =>
+         errorResponder(InvalidRequest, errs.map { _.error }.mkString(", "), None, None)
+       }
+     })
+
+
   }
 }

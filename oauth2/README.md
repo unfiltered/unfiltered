@@ -79,3 +79,7 @@ valided against one registered by a client. This implementation implements a sim
     http.filter(Authorization(new YourAuthorizationServer() {
        override def validRedirectUri(provided: String, client: Client) = true // always
     }))
+
+### todo
+
+Try spliting plan cases into named Intent objects

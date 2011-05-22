@@ -17,7 +17,15 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
   extends AuthorizationProvider {
 
   trait MockClients extends ClientStore {
-    def client(clientId: String, secret: Option[String]) =  if(clientId == cli.id) Some(cli) else None
+    def client(clientId: String, secret: Option[String]) =
+      if(clientId == cli.id) {
+        secret match {
+          case Some(sec) =>
+            if(sec == cli.secret) Some(cli)
+            else None
+          case _ => Some(cli)
+        }
+      } else None
   }
 
   trait MockTokens extends TokenStore {

@@ -46,7 +46,7 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
 
   "oauth 2" should {
     "authenticate a valid access token via query parameter" in {
-      val oauth_token = Map("oauth_token" -> GoodBearerToken)
+      val oauth_token = Map("bearer_token" -> GoodBearerToken)
       try {
         Http.x(host / "user" <<? oauth_token as_str) must_== "test_user"
       } catch {
@@ -71,7 +71,7 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
     }
 
     "authenticate a valid access token via MAC header" in {
-      val mac_header = Map("Authorization" -> """MAC token="%s",timestamp="x",nonce="x",bodyhash="x",signature="x" """.format(GoodMacToken).trim)
+      val mac_header = Map("Authorization" -> """MAC id="%s",nonce="x",bodyhash="x",mac="x" """.format(GoodMacToken).trim)
       Http(host / "user" <:< mac_header as_str) must_== "test_user"
     }
   }

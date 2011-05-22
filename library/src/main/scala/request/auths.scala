@@ -4,7 +4,7 @@ package unfiltered.request
 object BasicAuth {
   import org.apache.commons.codec.binary.Base64.{decodeBase64}
   import unfiltered.request.{HttpRequest => Req}
-  
+
   /** @return Some(user, pass) or None */
   def unapply[T](r: Req[T]) = r match {
     case Authorization(Seq(auth)) => {
@@ -20,4 +20,5 @@ object BasicAuth {
     }
     case _ => None
   }
+  def apply[T](r: Req[T]) = unapply(r)
 }
