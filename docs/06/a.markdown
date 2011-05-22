@@ -8,13 +8,15 @@ objects that work against requests—from path segments to HTTP methods
 and headers. Applications use request matchers to define whether and
 how they will respond to a request.
 
-    case GET(Path("/record/1")) => ...
-
+```scala
+case GET(Path("/record/1")) => ...
+```
 This case will match GET requests to the path `/record/1`. To match
 against path segments, we can nest one additional extractor:
 
-    case GET(Path(Seg("record" :: id :: Nil))) => ...
-
+```scala
+case GET(Path(Seg("record" :: id :: Nil))) => ...
+```
 This matches any `id` string that is directly under the record
 path. The `Seg` extractor object matches against the `String` type and
 it is typically nested under a `Path` matcher. `Seg` extracts a lists
@@ -26,10 +28,11 @@ forward-slashes.
 The above case clause matches a request to get a record. What about
 putting them?
 
-    case req @ PUT(Path(Seg("record" :: id :: Nil))) =>
-      val bytes = Body.bytes(req)
-      ...
-
+```scala
+case req @ PUT(Path(Seg("record" :: id :: Nil))) =>
+  val bytes = Body.bytes(req)
+  ...
+```
 Access to the request body generally has side effects, such as the
 consumption of a stream that can only be read once. For this reason
 the body is not accessed from a request matcher, which could be
@@ -41,17 +44,19 @@ then read its body into a byte array—on the assumption that its body
 will fit into available memory. That aside, a minor annoyance is that
 this code introduces some repetition in the matching expression.
 
-    case GET(Path(Seg("record" :: id :: Nil))) => ...
-    case req @ PUT(Path(Seg("record" :: id :: Nil))) => ...
-
+```scala
+case GET(Path(Seg("record" :: id :: Nil))) => ...
+case req @ PUT(Path(Seg("record" :: id :: Nil))) => ...
+```
 An alternative is to match first on the path, then on the method:
 
-    case req @ Path(Seg("record" :: id :: Nil)) => req match {
-      case GET(_) => ...
-      case PUT(_) => ...
-      case _ => ...
-    }
-
+```scala
+case req @ Path(Seg("record" :: id :: Nil)) => req match {
+  case GET(_) => ...
+  case PUT(_) => ...
+  case _ => ...
+}
+```
 This approach eliminates the duplicated code, but it's important to
 recognize that it behaves differently as well. The original intent
 partial function was simply *not defined* for request to that path
