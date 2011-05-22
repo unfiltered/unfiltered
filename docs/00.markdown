@@ -1,0 +1,9 @@
+Unfiltered
+==========
+
+*Unfiltered* is a toolkit for servicing HTTP requests in Scala. It
+ provides a consistent vocabulary for handing requests on various
+ server backends, but does not interfere with direct access to their
+ native interfaces.
+
+> [Version $version$ Release Notes](http://implicit.ly/unfiltered-$vrsn$)
