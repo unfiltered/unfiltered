@@ -40,12 +40,15 @@ With **simple-build-tool** it's best to have the Scala version
 [automatically appended][sbt] so it will always match your
 project's. In a sbt 0.7.4 project:
 
-    val uf_filter = "net.databinder" %% "unfiltered-filter" % "$version$"
-
+```scala
+val uf_filter = "net.databinder" %% "unfiltered-filter" % "$version$"
+```
 For **Maven**, specify the full artifact name:
 
-    <dependency>
-      <groupId>net.databinder</groupId>
-      <artifactId>unfiltered-filter_$scala$</artifactId>
-      <version>$version$</version>
-    </dependency>
+```xml
+<dependency>
+  <groupId>net.databinder</groupId>
+  <artifactId>unfiltered-filter_$scala$</artifactId>
+  <version>$version$</version>
+</dependency>
+```

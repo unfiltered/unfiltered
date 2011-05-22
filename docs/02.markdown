@@ -19,26 +19,29 @@ method for clients to define the intent partial function.
 Looking back at the example on the previous page, you might wonder
 where the plan ends and the intent begins.
 
-    import unfiltered.request._
-    import unfiltered.response._
-    val echo = unfiltered.filter.Planify {
-       case Path(Seg(p :: Nil)) => ResponseString(p)
-    }
-
+```scala
+import unfiltered.request._
+import unfiltered.response._
+val echo = unfiltered.filter.Planify {
+   case Path(Seg(p :: Nil)) => ResponseString(p)
+}
+```
 In this case a plan is constructed directly from an anonymous partial
 function—that function is the intent. We can define the same plan in
 more explicit parts, as is usually necessary in a larger application.
 
-    object Echo extends unfiltered.filter.Plan {
-      def intent = {
-        case Path(Seg(p :: Nil)) => ResponseString(p)
-      }
-    }
-
+```scala
+object Echo extends unfiltered.filter.Plan {
+  def intent = {
+    case Path(Seg(p :: Nil)) => ResponseString(p)
+  }
+}
+```
 Since this kind of plan is an implementation of the servlet filter
 interface, we can pass it directly to a servlet container.
 
-    unfiltered.jetty.Http.anylocal.filter(Echo).run()
-
+```scala
+unfiltered.jetty.Http.anylocal.filter(Echo).run()
+```
 If a plan does not handle a request, the server may chain to the next
 plan if there is one, or produce its own error response.

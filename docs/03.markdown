@@ -43,17 +43,18 @@ browser interface for a local process. Unfiltered even gives you a
 shortcut to open a browser window, if the user is on a 1.6+ JVM that
 supports it.
 
-    import unfiltered.request._
-    import unfiltered.response._
-    val hello = unfiltered.filter.Planify {
-       case _ => ResponseString("hello world")
-    }
-    unfiltered.jetty.Http.anylocal.filter(hello).run { s =>
-      unfiltered.util.Browser.open(
-          "http://127.0.0.1:%d/".format(s.port)
-      )
-    }
-
+```scala
+import unfiltered.request._
+import unfiltered.response._
+val hello = unfiltered.filter.Planify {
+   case _ => ResponseString("hello world")
+}
+unfiltered.jetty.Http.anylocal.filter(hello).run { s =>
+  unfiltered.util.Browser.open(
+      "http://127.0.0.1:%d/".format(s.port)
+  )
+}
+```
 #### unfiltered-jetty-ajp
 
 A Jetty server configured for the [Apache JServ Protocol][ajp], a
@@ -65,9 +66,11 @@ binary protocol for proxying web requests.
 
 Bootstraps and binds a server for your channel handlers.
 
-    import unfiltered.request._
-    import unfiltered.response._
-    val hello = unfiltered.netty.cycle.Planify {
-       case _ => ResponseString("hello world")
-    }
-    unfiltered.netty.Http(8080).handler(hello).run()
+```scala
+import unfiltered.request._
+import unfiltered.response._
+val hello = unfiltered.netty.cycle.Planify {
+   case _ => ResponseString("hello world")
+}
+unfiltered.netty.Http(8080).handler(hello).run()
+```
