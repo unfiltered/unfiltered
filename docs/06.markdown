@@ -1,9 +1,0 @@
-Community
----------
-
-Unfiltered lives [on GitHub][gh], and many of its features and bug
-fixes originate in forks of the project there. We also have [a mailing
-list][nabble].
-
-[gh]: https://github.com/n8han/unfiltered
-[nabble]: http://databinder.3617998.n2.nabble.com/Unfiltered-f5560764.html

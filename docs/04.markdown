@@ -1,73 +1,54 @@
-Bindings and Servers
---------------------
+Project Setup
+-------------
 
-The core module unfiltered-library does not depend on or reference any
-particular server backend. It defines internal abstractions for
-requests and responses, with higher level abstractions on top.
+### Modules and Artifacts
 
-An application or library that depends only on the core library could
-be used with any backend that Unfiltered supports, but in most cases it
-will depend on a *binding* module.
+Unfiltered's core, binding, server, and other modules are published
+with references to their underlying dependencies, so that applications
+need only explicitly depend on Unfiltered and other top-level
+dependencies. Keep in mind that server modules and binding modules are
+not generally co-dependent, so that if you are using for example
+unfiltered-jetty, you will also need to specify unfiltered-filter.
 
-### Binding Modules
+Each module is [cross-built][sbt] against several versions of Scala
+and published to the [scala-tools][st] repository with the
+organization-id "net.databinder". The modules have the Scala version
+they are built against appended. For Scala $scala$, the full artifact
+names are as follows:
 
-These bind Unfiltered's generic request and response interfaces to a
-given implementation, as well as intent types and plan traits.
+* unfiltered_$scala$
+* unfiltered-filter_$scala$
+* unfiltered-netty_$scala$
+* unfiltered-websockets_$scala$
+* unfiltered-jetty_$scala$
+* unfiltered-jetty-ajp_$scala$
+* unfiltered-netty-server_$scala$
+* unfiltered-uploads_$scala$
+* unfiltered-utils_$scala$
+* unfiltered-spec_$scala$
+* unfiltered-scalatest_$scala$
+* unfiltered-json_$scala$
+* unfiltered-scalate_$scala$
+* unfiltered-oauth_$scala$
 
-#### Servlet Filters (unfiltered-filter)
+[st]: http://scala-tools.org/repo-releases/net/databinder/
+[sbt]: http://code.google.com/p/simple-build-tool/wiki/CrossBuild
 
-The Java Servlet API enables you to write applications that run on
-servlet containers, anything from Tomcat to Google App Engine. Its
-plan trait is a servlet filter.
+### Build Tools
 
-#### Netty Channels (unfiltered-netty)
+With **simple-build-tool** it's best to have the Scala version
+[automatically appended][sbt] so it will always match your
+project's. In a sbt 0.7.4 project:
 
-Netty defines *channels* for network I/O and implements them using
-Java's Native I/O (NIO) interface. Its plan traits are upstream
-channel handlers, and the module defines intents and plans in separate
-`cycle` and `channel` subpackages, the former for traditional
-request-response cycles and the latter for open-ended interaction.
+```scala
+val uf_filter = "net.databinder" %% "unfiltered-filter" % "$version$"
+```
+For **Maven**, specify the full artifact name:
 
-### Server Modules
-
-Server modules define runnable servers to execute your plans. They are
-entirely optional. Applications can instead use Unfiltered's binding
-modules with external containers, or they can interface directly with
-server libraries.
-
-#### unfiltered-jetty
-
-Includes builders for Jetty servers that implement the HTTP and HTTPS
-protocols. With this server it is particularly easy serve a web
-browser interface for a local process. Unfiltered even gives you a
-shortcut to open a browser window, if the user is on a 1.6+ JVM that
-supports it.
-
-    import unfiltered.request._
-    import unfiltered.response._
-    val hello = unfiltered.filter.Planify {
-       case _ => ResponseString("hello world")
-    }
-    unfiltered.jetty.Http.anylocal.filter(hello).run { s =>
-      unfiltered.util.Browser.open(
-          "http://127.0.0.1:%d/".format(s.port)
-      )
-    }
-
-#### unfiltered-jetty-ajp
-
-A Jetty server configured for the [Apache JServ Protocol][ajp], a
-binary protocol for proxying web requests.
-
-[ajp]: http://en.wikipedia.org/wiki/Apache_JServ_Protocol
-
-#### unfiltered-netty-server
-
-Bootstraps and binds a server for your channel handlers.
-
-    import unfiltered.request._
-    import unfiltered.response._
-    val hello = unfiltered.netty.cycle.Planify {
-       case _ => ResponseString("hello world")
-    }
-    unfiltered.netty.Http(8080).handler(hello).run()
+```xml
+<dependency>
+  <groupId>net.databinder</groupId>
+  <artifactId>unfiltered-filter_$scala$</artifactId>
+  <version>$version$</version>
+</dependency>
+```

@@ -52,6 +52,7 @@ trait Plan extends SimpleChannelUpstreamHandler {
       case unfiltered.request.Connection(values) =>
         if(values.exists { _.equalsIgnoreCase(Values.UPGRADE) }) Some(r)
         else None
+      case _ => None
     }
   }
 
@@ -60,6 +61,7 @@ trait Plan extends SimpleChannelUpstreamHandler {
       case Upgrade(values) =>
         if(values.exists { _.equalsIgnoreCase(Values.WEBSOCKET) }) Some(r)
         else None
+      case _ => None
     }
   }
 
@@ -70,7 +72,6 @@ trait Plan extends SimpleChannelUpstreamHandler {
   private def upgrade(ctx: ChannelHandlerContext, request: NHttpRequest, event: MessageEvent) = {
     val msg = ReceivedMessage(request, ctx, event)
     val binding = new RequestBinding(msg)
-
     binding match {
       case GET(ConnectionUpgrade(_) & UpgradeWebsockets(_)) =>
         if(intent.isDefinedAt(binding)) {
@@ -99,6 +100,7 @@ trait Plan extends SimpleChannelUpstreamHandler {
                   )
                   buff.writeLong(request.getContent().readLong)
                   res.underlying.setContent(ChannelBuffers.wrappedBuffer(MessageDigest.getInstance("MD5").digest(buff.array)))
+                case _ => ()
               }
             }
           }
@@ -126,9 +128,9 @@ trait Plan extends SimpleChannelUpstreamHandler {
           pipe.replace(this, ctx.getName, SocketPlan(socketIntent, pass))
 
         } else pass(ctx, event)
-        case _ => pass(ctx, event)
-      }
-   }
+      case _ =>  pass(ctx, event)
+    }
+  }
 
   /** By default, when a websocket handler `passes` it writes an Http Forbidden response
    *  to the channel. To override that behavior, call this method with a function to handle
@@ -160,29 +162,30 @@ object Planify {
           res.setContent(ChannelBuffers.copiedBuffer(res.getStatus.toString, CharsetUtil.UTF_8))
           setContentLength(res, res.getContent.readableBytes)
           ctx.getChannel.write(res).addListener(ChannelFutureListener.CLOSE)
-        case msg => error("Invalid type of event message (%s) for Plan pass handling" format msg.getClass.getName)
+        case msg =>
+          error("Invalid type of event message (%s) for Plan pass handling" format msg.getClass.getName)
       }
-    })
+   })
 }
 
 case class SocketPlan(intent: Plan.SocketIntent,
                       pass: Plan.Pass)
-  extends SimpleChannelUpstreamHandler {
-  import jnetty.channel.ExceptionEvent
-  import jnetty.handler.codec.http.websocket.{WebSocketFrame}
+     extends SimpleChannelUpstreamHandler {
+       import jnetty.channel.ExceptionEvent
+       import jnetty.handler.codec.http.websocket.{WebSocketFrame}
 
-  /** 0x00-0x7F typed frame becomes (UTF-8) Text
-      0x80-0xFF typed frame becomes Binary */
-  implicit def wsf2msg(wsf: WebSocketFrame): Msg =
-    if(wsf.isText) Text(wsf.getTextData) else Binary(wsf.getBinaryData)
+       /** 0x00-0x7F typed frame becomes (UTF-8) Text
+        0x80-0xFF typed frame becomes Binary */
+       implicit def wsf2msg(wsf: WebSocketFrame): Msg =
+         if(wsf.isText) Text(wsf.getTextData) else Binary(wsf.getBinaryData)
 
-  def attempt = intent.orElse({ case _ => () }: Plan.SocketIntent)
+       def attempt = intent.orElse({ case _ => () }: Plan.SocketIntent)
 
-  override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) =
-    event.getMessage match {
-      case frame: WebSocketFrame => attempt(Message(WebSocket(ctx.getChannel), frame))
-      case _ => pass(ctx, event)
-    }
+       override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) =
+         event.getMessage match {
+           case frame: WebSocketFrame => attempt(Message(WebSocket(ctx.getChannel), frame))
+           case _ =>  pass(ctx, event)
+         }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, event: ExceptionEvent) = {
     attempt(Error(WebSocket(ctx.getChannel), event.getCause))
