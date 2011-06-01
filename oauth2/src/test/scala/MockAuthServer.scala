@@ -53,6 +53,8 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
     import unfiltered.response._
     import unfiltered.request.{HttpRequest => Req}
 
+    def errorUri(err: String) = None
+
     def login[T](bundle: RequestBundle[T]): ResponseFunction[Any] = {
       // would normally show login here
       Ok
@@ -83,6 +85,8 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
       // would normally inspect the reuqest for user denial here
       false
     }
+
+    def validScopes(scopes: Option[String]) = true
 
     def validScopes[T](owner: ResourceOwner, scopes: Option[String], req: Req[T]) = {
       // would normally validate that the scopes are valid for the owner here

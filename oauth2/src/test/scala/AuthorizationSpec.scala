@@ -61,7 +61,9 @@ object AuthorizationSpec
 
   val ErrorQueryString = """error=(\S+)&error_description=(\S+)$""".r
 
+  //
   // implicit flow spec
+  //
   "OAuth2 requests for response_type 'token'" should {
     // http://tools.ietf.org/html/draft-ietf-oauth-v2-15#section-2.1
     "require a `response_type`, encoding errors as query string params" in {
@@ -102,7 +104,7 @@ object AuthorizationSpec
     "not redirect to an invalid redirect_uri" in {
       val body = http.x(authorize <<? Map(
         "response_type" -> "token",
-         "client_id" -> client.id,
+        "client_id" -> client.id,
         "redirect_uri" -> "bogus"
       ) as_str)
       body must_==("missing or invalid redirect_uri")
@@ -120,15 +122,19 @@ object AuthorizationSpec
        val head = http.x(authorize <<? Map(
          "response_type" -> "token",
          "client_id" -> client.id,
-         "redirect_uri" -> client.redirectUri
+         "redirect_uri" -> client.redirectUri,
+         "state" -> "test_state"
        ) >:> { h => h })
        head must haveKey("Location")
        val uri = new URI(head("Location").head)
-       val Frag = """access_token=(\S+)&token_type=(\S+)&expires_in=(\d+)""".r
+       val Frag = """access_token=(\S+)&token_type=(\S+)&expires_in=(\d+)&state=(\S+)""".r
        Frag.findFirstMatchIn(uri.getFragment) must beSome
     }
   }
 
+  //
+  // client credentials flow
+  //
   "OAuth2 requests for grant type client_credentials" should {
     "require a grant_type" in {
       val body = http(token << Map(
@@ -178,7 +184,9 @@ object AuthorizationSpec
     }
   }
 
-  // code flow spec
+  //
+  // authorization code flow spec
+  //
   "OAuth2 requests for response_type 'code'" should {
     "require a response_type" in {
        val head = http.x(authorize <<? Map(
@@ -208,6 +216,7 @@ object AuthorizationSpec
         case _ => fail("invalid redirect %s" format uri)
       }
     }
+
     "require a redirect_uri" in {
        val body = http.x(authorize <<? Map(
          "response_type" -> "code",
@@ -215,6 +224,7 @@ object AuthorizationSpec
        ) as_str)
        body must_==("missing or invalid redirect_uri")
     }
+
     "not accept invalid credentials in a basic auth header" in {
        val head = http.x(authorize <<? Map(
          "response_type" -> "code",
@@ -235,16 +245,20 @@ object AuthorizationSpec
           case _ => fail("failed to retrieve authorization code")
        }
     }
-    "provide a web server flow" in {
+
+    "provide a authorization code flow" in {
        val head = http.x(authorize <<? Map(
          "response_type" -> "code",
          "client_id" -> client.id,
-         "redirect_uri" -> client.redirectUri
+         "redirect_uri" -> client.redirectUri,
+         "state" -> "test_state"
        )  >:> { h => h })
        head must haveKey("Location")
        val uri = new java.net.URI(head("Location").head)
        val Code = """code=(\S+)""".r
+       val State = """state=(\S+)""".r
        Code.findFirstMatchIn(uri.getQuery) must beSome
+       State.findFirstMatchIn(uri.getQuery) must beSome
        uri.getQuery match {
          case Code(code) =>
            var ares =

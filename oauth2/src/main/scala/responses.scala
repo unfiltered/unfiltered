@@ -47,10 +47,10 @@ case class ErrorResponse(
 
 trait Formatting {
   import java.net.URLEncoder
-  def qstr(kvs: Seq[(String, String)]) =
+  def qstr(kvs: Iterable[(String, String)]) =
     kvs map { _ match { case (k, v) => URLEncoder.encode(k, "utf-8") + "=" + URLEncoder.encode(v, "utf-8") } } mkString("&")
 
-  def Json(kvs: Seq[(String, String)]) =
+  def Json(kvs: Iterable[(String, String)]) =
     unfiltered.response.ResponseString(kvs map { _ match { case (k, v) => "\"%s\":\"%s\"".format(k,v) } } mkString(
       "{",",","}"
     )) ~> unfiltered.response.JsonContent

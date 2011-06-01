@@ -32,20 +32,28 @@ trait ContainerResponses {
    *          uri was invalid or not present */
   def invalidRedirectUri(uri: Option[String], client: Option[Client]): ResponseFunction[Any]
 
+
+
   /** @return a function that provides a user notification that a request was made with an invalid client */
   def invalidClient: ResponseFunction[Any]
 }
 
 trait Container extends ContainerResponses {
 
+  /** @return a uri for more information on a privded error code */
+  def errorUri(error: String): Option[String]
+
   /** @return Some(resourceOwner) if one is authenticated, None otherwise. None will trigger a login request */
   def resourceOwner[T](r: Req[T]): Option[ResourceOwner]
 
-    /** @return true if application-specific logic determines this request was accepted, false otherwise */
+  /** @return true if application-specific logic determines this request was accepted, false otherwise */
   def accepted[T](r: Req[T]): Boolean
 
   /** @return true if application-specific logic determines this request was denied, false otherwise */
   def denied[T](r: Req[T]): Boolean
+
+  /** @return true if provides scopes are valid and not malformed */
+  def validScopes(scopes: Option[String]): Boolean
 
   /** @return true if the provided scopes are valid for a given client and resource owner */
   def validScopes[T](resourceOwner: ResourceOwner, scopes: Option[String], req: Req[T]): Boolean
