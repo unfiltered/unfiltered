@@ -2,8 +2,7 @@ Try Unfiltered
 --------------
 
 It's not hard to write a request handler in the Scala console using
-Unfiltered. The tricky part is getting everything you need on the
-classpath.
+Unfiltered. The tricky part is getting everything on the classpath.
 
 ### Play Project
 
