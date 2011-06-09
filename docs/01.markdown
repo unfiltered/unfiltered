@@ -13,7 +13,7 @@ easy to fix that.
 
 [g8]: https://github.com/n8han/giter8#readme
 
-    curl https://github.com/n8han/conscript/raw/master/setup.sh | sh
+    curl https://raw.github.com/n8han/conscript/master/setup.sh | sh
 
 That is [conscript][conscript]. Its `setup.sh` places a permanent
 (assuming you don't delete it) executable script in `~/bin/cs`. At
