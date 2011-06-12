@@ -96,7 +96,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info)
   }, library)
   /** websockets */
   lazy val websockets = project("websockets", "Unfiltered Websockets",
-    new UnfilteredModule(_), netty)
+    new UnfilteredModule(_) with IntegrationTesting, netty)
 
   /** oauth */
   lazy val oauth = project("oauth", "Unfiltered OAuth",
