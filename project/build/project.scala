@@ -80,8 +80,10 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info)
     val lift_json =
       if (buildScalaVersion.startsWith("2.7"))
         "net.liftweb" % "lift-json_2.7.7" % "2.2"
+      else if (buildScalaVersion.startsWith("2.8"))
+        "net.liftweb" %% "lift-json" % "2.3"
       else
-        "net.liftweb" % "lift-json_2.8.1" % "2.2"
+        "net.liftweb" %% "lift-json" % "2.4-M2"
   }, library)
   def servletApiDependency = "javax.servlet" % "servlet-api" % "2.3" % "provided"
 
@@ -105,10 +107,11 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info)
   },jetty, filter_p)
 
   def specsDependency =
-    if (buildScalaVersion startsWith "2.7.")
-      "org.scala-tools.testing" % "specs" % "1.6.2.2_1.5.0"
-    else
-      "org.scala-tools.testing" % "specs_2.8.1" % "1.6.7"
+    buildScalaVersion.substring(0,3) match {
+      case "2.7" => "org.scala-tools.testing" % "specs" % "1.6.2.2_1.5.0"
+      case "2.8" => "org.scala-tools.testing" % "specs_2.8.1" % "1.6.8"
+      case "2.9" => "org.scala-tools.testing" %% "specs" % "1.6.8"
+    }
 
   def scalatestDependency =
     "org.scalatest" % "scalatest" % "1.3"
