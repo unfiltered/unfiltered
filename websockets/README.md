@@ -18,7 +18,7 @@ The simplest way to embed a websocket server is within a `main` method.
       }
     }
 
-Under the covers this generates a Netty handler that defines the following `PartialFunction` definition
+Under the covers this generates a Netty handler that defines the following `PartialFunction`
 
     PartialFunction[netty.RequestBinding => PartialFunction[netty.websocket.SocketCallback => Unit]]
 
