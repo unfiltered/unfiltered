@@ -4,7 +4,7 @@ import java.io.{Reader, InputStream}
 import unfiltered.Cookie
 
 abstract class HttpRequest[T](val underlying: T) {
-  /** read-once access to request body input sream */
+  /** read-once access to request body input stream */
   def inputStream: InputStream
   /** buffered reader for request body's input stream */
   def reader: Reader
@@ -14,10 +14,6 @@ abstract class HttpRequest[T](val underlying: T) {
   def method: String
   /** full HTTP request uri including raw query string http://tools.ietf.org/html/rfc2616#section-5.1.2 */
   def uri: String
-
-  @deprecated def requestURI: String
-  @deprecated def contextPath: String
-
   /** GET and POST parameter names */
   def parameterNames: Iterator[String]
   /** Sequence of values associated with a parameter. Nil if none */
