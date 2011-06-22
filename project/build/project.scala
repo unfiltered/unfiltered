@@ -7,9 +7,6 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info)
   class UnfilteredModule(info: ProjectInfo) extends DefaultProject(info)
     with sxr.Publish
   {
-   override def compileOptions =
-     Deprecation :: super.compileOptions
-
     override def packageSrcJar= defaultJarPath("-sources.jar")
     lazy val sourceArtifact = Artifact.sources(artifactID)
     override def packageToPublishActions = super.packageToPublishActions ++ Seq(packageSrc)
@@ -62,9 +59,6 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info)
   lazy val netty = project("netty", "Unfiltered Netty", new UnfilteredModule(_) with IntegrationTesting,
     netty_server, library)
 
-  /** Marker for Scala 2.8-only projects that shouldn't be cross compiled or published */
-  trait Only28AndUp
-
   /** specs  helper */
   lazy val spec = project("spec", "Unfiltered Spec", new DefaultProject(_) with sxr.Publish {
     lazy val specs = specsDependency
@@ -72,7 +66,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info)
   }, jetty, netty)
 
   /** scala test  helper */
-  lazy val scalatest = project("scalatest", "Unfiltered Scalatest", new DefaultProject(_) with sxr.Publish with Only28AndUp {
+  lazy val scalatest = project("scalatest", "Unfiltered Scalatest", new DefaultProject(_) with sxr.Publish {
     lazy val specs = scalatestDependency
     lazy val dispatch = dispatchDependency
   }, jetty, netty)
@@ -81,9 +75,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info)
   lazy val json = project("json", "Unfiltered Json",
       new UnfilteredModule(_) with IntegrationTesting {
     val lift_json =
-      if (buildScalaVersion.startsWith("2.7"))
-        "net.liftweb" % "lift-json_2.7.7" % "2.2"
-      else if (buildScalaVersion.startsWith("2.8"))
+      if (buildScalaVersion.startsWith("2.8"))
         "net.liftweb" %% "lift-json" % "2.3"
       else
         "net.liftweb" %% "lift-json" % "2.4-M2"
@@ -91,7 +83,7 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info)
   def servletApiDependency = "javax.servlet" % "servlet-api" % "2.3" % "provided"
 
   lazy val scalate = project("scalate", "Unfiltered Scalate",
-      new UnfilteredModule(_) with Only28AndUp with IntegrationTesting {
+      new UnfilteredModule(_) with IntegrationTesting {
     val scalateVers = "1.4.1"
     val scalateLibs = "org.fusesource.scalate" % "scalate-core" % scalateVers
     val scalateUtils = "org.fusesource.scalate" % "scalate-util" % scalateVers % "test"
@@ -111,7 +103,6 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info)
 
   def specsDependency =
     buildScalaVersion.substring(0,3) match {
-      case "2.7" => "org.scala-tools.testing" % "specs" % "1.6.2.2_1.5.0"
       case "2.8" => "org.scala-tools.testing" % "specs_2.8.1" % "1.6.8"
       case "2.9" => "org.scala-tools.testing" %% "specs" % "1.6.8"
     }
@@ -130,12 +121,6 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info)
       "net.databinder" %% "dispatch-oauth" % "0.7.8"
 
   def jettyDependency = "org.eclipse.jetty" % "jetty-webapp" % jetty_version
-
-  /** Exclude 2.8 projects from cross-buiding actions run from parent */
-  override def dependencies = super.dependencies.filter {
-    case _: Only28AndUp => buildScalaVersion startsWith "2.8"
-    case _ => true
-  }
 
   override def postTitle(vers: String) = "Unfiltered %s" format vers
 
