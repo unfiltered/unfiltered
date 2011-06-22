@@ -7,6 +7,9 @@ class Unfiltered(info: ProjectInfo) extends ParentProject(info)
   class UnfilteredModule(info: ProjectInfo) extends DefaultProject(info)
     with sxr.Publish
   {
+   override def compileOptions =
+     Deprecation :: super.compileOptions
+
     override def packageSrcJar= defaultJarPath("-sources.jar")
     lazy val sourceArtifact = Artifact.sources(artifactID)
     override def packageToPublishActions = super.packageToPublishActions ++ Seq(packageSrc)
