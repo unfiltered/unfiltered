@@ -1,3 +1,4 @@
+
 package unfiltered.jetty
 
 object Https {
@@ -21,12 +22,12 @@ case class Https(port: Int, host: String) extends Server with Ssl {
   * For added trust store support, mix in the Trusted trait */
 trait Ssl { self: Server =>
   import org.eclipse.jetty.server.ssl.SslSocketConnector
-  
+
   def tryProperty(name: String) = System.getProperty(name) match {
     case null => error("required system property not set %s" format name)
     case prop => prop
   }
-  
+
   def sslPort: Int
   val sslMaxIdleTime = 90000
   val sslHandshakeTimeout = 120000
@@ -42,9 +43,9 @@ trait Ssl { self: Server =>
   underlying.addConnector(sslConn)
 }
 
-/** Provides truststore support to an Ssl supported Server 
-  * A trustStore and trustStorePassword are required and default 
-  * to the System property values "jetty.ssl.trustStore" and 
+/** Provides truststore support to an Ssl supported Server
+  * A trustStore and trustStorePassword are required and default
+  * to the System property values "jetty.ssl.trustStore" and
   * "jetty.ssl.trustStorePassword" respectively */
 trait Trusted { self: Ssl =>
   lazy val trustStore = tryProperty("jetty.ssl.trustStore")

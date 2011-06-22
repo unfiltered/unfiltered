@@ -51,7 +51,7 @@ private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(m
 
   def uri = req.getUri
 
-  def parameterNames = params.keySet.elements
+  def parameterNames = params.keySet.iterator
   def parameterValues(param: String) = params(param)
   def headers(name: String) = new JIteratorIterator(req.getHeaders(name).iterator)
 

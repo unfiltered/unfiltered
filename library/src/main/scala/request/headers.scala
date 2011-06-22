@@ -7,8 +7,8 @@ class RequestHeader(val name: String) {
       _.trim.takeWhile { _ != ';' } mkString
     }
 
-    def headers(e: Iterator[String]): List[String] =
-      List.fromIterator(e).flatMap(split)
+    def headers(it: Iterator[String]): List[String] =
+      it.toList.flatMap(split)
 
     headers(req.headers(name)) match {
       case Nil => None
@@ -48,10 +48,10 @@ object XForwardedFor extends RequestHeader("X-Forwarded-For")
 object Charset {
   val Setting = """.*;.*\bcharset=(\S+).*""".r
   def unapply[T](req: HttpRequest[T]) =
-    List.fromIterator(req.headers(RequestContentType.name)).flatMap {
+    req.headers(RequestContentType.name).toList.flatMap {
       case Setting(cs) => (cs, req) :: Nil
       case _ => Nil
-    }.firstOption
+    }.headOption
 }
 
 object HostPort {

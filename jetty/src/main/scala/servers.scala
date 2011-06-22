@@ -17,8 +17,6 @@ object Http {
 }
 
 case class Http(port: Int, host: String) extends Server {
-  /** use the factory method */
-  @deprecated def this(port: Int) = this(port, "0.0.0.0")
   val url = "http://%s:%d/" format (host, port)
   val conn = new SocketConnector()
   conn.setPort(port)
