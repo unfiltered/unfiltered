@@ -31,24 +31,3 @@ object Body {
     writer.toString
   }
 }
-
-object InStream {
-  @deprecated
-  /** Use Body */
-  def unapply[T](req: HttpRequest[T]) = Some(req.inputStream)
-}
-
-object Read {
-  @deprecated
-  /** Use Body */
-  def unapply[T](req: HttpRequest[T]) = Some(req.reader)
-}
-
-object Bytes {
-  @deprecated
-  /** Use Body */
-  def apply[T](req: HttpRequest[T]) = Body.bytes(req) match {
-    case Array() => None
-    case ba => Some(ba, req)
-  }
-}
