@@ -23,6 +23,8 @@ object Shared {
       "net.databinder" % "dispatch-oauth_2.8.0" % "0.7.8"
     else
       "net.databinder" %% "dispatch-oauth" % "0.7.8"
+
+  def integrationTestDeps = Seq(Shared.specsDep % "test", Shared.dispatchDep % "test")
 }
 
 object Shell {
@@ -36,10 +38,10 @@ object Shell {
 
   def gitBranches = ("git branch --no-color" lines_! devnull mkString)
 
-  val ps1 = (s: State) => "%s@%s • %s > " format(
+  val ps1 = (s: State) => "%s@%s (%s) > " format(
     Project.extract(s).currentProject.id,
-    CurrentBranch findFirstMatchIn gitBranches map (_ group(1)) getOrElse "-",
-    Shared.buildVersion
+    Shared.buildVersion,
+    CurrentBranch findFirstMatchIn gitBranches map (_ group(1)) getOrElse "-"
   )
 }
 
@@ -60,24 +62,27 @@ object Unfiltered extends Build {
   )
 
   lazy val unfiltered =
-    Project("Unfiltered All", file(".")) aggregate(
-      library, filterP, uploads, util, jetty, jettyAjpProject,
-      netty, nettyServer, json, specHelpers, scalaTestHelpers,
-      scalate, websockets, oauth)
+    Project("Unfiltered", file("."),
+            settings = buildSettings) aggregate(
+            library, filters, uploads, util, jetty, jettyAjpProject,
+            netty, nettyServer, json, specHelpers, scalaTestHelpers,
+            scalate, websockets, oauth)
 
-  lazy val library =
+  lazy val library: Project =
     Project("library", file("library"),
             settings = buildSettings ++ Seq(
               name := "Unfiltered",
               libraryDependencies := Seq(
-                "commons-codec" % "commons-codec" % "1.4"
-            ))) dependsOn(util)
+                "commons-codec" % "commons-codec" % "1.4",
+                Shared.specsDep % "test"
+             ) ++ integrationTestDeps
+            )) dependsOn(util)
 
-  lazy val filterP =
+  lazy val filters =
     Project("filter", file("filter"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Filter",
-            libraryDependencies := Seq(servletApiDep)
+            libraryDependencies := Seq(servletApiDep) ++ integrationTestDeps
           )) dependsOn(library)
 
   lazy val uploads =
@@ -88,7 +93,7 @@ object Unfiltered extends Build {
               servletApiDep,
               "commons-io" % "commons-io" % "1.4",
               "commons-fileupload" % "commons-fileupload" % "1.2.1"
-            ))) dependsOn(filterP)
+            ) ++ integrationTestDeps)) dependsOn(filters)
 
   lazy val util =
     Project("util", file("util"),
@@ -122,7 +127,8 @@ object Unfiltered extends Build {
   lazy val netty =
     Project("netty", file("netty"),
             settings = buildSettings ++ Seq(
-              name := "Unfiltered Netty"
+              name := "Unfiltered Netty",
+              libraryDependencies := integrationTestDeps
             )) dependsOn(nettyServer, library)
 
   lazy val specHelpers =
@@ -145,7 +151,7 @@ object Unfiltered extends Build {
             name := "Unfiltered Json",
             libraryDependencies := Seq(
               if (buildScalaVersion.startsWith("2.8")) "net.liftweb" %% "lift-json" % "2.3"
-              else "net.liftweb" %% "lift-json" % "2.4-M2")
+              else "net.liftweb" %% "lift-json" % "2.4-M2") ++ integrationTestDeps
           )) dependsOn(library)
 
   lazy val scalate =
@@ -158,18 +164,19 @@ object Unfiltered extends Build {
                 "org.fusesource.scalate" % "scalate-util" % "1.4.1" % "test",
                 "org.scala-lang" % "scala-compiler" % buildScalaVersion % "test",
                 "org.mockito" % "mockito-core" % "1.8.5" % "test"
-              ))) dependsOn(library)
+              ) ++ integrationTestDeps)) dependsOn(library)
 
   lazy val websockets =
     Project("websockets", file("websockets"),
           settings = buildSettings ++ Seq(
-            name := "Unfiltered Websockets"
+            name := "Unfiltered Websockets",
+            libraryDependencies := integrationTestDeps
           )) dependsOn(netty)
 
   lazy val oauth =
     Project("oauth", file("oauth"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered OAuth",
-            libraryDependencies := Seq(dispatchOAuthDep)
-          )) dependsOn(jetty, filterP)
+            libraryDependencies := Seq(dispatchOAuthDep) ++ integrationTestDeps
+          )) dependsOn(jetty, filters)
 }
