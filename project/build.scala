@@ -11,6 +11,7 @@ object Shared {
     sv.substring(0,3) match {
       case "2.8" => "org.scala-tools.testing" % "specs_2.8.1" % "1.6.8"
       case "2.9" => "org.scala-tools.testing" %% "specs" % "1.6.8"
+      case _ => error("unsupported")
     }
 
   def dispatchDep(sv: String) = if(sv startsWith "2.8.1")
@@ -23,7 +24,7 @@ object Shared {
     else
       "net.databinder" %% "dispatch-oauth" % "0.7.8"
 
-  def integrationTestDeps(sv: String) = Seq(Shared.specsDep(sv) % "test", Shared.dispatchDep(sv) % "test")
+  def integrationTestDeps(sv: String) = Seq(specsDep(sv) % "test", dispatchDep(sv) % "test")
 }
 
 object Shell {
@@ -37,6 +38,7 @@ object Shell {
 
   def gitBranches = ("git branch --no-color" lines_! devnull mkString)
 
+ // todo: n8. is git-branch overkill? may be better suited for local plugin than default
   val ps1 = (s: State) => "%s@%s (%s) > " format(
     Project.extract(s).currentProject.id,
     Shared.buildVersion,
@@ -44,7 +46,7 @@ object Shell {
   )
 }
 
-/** todo: integration testing settings :: posterous :: sxr :: Nil */
+// todo: integration testing settings :: posterous :: sxr :: Nil
 object Unfiltered extends Build {
   import Shared._
 
@@ -71,7 +73,7 @@ object Unfiltered extends Build {
     Project("library", file("library"),
             settings = buildSettings ++ Seq(
               name := "Unfiltered",
-              libraryDependencies <++= scalaVersion( v => Seq(
+              libraryDependencies <++= scalaVersion(v => Seq(
                 "commons-codec" % "commons-codec" % "1.4",
                 Shared.specsDep(v) % "test"
              ) ++ integrationTestDeps(v))
@@ -81,18 +83,18 @@ object Unfiltered extends Build {
     Project("filter", file("filter"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Filter",
-            libraryDependencies <++= scalaVersion( v => Seq(servletApiDep) ++ integrationTestDeps(v))
+            libraryDependencies <++= scalaVersion(v => Seq(servletApiDep) ++ integrationTestDeps(v))
           )) dependsOn(library)
 
   lazy val uploads =
     Project("uploads", file("uploads"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Uploads",
-            libraryDependencies <++= scalaVersion(Seq(
+            libraryDependencies <++= scalaVersion(v => Seq(
               servletApiDep,
               "commons-io" % "commons-io" % "1.4",
               "commons-fileupload" % "commons-fileupload" % "1.2.1"
-            ) ++ integrationTestDeps _))) dependsOn(filters)
+            ) ++ integrationTestDeps(v)))) dependsOn(filters)
 
   lazy val util =
     Project("util", file("util"),
