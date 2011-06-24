@@ -39,9 +39,10 @@ object Shell {
   def gitBranches = ("git branch --no-color" lines_! devnull mkString)
 
  // todo: n8. is git-branch overkill? may be better suited for local plugin than default
-  val ps1 = (s: State) => "%s@%s (%s) > " format(
+  def ps1(sv:String) = (s: State) => "%s@%s scala:%s (%s) > " format(
     Project.extract(s).currentProject.id,
     Shared.buildVersion,
+    sv,
     CurrentBranch findFirstMatchIn gitBranches map (_ group(1)) getOrElse "-"
   )
 }
@@ -59,7 +60,7 @@ object Unfiltered extends Build {
     publishTo := Some("Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"),
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     scalacOptions ++= Seq("-Xcheckinit", "-encoding", "utf8"),
-    shellPrompt := Shell.ps1
+    shellPrompt <<= scalaVersion(Shell.ps1 _)
   )
 
   lazy val unfiltered =
