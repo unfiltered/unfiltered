@@ -64,14 +64,14 @@ object Unfiltered extends Build {
   )
 
   lazy val unfiltered =
-    Project("Unfiltered", file("."),
+    Project("Unfiltered All", file("."),
             settings = buildSettings) aggregate(
             library, filters, uploads, util, jetty, jettyAjpProject,
             netty, nettyServer, json, specHelpers, scalaTestHelpers,
             scalate, websockets, oauth)
 
   lazy val library: Project =
-    Project("library", file("library"),
+    Project("Unfiltered", file("library"),
             settings = buildSettings ++ Seq(
               name := "Unfiltered",
               libraryDependencies <++= scalaVersion(v => Seq(
@@ -81,14 +81,14 @@ object Unfiltered extends Build {
             )) dependsOn(util)
 
   lazy val filters =
-    Project("filter", file("filter"),
+    Project("Unfiltered Filter", file("filter"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Filter",
             libraryDependencies <++= scalaVersion(v => Seq(servletApiDep) ++ integrationTestDeps(v))
           )) dependsOn(library)
 
   lazy val uploads =
-    Project("uploads", file("uploads"),
+    Project("Unfiltered Uploads", file("uploads"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Uploads",
             libraryDependencies <++= scalaVersion(v => Seq(
@@ -98,12 +98,12 @@ object Unfiltered extends Build {
             ) ++ integrationTestDeps(v)))) dependsOn(filters)
 
   lazy val util =
-    Project("util", file("util"),
+    Project("Unfiltered Utils", file("util"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Utils"))
 
   lazy val jetty =
-    Project("jetty", file("jetty"),
+    Project("Unfiltered Jetty", file("jetty"),
             settings = buildSettings ++ Seq(
               name := "Unfiltered Jetty",
               libraryDependencies := Seq(
@@ -111,7 +111,7 @@ object Unfiltered extends Build {
               ))) dependsOn(util)
 
   lazy val jettyAjpProject =
-    Project("jetty-ajp", file("jetty-ajp"),
+    Project("Unfiltered Jetty AJP", file("jetty-ajp"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Jetty AJP",
             libraryDependencies := Seq(
@@ -119,7 +119,7 @@ object Unfiltered extends Build {
             ))) dependsOn(jetty)
 
   lazy val nettyServer =
-    Project("netty-server", file("netty-server"),
+    Project("Unfiltered Netty Server", file("netty-server"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Netty Server",
             libraryDependencies := Seq(
@@ -127,28 +127,28 @@ object Unfiltered extends Build {
            ))) dependsOn(util)
 
   lazy val netty =
-    Project("netty", file("netty"),
+    Project("Unfiltered Netty", file("netty"),
             settings = buildSettings ++ Seq(
               name := "Unfiltered Netty",
               libraryDependencies <++= scalaVersion(integrationTestDeps _)
             )) dependsOn(nettyServer, library)
 
   lazy val specHelpers =
-    Project("spec", file("spec"),
+    Project("Unfiltered Spec", file("spec"),
             settings = buildSettings ++ Seq(
               name := "Unfiltered Spec",
               libraryDependencies <++= scalaVersion(v => Seq(specsDep(v), dispatchDep(v)))
             )) dependsOn(jetty, netty)
 
   lazy val scalaTestHelpers =
-    Project("scalatest", file("scalatest"),
+    Project("Unfiltered Scalatest", file("scalatest"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Scalatest",
             libraryDependencies <++= scalaVersion(v => Seq("org.scalatest" % "scalatest" % "1.3", dispatchDep(v)))
           )) dependsOn(jetty, netty)
 
   lazy val json =
-    Project("json", file("json"),
+    Project("Unfiltered Json", file("json"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Json",
             libraryDependencies <++= scalaVersion(v => Seq(
@@ -157,7 +157,7 @@ object Unfiltered extends Build {
           )) dependsOn(library)
 
   lazy val scalate =
-    Project("scalate", file("scalate"),
+    Project("Unfiltered Scalate", file("scalate"),
             settings = buildSettings ++ Seq(
               name := "Unfiltered Scalate",
               resolvers += ScalaToolsSnapshots,
@@ -169,14 +169,14 @@ object Unfiltered extends Build {
               ) ++ integrationTestDeps(v)))) dependsOn(library)
 
   lazy val websockets =
-    Project("websockets", file("websockets"),
+    Project("Unfiltered Websockets", file("websockets"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Websockets",
             libraryDependencies <++= scalaVersion(integrationTestDeps _)
           )) dependsOn(netty)
 
   lazy val oauth =
-    Project("oauth", file("oauth"),
+    Project("Unfiltered OAuth", file("oauth"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered OAuth",
             libraryDependencies <++= scalaVersion(v => Seq(dispatchOAuthDep(v)) ++ integrationTestDeps(v))
