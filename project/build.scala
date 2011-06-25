@@ -28,22 +28,10 @@ object Shared {
 }
 
 object Shell {
-  object devnull extends ProcessLogger {
-    def info(m: => String) {}
-    def error(m: => String) {}
-    def buffer[T](f: => T): T = f
-  }
-
-  val CurrentBranch = """\*\s+([^\s]+)""".r
-
-  def gitBranches = ("git branch --no-color" lines_! devnull mkString)
-
- // todo: n8. is git-branch overkill? may be better suited for local plugin than default
-  def ps1(sv:String) = (s: State) => "%s@%s scala:%s (%s) > " format(
+  def ps1(sv:String) = (s: State) => "%s@%s %% %s > " format(
     Project.extract(s).currentProject.id,
     Shared.buildVersion,
-    sv,
-    CurrentBranch findFirstMatchIn gitBranches map (_ group(1)) getOrElse "-"
+    sv
   )
 }
 
