@@ -2,7 +2,6 @@ import sbt._
 import Keys._
 
 object Shared {
-  val buildVersion = "0.4.0-SNAPSHOT"
 
   val servletApiDep = "javax.servlet" % "servlet-api" % "2.3" % "provided"
   val jettyVersion = "7.2.2.v20101205"
@@ -28,10 +27,8 @@ object Shared {
 }
 
 object Shell {
-  def ps1(sv:String) = (s: State) => "%s@%s %% %s > " format(
-    Project.extract(s).currentProject.id,
-    Shared.buildVersion,
-    sv
+  def ps1(pv: String) = (s: State) => "%s@%s > " format(
+    Project.extract(s).currentProject.id, pv
   )
 }
 
@@ -39,32 +36,36 @@ object Shell {
 object Unfiltered extends Build {
   import Shared._
 
+  def id(name: String) = "unftilered-%s" format name
+
+  def local(name: String) = LocalProject(id(name))
+
   val buildSettings = Defaults.defaultSettings ++ Seq(
     organization := "net.databinder",
     name := "Unfiltered Web Toolkit",
-    version := buildVersion,
+    version := "0.4.0-SNAPSHOT",
     crossScalaVersions := Seq("2.8.0", "2.8.1", "2.9.0", "2.9.0-1"),
     scalaVersion := "2.8.1",
     publishTo := Some("Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"),
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     scalacOptions ++= Seq("-Xcheckinit", "-encoding", "utf8"),
-    shellPrompt <<= scalaVersion(Shell.ps1 _)
+    shellPrompt <<= version(Shell.ps1 _)
   )
 
   lazy val unfiltered =
-    Project("Unfiltered All", file("."),
+    Project("all", file("."),
             settings = buildSettings) aggregate(
             library, filters, uploads, util, jetty, jettyAjpProject,
             netty, nettyServer, json, specHelpers, scalaTestHelpers,
             scalate, websockets, oauth)
 
   lazy val library: Project =
-    Project("Unfiltered", file("library"),
+    Project("unfiltered", file("library"),
             settings = buildSettings ++ Seq(
-              name := "Unfiltered",
-              unmanagedClasspath in (LocalProject("Unfiltered"), Test) <++=
-                (fullClasspath in (LocalProject("Unfiltered Spec"), Compile),
-                 fullClasspath in (LocalProject("Unfiltered Filter"), Compile)) map { (s, f) =>
+              name := "unfiltered",
+              unmanagedClasspath in (LocalProject("unfiltered"), Test) <++=
+                (fullClasspath in (local("spec"), Compile),
+                 fullClasspath in (local("filter"), Compile)) map { (s, f) =>
                   s ++ f
               },
               libraryDependencies <++= scalaVersion(v => Seq(
@@ -74,21 +75,21 @@ object Unfiltered extends Build {
             )) dependsOn(util)
 
   lazy val filters =
-    Project("Unfiltered Filter", file("filter"),
+    Project(id("filter"), file("filter"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Filter",
-            unmanagedClasspath in (LocalProject("Unfiltered Filter"), Test) <++=
-              (fullClasspath in (LocalProject("Unfiltered Spec"), Compile)).identity,
+            unmanagedClasspath in (local("filter"), Test) <++=
+              (fullClasspath in (local("spec"), Compile)).identity,
             libraryDependencies <++= scalaVersion(v => Seq(servletApiDep) ++
               integrationTestDeps(v))
           )) dependsOn(library)
 
   lazy val uploads =
-    Project("Unfiltered Uploads", file("uploads"),
+    Project(id("uploads"), file("uploads"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Uploads",
-            unmanagedClasspath in (LocalProject("Unfiltered Uploads"), Test) <++=
-              (fullClasspath in (LocalProject("Unfiltered Spec"), Compile)).identity,
+            unmanagedClasspath in (local("uploads"), Test) <++=
+              (fullClasspath in (local("spec"), Compile)).identity,
             libraryDependencies <++= scalaVersion(v => Seq(
               servletApiDep,
               "commons-io" % "commons-io" % "1.4",
@@ -96,12 +97,12 @@ object Unfiltered extends Build {
             ) ++ integrationTestDeps(v)))) dependsOn(filters)
 
   lazy val util =
-    Project("Unfiltered Utils", file("util"),
+    Project(id("utils"), file("util"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Utils"))
 
   lazy val jetty =
-    Project("Unfiltered Jetty", file("jetty"),
+    Project(id("jetty"), file("jetty"),
             settings = buildSettings ++ Seq(
               name := "Unfiltered Jetty",
               libraryDependencies := Seq(
@@ -109,7 +110,7 @@ object Unfiltered extends Build {
               ))) dependsOn(util)
 
   lazy val jettyAjpProject =
-    Project("Unfiltered Jetty AJP", file("jetty-ajp"),
+    Project(id("jetty-ajp"), file("jetty-ajp"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Jetty AJP",
             libraryDependencies := Seq(
@@ -117,7 +118,7 @@ object Unfiltered extends Build {
             ))) dependsOn(jetty)
 
   lazy val nettyServer =
-    Project("Unfiltered Netty Server", file("netty-server"),
+    Project(id("netty-server"), file("netty-server"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Netty Server",
             libraryDependencies := Seq(
@@ -125,23 +126,23 @@ object Unfiltered extends Build {
            ))) dependsOn(util)
 
   lazy val netty =
-    Project("Unfiltered Netty", file("netty"),
+    Project(id("netty"), file("netty"),
             settings = buildSettings ++ Seq(
               name := "Unfiltered Netty",
-              unmanagedClasspath in (LocalProject("Unfiltered Netty"), Test) <++=
-                (fullClasspath in (LocalProject("Unfiltered Spec"), Compile)).identity,
+              unmanagedClasspath in (local("netty"), Test) <++=
+                (fullClasspath in (local("spec"), Compile)).identity,
               libraryDependencies <++= scalaVersion(integrationTestDeps _)
             )) dependsOn(nettyServer, library)
 
   lazy val specHelpers =
-    Project("Unfiltered Spec", file("spec"),
+    Project(id("spec"), file("spec"),
             settings = buildSettings ++ Seq(
               name := "Unfiltered Spec",
               libraryDependencies <++= scalaVersion(v => Seq(specsDep(v), dispatchDep(v)))
             )) dependsOn(jetty, netty)
 
   lazy val scalaTestHelpers =
-    Project("Unfiltered Scalatest", file("scalatest"),
+    Project(id("scalatest"), file("scalatest"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Scalatest",
             libraryDependencies <++= scalaVersion(v =>
@@ -149,12 +150,12 @@ object Unfiltered extends Build {
           )) dependsOn(jetty, netty)
 
   lazy val json =
-    Project("Unfiltered Json", file("json"),
+    Project(id("json"), file("json"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Json",
-            unmanagedClasspath in (LocalProject("Unfiltered Json"), Test) <++=
-              (fullClasspath in (LocalProject("Unfiltered Spec"), Compile),
-               fullClasspath in (LocalProject("Unfiltered Filter"), Compile)) map { (s, f) =>
+            unmanagedClasspath in (local("json"), Test) <++=
+              (fullClasspath in (local("spec"), Compile),
+               fullClasspath in (local("filter"), Compile)) map { (s, f) =>
                  s ++ f
               },
             libraryDependencies <++= scalaVersion(v => Seq(
@@ -163,7 +164,7 @@ object Unfiltered extends Build {
           )) dependsOn(library)
 
   lazy val scalate =
-    Project("Unfiltered Scalate", file("scalate"),
+    Project(id("scalate"), file("scalate"),
             settings = buildSettings ++ Seq(
               name := "Unfiltered Scalate",
               resolvers += ScalaToolsSnapshots,
@@ -175,20 +176,20 @@ object Unfiltered extends Build {
               ) ++ integrationTestDeps(v)))) dependsOn(library)
 
   lazy val websockets =
-    Project("Unfiltered Websockets", file("websockets"),
+    Project(id("websockets"), file("websockets"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Websockets",
-            unmanagedClasspath in (LocalProject("Unfiltered Websockets"), Test) <++=
-              (fullClasspath in (LocalProject("Unfiltered Spec"), Compile)).identity,
+            unmanagedClasspath in (local("websockets"), Test) <++=
+              (fullClasspath in (local("spec"), Compile)).identity,
             libraryDependencies <++= scalaVersion(integrationTestDeps _)
           )) dependsOn(netty)
 
   lazy val oauth =
-    Project("Unfiltered OAuth", file("oauth"),
+    Project(id("oauth"), file("oauth"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered OAuth",
-            unmanagedClasspath in (LocalProject("Unfiltered OAuth"), Test) <++=
-              (fullClasspath in (LocalProject("Unfiltered Spec"), Compile)).identity,
+            unmanagedClasspath in (local("oauth"), Test) <++=
+              (fullClasspath in (local("spec"), Compile)).identity,
             libraryDependencies <++= scalaVersion(v => Seq(dispatchOAuthDep(v)) ++
               integrationTestDeps(v))
           )) dependsOn(jetty, filters)
