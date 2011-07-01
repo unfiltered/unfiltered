@@ -36,6 +36,7 @@ case class Scalate[A, B](request: HttpRequest[A], template: String, attributes:(
   ) extends Responder[B]{
 
   def respond(res: HttpResponse[B]) {
+    res.setContentType("text/html;charset=UTF-8")
     val writer = res.getWriter()
     try {
       val scalateTemplate = engine.load(template, bindings)
