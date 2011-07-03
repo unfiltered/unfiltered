@@ -3,8 +3,8 @@ Request Matchers
 
 ### Methods and Paths
 
-Unfiltered supplies a wide range of *request matchers*—extractor
-objects that work against requests—from path segments to HTTP methods
+Unfiltered supplies a wide range of *request matchers*--extractor
+objects that work against requests--from path segments to HTTP methods
 and headers. Applications use request matchers to define whether and
 how they will respond to a request.
 
@@ -40,7 +40,7 @@ evaluated more than one time, but from utility functions that operate
 on the request object.
 
 In this case, we assigned a reference to the request using `req @` and
-then read its body into a byte array—on the assumption that its body
+then read its body into a byte array--on the assumption that its body
 will fit into available memory. That aside, a minor annoyance is that
 this code introduces some repetition in the matching expression.
 
