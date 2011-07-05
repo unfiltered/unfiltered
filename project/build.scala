@@ -35,8 +35,10 @@ object Shell {
 // todo: posterous :: sxr :: Nil
 object Unfiltered extends Build {
   import Shared._
+  import posterous.Publish.{previewNotes, publishNotes, posterousCheck,
+                            posterousRequiredInputs, posterousDupCheck}
 
-  def id(name: String) = "unftilered-%s" format name
+  def id(name: String) = "unfiltered-%s" format name
 
   def local(name: String) = LocalProject(id(name))
 
@@ -54,7 +56,13 @@ object Unfiltered extends Build {
 
   lazy val unfiltered =
     Project("all", file("."),
-            settings = buildSettings) aggregate(
+            settings = buildSettings ++ Seq(
+              aggregate in previewNotes := false,
+              aggregate in publishNotes := false,
+              aggregate in posterousCheck := false,
+              aggregate in posterousRequiredInputs := false,
+              aggregate in posterousDupCheck := false
+            )) aggregate(
             library, filters, uploads, util, jetty, jettyAjpProject,
             netty, nettyServer, json, specHelpers, scalaTestHelpers,
             scalate, websockets, oauth)
