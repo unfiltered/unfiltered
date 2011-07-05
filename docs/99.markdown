@@ -20,7 +20,7 @@ Unfiltered is used in Remember The Milk's [public API](http://www.rememberthemil
 
 #### Trust Metrics
 
-[Trust Metrics](http://www.trustmetrics.com) uses Unfiltered everywhere.  We use it in our API, our client facing app, our intranet, and even our web crawler. We use it because it's simple and nonintrusive — it lets us decide how to add web to our app, unlike other frameworks (Grails/Rails/Django), which do all of the deciding for you.  
+[Trust Metrics](http://www.trustmetrics.com) uses Unfiltered everywhere.  We use it in our API, our client facing app, our intranet, and even our web crawler. We use it because it's simple and nonintrusive--it lets us decide how to add web to our app, unlike other frameworks (Grails/Rails/Django), which do all of the deciding for you.  
 
 #### EAT.PRAY.MOVE
 
