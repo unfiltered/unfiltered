@@ -43,7 +43,8 @@ object Unfiltered extends Build {
     scalaVersion := "2.8.1",
     publishTo := Some("Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"),
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
-    scalacOptions ++= Seq("-Xcheckinit", "-encoding", "utf8")
+    scalacOptions ++= Seq("-Xcheckinit", "-encoding", "utf8"),
+    parallelExecution in Test := false // :( test servers collide on same port
   )
 
   lazy val unfiltered =
