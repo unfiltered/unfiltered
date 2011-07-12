@@ -26,7 +26,7 @@ object Params {
   }
 
   /** Maps first parameter, if present. */
-  val first = new ParamMapper(_.firstOption)
+  val first = new ParamMapper(_.headOption)
 
   /**
    * Base class for parameter extractor objects, may be extended inline with
@@ -39,10 +39,10 @@ object Params {
   def pred[E,A](p: A => Boolean): Option[A] => Option[A] =
     opt => opt filter p
 
-  def int(os: Option[String]) = 
+  def int(os: Option[String]) =
     try { os map { _.toInt } } catch { case _ => None }
 
-  def long(os: Option[String]) = 
+  def long(os: Option[String]) =
     try { os map { _.toLong } } catch { case _ => None }
 
   val even = pred { (_:Int) % 2 == 0 }
@@ -124,7 +124,7 @@ object QParams {
   def lookup[E](key: String): QueryM[E,Option[String]] =
     QueryM {
       (params, _, log0) =>
-        (Some(key), log0, params.get(key).flatMap { _.firstOption })
+        (Some(key), log0, params.get(key).flatMap { _.headOption })
     }
 
   /** Create and name a validation token for an external input */
@@ -154,7 +154,7 @@ object QParams {
     watch({_ filter p}, err)
 
   /** Convert f into an error reporter that never reports errors */
-  def ignore[E,A](f: Option[A] => Option[A]): Reporter[E,A,A] = 
+  def ignore[E,A](f: Option[A] => Option[A]): Reporter[E,A,A] =
     opt => Right(f(opt))
 
   def int[E](e: String => E) = watch(Params.int, e)

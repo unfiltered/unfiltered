@@ -117,10 +117,10 @@ object XForwardedFor extends RepeatableHeader("X-Forwarded-For")
 object Charset {
   val Setting = """.*;.*\bcharset=(\S+).*""".r
   def unapply[T](req: HttpRequest[T]) =
-    List.fromIterator(req.headers(RequestContentType.name)).flatMap {
+    req.headers(RequestContentType.name).toList.flatMap {
       case Setting(cs) => (cs, req) :: Nil
       case _ => Nil
-    }.firstOption
+    }.headOption
 }
 
 object HostPort {

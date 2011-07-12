@@ -7,33 +7,37 @@ Using the request matchers and response functions outlined over the
 last couple of pages, we have everything we need to build a naive
 key-value store.
 
-    import unfiltered.request._
-    import unfiltered.response._
-    
-    object SillyStore extends unfiltered.filter.Plan {
-      @volatile private var store = Map.empty[String, Array[Byte]]
-      def intent = {
-        case req @ Path(Seg("record" :: id :: Nil)) => req match {
-          case GET(_) =>
-            store.get(id).map(ResponseBytes).getOrElse {
-              NotFound ~> ResponseString("No record: " + id)
-            }
-          case PUT(_) =>
-            store.synchronized {
-              store = store + (id -> Body.bytes(req))
-            }
-            Created ~> ResponseString("Created record: " + id)
-          case _ =>
-            MethodNotAllowed ~> ResponseString("Must be GET or PUT")
+```scala
+import unfiltered.request._
+import unfiltered.response._
+
+object SillyStore extends unfiltered.filter.Plan {
+  @volatile private var store = Map.empty[String, Array[Byte]]
+  def intent = {
+    case req @ Path(Seg("record" :: id :: Nil)) => req match {
+      case GET(_) =>
+        store.get(id).map(ResponseBytes).getOrElse {
+          NotFound ~> ResponseString("No record: " + id)
         }
-      }
+      case PUT(_) =>
+        SillyStore.synchronized {
+          store = store + (id -> Body.bytes(req))
+        }
+        Created ~> ResponseString("Created record: " + id)
+      case _ =>
+        MethodNotAllowed ~> ResponseString("Must be GET or PUT")
     }
+  }
+}
+```
 
 Go ahead and paste that into a [console](Try+Unfiltered.html). Then,
 execute the plan with a server, adjusting the port if your system does
 not have 8080 available.
 
-    unfiltered.jetty.Http.local(8080).filter(SillyStore).run()
+```scala
+unfiltered.jetty.Http.local(8080).filter(SillyStore).run()
+```
 
 The method `local`, like `anylocal`, binds only to the loopback
 interface, for safety. SillyStore is not quite "web-scale".
@@ -69,5 +73,5 @@ And lastly, test the method error message:
 
     curl -i http://127.0.0.1:8080/record/my+file -X DELETE
 
-405 Method Not Allowed. But It's a shame, really. DELETE support would
+405 Method Not Allowed. But it's a shame, really. DELETE support would
 be easy to add. Why don't you give it a try?

@@ -18,11 +18,11 @@ The simplest way to embed a websocket server is within a `main` method.
       }
     }
 
-Under the covers a this generates a Netty handler that is driven by the following `PartialFunction` definition
+Under the covers this generates a Netty handler that defines the following `PartialFunction`
 
     PartialFunction[netty.RequestBinding => PartialFunction[netty.websocket.SocketCallback => Unit]]
 
-The above example compiles into a handler of the format
+The above example is equivalent to a handler of the format
 
      netty.websockets.Planify({
        case GET(Path("/")) => {
@@ -36,11 +36,11 @@ A `WebSocketServer` responds to a PartialFunction on `SocketCallback` objects.
 
 `SocketCallback` objects are an enumeration of the same types of functions a client would respond to.
 
-* `Open(socket)` is fired when a browser connects the the server and takes as its a web socket that can be written to
+* `Open(socket)` is fired when a browser connects the server and takes as its a web socket that can be written to
 * `Message(socket, msg)` is fired when a browser sends a message to the server and takes as its arguments the socket that sent the message
  and the `Msg` itself
 * `Close(socket)` is fired when a clients websocket connection is closed
-* `Error(socket, err)` is fired when an exception occurred within the process of handing a websocket request and takes as its arguments the socket being served
+* `Error(socket, err)` is fired when an exception occurred within the process of handling a websocket request and takes as its arguments the socket being served
  and the `Throwable` error that occurred
 
 This interface doesn't require you respond to all messages.

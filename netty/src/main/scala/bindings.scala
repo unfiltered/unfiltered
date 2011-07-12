@@ -50,12 +50,9 @@ private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(m
   def method = req.getMethod.toString.toUpperCase
 
   def uri = req.getUri
-  @deprecated def requestURI = req.getUri.split('?').toList.head
-  @deprecated def contextPath = "" // No contexts here
 
-  def parameterNames = params.keySet.elements
+  def parameterNames = params.keySet.iterator
   def parameterValues(param: String) = params(param)
-
   def headers(name: String) = new JIteratorIterator(req.getHeaders(name).iterator)
 
   lazy val cookies = {
@@ -93,11 +90,7 @@ case class ReceivedMessage(
   val defaultResponse = response(new DefaultHttpResponse(HTTP_1_1, OK))_
   /** Applies rf to a new `defaultResponse` and writes it out */
   def respond(rf: ResponseFunction[NHttpResponse]) = {
-    val ch = request.getHeader("Connection")
-    val keepAlive = request.getProtocolVersion match {
-      case HTTP_1_1 => !"close".equalsIgnoreCase(ch)
-      case HTTP_1_0 => "Keep-Alive".equals(ch)
-    }
+    val keepAlive = HttpHeaders.isKeepAlive(request)
     val closer = new unfiltered.response.Responder[NHttpResponse] {
       def respond(res: HttpResponse[NHttpResponse]) {
         res.getOutputStream.close()

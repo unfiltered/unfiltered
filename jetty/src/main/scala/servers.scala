@@ -17,8 +17,6 @@ object Http {
 }
 
 case class Http(port: Int, host: String) extends Server {
-  /** use the factory method */
-  @deprecated def this(port: Int) = this(port, "0.0.0.0")
   val url = "http://%s:%d/" format (host, port)
   val conn = new SocketConnector()
   conn.setPort(port)
@@ -39,7 +37,7 @@ trait ContextBuilder {
   /** Sets a base resource path for this context, in which
    * Jetty checks for file resources when no filters have
    * served a response. The `path` URL may refer to a file
-   * (see File#toURL) or a location on the classpath. */ 
+   * (see File#toURL) or a location on the classpath. */
   def resources(path: java.net.URL): this.type = {
     current.setBaseResource(Resource.newResource(path))
     this
@@ -50,7 +48,8 @@ trait Server extends ContextBuilder with unfiltered.util.RunnableServer { self =
   val underlying = new JettyServer()
   val handlers = new ContextHandlerCollection
   val counter = new AtomicInteger
-  
+  val url: String
+
   underlying.setHandler(handlers)
 
   private def contextHandler(path: String) = {
@@ -61,7 +60,7 @@ trait Server extends ContextBuilder with unfiltered.util.RunnableServer { self =
     handlers.addHandler(ctx)
     ctx
   }
-  
+
   def context(path: String)(block: ContextBuilder => Unit) = {
     block(new ContextBuilder {
       val current = contextHandler(path)
@@ -70,7 +69,7 @@ trait Server extends ContextBuilder with unfiltered.util.RunnableServer { self =
     Server.this
   }
   lazy val current = contextHandler("/")
-  
+
   /** Starts server in the background */
   def start() = {
     underlying.setStopAtShutdown(true)

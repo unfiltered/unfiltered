@@ -1,0 +1,18 @@
+* Built with sbt 0.10.0
+
+* Jetty and Netty servers now expose url's accessable through their RunnableServer#run method so you can do
+
+    unfiltered.jetty.Http.anylocal.filter(plan).run({ svr =>
+        unfiltered.util.Browser.open(svr.url)
+    })
+
+* Removed deprecated method `requestURI` and `contextPath` on `HttpRequest`, use `url` instead or the ServletFilter modules `ContextPath` extractor
+
+* Drop side effecting request reading extractors `InStream`, `Read` and `Bytes`. Prefer `Body` methods `stream`, `reader`, and `bytes` instead
+
+* Removed deprecated auxillary `jetty.Http` constructor
+
+* Enable `@tailrec` annotations
+
+* Fix compiler warnings
+

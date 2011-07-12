@@ -1,0 +1,6 @@
+Matching and Responding
+-----------------------
+
+A typical request/response cycle can be handily directed with a few
+lines of code. This section applies pattern matching and combinator
+functions to expose a simple key-value store.

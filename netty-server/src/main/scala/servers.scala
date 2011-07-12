@@ -1,3 +1,4 @@
+
 package unfiltered.netty
 
 import unfiltered.util.RunnableServer
@@ -39,6 +40,7 @@ object Http {
 trait Server extends RunnableServer {
   val port: Int
   val host: String
+  val url =  "http://%s:%d/" format(host, port)
   protected def pipelineFactory: ChannelPipelineFactory
 
   val DEFAULT_IO_THREADS = Runtime.getRuntime().availableProcessors() + 1;
@@ -97,6 +99,7 @@ trait DefaultPipelineFactory {
     handlers.reverse.foreach {
       line.addLast("handler-%s" format counter.incrementAndGet, _)
     }
+    line.addLast("notfound", new NotFoundHandler)
     line
   }
 }
@@ -109,5 +112,20 @@ class HouseKeepingChannelHandler(channels: ChannelGroup) extends SimpleChannelUp
   override def channelOpen(ctx: ChannelHandlerContext, e: ChannelStateEvent) = {
     // Channels are automatically removed from the group on close
     channels.add(e.getChannel)
+  }
+}
+
+class NotFoundHandler extends SimpleChannelUpstreamHandler {
+  import org.jboss.netty.channel.ChannelFutureListener
+  import org.jboss.netty.handler.codec.http.{
+    DefaultHttpRequest, DefaultHttpResponse, HttpResponseStatus
+  }
+
+  override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
+    val version = e.getMessage().asInstanceOf[DefaultHttpRequest].getProtocolVersion
+    val response = new DefaultHttpResponse(version, HttpResponseStatus.NOT_FOUND)
+    val future = e.getChannel.write(response)
+
+    future.addListener(ChannelFutureListener.CLOSE)
   }
 }

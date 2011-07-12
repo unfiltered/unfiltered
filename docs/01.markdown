@@ -1,9 +1,91 @@
-Unfiltered
-==========
+Try Unfiltered
+--------------
 
-*Unfiltered* is a toolkit for servicing HTTP requests in Scala. It
- provides a consistent vocabulary for handing requests on various
- server backends, but does not interfere with direct access to their
- native interfaces.
+It's not hard to write a request handler in the Scala console using
+Unfiltered. The tricky part is getting everything on the classpath.
 
-> [Version $version$ Release Notes](http://implicit.ly/unfiltered-$vrsn$)
+### Play Project
+
+The approach recommended here uses [giter8][g8], a tool for setting up
+projects based on templates stored in github. Assuming you don't have
+giter8 installed and you are on a network-connected Linux or Mac, it's
+easy to fix that.
+
+[g8]: https://github.com/n8han/giter8#readme
+
+    curl https://raw.github.com/n8han/conscript/master/setup.sh | sh
+
+That is [conscript][conscript]. Its `setup.sh` places a permanent
+(assuming you don't delete it) executable script in `~/bin/cs`. At
+some point you may want to add `~/bin` to your executable search path,
+but these instructions will not assume it is.
+
+[conscript]: https://github.com/n8han/conscript#readme
+
+    ~/bin/cs n8han/giter8
+
+That installs a `g8`. Now you have a script to run giter8. The next
+step creates a new project under the current working directory.
+
+    ~/bin/g8 softprops/unfiltered --name=justplayin
+
+Okay, finally we can use this project with sbt to get a console for
+Unfiltered. You do have [sbt setup][sbt], don't you?
+
+[sbt]: http://code.google.com/p/simple-build-tool/wiki/Setup
+
+    cd justplayin
+    sbt update console
+
+### Consoled
+
+Now that you have a `scala>` prompt with the `unfiltered-filter` and
+`unfiltered-jetty` modules on the classpath, let's have some fun.
+
+```scala
+import unfiltered.request._
+import unfiltered.response._
+val echo = unfiltered.filter.Planify {
+   case Path(Seg(p :: Nil)) => ResponseString(p)
+}
+```
+This filter `echo` would work with any servlet container. We can
+use it in a Jetty server right now.
+
+```scala
+unfiltered.jetty.Http.anylocal.filter(echo).run()
+```
+The startup message tells you which open port was selected, and by
+default it is only listening to requests from 127.0.0.1. So on the
+same machine, you can make requests to your server. e.g.
+
+    curl http://127.0.0.1:<the right port>/hello+world
+
+Fancy desktop web browsers will work too. Notice that exactly one path
+segment is required for the filter to respond to the request. If you
+ask for the root path or a deeper path, the `echo` filter will
+not handle the request and Jetty responds with a 404 page.
+
+If we want to handle any request, we could broaden the pattern
+matching expression. (Press enter to stop the running server.)
+
+```scala
+val echoNice = unfiltered.filter.Planify {
+   case Path(Seg(p :: Nil)) => ResponseString(p)
+   case _ => ResponseString(
+       "I can echo exactly one path element."
+   )
+}
+unfiltered.jetty.Http.anylocal.filter(echoNice).run()
+```
+Or we could define another filter chain it to the first.
+
+```scala
+val nice = unfiltered.filter.Planify {
+   case _ => ResponseString(
+       "I can echo exactly one path element."
+   )
+}
+unfiltered.jetty.Http.anylocal.filter(echo).filter(nice).run()
+```
+Happy now?

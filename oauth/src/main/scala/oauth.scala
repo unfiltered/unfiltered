@@ -27,12 +27,13 @@ object OAuth {
     val keys = Set.empty + "realm" + ConsumerKey + TokenKey + SignatureMethod +
       Sig + Timestamp + Nonce + Callback + Verifier + Version
 
-    def unapply(hvals: String) = {
-      Some(Map((hvals.split(",") map { _.replace("OAuth ", "") } flatMap {
+    def apply(hvals: Seq[String]) =
+      Map((hvals map { _.replace("OAuth ", "") } flatMap {
         case KeyVal(k, v) if(keys.contains(k)) => Seq((k -> Seq(v)))
-        case _ => Nil
-      }): _*))
-    }
+        case b => Nil
+      }): _*)
+
+    def unapply(hvals: Seq[String]) = Some(apply(hvals))
   }
 }
 
@@ -67,7 +68,11 @@ trait Protected extends OAuthProvider with unfiltered.filter.Plan {
   import OAuth._
 
   def intent = {
-    case ContextPath(_, path) & Authorization(OAuth.Header(headers)) & Params(params) & request =>
+    case Params(params) & request =>
+      val headers = Authorization(request) match {
+         case Some(a) => OAuth.Header(a.split(","))
+         case _ => Map.empty[String, Seq[String]]
+      }
       val expected = for {
         oauth_consumer_key <- lookup(ConsumerKey) is
           nonempty(blankMsg(ConsumerKey)) is required(requiredMsg(ConsumerKey))
@@ -112,7 +117,11 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
   import OAuth._
 
   def intent = {
-    case POST(ContextPath(_, RequestTokenPath) & Authorization(OAuth.Header(headers)) & Params(params)) & request =>
+    case POST(ContextPath(_, RequestTokenPath) & Params(params)) & request =>
+       val headers = Authorization(request) match {
+         case Some(a) => OAuth.Header(a.split(","))
+         case _ => Map.empty[String, Seq[String]]
+      }
       val expected = for {
         consumer_key <- lookup(ConsumerKey) is
           nonempty(blankMsg(ConsumerKey)) is required(requiredMsg(ConsumerKey))
@@ -137,7 +146,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         }
       }
 
-      expected(headers ++ params) orFail { errors =>
+      expected(params ++ headers) orFail { errors =>
         BadRequest ~> ResponseString(errors.map { _.error } mkString(". "))
       }
 
@@ -161,7 +170,11 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         BadRequest ~> ResponseString(errors.map { _.error } mkString(". "))
       }
 
-    case request @ POST(ContextPath(_, AccessTokenPath) & Authorization(OAuth.Header(headers)) & Params(params)) =>
+    case request @ POST(ContextPath(_, AccessTokenPath) & Params(params)) =>
+      val headers = Authorization(request) match {
+         case Some(a) => OAuth.Header(a.split(","))
+         case _ => Map.empty[String, Seq[String]]
+      }
       val expected = for {
         consumer_key <- lookup(ConsumerKey) is
           nonempty(blankMsg(ConsumerKey)) is required(requiredMsg(ConsumerKey))

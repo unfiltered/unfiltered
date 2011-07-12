@@ -1,0 +1,51 @@
+Who's Using Unfiltered?
+-----------------------
+
+These are some projects and companies that have used Unfiltered. Are
+*you* using Unfiltered?
+[Fork this page](https://github.com/n8han/Unfiltered/blob/master/docs/99.markdown)
+on github.
+
+#### Meetup
+
+Unfiltered, Netty, and RabbitMQ run [Meetup's real-time APIs](http://making.meetup.com/post/2929945070/real-life-meetups-deserve-real-time-apis).
+
+#### Novus
+
+Entire web layer of the [Novus](https://www.novus.com/) real-time financial analytics platform has been built by [maxaf](https://github.com/maxaf) using Unfiltered. We have a myriad custom request unapplies and use Scalate extensively. There's no better way to express web application concerns than using Scala idioms. High engineer productivity and type safety have contributed a lot to our product's bottom line.
+
+#### Remember The Milk
+
+Unfiltered is used in Remember The Milk's [public API](http://www.rememberthemilk.com/services/api/).
+
+#### Trust Metrics
+
+[Trust Metrics](http://www.trustmetrics.com) uses Unfiltered everywhere.  We use it in our API, our client facing app, our intranet, and even our web crawler. We use it because it's simple and nonintrusive--it lets us decide how to add web to our app, unlike other frameworks (Grails/Rails/Django), which do all of the deciding for you.  
+
+#### EAT.PRAY.MOVE
+
+[EAT.PRAY.MOVE](http://www.eatpraymove.com/) organizes, facilitates, and instructs yoga retreats in Italy and other Mediterranean areas. This is a simple crud website hosted on Google App Engine using [Scalate](http://scalate.fusesource.org/) for templating and [highchair](https://github.com/chrislewis/highchair) for persisting scala objects to the Google data store. Unfiltered runs the show.
+
+#### lssn.me
+
+[lssn.me](http://www.lssn.me/) is a simple URL shortening service hosted on Google App Engine. Unfiltered services the requests and [highchair](https://github.com/chrislewis/highchair) handles persistence.
+
+#### nescala.org
+
+The [event site](http://nescala.org/) for the North East Scala Symposium is written using Unfiltered's filter plans and hosted on [Google App Engine](http://code.google.com/appengine/).
+
+#### pamflet
+
+The documentation preview server in [pamflet](https://github.com/n8han/pamflet/) is Unfiltered.
+
+#### picture show
+
+[Self-contained slide-show presentations](https://github.com/softprops/picture-show#readme) authored in basic markdown, served in html and css served by Unfiltered.
+
+#### scalaxb
+
+[scalaxb-appengine](http://scalaxb.org/scalaxb-appengine) is an Unfiltered API to run scalaxb over the web on appengine.
+
+#### unplanned
+
+A super simple run anywhere [adhoc HTTP server](https://github.com/softprops/unplanned#readme) using [conscript](https://github.com/n8han/conscript#readme) and the Unfiltered jetty module.

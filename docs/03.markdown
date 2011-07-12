@@ -1,44 +1,76 @@
-Plans and Intents
------------------
+Bindings and Servers
+--------------------
 
-Unfiltered conditionally handles incoming requests using partial
-functions. From the application's perspective, requests are
-mapped to code paths by pattern matching. The library uses
-a particular vocabulary to refer to the agents of this process
-without ambiguity.
+The core module unfiltered-library does not depend on or reference any
+particular server backend. It defines internal abstractions for
+requests and responses, with higher level abstractions on top.
 
-* An *intent* is a partial function for matching requests.
-* A *plan* binds an intent to a particular server interface.
+An application or library that depends only on the core library could
+be used with any backend that Unfiltered supports, but in most cases it
+will depend on a *binding* module.
 
-For example, the `unfiltered.filter.Plan` trait extends the
-`javax.servlet.Filter` interface. It declares an abstract `intent`
-method for clients to define the intent partial function.
+### Binding Modules
 
-### Making Plans of Intents
+These bind Unfiltered's generic request and response interfaces to a
+given implementation, as well as intent types and plan traits.
 
-Looking back at the example on the previous page, you might wonder
-where the plan ends and the intent begins.
+#### Servlet Filters (unfiltered-filter)
 
-    import unfiltered.request._
-    import unfiltered.response._
-    val echo = unfiltered.filter.Planify {
-       case Path(Seg(p :: Nil)) => ResponseString(p)
-    }
+The Java Servlet API enables you to write applications that run on
+servlet containers, anything from Tomcat to Google App Engine. Its
+plan trait is a servlet filter.
 
-In this case a plan is constructed directly from an anonymous partial
-function—that function is the intent. We can define the same plan in
-more explicit parts, as is usually necessary in a larger application.
+#### Netty Channels (unfiltered-netty)
 
-    object Echo extends unfiltered.filter.Plan {
-      def intent = {
-        case Path(Seg(p :: Nil)) => ResponseString(p)
-      }
-    }
+Netty defines *channels* for network I/O and implements them using
+Java's Native I/O (NIO) interface. Its plan traits are upstream
+channel handlers, and the module defines intents and plans in separate
+`cycle` and `channel` subpackages, the former for traditional
+request-response cycles and the latter for open-ended interaction.
 
-Since this kind of plan is an implementation of the servlet filter
-interface, we can pass it directly to a servlet container.
+### Server Modules
 
-    unfiltered.jetty.Http.anylocal.filter(Echo).run()
+Server modules define runnable servers to execute your plans. They are
+entirely optional. Applications can instead use Unfiltered's binding
+modules with external containers, or they can interface directly with
+server libraries.
 
-If a plan does not handle a request, the server may chain to the next
-plan if there is one, or produce its own error response.
+#### unfiltered-jetty
+
+Includes builders for Jetty servers that implement the HTTP and HTTPS
+protocols. With this server it is particularly easy serve a web
+browser interface for a local process. Unfiltered even gives you a
+shortcut to open a browser window, if the user is on a 1.6+ JVM that
+supports it.
+
+```scala
+import unfiltered.request._
+import unfiltered.response._
+val hello = unfiltered.filter.Planify {
+   case _ => ResponseString("hello world")
+}
+unfiltered.jetty.Http.anylocal.filter(hello).run { s =>
+  unfiltered.util.Browser.open(
+      "http://127.0.0.1:%d/".format(s.port)
+  )
+}
+```
+#### unfiltered-jetty-ajp
+
+A Jetty server configured for the [Apache JServ Protocol][ajp], a
+binary protocol for proxying web requests.
+
+[ajp]: http://en.wikipedia.org/wiki/Apache_JServ_Protocol
+
+#### unfiltered-netty-server
+
+Bootstraps and binds a server for your channel handlers.
+
+```scala
+import unfiltered.request._
+import unfiltered.response._
+val hello = unfiltered.netty.cycle.Planify {
+   case _ => ResponseString("hello world")
+}
+unfiltered.netty.Http(8080).handler(hello).run()
+```
