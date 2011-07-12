@@ -26,13 +26,6 @@ object Shared {
   def integrationTestDeps(sv: String) = Seq(specsDep(sv) % "test", dispatchDep(sv) % "test")
 }
 
-object Shell {
-  def ps1(pv: String) = (s: State) => "%s@%s > " format(
-    Project.extract(s).currentProject.id, pv
-  )
-}
-
-// todo: posterous :: sxr :: Nil
 object Unfiltered extends Build {
   import Shared._
   import posterous.Publish.{previewNotes, publishNotes, posterousCheck,
@@ -50,8 +43,7 @@ object Unfiltered extends Build {
     scalaVersion := "2.8.1",
     publishTo := Some("Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"),
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
-    scalacOptions ++= Seq("-Xcheckinit", "-encoding", "utf8"),
-    shellPrompt <<= version(Shell.ps1 _)
+    scalacOptions ++= Seq("-Xcheckinit", "-encoding", "utf8")
   )
 
   lazy val unfiltered =
