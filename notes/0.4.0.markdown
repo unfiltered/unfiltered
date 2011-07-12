@@ -1,3 +1,5 @@
+* Built with sbt 0.10.0
+
 * Jetty and Netty servers now expose url's accessable through their RunnableServer#run method so you can do
 
     unfiltered.jetty.Http.anylocal.filter(plan).run({ svr =>
