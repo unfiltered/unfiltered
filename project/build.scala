@@ -47,7 +47,7 @@ object Unfiltered extends Build {
   )
 
   lazy val unfiltered =
-    Project("all", file("."),
+    Project("unfiltered-all", file("."),
             settings = buildSettings ++ Seq(
               aggregate in previewNotes := false,
               aggregate in publishNotes := false,
@@ -167,13 +167,17 @@ object Unfiltered extends Build {
     Project(id("scalate"), file("scalate"),
             settings = buildSettings ++ Seq(
               name := "Unfiltered Scalate",
-              resolvers += ScalaToolsSnapshots,
-              libraryDependencies <++= scalaVersion(v => Seq(
-                "org.fusesource.scalate" % "scalate-core" % "1.4.1",
-                "org.fusesource.scalate" % "scalate-util" % "1.4.1" % "test",
-                "org.scala-lang" % "scala-compiler" % v % "test",
-                "org.mockito" % "mockito-core" % "1.8.5" % "test"
-              ) ++ integrationTestDeps(v)))) dependsOn(library)
+              libraryDependencies <++= scalaVersion { v =>
+                val scalateVersion = v match {
+                  case "2.8.0" | "2.8.1" => "1.4.1"
+                  case _ => "1.5.0"
+                }
+                Seq(
+                  "org.fusesource.scalate" % "scalate-core" % scalateVersion,
+                  "org.fusesource.scalate" % "scalate-util" % scalateVersion % "test",
+                  "org.scala-lang" % "scala-compiler" % v % "test",
+                  "org.mockito" % "mockito-core" % "1.8.5" % "test"
+                ) ++ integrationTestDeps(v) } )) dependsOn(library)
 
   lazy val websockets =
     Project(id("websockets"), file("websockets"),
