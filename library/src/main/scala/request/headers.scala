@@ -44,18 +44,18 @@ private [request] class RequestHeader[A](val name: String)(parser: Iterator[Stri
 private [request] object DateValueParser extends (Iterator[String] => List[java.util.Date]) {
   import DateFormatting._
   def apply(values: Iterator[String]) =
-    List.fromIterator(values).flatMap(parseDate)
+    values.toList.flatMap(parseDate)
 }
 
 private [request] object IntValueParser extends (Iterator[String] => List[Int]) {
    def tryInt(raw: String) = try { Some(raw.toInt) } catch { case _ => None }
    def apply(values: Iterator[String]) =
-     List.fromIterator(values).flatMap(tryInt)
+     values.toList.flatMap(tryInt)
 }
 
 private [request] object StringValueParser extends (Iterator[String] => List[String]) {
   def apply(values: Iterator[String]) =
-    List.fromIterator(values)
+    values.toList
 }
 
 private [request] object UriValueParser extends (Iterator[String] => List[java.net.URI]) {
@@ -64,7 +64,7 @@ private [request] object UriValueParser extends (Iterator[String] => List[java.n
     catch { case _ => None }
 
   def apply(values: Iterator[String]) =
-    List.fromIterator(values).flatMap(toUri)
+    values.toList.flatMap(toUri)
 }
 
 private [request] object SeqValueParser extends (Iterator[String] => List[String]) {
@@ -73,7 +73,7 @@ private [request] object SeqValueParser extends (Iterator[String] => List[String
        (raw.split(",") map {
          _.trim.takeWhile { _ != ';' } mkString
        }).toList
-     List.fromIterator(values).flatMap(split)
+     values.toList.flatMap(split)
    }
 }
 
