@@ -1,3 +1,16 @@
+### Header Extractor Refactor
+
+This release includes a breaking change to the set of request-header
+extractors included with Unfiltered. Named header extractors are now
+abstractions of the particular header specifications, so that
+non-repeatable string headers extract to a `String` instead of a
+`Seq[String]`, date headers extract to a `Date` object, etc.
+
+Applications upgrading from Unfiltered 0.3.x will need to remove a few
+calls, for example to `headOption`, to compile against the new version.
+
+### Other Improvements
+
 * Built with sbt 0.10.0
 
 * Jetty and Netty servers now expose url's accessable through their RunnableServer#run method so you can do
