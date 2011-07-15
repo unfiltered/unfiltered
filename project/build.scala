@@ -37,7 +37,7 @@ object Unfiltered extends Build {
 
   val buildSettings = Defaults.defaultSettings ++ Seq(
     organization := "net.databinder",
-    name := "Unfiltered Web Toolkit",
+    name := "Unfiltered",
     version := "0.4.0",
     crossScalaVersions := Seq("2.8.0", "2.8.1", "2.9.0", "2.9.0-1"),
     scalaVersion := "2.8.1",
