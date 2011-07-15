@@ -9,9 +9,12 @@ non-repeatable string headers extract to a `String` instead of a
 Applications upgrading from Unfiltered 0.3.x will need to remove a few
 calls, for example to `headOption`, to compile against the new version.
 
-### Other Improvements
+### Other Changes
 
-* Built with sbt 0.10.0
+* Published for Scala 2.8.0 - 2.9.0-1. If you're building against
+  Scala 2.7.7, stay on Unfiltered 0.3.x.
+
+* Built with sbt 0.10.1
 
 * Jetty and Netty servers now expose url's accessable through their RunnableServer#run method so you can do
 
