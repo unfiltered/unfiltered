@@ -38,10 +38,10 @@ names are as follows:
 
 With **simple-build-tool** it's best to have the Scala version
 [automatically appended][sbt] so it will always match your
-project's. In a sbt 0.7.4 project:
+project's. In an sbt 0.10.x project:
 
 ```scala
-val uf_filter = "net.databinder" %% "unfiltered-filter" % "$version$"
+libraryDependencies += "net.databinder" %% "unfiltered-filter" % "$version$"
 ```
 For **Maven**, specify the full artifact name:
 
@@ -52,3 +52,13 @@ For **Maven**, specify the full artifact name:
   <version>$version$</version>
 </dependency>
 ```
+
+### Template Projects
+
+There are few [giter8][g8] templates that provide sbt 0.10 projects
+and sample skeletal apps for Unfiltered's using different backends:
+
+* `g8 softprops/unfiltered` for Jetty
+* `g8 n8han/unfiltered-netty` for Netty
+
+[g8]: https://github.com/n8han/giter8
