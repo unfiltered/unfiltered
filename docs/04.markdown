@@ -55,10 +55,19 @@ For **Maven**, specify the full artifact name:
 
 ### Template Projects
 
-There are few [giter8][g8] templates that provide sbt 0.10 projects
-and sample skeletal apps for Unfiltered's using different backends:
+For a new project the easiest the easiest option to apply a
+[giter8][g8] template for the Unfiltered backend of your choice.
 
-* `g8 softprops/unfiltered` for Jetty
-* `g8 n8han/unfiltered-netty` for Netty
+* **softprops/unfiltered.g8** for Jetty
+* **n8han/unfiltered-netty.g8** for Netty
+
+So for example:
+
+```sh
+g8 n8han/unfiltered-netty --name=justplayin
+cd justplayin
+sbt # *or whatever your 0.10.x command is
+> run
+```
 
 [g8]: https://github.com/n8han/giter8
