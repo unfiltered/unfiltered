@@ -28,8 +28,6 @@ object Shared {
 
 object Unfiltered extends Build {
   import Shared._
-  import posterous.Publish.{previewNotes, publishNotes, posterousCheck,
-                            posterousRequiredInputs, posterousDupCheck}
 
   def id(name: String) = "unfiltered-%s" format name
 
@@ -49,13 +47,7 @@ object Unfiltered extends Build {
 
   lazy val unfiltered =
     Project("unfiltered-all", file("."),
-            settings = buildSettings ++ Seq(
-              aggregate in previewNotes := false,
-              aggregate in publishNotes := false,
-              aggregate in posterousCheck := false,
-              aggregate in posterousRequiredInputs := false,
-              aggregate in posterousDupCheck := false
-            )) aggregate(
+            settings = buildSettings) aggregate(
             library, filters, uploads, util, jetty, jettyAjpProject,
             netty, nettyServer, json, specHelpers, scalaTestHelpers,
             scalate, websockets, oauth)
