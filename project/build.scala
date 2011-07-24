@@ -153,7 +153,7 @@ object Unfiltered extends Build {
               },
             libraryDependencies <++= scalaVersion(v => Seq(
               if (v.startsWith("2.8")) "net.liftweb" %% "lift-json" % "2.3"
-              else "net.liftweb" %% "lift-json" % "2.4-M2") ++ integrationTestDeps(v))
+              else "net.liftweb" %% "lift-json" % "2.4-M3") ++ integrationTestDeps(v))
           )) dependsOn(library)
 
   lazy val scalate =
