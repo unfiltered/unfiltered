@@ -25,7 +25,7 @@ trait ProtectionLike extends Plan {
   val schemes: Seq[AuthScheme]
   def intent = ((schemes map {_.intent(this)}) :\ fallback) {_ orElse _}
   def fallback: Plan.Intent = {
-    case request => errorResponse(Unauthorized, "", request)
+    case request => println("did not match any scheme in %s" format schemes);errorResponse(Unauthorized, "", request)
   }
 
   def authenticate[T <: HttpServletRequest](token: AccessToken, request: HttpRequest[T]) =
@@ -76,8 +76,8 @@ trait BearerAuth extends AuthScheme {
   object BearerHeader {
     val HeaderPattern = header
 
-    def unapply(hvals: List[String]) = hvals match {
-      case HeaderPattern(token) :: Nil => Some(token)
+    def unapply(hval: String) = hval match {
+      case HeaderPattern(token) => Some(token)
       case _ => None
     }
   }
@@ -120,15 +120,18 @@ trait MacAuth extends AuthScheme {
       try {
          tokenSecret(id) match {
            case Some(key) =>
-              Mac.sign(req, nonce, ext, bodyhash, key, algorithm).fold({
-                protection.errorResponse(BadRequest, _, req)
+              Mac.sign(req, nonce, ext, bodyhash, key, algorithm).fold({ err =>
+                println("err signing %s" format err)
+                protection.errorResponse(BadRequest, err, req)
               }, { sig =>
-                println(sig)
-                println(mac)
+                println("sig %s" format sig)
+                println("mac %s" format mac)
                 if(sig == mac) protection.authenticate(MacAuthToken(id, key, nonce, bodyhash, ext), req)
                 else protection.errorResponse(BadRequest, "invalid MAC signature", req)
              })
-           case _ => protection.errorResponse(BadRequest, "invalid token", req)
+           case _ =>
+             println("could not find token for id %s" format id)
+             protection.errorResponse(BadRequest, "invalid token", req)
          }
       }
       catch {

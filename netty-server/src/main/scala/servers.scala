@@ -1,3 +1,4 @@
+
 package unfiltered.netty
 
 import unfiltered.util.RunnableServer
@@ -39,6 +40,7 @@ object Http {
 trait Server extends RunnableServer {
   val port: Int
   val host: String
+  val url =  "http://%s:%d/" format(host, port)
   protected def pipelineFactory: ChannelPipelineFactory
 
   val DEFAULT_IO_THREADS = Runtime.getRuntime().availableProcessors() + 1;
@@ -84,6 +86,8 @@ class ServerPipelineFactory(val channels: ChannelGroup,
   def getPipeline(): ChannelPipeline = complete(Channels.pipeline)
 }
 
+/**  HTTP Netty pipline builder. Uses Netty defaults: maxHeaderSize 8192 and
+ *   maxChunkSize 8192 */
 trait DefaultPipelineFactory {
   def channels: ChannelGroup
   def handlers: List[ChannelHandler]
@@ -116,12 +120,12 @@ class NotFoundHandler extends SimpleChannelUpstreamHandler {
   import org.jboss.netty.handler.codec.http.{
     DefaultHttpRequest, DefaultHttpResponse, HttpResponseStatus
   }
-  
+
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     val version = e.getMessage().asInstanceOf[DefaultHttpRequest].getProtocolVersion
     val response = new DefaultHttpResponse(version, HttpResponseStatus.NOT_FOUND)
     val future = e.getChannel.write(response)
-    
+
     future.addListener(ChannelFutureListener.CLOSE)
   }
 }

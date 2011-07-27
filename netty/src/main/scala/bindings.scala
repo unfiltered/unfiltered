@@ -50,12 +50,9 @@ private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(m
   def method = req.getMethod.toString.toUpperCase
 
   def uri = req.getUri
-  @deprecated def requestURI = req.getUri.split('?').toList.head
-  @deprecated def contextPath = "" // No contexts here
 
-  def parameterNames = params.keySet.elements
+  def parameterNames = params.keySet.iterator
   def parameterValues(param: String) = params(param)
-
   def headers(name: String) = new JIteratorIterator(req.getHeaders(name).iterator)
 
   lazy val cookies = {

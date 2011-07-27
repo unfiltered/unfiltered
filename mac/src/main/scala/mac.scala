@@ -54,11 +54,11 @@ object MacAuthorization {
 
   /** @return (id, nonce, Option[bodyhash], Option[ext], mac)*/
   def unapply[T](r: HttpRequest[T]) = r match {
-    case Authorization(vals) =>
-      vals match {
+    case Authorization(value) =>
+      value.split(",").toList match {
         case MacHeader(id, nonce, bodyhash, ext, mac) =>
           Some(id, nonce, bodyhash, ext, mac)
-        case _ => None
+        case p => None
       }
     case _ => None
   }

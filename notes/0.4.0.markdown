@@ -1,0 +1,34 @@
+### Header Extractor Refactor
+
+This release includes a breaking change to the set of request-header
+extractors included with Unfiltered. Named header extractors are now
+abstractions of the particular header specifications, so that
+non-repeatable string headers extract to a `String` instead of a
+`Seq[String]`, date headers extract to a `Date` object, etc.
+
+Applications upgrading from Unfiltered 0.3.x will need to remove a few
+calls, for example to `headOption`, to compile against the new version.
+
+### Other Changes
+
+* Published for Scala 2.8.0 - 2.9.0-1. If you're building against
+  Scala 2.7.7, stay on Unfiltered 0.3.x.
+
+* Built with sbt 0.10.1
+
+* Jetty and Netty servers now expose url's accessable through their RunnableServer#run method so you can do
+
+    unfiltered.jetty.Http.anylocal.filter(plan).run({ svr =>
+        unfiltered.util.Browser.open(svr.url)
+    })
+
+* Removed deprecated method `requestURI` and `contextPath` on `HttpRequest`, use `url` instead or the ServletFilter modules `ContextPath` extractor
+
+* Drop side effecting request reading extractors `InStream`, `Read` and `Bytes`. Prefer `Body` methods `stream`, `reader`, and `bytes` instead
+
+* Removed deprecated auxillary `jetty.Http` constructor
+
+* Enable `@tailrec` annotations
+
+* Fix compiler warnings
+

@@ -2,9 +2,10 @@ package unfiltered.response
 
 import net.liftweb.json.JsonAST._
 import net.liftweb.json.JsonDSL._
+import net.liftweb.json.Printer.compact
 
 object Json {
-  val jsonToString = render _ andThen compact _
+  def jsonToString(json: JValue) = compact(render(json))
 
   def apply(json: JValue) =
     new ChainResponse(JsonContent ~> ResponseString(jsonToString(json)))

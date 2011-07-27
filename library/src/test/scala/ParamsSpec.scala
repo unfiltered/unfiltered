@@ -1,3 +1,4 @@
+
 package unfiltered.request
 
 import org.specs._
@@ -6,7 +7,7 @@ object ParamsSpecJetty extends unfiltered.spec.jetty.Served with ParamsSpec {
   def setup = { _.filter(unfiltered.filter.Planify(intent)) }
 }
 object ParamsSpecNetty extends unfiltered.spec.netty.Served with ParamsSpec {
-  def setup = { p => 
+  def setup = { p =>
     unfiltered.netty.Http(p).handler(unfiltered.netty.cycle.Planify(intent))
   }
 }
@@ -44,9 +45,9 @@ trait ParamsSpec extends unfiltered.spec.Hosted {
         )
       }
 
-    case GET(UFPath("/even") & Params(params)) => 
+    case GET(UFPath("/even") & Params(params)) =>
       val expected = for {
-        even <- lookup("number") is(int(in => "%s is not a number".format(in))) is 
+        even <- lookup("number") is(int(in => "%s is not a number".format(in))) is
           (pred( _ % 2 == 0, i => "%d is odd".format(i) )) is(required("missing"))
         whatever <- lookup("what") is(required("bad"))
       } yield ResponseString(even.get.toString)
@@ -55,20 +56,20 @@ trait ParamsSpec extends unfiltered.spec.Hosted {
           fails map { fail => fail.name + ":" + fail.error } mkString ","
         )
       }
-    
-    case request @ GET(UFPath("/str") & Params(params)) => 
+
+    case request @ GET(UFPath("/str") & Params(params)) =>
       val expected = for {
         str <- lookup("param") is(int(_ => 400)) is(optional[Int,Int]) // note: 2.8 can infer type on optional
         req <- lookup("req") is(required(400))
-        agent <- external("UA", UserAgent(request).firstOption) is
+        agent <- external("UA", UserAgent(request)) is
                  required(400)
       } yield ResponseString(str.get.getOrElse(0).toString)
       expected(params) orFail { fails =>
-        BadRequest ~> Status(fails.head.error) ~> 
+        BadRequest ~> Status(fails.head.error) ~>
           ResponseString(fails.map { _.name }.mkString("+"))
       }
   }
-  
+
   "Params basic map" should {
     "map query string params" in {
       Http(host / "basic" <<? Map("foo" -> "bar") as_str) must_=="foo is bar"

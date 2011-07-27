@@ -70,7 +70,7 @@ trait Protected extends OAuthProvider with unfiltered.filter.Plan {
   def intent = {
     case Params(params) & request =>
       val headers = Authorization(request) match {
-         case Seq(a) => OAuth.Header(a.split(","))
+         case Some(a) => OAuth.Header(a.split(","))
          case _ => Map.empty[String, Seq[String]]
       }
       val expected = for {
@@ -119,7 +119,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
   def intent = {
     case POST(ContextPath(_, RequestTokenPath) & Params(params)) & request =>
        val headers = Authorization(request) match {
-         case Seq(a) => OAuth.Header(a.split(","))
+         case Some(a) => OAuth.Header(a.split(","))
          case _ => Map.empty[String, Seq[String]]
       }
       val expected = for {
@@ -172,7 +172,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
 
     case request @ POST(ContextPath(_, AccessTokenPath) & Params(params)) =>
       val headers = Authorization(request) match {
-         case Seq(a) => OAuth.Header(a.split(","))
+         case Some(a) => OAuth.Header(a.split(","))
          case _ => Map.empty[String, Seq[String]]
       }
       val expected = for {

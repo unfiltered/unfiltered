@@ -1,3 +1,4 @@
+
 package unfiltered.oauth
 
 object Signatures {
@@ -19,7 +20,7 @@ object Signatures {
     /** http://tools.ietf.org/html/rfc5849#section-3.4.1.3 */
     def normalizedParams(p: Params) =
       (new collection.immutable.TreeMap[String, Seq[String]] ++ recode(p)) map {
-        case (k, v) => v.toList sort (_<_) map {
+        case (k, v) => v.toList sortWith(_<_) map {
           case e => k + "=" + e
         } mkString "&"
       } mkString "&"

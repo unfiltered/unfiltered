@@ -2,4 +2,14 @@
   plans push unhandled requests upstream. Channel handlers plans can
   now be chained like filter plans.
 
+* [softprops][softprops] Refactor of WebSockets interface, now enables
+  the use of Unfiltered's request extractors prior to the WebSockets
+  handshake. See [the module's readme][websockets] for details and
+  examples.
+
+* Compiled, tested, and published for all release versions of Scala
+  from 2.7.7 to 2.9.0-1.
+
 [chrislewis]: https://github.com/chrislewis
+[softprops]: https://github.com/softprops
+[websockets]: https://github.com/n8han/Unfiltered/tree/master/websockets#readme

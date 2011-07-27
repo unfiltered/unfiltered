@@ -5,6 +5,7 @@ import unfiltered.response._
 import unfiltered.netty._
 
 import org.jboss.{netty => jnetty}
+import jnetty.handler.codec.http.HttpHeaders
 import jnetty.channel.{Channel, ChannelHandlerContext, MessageEvent, SimpleChannelUpstreamHandler}
 import jnetty.buffer.ChannelBuffer
 
@@ -12,6 +13,30 @@ object Plan {
   type SocketIntent = PartialFunction[SocketCallback, Unit]
   type Intent = PartialFunction[RequestBinding, SocketIntent]
   type Pass = (ChannelHandlerContext, MessageEvent) => Unit
+}
+
+private [websockets] object ProtocolRequestHeader extends StringHeader(HttpHeaders.Names.SEC_WEBSOCKET_PROTOCOL)
+private [websockets] object SecKeyOne extends StringHeader(HttpHeaders.Names.SEC_WEBSOCKET_KEY1)
+private [websockets] object SecKeyTwo extends StringHeader(HttpHeaders.Names.SEC_WEBSOCKET_KEY2)
+private [websockets] object OriginRequestHeader extends StringHeader(HttpHeaders.Names.ORIGIN)
+private [websockets] object ConnectionUpgrade {
+  def unapply[T](r: HttpRequest[T]) = r match {
+    case unfiltered.request.Connection(value) =>
+      if(value.equalsIgnoreCase(HttpHeaders.Values.UPGRADE)) Some(r)
+      else None
+  }
+}
+
+private [websockets] object UpgradeWebsockets {
+  def unapply[T](r: HttpRequest[T]) = r match {
+    case Upgrade(values) =>
+      if(values.exists { _.equalsIgnoreCase(HttpHeaders.Values.WEBSOCKET) }) Some(r)
+      else None
+  }
+}
+
+private [websockets] object WSLocation {
+  def apply[T](r: HttpRequest[T]) = "ws://%s%s" format(Host(r).get, r.uri.split('?')(0))
 }
 
 trait Plan extends SimpleChannelUpstreamHandler {
@@ -25,11 +50,10 @@ trait Plan extends SimpleChannelUpstreamHandler {
   import jnetty.handler.codec.http.{HttpHeaders, HttpMethod, HttpRequest => NHttpRequest,
                                    HttpResponseStatus, HttpVersion,  DefaultHttpResponse,
                                    HttpResponse => NHttpResponse}
-  import jnetty.handler.codec.http
+
   import HttpHeaders._
   import HttpHeaders.Names.{CONNECTION, ORIGIN, HOST, UPGRADE, SEC_WEBSOCKET_LOCATION,
-                            SEC_WEBSOCKET_ORIGIN, SEC_WEBSOCKET_PROTOCOL,
-                            SEC_WEBSOCKET_KEY1, SEC_WEBSOCKET_KEY2}
+                            SEC_WEBSOCKET_ORIGIN, SEC_WEBSOCKET_PROTOCOL}
   import HttpHeaders.Values._
 
   import jnetty.util.CharsetUtil
@@ -47,28 +71,6 @@ trait Plan extends SimpleChannelUpstreamHandler {
   override def exceptionCaught(ctx: ChannelHandlerContext, event: ExceptionEvent) =
     event.getChannel.close
 
-  object ConnectionUpgrade {
-    def unapply[T](r: HttpRequest[T]) = r match {
-      case unfiltered.request.Connection(values) =>
-        if(values.exists { _.equalsIgnoreCase(Values.UPGRADE) }) Some(r)
-        else None
-      case _ => None
-    }
-  }
-
-  object UpgradeWebsockets {
-    def unapply[T](r: HttpRequest[T]) = r match {
-      case Upgrade(values) =>
-        if(values.exists { _.equalsIgnoreCase(Values.WEBSOCKET) }) Some(r)
-        else None
-      case _ => None
-    }
-  }
-
-  object WSLocation {
-    def apply[T](r: HttpRequest[T]) = "ws://%s%s" format(Host(r)(0), r.uri.split('?')(0))
-  }
-
   private def upgrade(ctx: ChannelHandlerContext, request: NHttpRequest, event: MessageEvent) = {
     val msg = ReceivedMessage(request, ctx, event)
     val binding = new RequestBinding(msg)
@@ -82,8 +84,8 @@ trait Plan extends SimpleChannelUpstreamHandler {
 
           val Protocol = new Responder[NHttpResponse] {
             def respond(res: HttpResponse[NHttpResponse]) {
-              new RequestHeader(SEC_WEBSOCKET_PROTOCOL)(binding) match {
-                case Seq(protocol) =>
+              ProtocolRequestHeader(binding) match {
+                case Some(protocol) =>
                   res.addHeader(SEC_WEBSOCKET_PROTOCOL, protocol)
                 case _ => ()
               }
@@ -92,8 +94,8 @@ trait Plan extends SimpleChannelUpstreamHandler {
 
           val HandShake = new Responder[NHttpResponse] {
             def respond(res: HttpResponse[NHttpResponse]) {
-              (new RequestHeader(SEC_WEBSOCKET_KEY1)(binding) :: new RequestHeader(SEC_WEBSOCKET_KEY2)(binding) :: Nil) match {
-                case List(k1) :: List(k2) :: Nil =>
+              (SecKeyOne(binding), SecKeyTwo(binding)) match {
+                case (Some(k1), Some(k2)) =>
                   val buff = ChannelBuffers.buffer(16)
                   (k1 :: k2 :: Nil).foreach( k =>
                     buff.writeInt((k.replaceAll("[^0-9]", "").toLong / k.replaceAll("[^ ]", "").length).toInt)
@@ -115,7 +117,7 @@ trait Plan extends SimpleChannelUpstreamHandler {
             response(
               new HeaderName(UPGRADE)(Values.WEBSOCKET) ~>
               new HeaderName(CONNECTION)(Values.UPGRADE) ~>
-              new HeaderName(SEC_WEBSOCKET_ORIGIN)(new RequestHeader(ORIGIN)(binding).head) ~>
+              new HeaderName(SEC_WEBSOCKET_ORIGIN)(OriginRequestHeader(binding).get) ~>
               new HeaderName(SEC_WEBSOCKET_LOCATION)(WSLocation(binding)) ~>
               Protocol ~> HandShake)
           )
