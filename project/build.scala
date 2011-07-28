@@ -7,21 +7,26 @@ object Shared {
   val jettyVersion = "7.2.2.v20101205"
 
   def specsDep(sv: String) =
-    sv.substring(0,3) match {
-      case "2.8" => "org.scala-tools.testing" % "specs_2.8.1" % "1.6.8"
-      case "2.9" => "org.scala-tools.testing" %% "specs" % "1.6.8"
-      case _ => error("unsupported")
+    sv.split('.').toList match {
+      case "2" :: "8" :: _ => "org.scala-tools.testing" % "specs_2.8.1" % "1.6.8"
+      case "2" :: "9" :: "1" :: _ => "org.scala-tools.testing" % "specs_2.9.0-1" % "1.6.8"
+      case "2" :: "9" :: _ => "org.scala-tools.testing" %% "specs" % "1.6.8"
+      case _ => error("specs not supported for scala version %s" format sv)
     }
 
-  def dispatchDep(sv: String) = if(sv startsWith "2.8.1")
-      "net.databinder" % "dispatch-mime_2.8.0" % "0.7.8"
-    else
-      "net.databinder" %% "dispatch-mime" % "0.7.8"
+  def dispatchDep(sv: String) =
+    sv.split('.').toList match {
+     case "2" :: "8" :: "1" :: _ => "net.databinder" % "dispatch-mime_2.8.0" % "0.7.8"
+     case "2" :: "9" :: "1" :: _ => "net.databinder" % "dispatch-mime_2.9.0-1" % "0.7.8"
+     case _ => "net.databinder" %% "dispatch-mime" % "0.7.8"
+    }
 
-  def dispatchOAuthDep(sv: String) = if(sv startsWith "2.8.1")
-      "net.databinder" % "dispatch-oauth_2.8.0" % "0.7.8"
-    else
-      "net.databinder" %% "dispatch-oauth" % "0.7.8"
+  def dispatchOAuthDep(sv: String) =
+    sv.split('.').toList match {
+      case "2" :: "8" :: "1" :: _ => "net.databinder" % "dispatch-oauth_2.8.0" % "0.7.8"
+      case "2" :: "9" :: "1" :: _ => "net.databinder" % "dispatch-oauth_2.9.0-1" % "0.7.8"
+      case _ => "net.databinder" %% "dispatch-oauth" % "0.7.8"
+    }
 
   def integrationTestDeps(sv: String) = Seq(specsDep(sv) % "test", dispatchDep(sv) % "test")
 }
@@ -37,7 +42,7 @@ object Unfiltered extends Build {
     organization := "net.databinder",
     name := "Unfiltered",
     version := "0.4.0",
-    crossScalaVersions := Seq("2.8.0", "2.8.1", "2.9.0", "2.9.0-1"),
+    crossScalaVersions := Seq("2.8.0", "2.8.1", "2.9.0", "2.9.0-1", "2.9.1.RC1"),
     scalaVersion := "2.8.1",
     publishTo := Some("Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"),
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
@@ -152,8 +157,11 @@ object Unfiltered extends Build {
                  s ++ f
               },
             libraryDependencies <++= scalaVersion(v => Seq(
-              if (v.startsWith("2.8")) "net.liftweb" %% "lift-json" % "2.3"
-              else "net.liftweb" %% "lift-json" % "2.4-M3") ++ integrationTestDeps(v))
+              v.split('.').toList match {
+                case "2" :: "8" :: _ => "net.liftweb" %% "lift-json" % "2.3"
+                case "2" :: "9" :: "1" :: _ =>  "net.liftweb" % "lift-json_2.9.0-1" % "2.4-M3"
+                case _ => "net.liftweb" %% "lift-json" % "2.4-M3"
+              }) ++ integrationTestDeps(v))
           )) dependsOn(library)
 
   lazy val scalate =
