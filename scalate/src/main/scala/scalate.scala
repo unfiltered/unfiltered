@@ -14,7 +14,9 @@ private[scalate] object ScalateDefaults{
   implicit val engine = new TemplateEngine(defaultTemplateDirs)
 
   implicit def renderContext(req: HttpRequest[_], res: HttpResponse[_], engine: TemplateEngine) =
-    new DefaultRenderContext(unfiltered.util.Optional(req.uri).getOrElse("").split('?')(0), engine, res.getWriter)
+    new DefaultRenderContext(
+      unfiltered.util.Optional(req.uri).getOrElse("").split('?')(0),
+      engine, new java.io.PrintWriter(res.getOutputStream))
 }
 
 object Scalate {
@@ -36,7 +38,7 @@ case class Scalate[A, B](request: HttpRequest[A], template: String, attributes:(
   ) extends Responder[B]{
 
   def respond(res: HttpResponse[B]) {
-    val writer = res.getWriter()
+    val stream = res.getOutputStream()
     try {
       val scalateTemplate = engine.load(template, bindings)
       val context = contextBuilder(request, res, engine)
@@ -44,6 +46,6 @@ case class Scalate[A, B](request: HttpRequest[A], template: String, attributes:(
       for(attr <- attributes) context.attributes(attr._1) = attr._2
       engine.layout(scalateTemplate, context)
     }
-    finally { writer.close() }
+    finally { stream.close() }
   }
 }

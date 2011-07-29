@@ -1,7 +1,7 @@
 package unfiltered.oauth
 
 import unfiltered.response.{ResponseWriter, Html}
-import java.io.PrintWriter
+import java.io.Writer
 
 trait OAuthResponse
 
@@ -18,7 +18,7 @@ case class HostResponse[T](p: unfiltered.response.ResponseFunction[T]) extends O
 /** writes the response of to an oauth request to response body */
 trait OAuthResponseWriter extends OAuthResponse with ResponseWriter with Encoding with Combining {
   def params: Map[String, String]
-  def write(writer: PrintWriter) = writer.write(combine(params))
+  def write(writer: Writer) = writer.write(combine(params))
 }
 
 /** response to the client after verifying client request */

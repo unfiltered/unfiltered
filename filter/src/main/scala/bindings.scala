@@ -34,7 +34,6 @@ private [filter] class RequestBinding(req: HttpServletRequest) extends HttpReque
 private [filter] class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
   def setContentType(contentType: String) = res.setContentType(contentType)
   def setStatus(statusCode: Int) = res.setStatus(statusCode)
-  def getWriter() = res.getWriter
   def getOutputStream() = res.getOutputStream
   def sendRedirect(url: String) = res.sendRedirect(url)
   def addHeader(name: String, value: String) = res.addHeader(name, value)

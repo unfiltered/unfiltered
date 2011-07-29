@@ -37,13 +37,8 @@ trait Plan extends InittedFilter {
         val request = new RequestBinding(hreq)
         val response = new ResponseBinding(hres)
         complete(intent)(request) match {
-          case after: PassAndThen =>
-            val hrw = PassAndThenResponseWrapper(response.underlying)
-            chain.doFilter(request.underlying, hrw)
-            after.then(request)(response) 
-            response.getWriter.write(hrw.toString)
-            response.getWriter.close
-          case Pass => chain.doFilter(request.underlying, response.underlying)
+          case Pass =>
+            chain.doFilter(request.underlying, response.underlying)
           case responseFunction => responseFunction(response)
         }
      }
