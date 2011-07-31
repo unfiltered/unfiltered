@@ -3,7 +3,9 @@ package unfiltered.request
 import java.io.{Reader, InputStream}
 import unfiltered.Cookie
 
-abstract class HttpRequest[T](val underlying: T) {
+abstract class HttpRequest[+T](val underlying: T) {
+  // T is covariant so e.g. a HttpRequest[HttpServletRequest] can be
+  //  supplied when HttpRequest[Any] is expected.
   /** read-once access to request body input stream */
   def inputStream: InputStream
   /** buffered reader for request body's input stream */
