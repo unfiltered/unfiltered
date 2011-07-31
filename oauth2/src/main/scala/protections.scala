@@ -4,7 +4,8 @@ import unfiltered.request._
 import unfiltered.response._
 import unfiltered.filter.Plan
 
-/** After your application has obtained an access token, your app can use it to access APIs by
+/** 
+ * After your application has obtained an access token, your app can use it to access APIs by
  * including it in either an oauth_token query parameter or an Authorization: OAuth header.
  *
  * To call API using HTTP header.
