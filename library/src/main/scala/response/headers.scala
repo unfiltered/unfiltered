@@ -16,7 +16,9 @@ object Age extends HeaderName("Age")
 object Allow extends HeaderName("Allow")
 object CacheControl extends HeaderName("Cache-Control")
 object Connection extends HeaderName("Connection")
-object ContentEncoding extends HeaderName("Content-Encoding")
+object ContentEncoding extends HeaderName("Content-Encoding") {
+  val GZip = apply("gzip")
+}
 object ContentLanguage extends HeaderName("Content-Language")
 object ContentLength extends HeaderName("Content-Length")
 object ContentLocation extends HeaderName("Content-Location")

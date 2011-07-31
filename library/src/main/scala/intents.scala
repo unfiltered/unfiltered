@@ -12,5 +12,7 @@ object Cycle {
    *  are another option. */
   object Intent {
     def apply[A,B](intent: Intent[A,B]) = intent
+    def complete[A,B](intent: Intent[A,B]): Intent[A,B] =
+      intent.orElse({ case _ => Pass })
   }
 }
