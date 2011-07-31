@@ -7,6 +7,9 @@ object AuthorizationServer {
   val UnknownClientMsg = "unknown client"
 }
 
+/**
+ * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-1.1
+ */
 trait AuthorizationServer {
   self: ClientStore with TokenStore with Container =>
   import OAuthorization._
