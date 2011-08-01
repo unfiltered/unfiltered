@@ -4,6 +4,7 @@ import javax.servlet.{Filter, FilterConfig, FilterChain, ServletRequest, Servlet
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import unfiltered.request._
 import unfiltered.response._
+import unfiltered.Cycle
 
 trait InittedFilter extends Filter {
   private var configVar: FilterConfig = _
@@ -14,7 +15,7 @@ trait InittedFilter extends Filter {
 }
 
 object Plan {
-  type Intent = unfiltered.Cycle.Intent[HttpServletRequest,HttpServletResponse]
+  type Intent = Cycle.Intent[HttpServletRequest,HttpServletResponse]
 }
 
 /** Object to facilitate Plan.Intent definitions. Type annotations
@@ -27,8 +28,7 @@ object Intent {
  * Servlet filter that wraps an Intent and adheres to standard filter chain behaviour.
  */
 trait Plan extends InittedFilter {
-  def complete(intent: Plan.Intent) =
-    intent.orElse({ case _ => Pass }: Plan.Intent)
+  val complete: Plan.Intent => Plan.Intent = Cycle.Intent.complete
   def intent: Plan.Intent
       
   def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
@@ -37,13 +37,8 @@ trait Plan extends InittedFilter {
         val request = new RequestBinding(hreq)
         val response = new ResponseBinding(hres)
         complete(intent)(request) match {
-          case after: PassAndThen =>
-            val hrw = PassAndThenResponseWrapper(response.underlying)
-            chain.doFilter(request.underlying, hrw)
-            after.then(request)(response) 
-            response.getWriter.write(hrw.toString)
-            response.getWriter.close
-          case Pass => chain.doFilter(request.underlying, response.underlying)
+          case Pass =>
+            chain.doFilter(request.underlying, response.underlying)
           case responseFunction => responseFunction(response)
         }
      }

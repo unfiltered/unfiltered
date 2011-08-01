@@ -1,17 +1,17 @@
 package unfiltered.response
 
-import java.io.PrintWriter
+import java.io.{Writer,OutputStreamWriter}
 
 trait ResponseWriter extends Responder[Any] {
   def respond(res: HttpResponse[Any]) {
-    val writer = res.getWriter()
+    val writer = new OutputStreamWriter(res.getOutputStream())
     try { write(writer) }
     finally { writer.close() }
   }
-  def write(writer: PrintWriter): Unit
+  def write(writer: Writer): Unit
 }
 case class ResponseString(content: String) extends ResponseWriter {
-  def write(writer: PrintWriter) { writer.write(content) }
+  def write(writer: Writer) { writer.write(content) }
 }
 
 case class Html(nodes: scala.xml.NodeSeq) extends ChainResponse(HtmlContent ~> ResponseString(nodes.toString))

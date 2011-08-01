@@ -2,14 +2,20 @@ package unfiltered.response
 
 import java.io.OutputStream
 
+object Stream {
+  def closeAfter[S <: OutputStream](os: S)(op: S => Unit) {
+    try { op(os) }
+    finally { os.close() }
+  }
+}
+
 trait ResponseStreamer extends Responder[Any] {
   def respond(res: HttpResponse[Any]) {
-    val os = res.getOutputStream()
-    try { stream(os) }
-    finally { os.close() }
+    Stream.closeAfter(res.getOutputStream())(stream)
   }
   def stream(os: OutputStream): Unit
 }
+
 case class ResponseBytes(content: Array[Byte]) extends ResponseStreamer {
   def stream(os: OutputStream) { os.write(content) }
 }
