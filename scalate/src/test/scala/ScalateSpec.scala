@@ -12,7 +12,7 @@ import org.fusesource.scalate.util.FileResourceLoader
 
 // Unfiltered
 import unfiltered.request.HttpRequest
-import unfiltered.response.HttpResponse
+import unfiltered.response.{HttpResponse,ResponseWriter}
 
 class ScalateSpec extends Specification {
   
@@ -23,7 +23,7 @@ class ScalateSpec extends Specification {
     when(req.uri).thenReturn("")
     req
   }
-  def responseString(scalate: Scalate[_,_]) = {
+  def responseString(scalate: ResponseWriter) = {
     val res = mock(classOf[HttpResponse[Nothing]])
     val bos = new ByteArrayOutputStream
     when(res.getOutputStream).thenReturn(bos)
