@@ -20,19 +20,17 @@ private [websockets] object SecKeyOne extends StringHeader(HttpHeaders.Names.SEC
 private [websockets] object SecKeyTwo extends StringHeader(HttpHeaders.Names.SEC_WEBSOCKET_KEY2)
 private [websockets] object OriginRequestHeader extends StringHeader(HttpHeaders.Names.ORIGIN)
 private [websockets] object ConnectionUpgrade {
-  def unapply[T](r: HttpRequest[T]) = r match {
-    case unfiltered.request.Connection(value) =>
-      if(value.equalsIgnoreCase(HttpHeaders.Values.UPGRADE)) Some(r)
-      else None
-  }
+  def unapply[T](req: HttpRequest[T]) =
+    unfiltered.request.Connection(req).filter {
+      _.equalsIgnoreCase(HttpHeaders.Values.UPGRADE)
+    }
 }
 
 private [websockets] object UpgradeWebsockets {
-  def unapply[T](r: HttpRequest[T]) = r match {
-    case Upgrade(values) =>
-      if(values.exists { _.equalsIgnoreCase(HttpHeaders.Values.WEBSOCKET) }) Some(r)
-      else None
-  }
+  def unapply[T](req: HttpRequest[T]) =
+    Upgrade(req).filter {
+      _.equalsIgnoreCase(HttpHeaders.Values.WEBSOCKET)
+    }.headOption.map { _ => req }
 }
 
 private [websockets] object WSLocation {
