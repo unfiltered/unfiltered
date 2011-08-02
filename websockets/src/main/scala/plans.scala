@@ -84,7 +84,7 @@ trait Plan extends SimpleChannelUpstreamHandler {
             def respond(res: HttpResponse[NHttpResponse]) {
               ProtocolRequestHeader(binding) match {
                 case Some(protocol) =>
-                  res.addHeader(SEC_WEBSOCKET_PROTOCOL, protocol)
+                  res.header(SEC_WEBSOCKET_PROTOCOL, protocol)
                 case _ => ()
               }
             }

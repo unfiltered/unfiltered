@@ -32,11 +32,10 @@ private [filter] class RequestBinding(req: HttpServletRequest) extends HttpReque
 }
 
 private [filter] class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
-  def setContentType(contentType: String) = res.setContentType(contentType)
-  def setStatus(statusCode: Int) = res.setStatus(statusCode)
-  def getOutputStream() = res.getOutputStream
-  def sendRedirect(url: String) = res.sendRedirect(url)
-  def addHeader(name: String, value: String) = res.addHeader(name, value)
+  def status(statusCode: Int) = res.setStatus(statusCode)
+  def outputStream() = res.getOutputStream
+  def redirect(url: String) = res.sendRedirect(url)
+  def header(name: String, value: String) = res.addHeader(name, value)
   def cookies(resCookies: Seq[Cookie]) = {
     import javax.servlet.http.{Cookie => JCookie}
     resCookies.foreach { c =>
