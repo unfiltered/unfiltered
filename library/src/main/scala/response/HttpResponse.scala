@@ -11,7 +11,7 @@ abstract class HttpResponse[+T](val underlying: T) {
     header("Content-Type", contentType)
   }
 
-  def charset = "utf-8"
+  def charset = HttpResponse.UTF8
 
   def status(statusCode: Int)
   @deprecated("renamed status")
@@ -35,4 +35,8 @@ abstract class HttpResponse[+T](val underlying: T) {
     new PrintWriter(new OutputStreamWriter(outputStream, "utf-8"))
   @deprecated("Use a ResponseWriter, or underlying")
   def getWriter() = writer
+}
+
+object HttpResponse {
+  val UTF8 = java.nio.charset.Charset.forName("utf-8")
 }

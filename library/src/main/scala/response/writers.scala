@@ -17,10 +17,10 @@ case class ResponseString(content: String) extends ResponseWriter {
 case class Html(nodes: scala.xml.NodeSeq) extends 
 ChainResponse(HtmlContent ~> ResponseString(nodes.toString))
 
-case class Charset(charset: String) extends ResponseFunction[Any] {
-    def apply[T](delegate: HttpResponse[T]) =
-      new DelegatingResponse(delegate) {
-        override val charset = Charset.this.charset
-      }
+case class Charset(charset: java.nio.charset.Charset)
+extends ResponseFunction[Any] {
+  def apply[T](delegate: HttpResponse[T]) =
+    new DelegatingResponse(delegate) {
+      override val charset = Charset.this.charset
+    }
 }
-      
