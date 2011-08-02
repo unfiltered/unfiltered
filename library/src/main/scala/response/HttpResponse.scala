@@ -21,10 +21,12 @@ abstract class HttpResponse[+T](val underlying: T) {
   @deprecated("renamed outputStream")
   def getOutputStream() = outputStream
 
+  /** Sets a redirect */
   def redirect(url: String) : Unit
   @deprecated("renamed redirect")
   def sendRedirect(url: String) { redirect(url) }
 
+  /** Adds a header */
   def header(name: String, value: String)
   @deprecated("renamed header")
   def addHeader(name: String, value: String) { header(name, value) }
@@ -32,7 +34,7 @@ abstract class HttpResponse[+T](val underlying: T) {
 
   @deprecated("Use a ResponseWriter, or underlying")
   private lazy val writer =
-    new PrintWriter(new OutputStreamWriter(outputStream, "utf-8"))
+    new PrintWriter(new OutputStreamWriter(outputStream, charset))
   @deprecated("Use a ResponseWriter, or underlying")
   def getWriter() = writer
 }
