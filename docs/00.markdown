@@ -6,4 +6,4 @@ Unfiltered
  server backends, but does not interfere with direct access to their
  native interfaces.
 
-> [Version $version$ Release Notes](http://implicit.ly/unfiltered-web-toolkit-$vrsn$)
+> [Version $version$ Release Notes](http://implicit.ly/unfiltered-$vrsn$)
