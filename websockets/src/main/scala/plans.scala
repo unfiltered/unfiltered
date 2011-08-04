@@ -34,7 +34,7 @@ private [websockets] object UpgradeWebsockets {
 }
 
 private [websockets] object WSLocation {
-  def apply[T](r: HttpRequest[T]) = "ws://%s%s" format(Host(r).get, r.uri.split('?')(0))
+  def apply[T](r: HttpRequest[T]) = "ws://%s%s" format(Host(r).get, r.uri)
 }
 
 trait Plan extends SimpleChannelUpstreamHandler {
