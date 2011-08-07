@@ -14,21 +14,15 @@ object Shared {
       case _ => error("specs not supported for scala version %s" format sv)
     }
 
-  def dispatchDep(sv: String) =
-    sv.split('.').toList match {
-     case "2" :: "8" :: "1" :: _ => "net.databinder" % "dispatch-mime_2.8.0" % "0.7.8"
-     case "2" :: "9" :: "1" :: _ => "net.databinder" % "dispatch-mime_2.9.0-1" % "0.7.8"
-     case _ => "net.databinder" %% "dispatch-mime" % "0.7.8"
-    }
+  val dispatchVersion = "0.8.5"
+  def dispatchDeps =
+    "net.databinder" %% "dispatch-mime" % dispatchVersion ::
+    "net.databinder" %% "dispatch-http" % dispatchVersion :: Nil
 
-  def dispatchOAuthDep(sv: String) =
-    sv.split('.').toList match {
-      case "2" :: "8" :: "1" :: _ => "net.databinder" % "dispatch-oauth_2.8.0" % "0.7.8"
-      case "2" :: "9" :: "1" :: _ => "net.databinder" % "dispatch-oauth_2.9.0-1" % "0.7.8"
-      case _ => "net.databinder" %% "dispatch-oauth" % "0.7.8"
-    }
+  def dispatchOAuthDep =
+    "net.databinder" %% "dispatch-oauth" % dispatchVersion
 
-  def integrationTestDeps(sv: String) = Seq(specsDep(sv) % "test", dispatchDep(sv) % "test")
+  def integrationTestDeps(sv: String) = (specsDep(sv) :: dispatchDeps) map { _ % "test" }
 }
 
 object Unfiltered extends Build {
@@ -138,15 +132,17 @@ object Unfiltered extends Build {
     Project(id("spec"), file("spec"),
             settings = buildSettings ++ Seq(
               name := "Unfiltered Spec",
-              libraryDependencies <++= scalaVersion(v => Seq(specsDep(v), dispatchDep(v)))
+              libraryDependencies <++= scalaVersion { v =>
+                specsDep(v) :: dispatchDeps
+              }
             )) dependsOn(jetty, nettyServer)
 
   lazy val scalaTestHelpers =
     Project(id("scalatest"), file("scalatest"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Scalatest",
-            libraryDependencies <++= scalaVersion(v =>
-              Seq("org.scalatest" % "scalatest" % "1.3", dispatchDep(v)))
+            libraryDependencies ++=
+              ("org.scalatest" % "scalatest" % "1.3") :: dispatchDeps
           )) dependsOn(jetty, nettyServer)
 
   lazy val json =
@@ -197,7 +193,8 @@ object Unfiltered extends Build {
             name := "Unfiltered OAuth",
             unmanagedClasspath in (local("oauth"), Test) <++=
               (fullClasspath in (local("spec"), Compile)).identity,
-            libraryDependencies <++= scalaVersion(v => Seq(dispatchOAuthDep(v)) ++
+            libraryDependencies <++= scalaVersion(v =>
+              Seq(dispatchOAuthDep) ++
               integrationTestDeps(v))
           )) dependsOn(jetty, filters)
 }

@@ -23,7 +23,7 @@ trait SecureClient {
         keys.load(in, keyStorePasswd.toCharArray)
       }
       cli.getConnectionManager.getSchemeRegistry.register(
-        new Scheme(secureScheme, new SSLSocketFactory(keys), securePort)
+        new Scheme(secureScheme, securePort, new SSLSocketFactory(keys))
       )
       cli
     }
