@@ -1,3 +1,4 @@
+
 package unfiltered.netty
 
 import unfiltered.JIteratorIterator
@@ -49,6 +50,7 @@ private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(m
   }
   def method = req.getMethod.toString.toUpperCase
 
+  // todo should we call URLDecoder.decode(uri, charset) on this here?
   def uri = req.getUri
 
   def parameterNames = params.keySet.iterator

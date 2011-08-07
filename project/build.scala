@@ -113,6 +113,8 @@ object Unfiltered extends Build {
     Project(id("netty-server"), file("netty-server"),
           settings = buildSettings ++ Seq(
             name := "Unfiltered Netty Server",
+            unmanagedClasspath in (local("netty-server"), Test) <++=
+                (fullClasspath in (local("spec"), Compile)).identity,
             libraryDependencies <<= scalaVersion(integrationTestDeps _)
            )) dependsOn(netty, util)
 
