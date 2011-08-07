@@ -27,7 +27,7 @@ trait AgentSpec extends unfiltered.spec.Hosted {
     case GET(_) & AgentIs.IE(_) => ResponseString("ie")
   }
   
-  "agent should" should {
+  "AgentIs should" should {
     "match chrome" in {
       val resp = Http(host / "test" <:< Map("User-Agent" -> AgentStrings.chrome.head) as_str)
       resp must_=="chromium"
