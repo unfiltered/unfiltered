@@ -5,9 +5,10 @@ trait DateParser extends (String => java.util.Date)
 private [request] object DateFormatting {
   import java.text.SimpleDateFormat
   import java.util.Date
+  import java.util.Locale
 
   def parseAs(fmt: String)(value: String): Option[Date] =
-    try { Some(new SimpleDateFormat(fmt).parse(value)) }
+    try { Some(new SimpleDateFormat(fmt, Locale.US).parse(value)) }
     catch { case _ => None }
 
   /** Preferred HTTP date format Sun, 06 Nov 1994 08:49:37 GMT */
