@@ -13,9 +13,8 @@ object AgentIs {
   // Mobile.
   val mobile:     AM = (ua) => MobileAgent.all.exists(ua.contains(_))
   
-  def agent[A](pf: String => Boolean) = new AgentExtractor {
-    val test = pf
-  }
+  def agent[A](pf: String => Boolean) =
+    new AgentExtractor { val test = pf }
   
   // Agent extractors.
   val Chrome  = agent(chromeAM)
@@ -27,10 +26,9 @@ object AgentIs {
   // Mobile extractors.
   val Mobile        = agent(mobile)
   val SafariMobile  = Safari & Mobile
-  
 }
 
 object MobileAgent {
   val apple = List("iPhone", "iPod", "iPad")
-  val all = apple
+  val all = "Android" :: apple
 }
