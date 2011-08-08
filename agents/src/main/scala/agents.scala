@@ -8,9 +8,9 @@ object AgentIs {
   val androidAM:  AM = _.contains("Android")
   // Matchers for major agents.
   val chromeAM:   AM = _.contains("Chrome")
-  val firefoxAM:  AM = (ua) => ua.toLowerCase.contains("firefox") && !ua.contains("Opera")
+  val firefoxAM:  AM = (ua) => ua.toLowerCase.contains("firefox") && ! operaAM(ua)
   val operaAM:    AM = _.contains("Opera")
-  val ieAM:       AM = (ua) => ua.contains("MSIE") && !ua.contains("Opera")
+  val ieAM:       AM = (ua) => ua.contains("MSIE") && ! operaAM(ua)
   val safariAM:   AM = (ua) => (ua.contains("AppleWebKit") || ua.contains("Safari")) && ! (chromeAM(ua) || operaAM(ua) || androidAM(ua))
   // Mobile.
   val mobile:     AM = (ua) => MobileAgent.all.exists(ua.contains(_))
