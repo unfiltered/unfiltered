@@ -1,7 +1,7 @@
 package unfiltered.netty.cycle
 
 import org.jboss.netty.handler.codec.http.{
-  DefaultHttpRequest, DefaultHttpResponse, HttpResponse=>NHttpResponse}
+  HttpRequest=>NHttpRequest,HttpResponse=>NHttpResponse}
 import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.http.HttpResponseStatus._
 import org.jboss.netty.handler.codec.http.HttpVersion._
@@ -21,7 +21,7 @@ object Intent {
 trait Plan extends SimpleChannelUpstreamHandler {
   def intent: Plan.Intent
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
-    val request = e.getMessage().asInstanceOf[DefaultHttpRequest]
+    val request = e.getMessage().asInstanceOf[NHttpRequest]
     val requestBinding = new RequestBinding(ReceivedMessage(request, ctx, e))
     
     intent.orElse({ case _ => Pass }: Plan.Intent)(requestBinding) match {
