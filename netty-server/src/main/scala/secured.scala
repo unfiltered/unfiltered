@@ -14,7 +14,7 @@ object Https {
   def apply(port: Int): Https =
     Https(port, "0.0.0.0")
    /** bind to a the loopback interface only */
-  def local(port: Int): Http =
+  def local(port: Int): Https =
     Https(port, "127.0.0.1")
   /** bind to any available port on the loopback interface */
   def anylocal = local(unfiltered.util.Port.any)
