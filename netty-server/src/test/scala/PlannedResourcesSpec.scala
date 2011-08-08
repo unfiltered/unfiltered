@@ -14,19 +14,6 @@ object PlannedResourcesSpec extends unfiltered.spec.netty.Served {
      finally { h.shutdown() }
    }
 
-   // todo: roll this into the base spec helper
-   def xhttp[T](handler: dispatch.Handler[T]): T  = {
-     val h = new Http
-     try { h.x(handler) }
-     finally { h.shutdown() }
-   }
-
-   implicit def toStatusVerb(req: dispatch.Request) = new {
-     def statuscode = dispatch.Handler(req, {
-       case (code, _, _) => code
-     }, scala.util.control.Exception.nothingCatcher)
-   }
-
    def setup = NHttp(_).resources(getClass().getResource("/files/")).handler(unfiltered.netty.cycle.Planify {
      case _ => unfiltered.response.ResponseString("planned")
    })
