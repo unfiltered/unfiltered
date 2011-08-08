@@ -1,4 +1,3 @@
-# MIME_TYPES.inject({}) { |a, (k,v)| a.has_key?(v) ? a.update(v=>a[v].push(k.sub(".",""))) : a.merge({v=>[k.sub(".","")]}) }.sort.each { |k, v| puts "#{k} #{v.join(' ')}"}
 application/andrew-inset ez
 application/atom+xml atom
 application/atomcat+xml atomcat
