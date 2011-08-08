@@ -1,0 +1,6 @@
+- new [unfiltered-agents][agents] module for targeting and identifying common [user agents][ua] provided by [chrislewis][clewis]
+
+
+[agents]: https://github.com/n8han/Unfiltered/tree/master/agents
+[ua]: http://en.wikipedia.org/wiki/User_agent
+[clewis]: https://github.com/chrislewis

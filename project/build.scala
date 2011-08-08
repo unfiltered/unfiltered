@@ -49,7 +49,7 @@ object Unfiltered extends Build {
             settings = buildSettings) aggregate(
             library, filters, uploads, util, jetty, jettyAjpProject,
             netty, nettyServer, json, specHelpers, scalaTestHelpers,
-            scalate, websockets, oauth)
+            scalate, websockets, oauth, agents)
 
   lazy val library: Project =
     Project("unfiltered", file("library"),
@@ -72,6 +72,19 @@ object Unfiltered extends Build {
             name := "Unfiltered Filter",
             unmanagedClasspath in (local("filter"), Test) <++=
               (fullClasspath in (local("spec"), Compile)).identity,
+            libraryDependencies <++= scalaVersion(v => Seq(servletApiDep) ++
+              integrationTestDeps(v))
+          )) dependsOn(library)
+
+  lazy val agents =
+    Project(id("agents"), file("agents"),
+          settings = buildSettings ++ Seq(
+            name := "Unfiltered Agents",
+            unmanagedClasspath in (local("agents"), Test) <++=
+                (fullClasspath in (local("spec"), Compile),
+                 fullClasspath in (local("filter"), Compile)) map { (s, f) =>
+                  s ++ f
+            },
             libraryDependencies <++= scalaVersion(v => Seq(servletApiDep) ++
               integrationTestDeps(v))
           )) dependsOn(library)
