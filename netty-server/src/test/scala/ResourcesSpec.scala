@@ -7,13 +7,6 @@ object ResourcesSpec extends unfiltered.spec.netty.Served {
    import dispatch._
    import unfiltered.netty.{Http => NHttp}
 
-   // todo: roll this into the base spec helpers
-   def http[T](handler: dispatch.Handler[T]): T = {
-     val h = new Http
-     try { h(handler) }
-     finally { h.shutdown() }
-   }
-
    // todo: roll this into the base spec helper
    def xhttp[T](handler: dispatch.Handler[T]): T  = {
      val h = new Http

@@ -44,7 +44,7 @@ trait HeadersSpec extends unfiltered.spec.Hosted {
   }
   def get(path: String, header: (String, String)) = {
      val hmap =  Map(header :: Nil:_*)
-     Http(host / path <:< hmap as_str)
+     http(host / path <:< hmap as_str)
   }
   "Headers" should {
     "parse Accept-Charset" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.2

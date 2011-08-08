@@ -7,13 +7,6 @@ object PlannedResourcesSpec extends unfiltered.spec.netty.Served {
    import dispatch._
    import unfiltered.netty.{Http => NHttp}
 
-   // todo: roll this into the base spec helpers
-   def http[T](handler: dispatch.Handler[T]): T = {
-     val h = new Http
-     try { h(handler) }
-     finally { h.shutdown() }
-   }
-
    def setup = NHttp(_).resources(getClass().getResource("/files/")).handler(unfiltered.netty.cycle.Planify {
      case _ => unfiltered.response.ResponseString("planned")
    })

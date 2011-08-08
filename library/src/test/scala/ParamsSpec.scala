@@ -72,29 +72,29 @@ trait ParamsSpec extends unfiltered.spec.Hosted {
 
   "Params basic map" should {
     "map query string params" in {
-      Http(host / "basic" <<? Map("foo" -> "bar") as_str) must_=="foo is bar"
+      http(host / "basic" <<? Map("foo" -> "bar") as_str) must_=="foo is bar"
     }
     "map post params" in {
-      Http(host / "basic" << Map("foo" -> "bar") as_str) must_=="foo is bar"
+      http(host / "basic" << Map("foo" -> "bar") as_str) must_=="foo is bar"
     }
   }
   "Params Extract matcher" should {
     "match and return number" in {
-      Http(host / "extract" << Map("number" -> "8") as_str) must_=="8"
+      http(host / "extract" << Map("number" -> "8") as_str) must_=="8"
     }
     "pass on a non-number" in {
-      Http(host / "extract" << Map("number" -> "8a") as_str) must_== "passed"
+      http(host / "extract" << Map("number" -> "8a") as_str) must_== "passed"
     }
   }
   "Params Query expression" should {
     "return a number" in {
-      Http(host / "int" <<? Map("number" -> "8") as_str) must_=="8"
+      http(host / "int" <<? Map("number" -> "8") as_str) must_=="8"
     }
     "not match on non-number" in {
       Http.when(_ == 400)(host / "int" <<? Map("number" -> "8a") as_str) must_=="number"
     }
     "return even number" in {
-      Http(host / "even" <<? Map("number"->"8","what"->"foo") as_str) must_=="8"
+      http(host / "even" <<? Map("number"->"8","what"->"foo") as_str) must_=="8"
     }
     "fail on non-number" in {
       Http.when(_ == 400)(
@@ -109,13 +109,13 @@ trait ParamsSpec extends unfiltered.spec.Hosted {
     }
     val strpoint = host / "str" <:< Map("User-Agent" -> "Tester")
     "return zero if param no int" in {
-      Http(strpoint <<? Map("req"->"whew") as_str) must_=="0"
+      http(strpoint <<? Map("req"->"whew") as_str) must_=="0"
     }
     "fail 400 if param not an int" in {
       Http.when(_ == 400)(strpoint <<? Map("param" -> "one", "req"->"whew") as_str) must_=="param"
     }
     "return optional param if an int" in {
-      Http(strpoint <<? Map("param"->"2","req"->"whew") as_str) must_=="2"
+      http(strpoint <<? Map("param"->"2","req"->"whew") as_str) must_=="2"
     }
     "fail if missing user-agent header" in {
       Http.when(_ == 400)(host / "str" <<? Map("req"->"whew") as_str) must_=="UA"
