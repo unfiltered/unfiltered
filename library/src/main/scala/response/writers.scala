@@ -15,7 +15,7 @@ case class ResponseString(content: String) extends ResponseWriter {
 }
 
 case class Html(nodes: scala.xml.NodeSeq) extends 
-ChainResponse(HtmlContent ~> ResponseString(nodes.toString))
+ComposeResponse(HtmlContent ~> ResponseString(nodes.toString))
 
 case class Charset(charset: java.nio.charset.Charset)
 extends ResponseFunction[Any] {

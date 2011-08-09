@@ -12,6 +12,7 @@ import unfiltered.Cycle.Intent.complete
 
 object Plan {
   type Intent = unfiltered.Cycle.Intent[ReceivedMessage,NHttpResponse]
+  val executor = java.util.concurrent.Executors.newCachedThreadPool()
 }
 /** Object to facilitate Plan.Intent definitions. Type annotations
  *  are another option. */
@@ -24,11 +25,16 @@ trait Plan extends SimpleChannelUpstreamHandler {
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     val request = e.getMessage().asInstanceOf[NHttpRequest]
     val requestBinding = new RequestBinding(ReceivedMessage(request, ctx, e))
-    
     complete(intent)(requestBinding) match {
       case Pass => ctx.sendUpstream(e)
-      case responseFunction => requestBinding.underlying.respond(responseFunction)
+      case responseFunction =>
+        Plan.executor.submit(new Runnable {
+          def run {
+            requestBinding.underlying.respond(responseFunction)
+          }
+        })
     }
+    println("done here")
   }
 }
 

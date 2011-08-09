@@ -22,6 +22,7 @@ case class Http(port: Int, host: String,
 
   def stop() = {
     beforeStopBlock()
+    cycle.Plan.executor.shutdown()
     closeConnections()
     destroy()
   }
