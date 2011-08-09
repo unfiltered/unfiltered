@@ -8,6 +8,7 @@ import org.jboss.netty.handler.codec.http.HttpVersion._
 import unfiltered.netty._
 import unfiltered.response.{ResponseFunction, Pass}
 import unfiltered.request.HttpRequest
+import unfiltered.Cycle.Intent.complete
 
 object Plan {
   type Intent = unfiltered.Cycle.Intent[ReceivedMessage,NHttpResponse]
@@ -24,7 +25,7 @@ trait Plan extends SimpleChannelUpstreamHandler {
     val request = e.getMessage().asInstanceOf[NHttpRequest]
     val requestBinding = new RequestBinding(ReceivedMessage(request, ctx, e))
     
-    intent.orElse({ case _ => Pass }: Plan.Intent)(requestBinding) match {
+    complete(intent)(requestBinding) match {
       case Pass => ctx.sendUpstream(e)
       case responseFunction => requestBinding.underlying.respond(responseFunction)
     }
