@@ -34,7 +34,6 @@ trait Plan extends SimpleChannelUpstreamHandler {
           }
         })
     }
-    println("done here")
   }
 }
 
