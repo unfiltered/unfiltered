@@ -7,6 +7,7 @@ import org.jboss.netty.bootstrap.ServerBootstrap
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
 import java.net.InetSocketAddress
 import org.jboss.netty.handler.codec.http.{HttpRequestDecoder, HttpResponseEncoder}
+import org.jboss.netty.handler.stream.ChunkedWriteHandler
 import org.jboss.netty.channel._
 import group.{ChannelGroup, DefaultChannelGroup}
 import unfiltered._
@@ -21,6 +22,7 @@ case class Http(port: Int, host: String,
 
   def stop() = {
     beforeStopBlock()
+    cycle.Plan.executor.shutdown()
     closeConnections()
     destroy()
   }
@@ -28,6 +30,10 @@ case class Http(port: Int, host: String,
     Http(port, host, h :: handlers, beforeStopBlock)
   def beforeStop(block: => Unit) =
     Http(port, host, handlers, { () => beforeStopBlock(); block })
+  def resources(path: java.net.URL, cacheSeconds: Int = 60, dirIndexes: Boolean = false, passOnFail: Boolean = true) =
+    Http(port, host, new ChunkedWriteHandler ::
+         Resources(path, cacheSeconds = cacheSeconds, dirIndexes = dirIndexes, passOnFail = passOnFail) ::
+         handlers, beforeStopBlock)
 }
 
 object Http {
@@ -35,6 +41,11 @@ object Http {
     Http(port, host, Nil, () => ())
   def apply(port: Int): Http =
     Http(port, "0.0.0.0")
+  /** bind to a the loopback interface only */
+  def local(port: Int): Http =
+    Http(port, "127.0.0.1")
+  /** bind to any available port on the loopback interface */
+  def anylocal = local(unfiltered.util.Port.any)
 }
 
 trait Server extends RunnableServer {

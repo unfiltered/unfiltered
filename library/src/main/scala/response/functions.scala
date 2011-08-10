@@ -21,10 +21,19 @@ trait Responder[A] extends ResponseFunction[A] {
   def respond(res: HttpResponse[A])
 }
 
+@deprecated("Use ComposeResponse")
+class ChainResponse[A](f: ResponseFunction[A]) extends ComposeResponse(f)
+
+object Defer {
+  def apply[A](rf: => ResponseFunction[A]) = new Responder[A] {
+    def respond(res: HttpResponse[A]) { rf(res) }
+  }
+}
+
 /** Base class for composing a response function from others */
-class ChainResponse[A](f: ResponseFunction[A]) extends 
+class ComposeResponse[A](rf: ResponseFunction[A]) extends 
     Responder[A] {
-  def respond(res: HttpResponse[A]) { f(res) }
+  def respond(res: HttpResponse[A]) { rf(res) }
 }
 
 /** Tells the binding implentation to treat the request as non-matching */

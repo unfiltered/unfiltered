@@ -1,16 +1,18 @@
 package unfiltered.netty.cycle
 
 import org.jboss.netty.handler.codec.http.{
-  DefaultHttpRequest, DefaultHttpResponse, HttpResponse=>NHttpResponse}
+  HttpRequest=>NHttpRequest,HttpResponse=>NHttpResponse}
 import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.http.HttpResponseStatus._
 import org.jboss.netty.handler.codec.http.HttpVersion._
 import unfiltered.netty._
 import unfiltered.response.{ResponseFunction, Pass}
 import unfiltered.request.HttpRequest
+import unfiltered.Cycle.Intent.complete
 
 object Plan {
   type Intent = unfiltered.Cycle.Intent[ReceivedMessage,NHttpResponse]
+  val executor = java.util.concurrent.Executors.newCachedThreadPool()
 }
 /** Object to facilitate Plan.Intent definitions. Type annotations
  *  are another option. */
@@ -21,12 +23,16 @@ object Intent {
 trait Plan extends SimpleChannelUpstreamHandler {
   def intent: Plan.Intent
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
-    val request = e.getMessage().asInstanceOf[DefaultHttpRequest]
+    val request = e.getMessage().asInstanceOf[NHttpRequest]
     val requestBinding = new RequestBinding(ReceivedMessage(request, ctx, e))
-    
-    intent.orElse({ case _ => Pass }: Plan.Intent)(requestBinding) match {
+    complete(intent)(requestBinding) match {
       case Pass => ctx.sendUpstream(e)
-      case responseFunction => requestBinding.underlying.respond(responseFunction)
+      case responseFunction =>
+        Plan.executor.submit(new Runnable {
+          def run {
+            requestBinding.underlying.respond(responseFunction)
+          }
+        })
     }
   }
 }
