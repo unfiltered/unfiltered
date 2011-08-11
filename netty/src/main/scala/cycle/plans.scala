@@ -12,7 +12,6 @@ import unfiltered.Cycle.Intent.complete
 
 object Plan {
   type Intent = unfiltered.Cycle.Intent[ReceivedMessage,NHttpResponse]
-  val executor = java.util.concurrent.Executors.newCachedThreadPool()
 }
 /** Object to facilitate Plan.Intent definitions. Type annotations
  *  are another option. */
@@ -31,16 +30,14 @@ trait Plan extends SimpleChannelUpstreamHandler {
     complete(intent)(requestBinding) match {
       case Pass => ctx.sendUpstream(e)
       case responseFunction =>
-        Plan.executor.submit(new Runnable {
-          def run {
-            requestBinding.underlying.respond(responseFunction)
-          }
-        })
+        execute { requestBinding.underlying.respond(responseFunction) }
     }
   }
+  def execute(f: => Unit)
+  def shutdown()
 }
 
-class Planify(val intent: Plan.Intent) extends Plan
+class Planify(val intent: Plan.Intent) extends Plan with CachedThreadPool
 
 object Planify {
   def apply(intent: Plan.Intent) = new Planify(intent)

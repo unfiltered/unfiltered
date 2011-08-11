@@ -22,7 +22,10 @@ case class Http(port: Int, host: String,
 
   def stop() = {
     beforeStopBlock()
-    cycle.Plan.executor.shutdown()
+    handlers.foreach {
+      case handler: cycle.Plan => handler.shutdown()
+      case _ => ()
+    }
     closeConnections()
     destroy()
   }
@@ -54,9 +57,6 @@ trait Server extends RunnableServer {
   val url =  "http://%s:%d/" format(host, port)
   protected def pipelineFactory: ChannelPipelineFactory
 
-  val DEFAULT_IO_THREADS = Runtime.getRuntime().availableProcessors() + 1;
-  val DEFAULT_EVENT_THREADS = DEFAULT_IO_THREADS * 4;
-
   private var bootstrap: ServerBootstrap = _
 
   /** any channels added to this will receive broadcasted events */
@@ -65,8 +65,10 @@ trait Server extends RunnableServer {
   def start(): this.type = {
     bootstrap = new ServerBootstrap(
       new NioServerSocketChannelFactory(
-        Executors.newFixedThreadPool(DEFAULT_IO_THREADS),
-        Executors.newFixedThreadPool(DEFAULT_EVENT_THREADS)))
+        Executors.newCachedThreadPool(),
+        Executors.newCachedThreadPool()
+      )
+    )
     bootstrap.setPipelineFactory(pipelineFactory)
 
     bootstrap.setOption("child.tcpNoDelay", true)
