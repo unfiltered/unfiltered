@@ -1,14 +1,17 @@
 package unfiltered.netty.channel
 
-import org.jboss.netty.handler.codec.http.{HttpRequest=>NHttpRequest}
+import org.jboss.netty.handler.codec.http.{HttpRequest=>NHttpRequest,
+                                           HttpResponse=>NHttpResponse}
 import org.jboss.netty.channel._
 import unfiltered.netty._
 import unfiltered.response.{NotFound, Pass}
 import unfiltered.request.HttpRequest
+import unfiltered.Async
 
 object Plan {
   /** Note: The only return object a channel plan acts on is Pass */
-  type Intent = PartialFunction[RequestBinding, Any]
+  type Intent =
+    Async.Intent[ReceivedMessage, NHttpResponse]
 }
 /** Object to facilitate Plan.Intent definitions. Type annotations
  *  are another option. */

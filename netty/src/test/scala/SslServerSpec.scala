@@ -5,6 +5,8 @@ import unfiltered.spec
 import unfiltered.response._
 import unfiltered.request._
 import unfiltered.request.{Path => UFPath}
+import unfiltered.netty.cycle.{Plan,SynchronousExecution}
+import org.jboss.netty.channel.{ChannelHandlerContext, ExceptionEvent}
 
 object SslServerSpec extends Specification with spec.netty.Served with spec.SecureClient {
   
@@ -29,8 +31,7 @@ object SslServerSpec extends Specification with spec.netty.Served with spec.Secu
   
   def setup = { port =>
     try {
-      val securePlan = new unfiltered.netty.cycle.Plan with Secured {
-        import org.jboss.netty.channel.{ChannelHandlerContext, ExceptionEvent}
+      val securePlan = new Plan with Secured with SynchronousExecution {
         
         def intent = { case GET(UFPath("/")) => ResponseString("secret") ~> Ok }
         
