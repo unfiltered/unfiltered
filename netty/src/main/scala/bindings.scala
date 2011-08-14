@@ -1,7 +1,7 @@
 
 package unfiltered.netty
 
-import unfiltered.JIteratorIterator
+import unfiltered.{JIteratorIterator,Async}
 import unfiltered.response.{ResponseFunction, HttpResponse}
 import unfiltered.request.{HttpRequest,POST,RequestContentType,Charset}
 import java.net.URLDecoder
@@ -22,7 +22,8 @@ object HttpConfig {
    val DEFAULT_CHARSET = "UTF-8"
 }
 
-private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(msg) {
+private [netty] class RequestBinding(msg: ReceivedMessage)
+extends HttpRequest(msg) with Async.Responder[NHttpResponse] {
   private val req = msg.request
   lazy val params = queryParams ++ postParams
   def queryParams = req.getUri.split("\\?", 2) match {
@@ -74,14 +75,16 @@ private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(m
     case null => false
     case _ => true
   }
-  def remoteAddr = msg.context.getChannel.getRemoteAddress.asInstanceOf[java.net.InetSocketAddress].getAddress.getHostAddress
+  def remoteAddr =msg.context.getChannel.getRemoteAddress.asInstanceOf[java.net.InetSocketAddress].getAddress.getHostAddress
+
+  def respond(rf: ResponseFunction[NHttpResponse]) =
+    underlying.respond(rf)
 }
 /** Extension of basic request binding to expose Netty-specific attributes */
 case class ReceivedMessage(
   request: NHttpRequest,
   context: ChannelHandlerContext,
   event: MessageEvent) {
-  import org.jboss.netty.handler.codec.http.{HttpResponse => NHttpResponse}
 
   /** Binds a Netty HttpResponse res to Unfiltered's HttpResponse to apply any
    * response function to it. */

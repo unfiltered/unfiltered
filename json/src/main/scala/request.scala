@@ -20,7 +20,7 @@ object Jsonp {
 
   trait Wrapper {
     def wrap(body: String): String
-    def respond(json: => JValue): unfiltered.response.ChainResponse[Any]
+    def respond(json: => JValue): unfiltered.response.ComposeResponse[Any]
   }
 
   object EmptyWrapper extends Wrapper {

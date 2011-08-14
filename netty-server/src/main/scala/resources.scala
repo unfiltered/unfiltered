@@ -93,7 +93,7 @@ case class Resources(base: java.net.URL, cacheSeconds: Int = 60, dirIndexes: Boo
                 }
               if(!HttpHeaders.isKeepAlive(req.underlying.request)) writeFile.addListener(ChannelFutureListener.CLOSE)
             } catch {
-              case e: FileNotFoundException => println("file not found"); notFound(req)
+              case e: FileNotFoundException => notFound(req)
             }
         }
       case _ => forbid(req)
