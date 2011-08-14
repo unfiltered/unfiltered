@@ -8,6 +8,7 @@ object MixedServerSpec extends Specification with spec.jetty.Served with spec.Se
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
   import unfiltered.jetty.{Http, Ssl}
+  import unfiltered.util.Port
   import org.apache.http.client.ClientProtocolException
 
   import dispatch._
@@ -16,11 +17,11 @@ object MixedServerSpec extends Specification with spec.jetty.Served with spec.Se
   // keytool -keystore keystore -alias unfiltered -genkey -keyalg RSA
   val keyStorePath = getClass.getResource("/keystore").getPath
   val keyStorePasswd = "unfiltered"
-  val securePort = 8443
+  val securePort = Port.any
 
-  override val host = :/("localhost", 8080)
+  override val host = :/("localhost", port)
 
-  override lazy val server = setup(new Http(8080, "0.0.0.0") with Ssl {
+  override lazy val server = setup(new Http(port, "0.0.0.0") with Ssl {
     def sslPort = securePort
     override lazy val keyStore = keyStorePath
     override lazy val keyStorePassword = keyStorePasswd

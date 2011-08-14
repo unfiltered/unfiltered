@@ -29,8 +29,8 @@ object WebSocketsSpec extends Specification
 
   "A Websocket" should {
     "not block standard http requests" in {
-      Http(host / "b" as_str) must_==("http response b")
-      Http(host / "a" as_str) must_==("http response a")
+      http(host / "b" as_str) must_==("http response b")
+      http(host / "a" as_str) must_==("http response a")
     }
   }
 }

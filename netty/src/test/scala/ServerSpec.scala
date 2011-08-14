@@ -5,9 +5,9 @@ object ServerSpec extends unfiltered.spec.netty.Served {
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
   import unfiltered.netty.{Http => NHttp}
-  
+
   import dispatch._
-  
+
   def setup = NHttp(_).handler(cycle.Planify({
     case GET(UFPath("/pass")) => Pass
     case GET(UFPath("/")) => ResponseString("test") ~> Ok
@@ -21,28 +21,28 @@ object ServerSpec extends unfiltered.spec.netty.Served {
     case GET(UFPath("/planb")) => ResponseString("planb") ~> Ok
     case GET(UFPath("/pass")) => ResponseString("pass") ~> Ok
   }))
-  
+
   "A Server" should {
     "respond to requests" in {
-      Http(host as_str) must_=="test"
+      http(host as_str) must_=="test"
     }
     "provide a remote address" in {
-      Http(host / "addr" as_str) must_=="127.0.0.1"
+      http(host / "addr" as_str) must_=="127.0.0.1"
     }
     "provide a remote address accounting for X-Forwared-For header" in {
-      Http(host / "addr_extractor" <:< Map("X-Forwarded-For" -> "66.108.150.228") as_str) must_=="66.108.150.228"
+      http(host / "addr_extractor" <:< Map("X-Forwarded-For" -> "66.108.150.228") as_str) must_=="66.108.150.228"
     }
     "provide a remote address accounting for X-Forwared-For header filtering private addresses" in {
-      Http(host / "addr_extractor" <:< Map("X-Forwarded-For" -> "172.31.255.255") as_str) must_=="127.0.0.1"
+      http(host / "addr_extractor" <:< Map("X-Forwarded-For" -> "172.31.255.255") as_str) must_=="127.0.0.1"
     }
     "respond to requests in ustream channel plan" in {
-      Http(host / "planc" as_str) must_=="planc"
+      http(host / "planc" as_str) must_=="planc"
     }
     "respond to requests in last channel handler" in {
-      Http(host / "planb" as_str) must_=="planb"
+      http(host / "planb" as_str) must_=="planb"
     }
     "pass upstream on Pass, respond in last handler" in {
-      Http(host / "pass" as_str) must_=="pass"
+      http(host / "pass" as_str) must_=="pass"
     }
   }
 }

@@ -8,6 +8,7 @@ object SslServerSpec extends Specification with spec.jetty.Served with spec.Secu
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
   import unfiltered.jetty.Https
+  import unfiltered.util.Port
   import org.apache.http.client.ClientProtocolException
 
   import dispatch._
@@ -16,7 +17,7 @@ object SslServerSpec extends Specification with spec.jetty.Served with spec.Secu
   // keytool -keystore keystore -alias unfiltered -genkey -keyalg RSA
   val keyStorePath = getClass.getResource("/keystore").getPath
   val keyStorePasswd = "unfiltered"
-  val securePort = 8443
+  val securePort = Port.any
 
   override val host = :/("localhost", securePort)
 

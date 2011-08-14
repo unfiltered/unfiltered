@@ -51,7 +51,7 @@ trait DecodesSpec extends unfiltered.spec.Hosted {
       resp must_=="gzip"
     }
     "match a compress accepts encoding request as compress" in {
-      val resp = Http(host / "test" <:< Map("Accept-Encoding" -> "compress")  as_str)
+      val resp = http(host / "test" <:< Map("Accept-Encoding" -> "compress")  as_str)
       resp must_=="compress"
     }
     "match a mixed compress accepts encoding request as compress" in {
