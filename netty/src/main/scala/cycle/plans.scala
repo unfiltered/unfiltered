@@ -26,18 +26,24 @@ trait Plan extends SimpleChannelUpstreamHandler {
       case req:NHttpRequest => req
       case msg => error("Unexpected message type from upstream: %s" format msg)
     }
-    val requestBinding = new RequestBinding(ReceivedMessage(request, ctx, e))
-    complete(intent)(requestBinding) match {
-      case Pass => ctx.sendUpstream(e)
-      case responseFunction =>
-        execute { requestBinding.underlying.respond(responseFunction) }
+    val requestBinding =
+      new RequestBinding(ReceivedMessage(request, ctx, e))
+    executeIntent {
+      intent.lift(requestBinding).getOrElse(Pass) match {
+        case Pass => ctx.sendUpstream(e)
+        case responseFunction =>
+          executeResponse {
+            requestBinding.underlying.respond(responseFunction)
+          }
+      }
     }
   }
-  def execute(f: => Unit)
+  def executeIntent(thunk: => Unit)
+  def executeResponse(thunk: => Unit)
   def shutdown()
 }
 
-class Planify(val intent: Plan.Intent) extends Plan with CachedThreadPool
+class Planify(val intent: Plan.Intent) extends Plan with ThreadPool
 
 object Planify {
   def apply(intent: Plan.Intent) = new Planify(intent)

@@ -24,12 +24,6 @@ trait Responder[A] extends ResponseFunction[A] {
 @deprecated("Use ComposeResponse")
 class ChainResponse[A](f: ResponseFunction[A]) extends ComposeResponse(f)
 
-object Defer {
-  def apply[A](rf: => ResponseFunction[A]) = new Responder[A] {
-    def respond(res: HttpResponse[A]) { rf(res) }
-  }
-}
-
 /** Base class for composing a response function from others */
 class ComposeResponse[A](rf: ResponseFunction[A]) extends 
     Responder[A] {
