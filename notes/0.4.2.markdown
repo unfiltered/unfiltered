@@ -8,6 +8,9 @@
 
 - Headers parsed as Dates should now be parsed using a US Locale to avoid potentional conflict when parsing dates
 
+- `unfiltered-upload`s `StreamedFileWrapper#stream` method now returns a generic type `T` [#47][i47]
+
+[i47]: https://github.com/n8han/Unfiltered/issues/47
 [agents]: https://github.com/n8han/Unfiltered/tree/master/agents
 [ua]: http://en.wikipedia.org/wiki/User_agent
 [clewis]: https://github.com/chrislewis
