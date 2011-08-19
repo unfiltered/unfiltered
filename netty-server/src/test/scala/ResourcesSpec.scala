@@ -55,7 +55,6 @@ object ResourcesSpec extends unfiltered.spec.netty.Served {
        import java.util.{Calendar, Date, GregorianCalendar}
        import java.io.File
        val rsrc = new File(getClass().getResource("/files/foo.css").getFile)
-       println(rsrc.lastModified)
        val cal = new GregorianCalendar()
        cal.setTime(new Date(rsrc.lastModified))
        cal.add(Calendar.MINUTE, -5)
