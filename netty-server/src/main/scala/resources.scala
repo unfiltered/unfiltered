@@ -59,9 +59,13 @@ case class Resources(base: java.net.URL, cacheSeconds: Int = 60, dirIndexes: Boo
       case Some(file) =>
         IfModifiedSince(req) match {
           case Some(since) if(since.getTime <= file.lastModified) =>
-            req.underlying.respond(
-              NotModified ~> Date(Dates.format(new GregorianCalendar().getTime))
-            )
+            // close immediately and do not include a content-length header
+            // http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+            req.underlying.event.getChannel.write(
+              req.underlying.defaultResponse(
+                NotModified ~> Date(Dates.format(new GregorianCalendar().getTime))
+              )
+            ).addListener(ChannelFutureListener.CLOSE)
           case _ =>
             if(file.isHidden || !file.exists) notFound(req)
             else if(!file.isFile) forbid(req)
