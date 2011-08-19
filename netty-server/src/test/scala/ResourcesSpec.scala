@@ -51,5 +51,20 @@ object ResourcesSpec extends unfiltered.spec.netty.Served {
      "respond with BadRequest (400) with a non GET request" in  {
        xhttp(host.POST / "foo.css" statuscode) must be_==(400)
      }
+     "respond with a NotModified (304) with a If-Modified-Since before expiration" in {
+       import java.util.{Calendar, Date, GregorianCalendar}
+       import java.io.File
+       val rsrc = new File(getClass().getResource("/files/foo.css").getFile)
+       println(rsrc.lastModified)
+       val cal = new GregorianCalendar()
+       cal.setTime(new Date(rsrc.lastModified))
+       cal.add(Calendar.MINUTE, -5)
+       val ifmodsince = Map(
+         "If-Modified-Since" -> Dates.format(cal.getTime))
+       xhttp(host / "foo.css" <:< ifmodsince statuscode) must be_==(304)
+       xhttp(host / "foo.css" <:< ifmodsince >:> { h => h }) must notHavePair(
+         "Connection" -> "keep-alive"
+       )
+     }
    }
 }
