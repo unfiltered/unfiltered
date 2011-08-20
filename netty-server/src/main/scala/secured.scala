@@ -23,7 +23,11 @@ object Https {
 /** Http + Ssl implementation of the Server trait. */
 case class Https(port: Int, host: String,
                 handlers: List[ChannelHandler],
-                beforeStopBlock: () => Unit) extends Server with RunnableServer with Ssl {
+                beforeStopBlock: () => Unit)
+extends Server
+with unfiltered.util.Server[ChannelHandler] 
+with RunnableServer
+with Ssl {
   def pipelineFactory: ChannelPipelineFactory =
     new SecureServerPipelineFactory(channels, handlers, this)
 
@@ -32,6 +36,7 @@ case class Https(port: Int, host: String,
     closeConnections()
     destroy()
   }
+  def plan(plan: ChannelHandler) = handler(plan)
   def handler(h: ChannelHandler) =
     Https(port, host, h :: handlers, beforeStopBlock)
   def beforeStop(block: => Unit) =

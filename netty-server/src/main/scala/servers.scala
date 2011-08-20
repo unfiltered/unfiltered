@@ -1,4 +1,3 @@
-
 package unfiltered.netty
 
 import unfiltered.util.RunnableServer
@@ -13,12 +12,16 @@ import group.{ChannelGroup, DefaultChannelGroup}
 import unfiltered._
 import java.util.concurrent.atomic.AtomicInteger
 
-/** Default implementation of the Server trait. If you want to use a custom pipeline
- * factory it's better to extend Server directly. */
-case class Http(port: Int, host: String,
+/** Default implementation of the Server trait. If you want to use a
+ * custom pipeline factory it's better to extend Server directly. */
+final case class Http(port: Int, host: String,
                 handlers: List[ChannelHandler],
-                beforeStopBlock: () => Unit) extends Server with RunnableServer {
-  def pipelineFactory: ChannelPipelineFactory = new ServerPipelineFactory(channels, handlers)
+                beforeStopBlock: () => Unit)
+extends Server
+with RunnableServer
+with unfiltered.util.Server[ChannelHandler] { self =>
+  def pipelineFactory: ChannelPipelineFactory =
+    new ServerPipelineFactory(channels, handlers)
 
   def stop() = {
     beforeStopBlock()
@@ -29,6 +32,7 @@ case class Http(port: Int, host: String,
     closeConnections()
     destroy()
   }
+  def plan(plan: ChannelHandler) = handler(plan)
   def handler(h: ChannelHandler) =
     Http(port, host, h :: handlers, beforeStopBlock)
   def beforeStop(block: => Unit) =

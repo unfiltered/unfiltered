@@ -2,6 +2,7 @@ package unfiltered.netty.websockets
 
 import unfiltered.netty.{Server => NServer, HouseKeepingChannelHandler}
 
+@deprecated("Use unfiltered.netty.Http, it supports websocket plans")
 object WebSocketServer {
   import unfiltered.request.{Path=>UFPath}
 
@@ -13,6 +14,7 @@ object WebSocketServer {
 
 }
 
+@deprecated("Use unfiltered.netty.Http, it supports websocket plans")
 class WebSocketServer(val host: String, val port: Int, intent: Plan.Intent)
     extends NServer with unfiltered.util.RunnableServer {
   import org.jboss.{netty => jnetty}
