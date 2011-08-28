@@ -25,7 +25,7 @@ object Scalate {
       try {
         val scalateTemplate = engine.load(template, bindings)
         val context = contextBuilder(Path(request), printWriter, engine)
-        (attributes ++ additionalAttributes) foreach {
+        (additionalAttributes ++ attributes) foreach {
           case (k,v) => context.attributes(k) = v
         }
         engine.layout(scalateTemplate, context)
