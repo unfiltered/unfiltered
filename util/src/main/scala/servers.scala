@@ -1,10 +1,16 @@
 package unfiltered.util
 
-trait RunnableServer {
+/** Unfiltered's base server trait, something plans can be added to */
+trait Server[T] {
+  def plan(plan: T): Server[T]
+}
+trait StartableServer {
   def start(): this.type
   def stop(): this.type
   def destroy(): this.type
   val port:  Int
+}
+trait RunnableServer extends StartableServer {
   /** Calls run with no afterStart or afterStop functions */
   def run() {
     run { _ => () }

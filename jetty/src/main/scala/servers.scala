@@ -1,11 +1,14 @@
 package unfiltered.jetty
 
 import org.eclipse.jetty.server.{Server => JettyServer, Connector, Handler}
-import org.eclipse.jetty.server.handler.{ContextHandlerCollection, ResourceHandler}
-import org.eclipse.jetty.servlet.{FilterHolder, FilterMapping, ServletContextHandler, ServletHolder}
+import org.eclipse.jetty.server.handler.{
+  ContextHandlerCollection, ResourceHandler}
+import org.eclipse.jetty.servlet.{
+  FilterHolder, FilterMapping, ServletContextHandler, ServletHolder}
 import org.eclipse.jetty.server.bio.SocketConnector
 import org.eclipse.jetty.util.resource.Resource
 import java.util.concurrent.atomic.AtomicInteger
+import javax.servlet.Filter
 
 object Http {
   /** bind to the given port for any host */
@@ -27,7 +30,7 @@ case class Http(port: Int, host: String) extends Server {
 trait ContextBuilder {
   val counter: AtomicInteger
   def current: ServletContextHandler
-  def filter(filt: javax.servlet.Filter): this.type = {
+  def filter(filt: Filter): this.type = {
     val holder = new FilterHolder(filt)
     holder.setName("Filter %s" format counter.incrementAndGet)
     current.addFilter(holder, "/*", FilterMapping.DEFAULT)
@@ -44,11 +47,15 @@ trait ContextBuilder {
   }
 }
 
-trait Server extends ContextBuilder with unfiltered.util.RunnableServer { self =>
+trait Server
+extends ContextBuilder
+with unfiltered.util.RunnableServer
+with unfiltered.util.Server[Filter] { self =>
   val underlying = new JettyServer()
   val handlers = new ContextHandlerCollection
   val counter = new AtomicInteger
   val url: String
+  def plan(plan: Filter) = filter(plan)
 
   underlying.setHandler(handlers)
 
