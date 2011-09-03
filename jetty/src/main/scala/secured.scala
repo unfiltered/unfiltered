@@ -11,6 +11,7 @@ object Https {
 }
 
 case class Https(port: Int, host: String) extends Server with Ssl {
+  type ServerBuilder = Https
   val url = "http://%s:%d/" format (host, port)
   def sslPort = port
   sslConn.setHost(host)

@@ -20,6 +20,7 @@ object Http {
 }
 
 case class Http(port: Int, host: String) extends Server {
+  type ServerBuilder = Http
   val url = "http://%s:%d/" format (host, port)
   val conn = new SocketConnector()
   conn.setPort(port)
@@ -49,13 +50,13 @@ trait ContextBuilder {
 
 trait Server
 extends ContextBuilder
-with unfiltered.util.RunnableServer
-with unfiltered.util.Server[Filter] { self =>
+with unfiltered.util.PlanServer[Filter]
+with unfiltered.util.RunnableServer { self =>
   val underlying = new JettyServer()
   val handlers = new ContextHandlerCollection
   val counter = new AtomicInteger
   val url: String
-  def plan(plan: Filter) = filter(plan)
+  def plan(plan: => Filter) = filter(plan)
 
   underlying.setHandler(handlers)
 
