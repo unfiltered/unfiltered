@@ -30,6 +30,18 @@ extends HttpServer { self =>
     Http(port, host, handlers, { () => beforeStopBlock(); block })
 }
 
+object Http {
+  def apply(port: Int, host: String): Http =
+    Http(port, host, Nil, () => ())
+  def apply(port: Int): Http =
+    Http(port, "0.0.0.0")
+  /** bind to a the loopback interface only */
+  def local(port: Int): Http =
+    Http(port, "127.0.0.1")
+  /** bind to any available port on the loopback interface */
+  def anylocal = local(unfiltered.util.Port.any)
+}
+
 /** An HTTP or HTTPS server */
 trait HttpServer extends Server with PlanServer[ChannelHandler] {
   def beforeStopBlock: () => Unit
@@ -54,18 +66,7 @@ trait HttpServer extends Server with PlanServer[ChannelHandler] {
   }
 }
 
-object Http {
-  def apply(port: Int, host: String): Http =
-    Http(port, host, Nil, () => ())
-  def apply(port: Int): Http =
-    Http(port, "0.0.0.0")
-  /** bind to a the loopback interface only */
-  def local(port: Int): Http =
-    Http(port, "127.0.0.1")
-  /** bind to any available port on the loopback interface */
-  def anylocal = local(unfiltered.util.Port.any)
-}
-
+/** Base Netty server trait for http, websockets... */
 trait Server extends RunnableServer {
   val port: Int
   val host: String
