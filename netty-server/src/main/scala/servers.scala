@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 /** Default implementation of the Server trait. If you want to use a
  * custom pipeline factory it's better to extend Server directly. */
-final case class Http(port: Int, host: String,
+case class Http(port: Int, host: String,
                 handlers: List[() => ChannelHandler],
                 beforeStopBlock: () => Unit)
 extends HttpServer { self =>
@@ -23,15 +23,6 @@ extends HttpServer { self =>
   def pipelineFactory: ChannelPipelineFactory =
     new ServerPipelineFactory(channels, handlers)
 
-  def stop() = {
-    beforeStopBlock()
-    handlers.foreach {
-      case handler: cycle.Plan => handler.shutdown()
-      case _ => ()
-    }
-    closeConnections()
-    destroy()
-  }
   def plan(plan: => ChannelHandler) = handler(plan)
   def handler(h: => ChannelHandler) =
     Http(port, host, { () => h } :: handlers, beforeStopBlock)
@@ -39,8 +30,21 @@ extends HttpServer { self =>
     Http(port, host, handlers, { () => beforeStopBlock(); block })
 }
 
-/** A HTTP or HTTPS server */
+/** An HTTP or HTTPS server */
 trait HttpServer extends Server with PlanServer[ChannelHandler] {
+  def beforeStopBlock: () => Unit
+  def handlers: List[() => ChannelHandler]
+  def stop() = {
+    beforeStopBlock()
+    closeConnections()
+    handlers.foreach { handler =>
+      handler() match {
+        case p: unfiltered.netty.cycle.Plan => p.shutdown()
+        case _ => ()
+      }
+    }
+    destroy()
+  }
   def resources(path: java.net.URL,
                 cacheSeconds: Int = 60,
                 dirIndexes: Boolean = false,
@@ -106,7 +110,7 @@ trait Server extends RunnableServer {
 
 class ServerPipelineFactory(val channels: ChannelGroup,
                             val handlers: List[() => ChannelHandler])
-    extends ChannelPipelineFactory with DefaultPipelineFactory {
+extends ChannelPipelineFactory with DefaultPipelineFactory {
   def getPipeline(): ChannelPipeline = complete(Channels.pipeline)
 }
 
