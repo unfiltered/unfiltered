@@ -6,7 +6,8 @@ import java.nio.charset.Charset
 object Mimes {
   import javax.activation.MimetypesFileTypeMap
 
-  lazy val underlying = new MimetypesFileTypeMap(getClass().getResourceAsStream("/mime.types"))
+  lazy val underlying =
+    new MimetypesFileTypeMap(getClass.getResourceAsStream("/mime.types"))
   def apply(path: String) = underlying.getContentType(path)
 }
 
@@ -23,26 +24,32 @@ object Dates {
   def format(d: Date): String = format(d.getTime)
 }
 
-trait ExceptionHandling { self: SimpleChannelUpstreamHandler/*SimpleChannelHandler*/ =>
+trait ExceptionHandling { self: SimpleChannelUpstreamHandler
+                                /*SimpleChannelHandler*/ =>
   import org.jboss.netty.handler.codec.http.HttpVersion._
   import org.jboss.netty.handler.codec.http.HttpResponseStatus._
-  import org.jboss.netty.handler.codec.http.{HttpResponse => NHttpResponse, DefaultHttpResponse}
+  import org.jboss.netty.handler.codec.http.{
+    HttpResponse => NHttpResponse, DefaultHttpResponse}
   import org.jboss.netty.handler.codec.frame.TooLongFrameException
   import java.nio.channels.ClosedChannelException
   import unfiltered.response._
 
-    /** Binds a Netty HttpResponse res to Unfiltered's HttpResponse to apply any
-   * response function to it. */
+  /** Binds a Netty HttpResponse res to Unfiltered's HttpResponse to
+   *  apply any response function to it. */
   private def response[T <: NHttpResponse](res: T)(rf: ResponseFunction[T]) =
     rf(new ResponseBinding(res)).underlying
 
-  /** @return a new Netty DefaultHttpResponse bound to an Unfiltered HttpResponse */
-  private val defaultResponse = response(new DefaultHttpResponse(HTTP_1_1, BAD_REQUEST))_
+  /** @return a new Netty DefaultHttpResponse bound to an
+   *  Unfiltered HttpResponse */
+  private val defaultResponse =
+    response(new DefaultHttpResponse(HTTP_1_1, BAD_REQUEST))_
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, msg: ExceptionEvent): Unit =
+  override def exceptionCaught(ctx: ChannelHandlerContext,
+                               msg: ExceptionEvent): Unit =
     (msg.getCause, msg.getChannel) match {
       case (e: ClosedChannelException, _) =>
-        error("Exception thrown while writing to a closed channel: %s" format e.getMessage)
+        error("Exception thrown while writing to a closed channel: %s"
+              .format(e.getMessage))
       case (e: TooLongFrameException, ch) =>
         if(ch.isConnected) {
           ch.write(defaultResponse(BadRequest ~> PlainTextContent))
@@ -50,19 +57,18 @@ trait ExceptionHandling { self: SimpleChannelUpstreamHandler/*SimpleChannelHandl
         }
       case (e, ch) =>
         if(ch.isConnected) {
-          ch.write(defaultResponse(InternalServerError ~> PlainTextContent))
+          ch.write(defaultResponse(InternalServerError ~>
+                                   PlainTextContent))
             .addListener(ChannelFutureListener.CLOSE)
         }
     }
 }
 
-/** Extracts HttpRequest if a side effect is not implied */
-object Idempotent {
+/** Extracts HttpRequest if a retrieval method */
+object Retrieval {
   import unfiltered.request.{HttpRequest, GET, HEAD}
-  def unapply[T](r: HttpRequest[T]) = {
-    if(GET :: HEAD :: Nil map(_.unapply(r)) filter(_.isDefined) isEmpty) None
-    else Some(r)
-  }
+  def unapply[T](r: HttpRequest[T]) =
+    GET.unapply(r).orElse { HEAD.unapply(r) }
 }
 
 object Resources {
@@ -71,10 +77,14 @@ object Resources {
 }
 
 /** Serves static resources.
- *  adaptered from Netty's example code HttpStaticFileServerHandler
- *  The behavior for dirIndexes (listing files under a directory) is not yet implemented and may be removed
+ *  Adapted from Netty's example HttpStaticFileServerHandler
+ *  The behavior for dirIndexes (listing files under a directory) is
+ *  not yet implemented and may be removed
  */
-case class Resources(base: java.net.URL, cacheSeconds: Int = 60, dirIndexes: Boolean = false, passOnFail: Boolean = false)
+case class Resources(base: java.net.URL,
+                     cacheSeconds: Int = 60,
+                     dirIndexes: Boolean = false,
+                     passOnFail: Boolean = false)
   extends unfiltered.netty.channel.Plan with ExceptionHandling {
   import Resources._
 
@@ -87,15 +97,18 @@ case class Resources(base: java.net.URL, cacheSeconds: Int = 60, dirIndexes: Boo
   import java.io.{File, FileNotFoundException, RandomAccessFile}
   import java.net.URLDecoder
 
-  import org.jboss.netty.channel.{DefaultFileRegion, ChannelFuture, ChannelFutureListener, ChannelFutureProgressListener}
-  import org.jboss.netty.handler.codec.http.{HttpHeaders, HttpResponse => NHttpResponse}
+  import org.jboss.netty.channel.{
+    DefaultFileRegion, ChannelFuture, ChannelFutureListener,
+    ChannelFutureProgressListener}
+  import org.jboss.netty.handler.codec.http.{
+    HttpHeaders, HttpResponse => NHttpResponse}
   import org.jboss.netty.handler.stream.ChunkedFile
   import org.jboss.netty.buffer.ChannelBuffers
 
   import java.nio.channels.ClosedChannelException
 
   // todo: why doesn't type variance work here?
-  // Returning Pass here will tell unfiltered to send the request upstream, otherwise
+  // Returning Pass here will send the request upstream, otherwise
   // this method handles the request itself
   def passOr[T <: NHttpResponse](rf: => ResponseFunction[NHttpResponse])(req: HttpRequest[ReceivedMessage]) =
     if(passOnFail) Pass else req.underlying.respond(rf)
@@ -107,14 +120,17 @@ case class Resources(base: java.net.URL, cacheSeconds: Int = 60, dirIndexes: Boo
   def badRequest = passOr(BadRequest ~> PlainTextContent)_
 
   def intent = {
-    case Idempotent(Path(path)) & req => accessible(path.drop(1)) match {
+    case Retrieval(Path(path)) & req => accessible(path.drop(1)) match {
       case Some(file) =>
         IfModifiedSince(req) match {
           case Some(since) if(since.getTime == file.lastModified) =>
-            // close immediately and do not include a content-length header
+            // close immediately and do not include content-length header
             // http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
-            req.underlying.event.getChannel.write(req.underlying.defaultResponse(
-              NotModified ~> Date(Dates.format(new GregorianCalendar().getTime))
+
+            req.underlying.event.getChannel.write(
+              req.underlying.defaultResponse(
+                NotModified ~>
+                Date(Dates.format(new GregorianCalendar().getTime))
             )).addListener(ChannelFutureListener.CLOSE)
           case _ =>
             if(file.isHidden || !file.exists) notFound(req)
@@ -124,7 +140,8 @@ case class Resources(base: java.net.URL, cacheSeconds: Int = 60, dirIndexes: Boo
               val len = raf.length
               val cal = new GregorianCalendar()
               var heads = Ok ~> ContentLength(len.toString) ~>
-                ContentType(Mimes(file.getPath)) ~> // note: bin/text/charset not included
+                // note: bin/text/charset not included
+                ContentType(Mimes(file.getPath)) ~>
                 Date(Dates.format(cal.getTime)) ~>
                 CacheControl("private, max-age=%d" format cacheSeconds) ~>
                 LastModified(Dates.format(file.lastModified))
@@ -132,23 +149,28 @@ case class Resources(base: java.net.URL, cacheSeconds: Int = 60, dirIndexes: Boo
               cal.add(Calendar.SECOND, cacheSeconds)
 
               val chan = req.underlying.event.getChannel
-              val writeHeaders = chan.write(req.underlying.defaultResponse(heads ~> Expires(Dates.format(cal.getTime))))
+              val writeHeaders = chan.write(
+                req.underlying.defaultResponse(
+                  heads ~> Expires(Dates.format(cal.getTime))))
 
               def lastly(future: ChannelFuture) =
                 if(!HttpHeaders.isKeepAlive(req.underlying.request)) {
                    future.addListener(ChannelFutureListener.CLOSE)
                 }
 
-              // TODO. what to do if connection is reset by peer after writing the heads
-              // but before writing the body?
+              // TODO. what to do if connection is reset by peer after 
+              // writing the heads but before writing the body?
               if(GET.unapply(req) isDefined) {
-                if(req.isSecure) chan.write(new ChunkedFile(raf, 0, len, 8192))
+                if(req.isSecure)
+                  chan.write(new ChunkedFile(raf, 0, len, 8192))
                 else {
                   // using zero-copy
-                  val region = new DefaultFileRegion(raf.getChannel, 0, len)
+                  val region =
+                    new DefaultFileRegion(raf.getChannel, 0, len)
                   val writeFile = chan.write(region)
                   writeFile.addListener(new ChannelFutureListener {
-                    def operationComplete(f: ChannelFuture) = region.releaseExternalResources
+                    def operationComplete(f: ChannelFuture) =
+                      region.releaseExternalResources
                   })
                   lastly(writeFile)
                 }
