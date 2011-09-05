@@ -22,7 +22,7 @@ object HttpConfig {
    val DEFAULT_CHARSET = "UTF-8"
 }
 
-private [netty] class RequestBinding(msg: ReceivedMessage)
+class RequestBinding(msg: ReceivedMessage)
 extends HttpRequest(msg) with Async.Responder[NHttpResponse] {
   private val req = msg.request
   lazy val params = queryParams ++ postParams
@@ -118,7 +118,7 @@ case class ReceivedMessage(
   }
 }
 
-private [netty] class ResponseBinding[U <: NHttpResponse](res: U)
+class ResponseBinding[U <: NHttpResponse](res: U)
     extends HttpResponse(res) {
   private lazy val byteOutputStream = new ByteArrayOutputStream {
     override def close = {
