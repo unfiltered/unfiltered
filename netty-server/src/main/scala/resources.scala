@@ -110,7 +110,8 @@ case class Resources(base: java.net.URL,
   // todo: why doesn't type variance work here?
   // Returning Pass here will send the request upstream, otherwise
   // this method handles the request itself
-  def passOr[T <: NHttpResponse](rf: => ResponseFunction[NHttpResponse])(req: HttpRequest[ReceivedMessage]) =
+  def passOr[T <: NHttpResponse](rf: => ResponseFunction[NHttpResponse])
+                                (req: HttpRequest[ReceivedMessage]) =
     if(passOnFail) Pass else req.underlying.respond(rf)
 
   def forbid = passOr(Forbidden)_
