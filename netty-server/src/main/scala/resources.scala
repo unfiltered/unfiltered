@@ -67,7 +67,7 @@ object Idempotent {
 
 object Resources {
   val utf8 = Charset.forName("UTF-8")
-  val iso99591 = Charset.forName("ISO-8859-1")
+  val iso88591 = Charset.forName("ISO-8859-1")
 }
 
 /** Serves static resources.
@@ -169,7 +169,7 @@ case class Resources(base: java.net.URL, cacheSeconds: Int = 60, dirIndexes: Boo
   private def accessible(uri: String) =
     (allCatch.opt { URLDecoder.decode(uri, utf8.name()) }
     orElse {
-      allCatch.opt { URLDecoder.decode(uri, iso99591.name()) }
+      allCatch.opt { URLDecoder.decode(uri, iso88591.name()) }
     }) match {
       case Some(decoded) =>
         decoded.replace('/', File.separatorChar) match {
