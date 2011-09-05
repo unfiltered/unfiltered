@@ -2,14 +2,14 @@ package unfiltered.request
 
 import org.specs._
 
-object BasicAuthSpecJetty extends unfiltered.spec.jetty.Served with BasicAuthSpec {
-  def setup = { _.filter(unfiltered.filter.Planify(intent)) }
-}
-object BasicAuthSpecNetty extends unfiltered.spec.netty.Served with BasicAuthSpec {
-  def setup = { p =>
-    unfiltered.netty.Http(p).handler(unfiltered.netty.cycle.Planify(intent))
-  }
-}
+object BasicAuthSpecJetty
+extends unfiltered.spec.jetty.Planned
+with BasicAuthSpec
+
+object BasicAuthSpecNetty
+extends unfiltered.spec.netty.Planned
+with BasicAuthSpec
+
 trait BasicAuthSpec extends unfiltered.spec.Hosted {
   import unfiltered.response._
   import unfiltered.request._

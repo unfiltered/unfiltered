@@ -3,15 +3,14 @@ package unfiltered.request
 import org.specs._
 import unfiltered.spec
 
-object GzipSpecJetty extends spec.jetty.Served with GZipSpec {
-  def setup = { _.filter(unfiltered.filter.Planify(intent)) }
-}
-object GzipSpecNetty extends spec.netty.Served with GZipSpec {
-  def setup = { p =>
-    unfiltered.netty.Http(p).handler(
-      unfiltered.netty.cycle.Planify(intent))
-  }
-}
+object GzipSpecJetty
+extends spec.jetty.Planned
+with GZipSpec
+
+object GzipSpecNetty
+extends spec.netty.Planned
+with GZipSpec
+
 trait GZipSpec extends spec.Hosted {
   import unfiltered.response._
   import unfiltered.request._

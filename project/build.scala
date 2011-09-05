@@ -150,7 +150,7 @@ object Unfiltered extends Build {
               libraryDependencies <++= scalaVersion { v =>
                 specsDep(v) :: dispatchDeps
               }
-            )) dependsOn(jetty, nettyServer)
+            )) dependsOn(filters, jetty, nettyServer)
 
   lazy val scalaTestHelpers =
     Project(id("scalatest"), file("scalatest"),

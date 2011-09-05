@@ -7,7 +7,7 @@ object PlannedResourcesSpec extends unfiltered.spec.netty.Served {
    import dispatch._
    import unfiltered.netty.{Http => NHttp}
 
-   def setup = NHttp(_).resources(getClass().getResource("/files/")).handler(unfiltered.netty.cycle.Planify {
+   def setup = _.resources(getClass().getResource("/files/")).handler(unfiltered.netty.cycle.Planify {
      case _ => unfiltered.response.ResponseString("planned")
    })
 

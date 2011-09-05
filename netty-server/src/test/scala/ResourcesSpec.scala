@@ -20,7 +20,7 @@ object ResourcesSpec extends unfiltered.spec.netty.Served {
      }, scala.util.control.Exception.nothingCatcher)
    }
 
-   def setup = NHttp(_).resources(getClass().getResource("/files/"), passOnFail = false)
+   def setup = _.resources(getClass().getResource("/files/"), passOnFail = false)
    "A resource server" should {
      "respond with a valid file" in {
        http(host / "foo.css" as_str) must_==("* { margin:0; }")
