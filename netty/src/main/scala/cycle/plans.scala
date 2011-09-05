@@ -21,10 +21,12 @@ object Intent {
 /** A Netty Plan for request cycle handling. */
 trait Plan extends SimpleChannelUpstreamHandler {
   def intent: Plan.Intent
-  override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
+  override def messageReceived(ctx: ChannelHandlerContext,
+                               e: MessageEvent) {
     val request = e.getMessage() match {
       case req:NHttpRequest => req
-      case msg => error("Unexpected message type from upstream: %s" format msg)
+      case msg => error("Unexpected message type from upstream: %s"
+                        .format(msg))
     }
     val requestBinding =
       new RequestBinding(ReceivedMessage(request, ctx, e))
