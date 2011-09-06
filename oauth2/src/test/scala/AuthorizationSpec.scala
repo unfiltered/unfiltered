@@ -40,7 +40,7 @@ object AuthorizationSpec
   // turning off redirects for validation
   def http = new Http {
     override def make_client = {
-      val c = super.make_client
+      val c = new ConfiguredHttpClient(credentials)
       c.setRedirectHandler(new org.apache.http.client.RedirectHandler() {
          import org.apache.http.protocol.HttpContext
          import org.apache.http.{HttpResponse=>HcResponse}
@@ -276,7 +276,7 @@ object AuthorizationSpec
                "grant_type" -> "refresh_token",
                "client_id" -> client.id,
                "client_secret" -> client.secret,
-               "refresh_token" -> map("refresh_token")
+               "refresh_token" -> map("refresh_token").toString
              ) as_str)
              json(rres) { map2  =>
                map2 must haveKey("access_token")

@@ -11,6 +11,7 @@ object Https {
 }
 
 case class Https(port: Int, host: String) extends Server with Ssl {
+  type ServerBuilder = Https
   val url = "http://%s:%d/" format (host, port)
   def sslPort = port
   sslConn.setHost(host)
@@ -34,13 +35,15 @@ trait Ssl { self: Server =>
   lazy val keyStore = tryProperty("jetty.ssl.keyStore")
   lazy val keyStorePassword = tryProperty("jetty.ssl.keyStorePassword")
 
-  val sslConn = new SslSocketConnector()
-  sslConn.setPort(sslPort)
-  sslConn.setKeystore(keyStore)
-  sslConn.setKeyPassword(keyStorePassword)
-  sslConn.setMaxIdleTime(sslMaxIdleTime)
-  sslConn.setHandshakeTimeout(sslHandshakeTimeout)
+  val sslConn = new SslSocketConnector() {
+    setPort(sslPort)
+    setKeystore(keyStore)
+    setKeyPassword(keyStorePassword)
+    setMaxIdleTime(sslMaxIdleTime)
+    setHandshakeTimeout(sslHandshakeTimeout)
+  }
   underlying.addConnector(sslConn)
+
 }
 
 /** Provides truststore support to an Ssl supported Server

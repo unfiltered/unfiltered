@@ -1,6 +1,7 @@
+
 package unfiltered.netty
 
-import unfiltered.JIteratorIterator
+import unfiltered.{JIteratorIterator,Async}
 import unfiltered.response.{ResponseFunction, HttpResponse}
 import unfiltered.request.{HttpRequest,POST,RequestContentType,Charset}
 import java.net.URLDecoder
@@ -21,7 +22,8 @@ object HttpConfig {
    val DEFAULT_CHARSET = "UTF-8"
 }
 
-private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(msg) {
+class RequestBinding(msg: ReceivedMessage)
+extends HttpRequest(msg) with Async.Responder[NHttpResponse] {
   private val req = msg.request
   lazy val params = queryParams ++ postParams
   def queryParams = req.getUri.split("\\?", 2) match {
@@ -49,6 +51,7 @@ private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(m
   }
   def method = req.getMethod.toString.toUpperCase
 
+  // todo should we call URLDecoder.decode(uri, charset) on this here?
   def uri = req.getUri
 
   def parameterNames = params.keySet.iterator
@@ -72,14 +75,16 @@ private [netty] class RequestBinding(msg: ReceivedMessage) extends HttpRequest(m
     case null => false
     case _ => true
   }
-  def remoteAddr = msg.context.getChannel.getRemoteAddress.asInstanceOf[java.net.InetSocketAddress].getAddress.getHostAddress
+  def remoteAddr =msg.context.getChannel.getRemoteAddress.asInstanceOf[java.net.InetSocketAddress].getAddress.getHostAddress
+
+  def respond(rf: ResponseFunction[NHttpResponse]) =
+    underlying.respond(rf)
 }
 /** Extension of basic request binding to expose Netty-specific attributes */
 case class ReceivedMessage(
   request: NHttpRequest,
   context: ChannelHandlerContext,
   event: MessageEvent) {
-  import org.jboss.netty.handler.codec.http.{HttpResponse => NHttpResponse}
 
   /** Binds a Netty HttpResponse res to Unfiltered's HttpResponse to apply any
    * response function to it. */
@@ -113,7 +118,7 @@ case class ReceivedMessage(
   }
 }
 
-private [netty] class ResponseBinding[U <: NHttpResponse](res: U)
+class ResponseBinding[U <: NHttpResponse](res: U)
     extends HttpResponse(res) {
   private lazy val byteOutputStream = new ByteArrayOutputStream {
     override def close = {

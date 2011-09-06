@@ -20,7 +20,7 @@ object JsonSpec extends Specification  with unfiltered.spec.jetty.Served {
 
   "Json Response should" should {
     "produce a json response" in {
-      val (body, contentType) = Http(host <:< Map("Accept" -> "application/json") >+ { r =>
+      val (body, contentType) = http(host <:< Map("Accept" -> "application/json") >+ { r =>
         (r as_str, r >:> { _.filterKeys { _ == "Content-Type" } })
       })
       body must_=="""{"foo":"bar","baz":"boom"}"""

@@ -16,3 +16,15 @@ object Cycle {
       intent.orElse({ case _ => Pass })
   }
 }
+
+object Async {
+  type Intent[-A,-B] =
+    PartialFunction[HttpRequest[A] with Responder[B], Any]
+  object Intent {
+    def apply[A,B](intent: Intent[A,B]) = intent
+  }
+  trait Responder[+R] {
+    def respond(rf: unfiltered.response.ResponseFunction[R])
+  }
+}
+
