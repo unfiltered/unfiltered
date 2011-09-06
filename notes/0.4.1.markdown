@@ -1,0 +1,38 @@
+### GZip Response Kit
+
+Encodes responses with GZip for requests that appear to support
+it. Can be applied to any intent, e.g.:
+
+    val zippingEcho = unfiltered.filter.Planify {
+      unfiltered.kit.GZip {
+        case Path(path) => ResponseString(path)
+      }
+    }
+
+Thanks to [gerdriesselmann][gr] for the inspiration!
+
+[gr]: https://github.com/gerdriesselmann/
+
+### HttpResponse Refactoring
+
+To support the `GZIPOutputStream` and `FilterOutputStream` subclasses
+generally, direct access to the `Writer` of a backend is no longer
+encouraged by the `HttpResponse` binding. Instead the `ResponseWriter`
+creates its own `OutputStreamWriter` using any filter stream and
+charset configured by preceding response functions.
+
+Applications that were already using `ResponseWriter` and its
+subclasses like `ResponseString` will not require any changes.
+
+### Other Improvements
+
+* Accepts-Encoding matchers for GZip and other encodings, contributed
+  by [chrislewis][cl]
+* Path.apply to get path directly (not as an extractor)
+* Additional conversion functions in `unfiltered.response.Params`
+
+[cl]: https://github.com/chrislewis
+
+### Dependency Updates
+
+* lift-json 2.3 for Scala 2.8, 2.4-M3 for Scala 2.9

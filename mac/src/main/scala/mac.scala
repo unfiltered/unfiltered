@@ -4,7 +4,7 @@ import unfiltered.request._
 import unfiltered.response._
 
 object Mac extends Signing {
-  def challenge: Responder[Any] = challenge(None)
+  def challenge: ResponseFunction[Any] = challenge(None)
   def challenge(err: Option[String]) = Unauthorized ~> WWWAuthenticate("%s%s" format("MAC", err match {
     case Some(e) => """ error="%s"""" format e
     case _ => ""
