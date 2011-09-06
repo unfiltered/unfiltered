@@ -1,3 +1,4 @@
+
 package unfiltered.netty
 
 import org.specs._
@@ -5,7 +6,7 @@ import unfiltered.spec
 import unfiltered.response._
 import unfiltered.request._
 import unfiltered.request.{Path => UFPath}
-import unfiltered.netty.cycle.{Plan,SynchronousExecution}
+import unfiltered.netty.cycle.{Plan,SynchronousExecution,InternalServerError}
 import org.jboss.netty.channel.{ChannelHandlerContext, ExceptionEvent}
 
 object SslServerSpec
@@ -34,7 +35,8 @@ with spec.SecureClient {
 
   lazy val server = {
     try {
-      val securePlan = new Plan with Secured with SynchronousExecution {
+      val securePlan = new Plan with Secured with SynchronousExecution
+                                with InternalServerError {
 
         def intent = { case GET(UFPath("/")) => ResponseString("secret") ~> Ok }
 
