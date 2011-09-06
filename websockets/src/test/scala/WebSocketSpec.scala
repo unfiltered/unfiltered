@@ -13,8 +13,8 @@ object WebSocketsSpec extends Specification
 
   import dispatch._
 
-  def setup = NHttp(_)
-    .handler(netty.cycle.Planify {
+  def setup =
+    _.handler(planify {
       case UFPath("/a") => ResponseString("http response a")
     })
     .handler(netty.websockets.Planify({
@@ -29,7 +29,8 @@ object WebSocketsSpec extends Specification
 
   "A Websocket" should {
     "not block standard http requests" in {
-      Http(host / "b" as_str) must_==("http response b")
+      http(host / "b" as_str) must_==("http response b")
+      http(host / "a" as_str) must_==("http response a")
     }
   }
 }

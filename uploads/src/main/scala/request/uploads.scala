@@ -1,5 +1,7 @@
 package unfiltered.request
 
+import scala.util.control.Exception.allCatch
+
 import javax.servlet.http.HttpServletRequest
 
 import org.apache.commons.{fileupload => fu}
@@ -30,7 +32,7 @@ class DiskFileWrapper(item: fu.FileItem) extends FileWrapper {
   } catch {
     case _ => None
   }
-  
+
   def isInMemory = item.isInMemory
   def bytes = item.get
   def size = item.getSize
@@ -39,20 +41,18 @@ class DiskFileWrapper(item: fu.FileItem) extends FileWrapper {
 }
 
 /** Represents an uploaded file exposing a stream to read its contents */
-class StreamedFileWrapper(fstm: fu.FileItemStream) extends FileWrapper with unfiltered.request.io.FileIO {
-  
-  def write(out: JFile): Option[JFile] = try {
-    MultiPartParams.Streamed.withStreamedFile[Option[JFile]](fstm) { stm =>
+class StreamedFileWrapper(fstm: fu.FileItemStream) extends FileWrapper
+  with unfiltered.request.io.FileIO {
+
+  def write(out: JFile): Option[JFile] = allCatch.opt {
+    stream { stm =>
       toFile(stm)(out)
-      Some(out)
+      out
     }
-  } catch {
-    case e =>
-      e.printStackTrace
-      None
   }
-  
-  def stream: (java.io.InputStream => Unit) => Unit = MultiPartParams.Streamed.withStreamedFile[Unit](fstm)_
+
+  def stream[T]: (java.io.InputStream => T) => T =
+    MultiPartParams.Streamed.withStreamedFile[T](fstm)_
   val name = fstm.getName
   val contentType = fstm.getContentType
 }
@@ -62,22 +62,22 @@ class StreamedFileWrapper(fstm: fu.FileItemStream) extends FileWrapper with unfi
   * afterwards, the requests input stream will appear empty
   */
 object MultiPartParams {
-  
+
   /** Stream-based multi-part form data extractor */
   object Streamed {
     import fu.{FileItemIterator, FileItemStream}
     import fu.util.Streams
-    
+
     case class FIIteratorWrapper(i: FileItemIterator) extends Iterator[FileItemStream] {
-      def hasNext: Boolean = i.hasNext  
+      def hasNext: Boolean = i.hasNext
       def next(): FileItemStream = i.next
     }
 
     /** convert apache commons file iterator to scala iterator */
     implicit def acfi2si(i : FileItemIterator) = new FIIteratorWrapper(i)
-    
+
     /**
-      Provides extraction similar to MultiPartParams.Disk, except the second map will 
+      Provides extraction similar to MultiPartParams.Disk, except the second map will
       contain Map[String, Seq[StreamedFileWrapper]] rather than  Map[String, Seq[DiskFileWrapper]].
       @note the seq returned by keys will only return the `first` named value. This is a limitation
       on apache commons file upload streaming interface. To read from the stream iterator,
@@ -100,7 +100,7 @@ object MultiPartParams {
       }
       MultipartData(extractParam _,extractFile _)
     }
-    
+
     def withStreamedFile[T](fstm: FileItemStream)(f: java.io.InputStream => T): T = {
       val stm = fstm.openStream
       try { f(stm) } finally { stm.close }
@@ -110,42 +110,42 @@ object MultiPartParams {
       Streams.asString(stm)
     }
   }
-  
+
   /** On-disk  multi-part form data extractor */
   object Disk extends AbstractDisk {
     import fu.disk.{DiskFileItemFactory}
-    
+
     // TODO come up with sensible default
     val memLimit = Int.MaxValue
     val tempDir = new java.io.File(".")
     def factory(writeAfter: Int, writeDir: JFile) = new DiskFileItemFactory(writeAfter, writeDir)
   }
-  
+
   /** All in memory multi-part form data extractor.
       This exposes a very specific class of file references
-      intended for use in environments such as GAE where writing 
+      intended for use in environments such as GAE where writing
       to disk is prohibited.
       */
   object Memory extends AbstractDisk {
-    
+
     class ByteArrayFileItem(var fieldName: String,
         val contentType: String,
      	  var formField: Boolean,
         val name: String,
         val sizeThreshold: Int) extends fu.FileItem {
-        
+
         import java.io.{InputStream, ByteArrayInputStream,
           OutputStream, ByteArrayOutputStream}
-          
+
         var cache: Option[Array[Byte]] = None
         val out = new ByteArrayOutputStream()
         override def delete {}
-        override def get = cache getOrElse { 
+        override def get = cache getOrElse {
           val content = out.toByteArray
           cache = Some(content)
           content
         }
-        
+
         override def getContentType = contentType
         override def getFieldName = fieldName
         override def getInputStream: InputStream = new ByteArrayInputStream(get)
@@ -160,7 +160,7 @@ object MultiPartParams {
         override def setFormField(state: Boolean) { formField = state }
         override def write(file: JFile) { error("File writing is not permitted") }
     }
-    
+
     class ByteArrayFileItemFactory extends fu.FileItemFactory {
        override def createItem(fieldName: String , contentType: String ,
     	                      isFormField: Boolean , fileName: String ) = new ByteArrayFileItem(
@@ -172,7 +172,7 @@ object MultiPartParams {
     val tempDir = new java.io.File(".")
     def factory(writeAfter: Int, writeDir: JFile) = new ByteArrayFileItemFactory
   }
-  
+
   /** Base trait for disk-based multi part form data extraction */
   trait AbstractDisk {
     import fu.{FileItemFactory, FileItem => ACFileItem}
@@ -184,15 +184,15 @@ object MultiPartParams {
     def tempDir: JFile
     /** @return a configured FileItemFactory to parse a request */
     def factory(writeAfter: Int, writeDir: JFile): FileItemFactory
-    
+
     case class JIteratorWrapper[A](i: JIterator[A]) extends Iterator[A] {
-      def hasNext: Boolean = i.hasNext  
+      def hasNext: Boolean = i.hasNext
       def next(): A = i.next
     }
 
     /** convert java iterator to scala iterator */
     implicit def ji2si[A](i : JIterator[A]) = new JIteratorWrapper[A](i)
-    
+
     /**
       Given a req, extract the multipart form params into a (Map[String, Seq[String]], Map[String, Seq[FileItem]], request).
       The Map is assigned a default value of Nil, so param("p") would return Nil if there
@@ -209,7 +209,7 @@ object MultiPartParams {
       MultipartData(params, files)
     }
   }
-  
+
   /** generates a tuple of (Map[String, List[A]], Map[String, List[B]]) */
   private def genTuple[A, B, C](iter: Iterator[C])(f: ((Map[String, List[A]], Map[String, List[B]]), C) => (Map[String, List[A]], Map[String, List[B]])) =
    ((Map.empty[String, List[A]].withDefaultValue(Nil), Map.empty[String, List[B]].withDefaultValue(Nil)) /: iter)(f(_,_))

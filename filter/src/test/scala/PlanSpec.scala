@@ -57,27 +57,27 @@ object PlanSpec extends Specification with unfiltered.spec.jetty.Served {
 
   "A Plan" should {
     "filter on the same context path" in {
-      Http(host / "filter" as_str)  must_=="test"
+      http(host / "filter" as_str)  must_=="test"
     }
     "filter on a second context path with overlapping name" in {
-      Http(host / "filter2" / "test2" as_str)  must_=="test2"
+      http(host / "filter2" / "test2" as_str)  must_=="test2"
     }
     "filter multiple Plans on the same context path" in {
-      Http(host / "filter3" / "aplan" as_str) must_=="Plan A"
-      Http(host / "filter3" / "bplan" as_str) must_=="Plan B"
+      http(host / "filter3" / "aplan" as_str) must_=="Plan A"
+      http(host / "filter3" / "bplan" as_str) must_=="Plan B"
     }
     "filter multiple Planify classes on the same context path" in {
-      Http(host / "filter4" / "aplan" as_str) must_=="Plan A"
-      Http(host / "filter4" / "bplan" as_str) must_=="Plan B"
-      Http(host / "filter4" / "cplan" as_str) must_=="Plan C"
+      http(host / "filter4" / "aplan" as_str) must_=="Plan A"
+      http(host / "filter4" / "bplan" as_str) must_=="Plan B"
+      http(host / "filter4" / "cplan" as_str) must_=="Plan C"
     }
     "filter multiple Planify function calls on the same context path" in {
-      Http(host / "filter5" / "aplan" as_str) must_=="Plan A"
-      Http(host / "filter5" / "bplan" as_str) must_=="Plan B"
-      Http(host / "filter5" / "cplan" as_str) must_=="Plan C"
+      http(host / "filter5" / "aplan" as_str) must_=="Plan A"
+      http(host / "filter5" / "bplan" as_str) must_=="Plan B"
+      http(host / "filter5" / "cplan" as_str) must_=="Plan C"
     }
     "filter must extract query string" in {
-      Http(host / "query" / "qplan" <<? Map("foo"->"bar", "baz"->"boom") as_str) must_=="foo=bar&baz=boom"
+      http(host / "query" / "qplan" <<? Map("foo"->"bar", "baz"->"boom") as_str) must_=="foo=bar&baz=boom"
     }
   }
 }

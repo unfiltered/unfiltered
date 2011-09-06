@@ -42,7 +42,7 @@ trait ProtectionLike extends Plan {
     """error="%s" error_description="%s" """.trim format(status, description)
 
   def errorResponse[T](status: Status, description: String,
-      request: HttpRequest[T]): Responder[Any] = (status, description) match {
+      request: HttpRequest[T]): ResponseFunction[Any] = (status, description) match {
     case (Unauthorized, "") => Unauthorized ~> WWWAuthenticate("Bearer") ~> ResponseString("Bearer")
     case (Unauthorized, _)  =>
       Unauthorized ~> WWWAuthenticate("Bearer\n" + errorString("invalid_token", description)) ~>

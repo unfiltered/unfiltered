@@ -2,6 +2,7 @@ package unfiltered.request
 
 object Path {
   def unapply[T](req: HttpRequest[T]) = Some(req.uri.split('?')(0))
+  def apply[T](req: HttpRequest[T]) = req.uri.split('?')(0)
 }
 
 object QueryString {
