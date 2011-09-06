@@ -30,22 +30,33 @@ trait Plan extends SimpleChannelUpstreamHandler {
     }
     val requestBinding =
       new RequestBinding(ReceivedMessage(request, ctx, e))
-    executeIntent {
+    def catching(thunk: => Unit) {
+      try { thunk } catch {
+        case e => onException(ctx, e)
+      }
+    }
+    executeIntent { catching {
       intent.lift(requestBinding).getOrElse(Pass) match {
         case Pass => ctx.sendUpstream(e)
         case responseFunction =>
-          executeResponse {
+          executeResponse { catching {
             requestBinding.underlying.respond(responseFunction)
-          }
+          } } 
       }
-    }
+    } }
   }
   def executeIntent(thunk: => Unit)
   def executeResponse(thunk: => Unit)
   def shutdown()
+  override def exceptionCaught(ctx: ChannelHandlerContext,
+                               e: ExceptionEvent) {
+    onException(ctx, e.getCause)
+  }
+  def onException(ctx: ChannelHandlerContext, t: Throwable)
 }
 
-class Planify(val intent: Plan.Intent) extends Plan with ThreadPool
+class Planify(val intent: Plan.Intent)
+extends Plan with ThreadPool with InternalServerError
 
 object Planify {
   def apply(intent: Plan.Intent) = new Planify(intent)

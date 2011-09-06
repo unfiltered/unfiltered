@@ -29,7 +29,8 @@ trait Started extends unfiltered.spec.Hosted {
   /** planify using a local executor. Global executor is problematic
    *  for tests since it is shutdown by each server instance.*/
   def planify(intentIn: Plan.Intent) =
-    new Plan with DeferralExecutor with DeferredIntent {
+    new Plan with DeferralExecutor with DeferredIntent
+             with InternalServerError {
       def underlying = executor
       val intent = intentIn
     }
