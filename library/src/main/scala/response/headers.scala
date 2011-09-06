@@ -2,7 +2,7 @@ package unfiltered.response
 
 case class ResponseHeader(name: String, values: Iterable[String]) extends Responder[Any] {
   def respond(res: HttpResponse[Any]) {
-    values.foreach { v => res.addHeader(name, v) } 
+    values.foreach { v => res.header(name, v) } 
   }
 }
 class HeaderName(name: String) {
@@ -16,7 +16,9 @@ object Age extends HeaderName("Age")
 object Allow extends HeaderName("Allow")
 object CacheControl extends HeaderName("Cache-Control")
 object Connection extends HeaderName("Connection")
-object ContentEncoding extends HeaderName("Content-Encoding")
+object ContentEncoding extends HeaderName("Content-Encoding") {
+  val GZip = apply("gzip")
+}
 object ContentLanguage extends HeaderName("Content-Language")
 object ContentLength extends HeaderName("Content-Length")
 object ContentLocation extends HeaderName("Content-Location")

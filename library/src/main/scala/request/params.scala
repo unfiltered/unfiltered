@@ -1,6 +1,7 @@
 package unfiltered.request
 
 import unfiltered.response.ResponseFunction
+import scala.util.control.Exception.allCatch
 
 /** Basic parameter acess, and a pattern matching extractor in Extract. */
 object Params {
@@ -36,14 +37,21 @@ object Params {
       this({ params: Map => f(params(name)) })
     def unapply(params: Map) = f(params)
   }
+  /** Construct a parameter predicate */
   def pred[E,A](p: A => Boolean): Option[A] => Option[A] =
     opt => opt filter p
 
   def int(os: Option[String]) =
-    try { os map { _.toInt } } catch { case _ => None }
+    os.flatMap { s => allCatch.opt { s.toInt } }
 
   def long(os: Option[String]) =
-    try { os map { _.toLong } } catch { case _ => None }
+    os.flatMap { s => allCatch.opt { s.toLong } }
+
+  def float(os: Option[String]) =
+    os.flatMap { s => allCatch.opt { s.toFloat } }
+
+  def double(os: Option[String]) =
+    os.flatMap { s => allCatch.opt { s.toDouble } }
 
   val even = pred { (_:Int) % 2 == 0 }
   val odd = pred { (_:Int) % 2 == 1 }

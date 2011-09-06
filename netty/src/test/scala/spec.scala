@@ -62,8 +62,8 @@ class ResponseSpec extends Specification {
   "Response binding" should {
     "return a working outputstream" in {
       val data = payload.getBytes("UTF-8")
-      resp.getOutputStream.write(data)
-      resp.getOutputStream.close
+      resp.outputStream.write(data)
+      resp.outputStream.close
       resp.underlying.getContent.readableBytes must_== data.length
     }
   }
