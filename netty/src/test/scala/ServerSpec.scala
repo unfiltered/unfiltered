@@ -13,7 +13,7 @@ object ServerSpec extends unfiltered.spec.netty.Served {
     case GET(UFPath("/")) => ResponseString("test") ~> Ok
     case r @ GET(UFPath("/addr")) => ResponseString(r.remoteAddr) ~> Ok
     case GET(UFPath("/addr_extractor") & RemoteAddr(addr)) => ResponseString(addr) ~> Ok
-  })).handler(channel.Planify({
+  })).handler(async.Planify({
     case GET(UFPath("/pass")) => Pass
     case req @ GET(UFPath("/planc")) =>
       req.underlying.respond(ResponseString("planc") ~> Ok)

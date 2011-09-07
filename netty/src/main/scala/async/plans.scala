@@ -1,4 +1,4 @@
-package unfiltered.netty.channel
+package unfiltered.netty.async
 
 import org.jboss.netty.handler.codec.http.{HttpRequest=>NHttpRequest,
                                            HttpResponse=>NHttpResponse}
