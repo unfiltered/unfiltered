@@ -42,6 +42,9 @@ object ResourcesSpec extends unfiltered.spec.netty.Served {
        headers must haveKey("Content-Type")
        headers must haveKey("Cache-Control")
      }
+     "respond sith Forbidden (403) for requests with questionable paths" in {
+        xhttp(host / ".." / ".." statuscode) must be_==(403)
+     }
      "respond with NotFound (404) for requests for non-existant files" in {
        xhttp(host / "foo.bar" statuscode) must be_==(404)
      }
