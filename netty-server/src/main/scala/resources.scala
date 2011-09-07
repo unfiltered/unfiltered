@@ -78,12 +78,9 @@ object Resources {
 
 /** Serves static resources.
  *  Adapted from Netty's example HttpStaticFileServerHandler
- *  The behavior for dirIndexes (listing files under a directory) is
- *  not yet implemented and may be removed
  */
 case class Resources(base: java.net.URL,
                      cacheSeconds: Int = 60,
-                     dirIndexes: Boolean = false,
                      passOnFail: Boolean = false)
   extends unfiltered.netty.channel.Plan with ExceptionHandling {
   import Resources._
@@ -159,7 +156,7 @@ case class Resources(base: java.net.URL,
                    future.addListener(ChannelFutureListener.CLOSE)
                 }
 
-              // TODO. what to do if connection is reset by peer after 
+              // TODO. what to do if connection is reset by peer after
               // writing the heads but before writing the body?
               if(GET.unapply(req) isDefined) {
                 if(req.isSecure)

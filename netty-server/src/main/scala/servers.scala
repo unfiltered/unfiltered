@@ -59,9 +59,8 @@ trait HttpServer extends Server with PlanServer[ChannelHandler] {
   }
   def resources(path: java.net.URL,
                 cacheSeconds: Int = 60,
-                dirIndexes: Boolean = false,
                 passOnFail: Boolean = true) = {
-    val resources = Resources(path, cacheSeconds, dirIndexes, passOnFail)
+    val resources = Resources(path, cacheSeconds, passOnFail)
     this.plan(resources).plan(new ChunkedWriteHandler)
   }
 }
