@@ -41,7 +41,7 @@ object Resources {
  */
 case class Resources(base: java.net.URL,
                      cacheSeconds: Int = 60,
-                     passOnFail: Boolean = false)
+                     passOnFail: Boolean = true)
   extends unfiltered.netty.channel.Plan with ServerErrorResponse {
   import Resources._
 
