@@ -156,9 +156,7 @@ case class Resources(base: java.net.URL,
                    future.addListener(ChannelFutureListener.CLOSE)
                 }
 
-              // TODO. what to do if connection is reset by peer after
-              // writing the heads but before writing the body?
-              if(GET.unapply(req) isDefined) {
+              if(GET.unapply(req).isDefined && chan.isOpen) {
                 if(req.isSecure)
                   chan.write(new ChunkedFile(raf, 0, len, 8192))
                 else {
