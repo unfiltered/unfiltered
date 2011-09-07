@@ -24,46 +24,6 @@ object Dates {
   def format(d: Date): String = format(d.getTime)
 }
 
-trait ExceptionHandling { self: SimpleChannelUpstreamHandler
-                                /*SimpleChannelHandler*/ =>
-  import org.jboss.netty.handler.codec.http.HttpVersion._
-  import org.jboss.netty.handler.codec.http.HttpResponseStatus._
-  import org.jboss.netty.handler.codec.http.{
-    HttpResponse => NHttpResponse, DefaultHttpResponse}
-  import org.jboss.netty.handler.codec.frame.TooLongFrameException
-  import java.nio.channels.ClosedChannelException
-  import unfiltered.response._
-
-  /** Binds a Netty HttpResponse res to Unfiltered's HttpResponse to
-   *  apply any response function to it. */
-  private def response[T <: NHttpResponse](res: T)(rf: ResponseFunction[T]) =
-    rf(new ResponseBinding(res)).underlying
-
-  /** @return a new Netty DefaultHttpResponse bound to an
-   *  Unfiltered HttpResponse */
-  private val defaultResponse =
-    response(new DefaultHttpResponse(HTTP_1_1, BAD_REQUEST))_
-
-  override def exceptionCaught(ctx: ChannelHandlerContext,
-                               msg: ExceptionEvent): Unit =
-    (msg.getCause, msg.getChannel) match {
-      case (e: ClosedChannelException, _) =>
-        error("Exception thrown while writing to a closed channel: %s"
-              .format(e.getMessage))
-      case (e: TooLongFrameException, ch) =>
-        if(ch.isConnected) {
-          ch.write(defaultResponse(BadRequest ~> PlainTextContent))
-            .addListener(ChannelFutureListener.CLOSE)
-        }
-      case (e, ch) =>
-        if(ch.isConnected) {
-          ch.write(defaultResponse(InternalServerError ~>
-                                   PlainTextContent))
-            .addListener(ChannelFutureListener.CLOSE)
-        }
-    }
-}
-
 /** Extracts HttpRequest if a retrieval method */
 object Retrieval {
   import unfiltered.request.{HttpRequest, GET, HEAD}
@@ -82,7 +42,7 @@ object Resources {
 case class Resources(base: java.net.URL,
                      cacheSeconds: Int = 60,
                      passOnFail: Boolean = false)
-  extends unfiltered.netty.channel.Plan with ExceptionHandling {
+  extends unfiltered.netty.channel.Plan with ServerErrorResponse {
   import Resources._
 
   import unfiltered.request._

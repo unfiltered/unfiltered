@@ -30,7 +30,7 @@ trait Started extends unfiltered.spec.Hosted {
    *  for tests since it is shutdown by each server instance.*/
   def planify(intentIn: Plan.Intent) =
     new Plan with DeferralExecutor with DeferredIntent
-             with InternalServerError {
+             with ServerErrorResponse {
       def underlying = executor
       val intent = intentIn
     }

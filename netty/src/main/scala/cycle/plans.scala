@@ -19,7 +19,7 @@ object Intent {
   def apply(intent: Plan.Intent) = intent
 }
 /** A Netty Plan for request cycle handling. */
-trait Plan extends SimpleChannelUpstreamHandler {
+trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
   def intent: Plan.Intent
   override def messageReceived(ctx: ChannelHandlerContext,
                                e: MessageEvent) {
@@ -48,15 +48,10 @@ trait Plan extends SimpleChannelUpstreamHandler {
   def executeIntent(thunk: => Unit)
   def executeResponse(thunk: => Unit)
   def shutdown()
-  override def exceptionCaught(ctx: ChannelHandlerContext,
-                               e: ExceptionEvent) {
-    onException(ctx, e.getCause)
-  }
-  def onException(ctx: ChannelHandlerContext, t: Throwable)
 }
 
 class Planify(val intent: Plan.Intent)
-extends Plan with ThreadPool with InternalServerError
+extends Plan with ThreadPool with ServerErrorResponse
 
 object Planify {
   def apply(intent: Plan.Intent) = new Planify(intent)
