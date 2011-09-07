@@ -64,7 +64,6 @@ case class Resources(base: java.net.URL,
 
   import java.nio.channels.ClosedChannelException
 
-  // todo: why doesn't type variance work here?
   // Returning Pass here will send the request upstream, otherwise
   // this method handles the request itself
   def passOr[T <: NHttpResponse](rf: => ResponseFunction[NHttpResponse])
