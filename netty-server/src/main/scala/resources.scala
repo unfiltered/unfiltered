@@ -41,7 +41,7 @@ object Resources {
  */
 case class Resources(base: java.net.URL,
                      cacheSeconds: Int = 60,
-                     passOnFail: Boolean = false)
+                     passOnFail: Boolean = true)
   extends unfiltered.netty.channel.Plan with ServerErrorResponse {
   import Resources._
 
@@ -64,7 +64,6 @@ case class Resources(base: java.net.URL,
 
   import java.nio.channels.ClosedChannelException
 
-  // todo: why doesn't type variance work here?
   // Returning Pass here will send the request upstream, otherwise
   // this method handles the request itself
   def passOr[T <: NHttpResponse](rf: => ResponseFunction[NHttpResponse])
