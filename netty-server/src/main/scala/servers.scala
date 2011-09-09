@@ -1,6 +1,6 @@
 package unfiltered.netty
 
-import unfiltered.util.RunnableServer
+import unfiltered.util.{RunnableServer,PlanServer}
 import java.util.concurrent.Executors
 import org.jboss.netty.bootstrap.ServerBootstrap
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
@@ -14,33 +14,20 @@ import java.util.concurrent.atomic.AtomicInteger
 
 /** Default implementation of the Server trait. If you want to use a
  * custom pipeline factory it's better to extend Server directly. */
-final case class Http(port: Int, host: String,
-                handlers: List[ChannelHandler],
+case class Http(port: Int, host: String,
+                handlers: List[() => ChannelHandler],
                 beforeStopBlock: () => Unit)
-extends Server
-with RunnableServer
-with unfiltered.util.Server[ChannelHandler] { self =>
+extends HttpServer { self =>
+  type ServerBuilder = Http
+
   def pipelineFactory: ChannelPipelineFactory =
     new ServerPipelineFactory(channels, handlers)
 
-  def stop() = {
-    beforeStopBlock()
-    handlers.foreach {
-      case handler: cycle.Plan => handler.shutdown()
-      case _ => ()
-    }
-    closeConnections()
-    destroy()
-  }
-  def plan(plan: ChannelHandler) = handler(plan)
-  def handler(h: ChannelHandler) =
-    Http(port, host, h :: handlers, beforeStopBlock)
+  def plan(plan: => ChannelHandler) = handler(plan)
+  def handler(h: => ChannelHandler) =
+    Http(port, host, { () => h } :: handlers, beforeStopBlock)
   def beforeStop(block: => Unit) =
     Http(port, host, handlers, { () => beforeStopBlock(); block })
-  def resources(path: java.net.URL, cacheSeconds: Int = 60, dirIndexes: Boolean = false, passOnFail: Boolean = true) =
-    Http(port, host, new ChunkedWriteHandler ::
-         Resources(path, cacheSeconds = cacheSeconds, dirIndexes = dirIndexes, passOnFail = passOnFail) ::
-         handlers, beforeStopBlock)
 }
 
 object Http {
@@ -55,6 +42,30 @@ object Http {
   def anylocal = local(unfiltered.util.Port.any)
 }
 
+/** An HTTP or HTTPS server */
+trait HttpServer extends Server with PlanServer[ChannelHandler] {
+  def beforeStopBlock: () => Unit
+  def handlers: List[() => ChannelHandler]
+  def stop() = {
+    beforeStopBlock()
+    closeConnections()
+    handlers.foreach { handler =>
+      handler() match {
+        case p: unfiltered.netty.cycle.Plan => p.shutdown()
+        case _ => ()
+      }
+    }
+    destroy()
+  }
+  def resources(path: java.net.URL,
+                cacheSeconds: Int = 60,
+                passOnFail: Boolean = true) = {
+    val resources = Resources(path, cacheSeconds, passOnFail)
+    this.plan(resources).plan(new ChunkedWriteHandler)
+  }
+}
+
+/** Base Netty server trait for http, websockets... */
 trait Server extends RunnableServer {
   val port: Int
   val host: String
@@ -66,7 +77,7 @@ trait Server extends RunnableServer {
   /** any channels added to this will receive broadcasted events */
   protected val channels = new DefaultChannelGroup("Netty Unfiltered Server Channel Group")
 
-  def start(): this.type = {
+  def start(): ServerBuilder = {
     bootstrap = new ServerBootstrap(
       new NioServerSocketChannelFactory(
         Executors.newCachedThreadPool(),
@@ -85,12 +96,12 @@ trait Server extends RunnableServer {
     this
   }
 
-  def closeConnections(): this.type = {
+  def closeConnections() = {
     // Close any pending connections / channels (including server)
     channels.close.awaitUninterruptibly
     this
   }
-  def destroy(): this.type = {
+  def destroy() = {
     // Release NIO resources to the OS
     bootstrap.releaseExternalResources
     this
@@ -98,8 +109,8 @@ trait Server extends RunnableServer {
 }
 
 class ServerPipelineFactory(val channels: ChannelGroup,
-                            val handlers: List[ChannelHandler])
-    extends ChannelPipelineFactory with DefaultPipelineFactory {
+                            val handlers: List[() => ChannelHandler])
+extends ChannelPipelineFactory with DefaultPipelineFactory {
   def getPipeline(): ChannelPipeline = complete(Channels.pipeline)
 }
 
@@ -107,14 +118,13 @@ class ServerPipelineFactory(val channels: ChannelGroup,
  *   maxChunkSize 8192 */
 trait DefaultPipelineFactory {
   def channels: ChannelGroup
-  def handlers: List[ChannelHandler]
+  def handlers: List[() => ChannelHandler]
   protected def complete(line: ChannelPipeline) = {
-    val counter = new AtomicInteger
     line.addLast("housekeeping", new HouseKeepingChannelHandler(channels))
     line.addLast("decoder", new HttpRequestDecoder)
     line.addLast("encoder", new HttpResponseEncoder)
-    handlers.reverse.foreach {
-      line.addLast("handler-%s" format counter.incrementAndGet, _)
+    handlers.reverse.zipWithIndex.foreach { case (handler, idx) =>
+      line.addLast("handler-%s" format idx, handler())
     }
     line.addLast("notfound", new NotFoundHandler)
     line

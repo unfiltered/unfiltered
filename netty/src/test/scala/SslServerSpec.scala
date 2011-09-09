@@ -8,7 +8,10 @@ import unfiltered.request.{Path => UFPath}
 import unfiltered.netty.cycle.{Plan,SynchronousExecution}
 import org.jboss.netty.channel.{ChannelHandlerContext, ExceptionEvent}
 
-object SslServerSpec extends Specification with spec.netty.Served with spec.SecureClient {
+object SslServerSpec
+extends Specification 
+with spec.netty.Started
+with spec.SecureClient {
 
   import unfiltered.netty.Https
   import org.apache.http.client.ClientProtocolException
@@ -29,9 +32,10 @@ object SslServerSpec extends Specification with spec.netty.Served with spec.Secu
     System.clearProperty("netty.ssl.keyStorePassword")
   }
 
-  def setup = { port =>
+  lazy val server = {
     try {
-      val securePlan = new Plan with Secured with SynchronousExecution {
+      val securePlan = new Plan with Secured with SynchronousExecution
+                                with ServerErrorResponse {
 
         def intent = { case GET(UFPath("/")) => ResponseString("secret") ~> Ok }
 

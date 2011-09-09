@@ -3,14 +3,13 @@ package unfiltered.request
 import test.AgentStrings
 import org.specs._
 
-object AgentSpecJetty extends unfiltered.spec.jetty.Served with AgentSpec {
-  def setup = { _.filter(unfiltered.filter.Planify(intent)) }
-}
-object AgentSpecNetty extends unfiltered.spec.netty.Served with AgentSpec {
-  def setup = { p =>
-    unfiltered.netty.Http(p).handler(unfiltered.netty.cycle.Planify(intent))
-  }
-}
+object AgentSpecJetty
+extends unfiltered.spec.jetty.Planned
+with AgentSpec
+
+object AgentSpecNetty
+extends unfiltered.spec.netty.Planned
+with AgentSpec
 
 trait AgentSpec extends unfiltered.spec.Hosted {
   import unfiltered.response._

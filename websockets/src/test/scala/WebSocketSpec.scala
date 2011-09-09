@@ -13,8 +13,8 @@ object WebSocketsSpec extends Specification
 
   import dispatch._
 
-  def setup = NHttp(_)
-    .handler(netty.cycle.Planify {
+  def setup =
+    _.handler(planify {
       case UFPath("/a") => ResponseString("http response a")
     })
     .handler(netty.websockets.Planify({

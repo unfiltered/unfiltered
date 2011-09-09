@@ -4,7 +4,7 @@ import unfiltered.request._
 import unfiltered.response._
 import unfiltered.Cycle
 
-object GZip extends Kit {
+object GZip extends Prepend {
   /** Inserts ResponseFilter.GZip and GZip header into the output
    *  stream if this encoding seems to be supported by the client.
    */

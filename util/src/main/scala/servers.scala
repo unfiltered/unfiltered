@@ -1,22 +1,28 @@
 package unfiltered.util
 
 /** Unfiltered's base server trait, something plans can be added to */
-trait Server[T] {
-  def plan(plan: T): Server[T]
+trait Server { self =>
+  // ServerBuilder is concretely defined in the final case clases,
+  // and we can always return `this` for ServerBuilder
+  type ServerBuilder >: self.type <: Server
 }
-trait StartableServer {
-  def start(): this.type
-  def stop(): this.type
-  def destroy(): this.type
+trait PlanServer[T] extends Server { self =>
+  type ServerBuilder >: self.type <: PlanServer[T]
+  def plan(plan: => T): ServerBuilder
+}
+trait StartableServer extends Server {
+  def start(): ServerBuilder
+  def stop(): ServerBuilder
+  def destroy(): ServerBuilder
   val port:  Int
 }
-trait RunnableServer extends StartableServer {
+trait RunnableServer extends StartableServer { self =>
   /** Calls run with no afterStart or afterStop functions */
   def run() {
     run { _ => () }
   }
   /** Starts the server then takes an action */
-  def run(afterStart: this.type => Unit) {
+  def run(afterStart: ServerBuilder => Unit) {
     run(afterStart, { _ => () })
   }
   /** Starts the server, calls afterStart. then waits. The waiting behavior
@@ -26,7 +32,7 @@ trait RunnableServer extends StartableServer {
    * current thread is "main", it waits indefinitely and performs stop()
    * and afterStop(...) in a shutdown hook.
    */
-  def run(afterStart: this.type => Unit, afterStop: this.type => Unit) {
+  def run(afterStart: ServerBuilder => Unit, afterStop: ServerBuilder => Unit) {
     Thread.currentThread.getName match {
       case "main" =>
         Runtime.getRuntime.addShutdownHook(new Thread {

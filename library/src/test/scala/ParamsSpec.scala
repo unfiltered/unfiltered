@@ -3,14 +3,14 @@ package unfiltered.request
 
 import org.specs._
 
-object ParamsSpecJetty extends unfiltered.spec.jetty.Served with ParamsSpec {
-  def setup = { _.filter(unfiltered.filter.Planify(intent)) }
-}
-object ParamsSpecNetty extends unfiltered.spec.netty.Served with ParamsSpec {
-  def setup = { p =>
-    unfiltered.netty.Http(p).handler(unfiltered.netty.cycle.Planify(intent))
-  }
-}
+object ParamsSpecJetty
+extends unfiltered.spec.jetty.Planned
+with ParamsSpec
+
+object ParamsSpecNetty
+extends unfiltered.spec.netty.Planned
+with ParamsSpec
+
 trait ParamsSpec extends unfiltered.spec.Hosted {
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}

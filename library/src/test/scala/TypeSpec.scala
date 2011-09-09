@@ -3,15 +3,9 @@ package unfiltered.request
 import org.specs._
 import unfiltered.spec
 
-object TypeSpecJetty extends spec.jetty.Served with TypeSpec {
-  def setup = { _.filter(unfiltered.filter.Planify(intent)) }
-}
-object TypeSpecNetty extends spec.netty.Served with TypeSpec {
-  def setup = { p =>
-    unfiltered.netty.Http(p).handler(
-      unfiltered.netty.cycle.Planify(intent))
-  }
-}
+object TypeSpecJetty extends spec.jetty.Planned with TypeSpec
+object TypeSpecNetty extends spec.netty.Planned with TypeSpec
+
 trait TypeSpec extends spec.Hosted {
   import unfiltered.response._
   import unfiltered.request._

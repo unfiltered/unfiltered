@@ -2,14 +2,14 @@ package unfiltered.request
 
 import org.specs._
 
-object DecodesSpecJetty extends unfiltered.spec.jetty.Served with DecodesSpec {
-  def setup = { _.filter(unfiltered.filter.Planify(intent)) }
-}
-object DecodesSpecNetty extends unfiltered.spec.netty.Served with DecodesSpec {
-  def setup = { p =>
-    unfiltered.netty.Http(p).handler(unfiltered.netty.cycle.Planify(intent))
-  }
-}
+object DecodesSpecJetty
+extends unfiltered.spec.jetty.Planned
+with DecodesSpec
+
+object DecodesSpecNetty
+extends unfiltered.spec.netty.Planned
+with DecodesSpec
+
 trait DecodesSpec extends unfiltered.spec.Hosted {
   import unfiltered.response._
   import unfiltered.request._

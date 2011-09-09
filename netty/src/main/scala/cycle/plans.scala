@@ -19,31 +19,39 @@ object Intent {
   def apply(intent: Plan.Intent) = intent
 }
 /** A Netty Plan for request cycle handling. */
-trait Plan extends SimpleChannelUpstreamHandler {
+trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
   def intent: Plan.Intent
-  override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
+  override def messageReceived(ctx: ChannelHandlerContext,
+                               e: MessageEvent) {
     val request = e.getMessage() match {
       case req:NHttpRequest => req
-      case msg => error("Unexpected message type from upstream: %s" format msg)
+      case msg => error("Unexpected message type from upstream: %s"
+                        .format(msg))
     }
     val requestBinding =
       new RequestBinding(ReceivedMessage(request, ctx, e))
-    executeIntent {
+    def catching(thunk: => Unit) {
+      try { thunk } catch {
+        case e => onException(ctx, e)
+      }
+    }
+    executeIntent { catching {
       intent.lift(requestBinding).getOrElse(Pass) match {
         case Pass => ctx.sendUpstream(e)
         case responseFunction =>
-          executeResponse {
+          executeResponse { catching {
             requestBinding.underlying.respond(responseFunction)
-          }
+          } } 
       }
-    }
+    } }
   }
   def executeIntent(thunk: => Unit)
   def executeResponse(thunk: => Unit)
   def shutdown()
 }
 
-class Planify(val intent: Plan.Intent) extends Plan with ThreadPool
+class Planify(val intent: Plan.Intent)
+extends Plan with ThreadPool with ServerErrorResponse
 
 object Planify {
   def apply(intent: Plan.Intent) = new Planify(intent)

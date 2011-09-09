@@ -16,7 +16,7 @@ object WebSocketServer {
 
 @deprecated("Use unfiltered.netty.Http, it supports websocket plans")
 class WebSocketServer(val host: String, val port: Int, intent: Plan.Intent)
-    extends NServer with unfiltered.util.RunnableServer {
+    extends NServer {
   import org.jboss.{netty => jnetty}
   import jnetty.channel.{ChannelPipeline, ChannelPipelineFactory, ChannelStateEvent}
   import jnetty.handler.codec.http.{HttpChunkAggregator, HttpRequestDecoder, HttpResponseEncoder}

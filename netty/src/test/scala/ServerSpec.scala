@@ -8,16 +8,16 @@ object ServerSpec extends unfiltered.spec.netty.Served {
 
   import dispatch._
 
-  def setup = NHttp(_).handler(cycle.Planify({
+  def setup = _.handler(planify({
     case GET(UFPath("/pass")) => Pass
     case GET(UFPath("/")) => ResponseString("test") ~> Ok
     case r @ GET(UFPath("/addr")) => ResponseString(r.remoteAddr) ~> Ok
     case GET(UFPath("/addr_extractor") & RemoteAddr(addr)) => ResponseString(addr) ~> Ok
-  })).handler(channel.Planify({
+  })).handler(async.Planify({
     case GET(UFPath("/pass")) => Pass
     case req @ GET(UFPath("/planc")) =>
       req.underlying.respond(ResponseString("planc") ~> Ok)
-  })).handler(cycle.Planify({
+  })).handler(planify({
     case GET(UFPath("/planb")) => ResponseString("planb") ~> Ok
     case GET(UFPath("/pass")) => ResponseString("pass") ~> Ok
   }))

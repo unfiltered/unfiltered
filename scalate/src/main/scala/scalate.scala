@@ -21,13 +21,20 @@ object Scalate {
     additionalAttributes: Seq[(String, Any)] = Nil
   ) = new ResponseWriter {
     def write(writer: Writer) {
-      val scalateTemplate = engine.load(template, bindings)
       val printWriter = new PrintWriter(writer)
-      val context = contextBuilder(Path(request), printWriter, engine)
-      (attributes ++ additionalAttributes) foreach {
-        case (k,v) => context.attributes(k) = v
+      try {
+        val scalateTemplate = engine.load(template, bindings)
+        val context = contextBuilder(Path(request), printWriter, engine)
+        (additionalAttributes ++ attributes) foreach {
+          case (k,v) => context.attributes(k) = v
+        }
+        engine.layout(scalateTemplate, context)
+      } catch {
+        case e if engine.isDevelopmentMode =>
+          printWriter.println("Exception: " + e.getMessage)
+          e.getStackTrace.foreach(printWriter.println)
+        case e => throw e
       }
-      engine.layout(scalateTemplate, context)
     }
   }
 

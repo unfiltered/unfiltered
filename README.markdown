@@ -48,7 +48,7 @@ A minimal server websocket interface build on netty
 
 ## Community
 
-Join the [Unfiltered mailing list on Nabble](http://databinder.3617998.n2.nabble.com/Unfiltered-f5560764.html).
+Join the [Unfiltered mailing list on Google Groups](http://groups.google.com/group/unfiltered-scala/topics) or view the previous list on [Nabble](http://databinder.3617998.n2.nabble.com/Unfiltered-f5560764.html).
 
 ## Example Apps
 

@@ -4,7 +4,8 @@ import unfiltered.request._
 import unfiltered.response._
 import unfiltered.{Cycle,Async}
 
-trait Kit { self =>
+/** A kit that conditionally prepends a response function */
+trait Prepend { self =>
   def intent: Cycle.Intent[Any,Any]
   /** The produced intent is defined for all inputs, is Pass
    *  where the given intent parameter is not defined. */

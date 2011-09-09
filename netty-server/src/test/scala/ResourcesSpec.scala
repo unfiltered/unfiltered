@@ -20,7 +20,7 @@ object ResourcesSpec extends unfiltered.spec.netty.Served {
      }, scala.util.control.Exception.nothingCatcher)
    }
 
-   def setup = NHttp(_).resources(getClass().getResource("/files/"), passOnFail = false)
+   def setup = _.resources(getClass().getResource("/files/"), passOnFail = false)
    "A resource server" should {
      "respond with a valid file" in {
        http(host / "foo.css" as_str) must_==("* { margin:0; }")
@@ -42,6 +42,9 @@ object ResourcesSpec extends unfiltered.spec.netty.Served {
        headers must haveKey("Content-Type")
        headers must haveKey("Cache-Control")
      }
+     "respond sith Forbidden (403) for requests with questionable paths" in {
+        xhttp(host / ".." / ".." statuscode) must be_==(403)
+     }
      "respond with NotFound (404) for requests for non-existant files" in {
        xhttp(host / "foo.bar" statuscode) must be_==(404)
      }
@@ -51,13 +54,12 @@ object ResourcesSpec extends unfiltered.spec.netty.Served {
      "respond with BadRequest (400) with a non GET request" in  {
        xhttp(host.POST / "foo.css" statuscode) must be_==(400)
      }
-     "respond with a NotModified (304) with a If-Modified-Since before expiration" in {
+     "respond with a NotModified (304) with a If-Modified-Since matches resources lastModified time" in {
        import java.util.{Calendar, Date, GregorianCalendar}
        import java.io.File
        val rsrc = new File(getClass().getResource("/files/foo.css").getFile)
        val cal = new GregorianCalendar()
        cal.setTime(new Date(rsrc.lastModified))
-       cal.add(Calendar.MINUTE, -5)
        val ifmodsince = Map(
          "If-Modified-Since" -> Dates.format(cal.getTime))
        xhttp(host / "foo.css" <:< ifmodsince statuscode) must be_==(304)

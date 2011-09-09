@@ -22,29 +22,19 @@ object Https {
 
 /** Http + Ssl implementation of the Server trait. */
 case class Https(port: Int, host: String,
-                handlers: List[ChannelHandler],
-                beforeStopBlock: () => Unit)
-extends Server
-with unfiltered.util.Server[ChannelHandler] 
-with RunnableServer
-with Ssl {
+                 handlers: List[() => ChannelHandler],
+                 beforeStopBlock: () => Unit)
+extends HttpServer
+with Ssl { self =>
   def pipelineFactory: ChannelPipelineFactory =
     new SecureServerPipelineFactory(channels, handlers, this)
 
-  def stop() = {
-    beforeStopBlock()
-    closeConnections()
-    destroy()
-  }
-  def plan(plan: ChannelHandler) = handler(plan)
-  def handler(h: ChannelHandler) =
-    Https(port, host, h :: handlers, beforeStopBlock)
+  type ServerBuilder = Https
+  def handler(h: => ChannelHandler) =
+    Https(port, host, { () => h } :: handlers, beforeStopBlock)
+  def plan(plan: => ChannelHandler) = handler(plan)
   def beforeStop(block: => Unit) =
     Https(port, host, handlers, { () => beforeStopBlock(); block })
-  def resources(path: java.net.URL, cacheSeconds: Int = 60, dirIndexes: Boolean = false, passOnFail: Boolean = true) =
-    Https(port, host, new ChunkedWriteHandler ::
-         Resources(path, cacheSeconds = cacheSeconds, dirIndexes = dirIndexes, passOnFail = passOnFail) ::
-         handlers, beforeStopBlock)
 }
 
 /** Provides security dependencies */
@@ -123,7 +113,7 @@ trait Trusted { self: Ssl =>
 
 /** ChannelPipelineFactory for secure Http connections */
 class SecureServerPipelineFactory(val channels: ChannelGroup,
-                                  val handlers: List[ChannelHandler],
+                                  val handlers: List[() =>ChannelHandler],
                                   val security: Security)
     extends ChannelPipelineFactory with DefaultPipelineFactory {
   import org.jboss.netty.handler.ssl.SslHandler
