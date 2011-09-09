@@ -15,6 +15,18 @@ object Plan {
   type Pass = (ChannelHandlerContext, MessageEvent) => Unit
 }
 
+object Signing {
+  import java.security.MessageDigest
+  import org.apache.commons.codec.binary.Base64.encodeBase64
+  val GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+  val Sha1 = "SHA1"
+  def sign(secWsKey: String): Array[Byte] =
+    encodeBase64(MessageDigest.getInstance(Sha1).digest((secWsKey.trim + GUID).getBytes))
+}
+
+private [websockets] object SecWebSocketKey extends StringHeader("Sec-WebSocket-Key")
+private [websockets] object SecWebSocketAccept extends HeaderName("Sec-WebSocket-Accept")
+
 private [websockets] object ProtocolRequestHeader extends StringHeader(HttpHeaders.Names.SEC_WEBSOCKET_PROTOCOL)
 private [websockets] object SecKeyOne extends StringHeader(HttpHeaders.Names.SEC_WEBSOCKET_KEY1)
 private [websockets] object SecKeyTwo extends StringHeader(HttpHeaders.Names.SEC_WEBSOCKET_KEY2)
@@ -28,7 +40,7 @@ private [websockets] object ConnectionUpgrade {
 
 private [websockets] object UpgradeWebsockets {
   def unapply[T](req: HttpRequest[T]) =
-    Upgrade(req).filter {
+    Upgrade(req).filter { h =>
       _.equalsIgnoreCase(HttpHeaders.Values.WEBSOCKET)
     }.headOption.map { _ => req }
 }
@@ -66,8 +78,9 @@ trait Plan extends SimpleChannelUpstreamHandler {
       case _ => pass(ctx, event)
     }
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, event: ExceptionEvent) =
+  override def exceptionCaught(ctx: ChannelHandlerContext, event: ExceptionEvent) = {
     event.getChannel.close
+  }
 
   private def upgrade(ctx: ChannelHandlerContext, request: NHttpRequest, event: MessageEvent) = {
     val msg = ReceivedMessage(request, ctx, event)
@@ -78,6 +91,7 @@ trait Plan extends SimpleChannelUpstreamHandler {
           val socketIntent = intent(binding)
           val response = msg.response(new DefaultHttpResponse(HttpVersion.HTTP_1_1,
                                                               new HttpResponseStatus(101, "Web Socket Protocol Handshake")))_
+
           def attempt = socketIntent.orElse({ case _ => () }: Plan.SocketIntent)
 
           val Protocol = new Responder[NHttpResponse] {
@@ -90,6 +104,14 @@ trait Plan extends SimpleChannelUpstreamHandler {
             }
           }
 
+/*         val HandShake10 = new Responder[NHttpResponse] {
+           def respond(res: HttpResponse[NHttpResponse]) {
+             res.underlying.setContent(ChannelBuffers.wrappedBuffer(
+               Signing.sign(SecWebSocketKey.unapply(binding).get)
+             ))
+           }
+         }
+*/
           val HandShake = new Responder[NHttpResponse] {
             def respond(res: HttpResponse[NHttpResponse]) {
               (SecKeyOne(binding), SecKeyTwo(binding)) match {
@@ -110,14 +132,16 @@ trait Plan extends SimpleChannelUpstreamHandler {
             pipe.remove("aggregator")
           }
           pipe.replace("decoder", "wsdecoder", new WebSocketFrameDecoder)
-
           ctx.getChannel.write(
             response(
               new HeaderName(UPGRADE)(Values.WEBSOCKET) ~>
               new HeaderName(CONNECTION)(Values.UPGRADE) ~>
-              new HeaderName(SEC_WEBSOCKET_ORIGIN)(OriginRequestHeader(binding).get) ~>
+              new HeaderName(SEC_WEBSOCKET_ORIGIN)(OriginRequestHeader(binding).getOrElse("*")) ~>
               new HeaderName(SEC_WEBSOCKET_LOCATION)(WSLocation(binding)) ~>
-              Protocol ~> HandShake)
+              Protocol ~> /*HandShake prev vers */
+                SecWebSocketAccept(new String(Signing.sign(SecWebSocketKey.unapply(binding).get))) ~>
+                new HeaderName("Sec-WebSocket-Version")(""+8)
+            )
           )
           ctx.getChannel.getCloseFuture.addListener(new ChannelFutureListener {
             def operationComplete(future: ChannelFuture) =
@@ -183,11 +207,13 @@ case class SocketPlan(intent: Plan.SocketIntent,
 
        override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) =
          event.getMessage match {
-           case frame: WebSocketFrame => attempt(Message(WebSocket(ctx.getChannel), frame))
+           case frame: WebSocketFrame =>
+           attempt(Message(WebSocket(ctx.getChannel), frame))
            case _ =>  pass(ctx, event)
          }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, event: ExceptionEvent) = {
+    event.getCause.printStackTrace
     attempt(Error(WebSocket(ctx.getChannel), event.getCause))
     event.getChannel.close
   }
