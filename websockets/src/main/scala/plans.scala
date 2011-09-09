@@ -15,33 +15,89 @@ object Plan {
   type Pass = (ChannelHandlerContext, MessageEvent) => Unit
 }
 
-object Signing {
-  import java.security.MessageDigest
-  import org.apache.commons.codec.binary.Base64.encodeBase64
-  val GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-  val Sha1 = "SHA1"
-  def sign(secWsKey: String): Array[Byte] =
-    encodeBase64(MessageDigest.getInstance(Sha1).digest((secWsKey.trim + GUID).getBytes))
+/** a light wrapper around both Sec-WebSocket-Draft + Sec-WebSocket-Version headers */
+object Version {
+  def apply[T](req: HttpRequest[T]) = EarlyDrafts.SecWebSocketDraft.unapply(req).orElse(
+    Draft14.SecWebSocketVersion.unapply(req)
+  )
 }
 
-private [websockets] object SecWebSocketKey extends StringHeader("Sec-WebSocket-Key")
-private [websockets] object SecWebSocketAccept extends HeaderName("Sec-WebSocket-Accept")
+/** See also http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-14 */
+object Draft14 {
 
-private [websockets] object ProtocolRequestHeader extends StringHeader(HttpHeaders.Names.SEC_WEBSOCKET_PROTOCOL)
-private [websockets] object SecKeyOne extends StringHeader(HttpHeaders.Names.SEC_WEBSOCKET_KEY1)
-private [websockets] object SecKeyTwo extends StringHeader(HttpHeaders.Names.SEC_WEBSOCKET_KEY2)
-private [websockets] object OriginRequestHeader extends StringHeader(HttpHeaders.Names.ORIGIN)
+  /** Server handshake as described in
+   *  http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-14#section-4.2.2
+   *  @draft 14 */
+  object Handshake {
+    import java.security.MessageDigest
+    import org.apache.commons.codec.binary.Base64.encodeBase64
+    val GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+    val Sha1 = "SHA1"
+    def sign(key: String): Array[Byte] =
+      encodeBase64(MessageDigest.getInstance(Sha1).digest((key.trim + GUID).getBytes))
+    def apply(key: String) = WebSocketAccept(new String(sign(key)))
+  }
+
+  // request headers
+  object SecWebSocketKey extends StringHeader("Sec-WebSocket-Key")
+  object SecWebSocketVersion extends StringHeader("Sec-WebSocket-Version")
+
+  // response headers
+  object WebSocketAccept extends HeaderName("Sec-WebSocket-Accept")
+  object SecWebSocketVersionName extends HeaderName("Sec-WebSocket-Version")
+}
+
+object EarlyDrafts {
+  import java.security.MessageDigest
+  import jnetty.buffer.ChannelBuffers
+  import jnetty.handler.codec.http.{HttpResponse => NHttpResponse, HttpRequest => NHttpRequest}
+
+  /** Sec-WebSocket-Key(1/2) as described in drafts 00-03
+   *  http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-03#section-1.3 */
+  object SecKeyOne extends StringHeader("Sec-WebSocket-Key1")
+
+  object SecKeyTwo extends StringHeader("Sec-WebSocket-Key2")
+
+  /** Prior to draft 04, the websocket spec provided an optional draft header
+   *  http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-03#section-10.8 */
+  object SecWebSocketDraft extends StringHeader("Sec-WebSocket-Draft")
+
+  case class Handshake(binding: RequestBinding) extends Responder[NHttpResponse] {
+    def respond(res: HttpResponse[NHttpResponse]) {
+      (EarlyDrafts.SecKeyOne(binding), EarlyDrafts.SecKeyTwo(binding)) match {
+        case (Some(k1), Some(k2)) =>
+          val buff = ChannelBuffers.buffer(16)
+          (k1 :: k2 :: Nil).foreach( k =>
+            buff.writeInt((k.replaceAll("[^0-9]", "").toLong /
+                           k.replaceAll("[^ ]", "").length).toInt)
+           )
+          buff.writeLong(binding.underlying.request.getContent().readLong)
+          res.underlying.setContent(ChannelBuffers.wrappedBuffer(
+            MessageDigest.getInstance("MD5").digest(buff.array)
+          ))
+        case _ => ()
+      }
+    }
+  }
+}
+
+private [websockets] object ProtocolRequestHeader
+       extends StringHeader(HttpHeaders.Names.SEC_WEBSOCKET_PROTOCOL)
+
+private [websockets] object OriginRequestHeader
+       extends StringHeader(HttpHeaders.Names.ORIGIN)
+
 private [websockets] object ConnectionUpgrade {
   def unapply[T](req: HttpRequest[T]) =
-    unfiltered.request.Connection(req).filter {
-      _.equalsIgnoreCase(HttpHeaders.Values.UPGRADE)
+    unfiltered.request.Connection(req).filter { c =>
+      !c.split(",").map(_.trim).filter(_.equalsIgnoreCase(HttpHeaders.Values.UPGRADE)).isEmpty
     }
 }
 
 private [websockets] object UpgradeWebsockets {
   def unapply[T](req: HttpRequest[T]) =
-    Upgrade(req).filter { h =>
-      _.equalsIgnoreCase(HttpHeaders.Values.WEBSOCKET)
+    Upgrade(req).filter { u =>
+      u.equalsIgnoreCase(HttpHeaders.Values.WEBSOCKET)
     }.headOption.map { _ => req }
 }
 
@@ -62,11 +118,14 @@ trait Plan extends SimpleChannelUpstreamHandler {
                                    HttpResponse => NHttpResponse}
 
   import HttpHeaders._
-  import HttpHeaders.Names.{CONNECTION, ORIGIN, HOST, UPGRADE, SEC_WEBSOCKET_LOCATION,
-                            SEC_WEBSOCKET_ORIGIN, SEC_WEBSOCKET_PROTOCOL}
+  import HttpHeaders.Names.{CONNECTION, ORIGIN, HOST, UPGRADE}
   import HttpHeaders.Values._
 
   import jnetty.util.CharsetUtil
+
+  val SecWebSocketLocation = "Sec-WebSocket-Location"
+  val SecWebSocketOrigin = "Sec-WebSocket-Origin"
+  val SecWebSocketProtocol = "Sec-WebSocket-Protocol"
 
   def intent: Plan.Intent
 
@@ -85,12 +144,17 @@ trait Plan extends SimpleChannelUpstreamHandler {
   private def upgrade(ctx: ChannelHandlerContext, request: NHttpRequest, event: MessageEvent) = {
     val msg = ReceivedMessage(request, ctx, event)
     val binding = new RequestBinding(msg)
+    val version = Version(binding)
     binding match {
       case GET(ConnectionUpgrade(_) & UpgradeWebsockets(_)) =>
         if(intent.isDefinedAt(binding)) {
           val socketIntent = intent(binding)
-          val response = msg.response(new DefaultHttpResponse(HttpVersion.HTTP_1_1,
-                                                              new HttpResponseStatus(101, "Web Socket Protocol Handshake")))_
+          val response = msg.response(
+            new DefaultHttpResponse(
+              HttpVersion.HTTP_1_1,
+              new HttpResponseStatus(101, "Web Socket Protocol Handshake")
+            )
+          )_
 
           def attempt = socketIntent.orElse({ case _ => () }: Plan.SocketIntent)
 
@@ -98,30 +162,7 @@ trait Plan extends SimpleChannelUpstreamHandler {
             def respond(res: HttpResponse[NHttpResponse]) {
               ProtocolRequestHeader(binding) match {
                 case Some(protocol) =>
-                  res.header(SEC_WEBSOCKET_PROTOCOL, protocol)
-                case _ => ()
-              }
-            }
-          }
-
-/*         val HandShake10 = new Responder[NHttpResponse] {
-           def respond(res: HttpResponse[NHttpResponse]) {
-             res.underlying.setContent(ChannelBuffers.wrappedBuffer(
-               Signing.sign(SecWebSocketKey.unapply(binding).get)
-             ))
-           }
-         }
-*/
-          val HandShake = new Responder[NHttpResponse] {
-            def respond(res: HttpResponse[NHttpResponse]) {
-              (SecKeyOne(binding), SecKeyTwo(binding)) match {
-                case (Some(k1), Some(k2)) =>
-                  val buff = ChannelBuffers.buffer(16)
-                  (k1 :: k2 :: Nil).foreach( k =>
-                    buff.writeInt((k.replaceAll("[^0-9]", "").toLong / k.replaceAll("[^ ]", "").length).toInt)
-                  )
-                  buff.writeLong(request.getContent().readLong)
-                  res.underlying.setContent(ChannelBuffers.wrappedBuffer(MessageDigest.getInstance("MD5").digest(buff.array)))
+                  res.header(SecWebSocketProtocol, protocol)
                 case _ => ()
               }
             }
@@ -131,28 +172,36 @@ trait Plan extends SimpleChannelUpstreamHandler {
           if(pipe.get("aggregator") != null) {
             pipe.remove("aggregator")
           }
-          pipe.replace("decoder", "wsdecoder", new WebSocketFrameDecoder)
+
+          pipe.replace("decoder", "wsdecoder", new WebSocketFrameDecoder(WebSocketFrameDecoder.DEFAULT_MAX_FRAME_SIZE*2))
+
           ctx.getChannel.write(
             response(
               new HeaderName(UPGRADE)(Values.WEBSOCKET) ~>
               new HeaderName(CONNECTION)(Values.UPGRADE) ~>
-              new HeaderName(SEC_WEBSOCKET_ORIGIN)(OriginRequestHeader(binding).getOrElse("*")) ~>
-              new HeaderName(SEC_WEBSOCKET_LOCATION)(WSLocation(binding)) ~>
-              Protocol ~> /*HandShake prev vers */
-                SecWebSocketAccept(new String(Signing.sign(SecWebSocketKey.unapply(binding).get))) ~>
-                new HeaderName("Sec-WebSocket-Version")(""+8)
+              new HeaderName(SecWebSocketOrigin)(OriginRequestHeader(binding).getOrElse("*")) ~>
+              new HeaderName(SecWebSocketLocation)(WSLocation(binding)) ~>
+              Protocol ~> (version match {
+                case None => EarlyDrafts.Handshake(binding)
+                case Some(earlier) if(earlier.toInt < 4) =>
+                  EarlyDrafts.Handshake(binding)
+                case Some(recent) =>
+                  Draft14.Handshake(Draft14.SecWebSocketKey.unapply(binding).get) ~>
+                  Draft14.SecWebSocketVersionName(version.getOrElse("0"))
+              })
             )
           )
           ctx.getChannel.getCloseFuture.addListener(new ChannelFutureListener {
-            def operationComplete(future: ChannelFuture) =
+            def operationComplete(future: ChannelFuture) = {
               attempt(Close(WebSocket(ctx.getChannel)))
+            }
           })
           pipe.replace("encoder", "wsencoder", new WebSocketFrameEncoder)
           attempt(Open(WebSocket(ctx.getChannel)))
           pipe.replace(this, ctx.getName, SocketPlan(socketIntent, pass))
 
-        } else pass(ctx, event)
-      case _ =>  pass(ctx, event)
+        } else { pass(ctx, event) }
+      case _ => pass(ctx, event)
     }
   }
 
@@ -213,7 +262,6 @@ case class SocketPlan(intent: Plan.SocketIntent,
          }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, event: ExceptionEvent) = {
-    event.getCause.printStackTrace
     attempt(Error(WebSocket(ctx.getChannel), event.getCause))
     event.getChannel.close
   }
