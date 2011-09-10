@@ -138,7 +138,7 @@ object Unfiltered extends Build {
               unmanagedClasspath in (local("netty"), Test) <++=
                 (fullClasspath in (local("spec"), Compile)).identity,
               libraryDependencies <++= scalaVersion(v =>
-                ("org.jboss.netty" % "netty" % "3.2.4.Final" withSources()) +:
+                ("org.jboss.netty" % "netty" % "3.2.5.Final" withSources()) +:
                 integrationTestDeps(v)
               )
             )) dependsOn(library)
