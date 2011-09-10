@@ -185,7 +185,7 @@ case class SocketPlan(intent: Plan.SocketIntent,
   override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) =
     event.getMessage match {
       case f: WebSocketFrame => f.getType match {
-        case 0xFF => attempt(Close(WebSocket(ctx.getChannel)))
+        case 0xFF => ctx.getChannel.close
         case _ => attempt(Message(WebSocket(ctx.getChannel), f))
       }
       case _ => pass(ctx, event)
