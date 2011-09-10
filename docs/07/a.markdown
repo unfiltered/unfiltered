@@ -25,7 +25,8 @@ works with any of them.
 
 ### Specific Plans
 
-The next step is to supply the generic intent to different plans.
+The next step is to supply the same generic intent to different kinds
+of plans.
 
 ```scala
 object HelloFilter extends
@@ -36,17 +37,8 @@ object HelloHandler extends
 ```
 
 As usual the plans are actual servlet filters or Netty handlers, so
-you could use them with a server you have configured separately. Or,
-you can configure and start your server in a console with Unfiltered.
+you could use them with a server you have configured separately or
+with a [server configured by Unfiltered][servers].
 
-### Servers
+[servers]: Bindings+and+Servers.html
 
-You could run these in a `main()` method, or on the Scala console.
-
-```scala
-// runs until you press any key
-unfiltered.jetty.Http.anylocal.plan(HelloFilter).run()
-
-// runs until you press any key
-unfiltered.netty.Http.anylocal.plan(HelloHandler).run()
-```
