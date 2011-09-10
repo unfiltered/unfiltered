@@ -20,12 +20,12 @@ The Java Servlet API enables you to write applications that run on
 servlet containers, anything from Tomcat to Google App Engine. Its
 plan trait is a servlet filter.
 
-#### Netty Channels (unfiltered-netty)
+#### Netty Channel Handlers (unfiltered-netty)
 
 Netty defines *channels* for network I/O and implements them using
 Java's Native I/O (NIO) interface. Its plan traits are upstream
 channel handlers, and the module defines intents and plans in separate
-`cycle` and `channel` subpackages, the former for traditional
+`cycle` and `async` subpackages, the former for traditional
 request-response cycles and the latter for open-ended interaction.
 
 ### Server Modules
