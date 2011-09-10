@@ -184,7 +184,7 @@ object Unfiltered extends Build {
               libraryDependencies <++= scalaVersion { v =>
                 val scalateVersion = v match {
                   case "2.8.0" | "2.8.1" => "1.4.1"
-                  case _ => "1.5.0"
+                  case _ => "1.5.2"
                 }
                 Seq(
                   "org.fusesource.scalate" % "scalate-core" % scalateVersion,
