@@ -13,7 +13,7 @@ import unfiltered.response._
 import unfiltered.netty._
 
 object Location extends 
-  Params.Extract("location", Params.first ~> Params.nonempty)
+Params.Extract("location", Params.first ~> Params.nonempty)
 
 object Temperature extends async.Plan with ServerErrorResponse {
   val http = new nio.Http

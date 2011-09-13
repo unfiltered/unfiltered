@@ -39,17 +39,20 @@ call. That's why `Planify` uses the `cycle.ThreadPool` trait, which
 defers application of the intent partial function to a cached thread
 pool.
 
+### Deference has its Memory Limits
+
 Unfortunately, that's not the end of the story with deferred
 execution. Applications also need to worry about running out of
-memory; deferred request handling to an executor as fast as Netty can
-accept requests would do that.
+memory. If you defer request handling jobs to an executor queue as
+fast as Netty can accept requests, any heap limit can be exceeded with
+a severe enough usage spike.
 
-To avoid that scenario, you should equip your plans with an executor
-that consumes a limited amount of memory and blocks on incoming
-requests when that limit is reached. If you've defined a simple local
-base plan (like the `MyPlan` above), you can customize it later
-(ideally, before your server throws an out of memory exception) with
-with a memory-aware thread pool executor.
+To avoid that kind of failure, you should equip your plans with an
+executor that consumes a limited amount of memory and blocks on
+incoming requests when that limit is reached. If you've defined a
+simple local base plan (like the `MyPlan` above), you can customize it
+later (ideally, before your server throws an out of memory exception)
+with with a memory-aware thread pool executor.
 
 ```scala
 trait MyPlan extends cycle.Plan with
