@@ -42,7 +42,7 @@ pool.
 Unfortunately, that's not the end of the story with deferred
 execution. Applications also need to worry about running out of
 memory; deferred request handling to an executor as fast as Netty can
-accept requests is a would do that.
+accept requests would do that.
 
 To avoid that scenario, you should equip your plans with an executor
 that consumes a limited amount of memory and blocks on incoming
