@@ -13,7 +13,7 @@ Let's see what the plan looks like with those defaults made explicit.
 ```scala
 import unfiltered.netty._
 
-trait MyPlan extends cycle.Plan with 
+trait MyPlan extends cycle.Plan with
 cycle.ThreadPool with ServerErrorResponse
 
 Object Hello extends MyPlan {
@@ -27,7 +27,7 @@ The traits define methods needed by `cycle.Plan`. But what for?
 
 ### Deferred Execution
 
-Netty handlers are engaged on an I/O worker thread. In some scenarios
+Netty handlers are invoked on an I/O worker thread. In some scenarios
 (including this one, actually) it would be just fine to prepare a
 response on this thread. If the work is CPU-bound (does not perform
 blocking operations), you can mix in the `cycle.SynchronousExecution`
@@ -52,8 +52,8 @@ base plan (like the `MyPlan` above), you can customize it later
 with a memory-aware thread pool executor.
 
 ```scala
-trait MyPlan extends cycle.Plan with 
-cycle.DeferralExecutor with cycle.DeferredIntent with 
+trait MyPlan extends cycle.Plan with
+cycle.DeferralExecutor with cycle.DeferredIntent with
 ServerErrorResponse {
   def underlying = MyExecutor.underlying
 }
@@ -74,7 +74,7 @@ base plan. Below is the default exception handler, which merely logs
 the stack trace to stdout and serves a very terse error response.
 
 ```scala
-trait MyPlan extends cycle.Plan with 
+trait MyPlan extends cycle.Plan with
 cycle.DeferralExecutor with cycle.DeferredIntent {
   def underlying = MyExecutor.underlying
   def onException(ctx: ChannelHandlerContext, t: Throwable) {
