@@ -104,7 +104,9 @@ object Unfiltered extends Build {
   lazy val util =
     Project(id("utils"), file("util"),
           settings = buildSettings ++ Seq(
-            name := "Unfiltered Utils"))
+            name := "Unfiltered Utils",
+            // https://github.com/harrah/xsbt/issues/76
+            publishArtifact in packageDoc := false))
 
   lazy val jetty =
     Project(id("jetty"), file("jetty"),
