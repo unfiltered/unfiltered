@@ -19,10 +19,14 @@ Unfiltered's Netty support undergoes a number of changes with this
 release. Most noticeably, applications are now required to define
 exception handling behavior for both `async.Plan` and `cycle.Plan`,
 and request execution behavior for the `cycle.Plan`. Details are
-available in the updated Unfiltered documentation.
+available in the [expanded Unfiltered documentation][netty].
+
+[netty]: http://unfiltered.databinder.net/Netty+Plans.html
 
 `netty-server` now depends on the `netty` module. This will provide
-more design consistency when implementing server behavior.
+more design consistency when implementing server behavior. If you were
+depending on `unfiltered-netty` before, you likely need to depend
+on `unfiltered-netty-server` now.
 
 There is a new `resources` method in the `netty-server` module's
 `Http` and `Https` objects. By default, this handler will pass netty
