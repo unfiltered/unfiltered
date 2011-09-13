@@ -16,7 +16,7 @@ Entire web layer of the [Novus](https://www.novus.com/) real-time financial anal
 
 #### Remember The Milk
 
-Unfiltered is used in Remember The Milk's [public API](http://www.rememberthemilk.com/services/api/).
+Unfiltered is used in Remember The Milk's [public API](http://www.rememberthemilk.com/services/api/), [real time updates](http://blog.rememberthemilk.com/2011/08/real-time-updating-comes-to-the-remember-the-milk-web-app/) and syncing endpoints for Android, iOS and Outlook.
 
 #### Trust Metrics
 
