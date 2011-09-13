@@ -27,7 +27,7 @@ val hello = unfiltered.netty.cycle.Planify {
 unfiltered.netty.Http(8080).plan(hello).run()
 ```
 
-Direct a web browser to [http://127.0.0.1:8080/][local] and you should
+Direct a web browser to [http://127.0.0.1:8080/][local] and you'll
 be in *hello world* business.
 
 [local]: http://127.0.0.1:8080/
