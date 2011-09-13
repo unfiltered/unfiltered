@@ -72,26 +72,10 @@ object MyExecutor {
 The `ServerErrorResponse` trait also implements behavior that your
 application will likely need to customize, sooner or later. Instead of
 mixing in that trait, you can implement `onException` directly in your
-base plan. Below is the default exception handler, which merely logs
-the stack trace to stdout and serves a very terse error response.
+base plan. For a starting point see the source for the
+[provided exception handler][onexc], which logs the stack trace to
+stdout and serves a very terse error response. Normally an application
+will hook into its own logger and serve a custom error page or
+redirect.
 
-```scala
-trait MyPlan extends cycle.Plan with
-cycle.DeferralExecutor with cycle.DeferredIntent {
-  def underlying = MyExecutor.underlying
-  def onException(ctx: ChannelHandlerContext, t: Throwable) {
-    val ch = ctx.getChannel
-    if (ch.isOpen) try {
-      println("Exception caught handling request:")
-      t.printStackTrace()
-      val res = new DefaultHttpResponse(
-        HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR)
-      res.setContent(ChannelBuffers.copiedBuffer(
-        "Internal Server Error".getBytes("utf-8")))
-        ch.write(res).addListener(ChannelFutureListener.CLOSE)
-    } catch {
-      case _ => ch.close()
-    }
-  }
-}
-```
+[onexc]: https://github.com/n8han/Unfiltered/blob/master/netty/src/main/scala/exceptions.scala#L15
