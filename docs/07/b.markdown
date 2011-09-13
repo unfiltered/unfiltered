@@ -62,7 +62,6 @@ ServerErrorResponse {
 }
 object MyExecutor {
   import org.jboss.netty.handler.execution._
-  import java.util.concurrent.Executors
   lazy val underlying = new MemoryAwareThreadPoolExecutor(
     16, 65536, 1048576)
 }
