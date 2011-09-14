@@ -7,11 +7,12 @@ import unfiltered.netty._
 import unfiltered.response.{NotFound, Pass}
 import unfiltered.request.HttpRequest
 import unfiltered.Async
+import unfiltered.netty.Underlying
 
-object Plan {
+object Plan extends Underlying{
   /** Note: The only return object a channel plan acts on is Pass */
   type Intent =
-    Async.Intent[ReceivedMessage, NHttpResponse]
+    Async.Intent[UnderlyingRequest, UnderlyingResponse]
 }
 /** Object to facilitate Plan.Intent definitions. Type annotations
  *  are another option. */
@@ -20,7 +21,8 @@ object Intent {
 }
 
 /** A Netty Plan for request-only handling. */
-trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
+trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler with Underlying {
+
   def intent: Plan.Intent
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     val request = e.getMessage() match {

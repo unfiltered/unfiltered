@@ -14,8 +14,9 @@ trait InittedFilter extends Filter {
   def destroy { }
 }
 
-object Plan {
-  type Intent = Cycle.Intent[HttpServletRequest,HttpServletResponse]
+
+object Plan extends Underlying {
+  type Intent = Cycle.Intent[UnderlyingRequest, UnderlyingResponse]
 }
 
 /** Object to facilitate Plan.Intent definitions. Type annotations
@@ -28,7 +29,8 @@ object Intent {
  * Servlet filter that wraps an Intent and adheres to standard filter
  * chain behaviour.
  */
-trait Plan extends InittedFilter {
+trait Plan extends InittedFilter with Underlying {
+
   def intent: Plan.Intent
 
   def doFilter(request: ServletRequest,
