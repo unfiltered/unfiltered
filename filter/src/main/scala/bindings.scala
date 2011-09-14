@@ -7,6 +7,11 @@ import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import unfiltered.Cookie
 import unfiltered.util.Optional
 
+trait Underlying extends unfiltered.Underlying {
+  type UnderlyingRequest = HttpServletRequest
+  type UnderlyingResponse = HttpServletResponse
+}
+
 class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   def inputStream = req.getInputStream
   def reader = req.getReader

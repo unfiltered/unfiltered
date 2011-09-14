@@ -22,6 +22,11 @@ object HttpConfig {
    val DEFAULT_CHARSET = "UTF-8"
 }
 
+trait Underlying extends unfiltered.Underlying {
+   type UnderlyingRequest = ReceivedMessage
+   type UnderlyingResponse = NHttpResponse
+}
+
 class RequestBinding(msg: ReceivedMessage)
 extends HttpRequest(msg) with Async.Responder[NHttpResponse] {
   private val req = msg.request

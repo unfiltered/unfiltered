@@ -9,9 +9,10 @@ import unfiltered.netty._
 import unfiltered.response.{ResponseFunction, Pass}
 import unfiltered.request.HttpRequest
 import unfiltered.Cycle.Intent.complete
+import unfiltered.netty.Underlying
 
-object Plan {
-  type Intent = unfiltered.Cycle.Intent[ReceivedMessage,NHttpResponse]
+object Plan extends Underlying {
+  type Intent = unfiltered.Cycle.Intent[UnderlyingRequest, UnderlyingResponse]
 }
 /** Object to facilitate Plan.Intent definitions. Type annotations
  *  are another option. */
@@ -19,7 +20,8 @@ object Intent {
   def apply(intent: Plan.Intent) = intent
 }
 /** A Netty Plan for request cycle handling. */
-trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
+trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler with Underlying {
+
   def intent: Plan.Intent
   override def messageReceived(ctx: ChannelHandlerContext,
                                e: MessageEvent) {

@@ -3,6 +3,12 @@ package unfiltered
 import unfiltered.request.HttpRequest
 import unfiltered.response.{ResponseFunction,HttpResponse,Pass}
 
+
+trait Underlying {
+  type UnderlyingRequest
+  type UnderlyingResponse
+}
+
 object Cycle {
   /** A rountrip intent is a set of instructions for producting
    * a complete response to a request. Plans that contain intents
