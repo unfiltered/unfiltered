@@ -2,7 +2,7 @@ Asyncrazy Temperature Server
 ------------------------------
 
 Putting this all together, we can build a server that would very
-efficiently get your IP address banned by google if you actually put
+efficiently get your IP address banned by Google if you actually put
 it on the web. But it's totally cool to run it locally. We think.
 
 
@@ -51,6 +51,9 @@ Put *all that* into a console, then start it:
 ```scala
 Http(8080).plan(Temperature).run()
 ```
+
+Now you can get the current temperature for almost anywhere; just type
+in a place name or postal code and Google will probably figure it out.
 
 When you are done checking the temperature of exciting places around
 the world, don't forget to shutdown the handler's Dispatch executor.
