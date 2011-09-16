@@ -52,11 +52,11 @@ Put *all that* into a console, then start it:
 Http(8080).plan(Temperature).run()
 ```
 
-Now you can get the current temperature for almost anywhere; just type
+You can lookup the current temperature for almost anywhere; just type
 in a place name or postal code and Google will probably figure it out.
 
 When you are done checking the temperature of exciting places around
-the world, don't forget to shutdown the handler's Dispatch executor.
+the world, shutdown the handler's Dispatch executor.
 
 ```scala
 Temperature.http.shutdown()
