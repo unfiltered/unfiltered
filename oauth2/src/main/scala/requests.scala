@@ -76,3 +76,14 @@ case class RefreshTokenRequest(
   clientSecret: String,
   scope: Option[String]
 ) extends AccessRequest
+
+/**
+ * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-4.3.2
+ */
+case class PasswordRequest(
+  userName: String,
+  password: String,
+  clientId: String,
+  clientSecret: String,
+  scope: Option[String]
+) extends AccessRequest

@@ -102,4 +102,12 @@ trait TokenStore {
    * a given resource owner
    */
   def generateClientToken(client: Client, scope: Option[String]): Token
+
+  /**
+   * @see AuthorizationServer
+   * @see PasswordRequest
+   * @notes http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-4.3.3
+   * @return an access token for a client, given the resource owner's credentials
+   */
+  def generatePasswordToken(owner: ResourceOwner, client: Client, scope: Option[String]): Token
 }

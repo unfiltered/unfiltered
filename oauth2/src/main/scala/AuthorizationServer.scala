@@ -142,5 +142,19 @@ trait AuthorizationServer {
            )
         case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, errorUri(InvalidClient), scope)
       }
-  }
+
+    case PasswordRequest(userName, password, clientId, clientSecret, scope) =>
+      client(clientId, Some(clientSecret)) match {
+        case Some(c) =>
+          resourceOwner(userName, password) match {
+            case Some(owner) =>
+              val tok = generatePasswordToken(owner, c, scope)
+              AccessTokenResponse(
+                tok.value, tok.tokenType, tok.expiresIn, tok.refresh, scope, None
+              )
+            case None => ErrorResponse(InvalidRequest, UnauthorizedClient, errorUri(InvalidClient), scope)
+          }
+        case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, errorUri(InvalidClient), scope)
+      }
+    }
 }
