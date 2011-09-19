@@ -7,7 +7,6 @@ object AuthorizationSpec
   with unfiltered.spec.jetty.Served {
 
   import unfiltered.response._
-  import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
 
   import dispatch._
@@ -282,6 +281,8 @@ object AuthorizationSpec
                map2 must haveKey("access_token")
                map2 must haveKey("expires_in")
                map2 must haveKey("refresh_token")
+               map2("refresh_token") must not be equalTo(map("refresh_token"))
+               map2("access_token") must not be equalTo(map("access_token"))
              }
            }
          case _ => fail("!")
