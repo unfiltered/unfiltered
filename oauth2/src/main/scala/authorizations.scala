@@ -200,6 +200,8 @@ trait Authorized extends AuthorizationProvider
         clientSecret  <- lookup(ClientSecret) is required(requiredMsg(ClientSecret))
         refreshToken  <- lookup(RefreshToken) is optional[String, String]
         scope         <- lookup(Scope) is  optional[String, String]
+        userName      <- lookup(Username) is optional[String, String]
+        password      <- lookup(Password) is optional[String, String]
       } yield {
 
         grantType.get match {
@@ -212,6 +214,25 @@ trait Authorized extends AuthorizationProvider
                 )
               case ErrorResponse(error, desc, euri, state) =>
                 errorResponder(error, desc, euri, state)
+            }
+
+          case Password =>
+            (userName.get, password.get) match {
+              case (Some(u), Some(pw)) =>
+                auth(PasswordRequest(u, pw, clientId.get, clientSecret.get, scope.get)) match {
+                  case AccessTokenResponse(accessToken, kind, expiresIn, refreshToken, scope, _) =>
+                    accessResponder(
+                      accessToken, kind, expiresIn, refreshToken, scope
+                    )
+                  case ErrorResponse(error, desc, euri, state) =>
+                    errorResponder(error, desc, euri, state)
+                }
+              case _ =>
+                errorResponder(
+                  InvalidRequest,
+                  (requiredMsg(Username) :: requiredMsg(Password) :: Nil).mkString(" and "),
+                  auth.errUri(InvalidRequest), None
+                )
             }
 
           case RefreshToken =>

@@ -2,7 +2,9 @@ package unfiltered.oauth2
 
 case class MockClient(id: String, secret: String, redirectUri: String) extends Client
 
-case class MockResourceOwner(id:  String) extends ResourceOwner
+case class MockResourceOwner(id:  String) extends ResourceOwner {
+  override val password = None
+}
 
 case class MockToken(val value: String, val clientId: String,
                      val redirectUri: String, val owner: String)
@@ -46,6 +48,9 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
     def generateImplicitAccessToken(owner: ResourceOwner, client: Client,
                                     scope: Option[String], redirectURI: String) =
                                         mock
+
+    def generatePasswordToken(owner: ResourceOwner, client: Client,
+                              scope: Option[String]) = mock
   }
 
   trait MockContainer extends Container {
@@ -73,6 +78,11 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
 
     def resourceOwner[T](r: Req[T]): Option[ResourceOwner] = {
       // would normally look for a resource owners session here
+      Some(owner)
+    }
+
+    def resourceOwner(userName: String, password: String): Option[ResourceOwner] = {
+      // would normally authenticate the resource owner
       Some(owner)
     }
 
