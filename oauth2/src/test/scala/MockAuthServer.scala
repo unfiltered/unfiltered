@@ -7,9 +7,8 @@ case class MockResourceOwner(id:  String) extends ResourceOwner {
 }
 
 case class MockToken(val value: String, val clientId: String,
-                     val redirectUri: String, val owner: String)
+                     val redirectUri: String, val owner: String, refresh: Option[String]=Some("refreshToken"))
      extends Token {
-  def refresh = Some("refreshToken")
   def expiresIn = Some(10)
   def scopes = None
   def tokenType = "tokenType"
@@ -32,8 +31,9 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
 
   trait MockTokens extends TokenStore {
     private val mock = MockToken("test", cli.id, cli.redirectUri, owner.id)
+
     def refresh(other: Token) = MockToken(
-       other.value, other.clientId, other.redirectUri, other.owner
+       "newValue", other.clientId, other.redirectUri, other.owner, Some("differentRefreshToken")
     )
     def token(code: String): Option[Token] = Some(mock)
     def refreshToken(refreshToken: String): Option[Token] = Some(mock)

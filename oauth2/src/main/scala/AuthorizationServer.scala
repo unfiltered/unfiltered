@@ -123,7 +123,7 @@ trait AuthorizationServer {
                  if(t.clientId == clientId) {
                    val r = refresh(t)
                    AccessTokenResponse(
-                     t.value, t.tokenType, t.expiresIn, t.refresh, None, scope
+                     r.value, r.tokenType, r.expiresIn, r.refresh, None, scope
                    )
                  } else ErrorResponse(
                    UnauthorizedClient, "refresh token does not belong to client", errorUri(UnauthorizedClient), scope
