@@ -21,6 +21,7 @@ object AuthorizationSpec
   )
 
   val owner = MockResourceOwner("doug")
+  val password = "mockuserspassword"
 
   def setup = { server =>
     val authProvider = new MockAuthServerProvider(client, owner)
@@ -175,6 +176,68 @@ object AuthorizationSpec
     "require a client_secret" in {
        val (head, body) = http(token << Map(
          "grant_type" -> "client_credentials",
+         "client_id" -> client.id
+       ) >+ { r => (r >:> { h => r }, r as_str ) })
+       json(body) { map =>
+         map must havePair("error", "invalid_request")
+         map must havePair("error_description", "client_secret is required")
+       }
+    }
+  }
+
+  //
+  // resource owner password credentials flow
+  //
+  "OAuth2 requests for grant type password" should {
+    "require a grant_type" in {
+      val body = http(token << Map(
+         "client_id" -> client.id,
+         "client_secret" -> client.secret,
+         "username" -> owner.id,
+         "password" -> password
+      ) as_str)
+      json(body) { map =>
+        map must havePair("error", "invalid_request")
+        map must havePair("error_description", "grant_type is required")
+      }
+    }
+    "require a username" in {
+       val (head, body) = http(token << Map(
+          "grant_type" -> "password",
+          "client_id" -> client.id,
+          "client_secret" -> client.secret,
+          "password" -> password
+       ) >+ { r => (r >:> { h => h }, r as_str ) })
+       json(body) { map =>
+         map must havePair("error", "invalid_request")
+         map must havePair("error_description", "username is required and password is required")
+       }
+    }
+    "require a password" in {
+       val (head, body) = http(token << Map(
+         "grant_type" -> "password",
+         "client_id" -> client.id,
+         "client_secret" -> client.secret,
+         "username" -> owner.id
+       ) >+ { r => (r >:> { h => r }, r as_str ) })
+       json(body) { map =>
+         map must havePair("error", "invalid_request")
+         map must havePair("error_description", "username is required and password is required")
+       }
+    }
+    "require a client_id" in {
+       val (head, body) = http(token << Map(
+          "grant_type" -> "password",
+          "client_secret" -> client.secret
+       ) >+ { r => (r >:> { h => h }, r as_str ) })
+       json(body) { map =>
+         map must havePair("error", "invalid_request")
+         map must havePair("error_description", "client_id is required")
+       }
+    }
+    "require a client_secret" in {
+       val (head, body) = http(token << Map(
+         "grant_type" -> "password",
          "client_id" -> client.id
        ) >+ { r => (r >:> { h => r }, r as_str ) })
        json(body) { map =>

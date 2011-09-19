@@ -8,7 +8,9 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
   import unfiltered.request.{Path => UFPath}
   import dispatch._
 
-  class User(val id: String) extends ResourceOwner
+  class User(val id: String) extends ResourceOwner {
+    override val password = None
+  }
 
   object User {
     import javax.servlet.http.{HttpServletRequest}

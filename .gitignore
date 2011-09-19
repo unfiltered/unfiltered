@@ -5,3 +5,11 @@ project/plugins/src_managed/
 project/plugins/project/
 \#*\#
 *~
+# IDEA Ignores
+*.iml
+*.ipr
+*.iws
+.idea/
+.idea_modules/
+# OS X
+.DS_Store
