@@ -1,5 +1,6 @@
 package unfiltered.filter
 
+import unfiltered.Async
 import unfiltered.JEnumerationIterator
 import unfiltered.response.HttpResponse
 import unfiltered.request.HttpRequest
@@ -7,7 +8,7 @@ import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import unfiltered.Cookie
 import unfiltered.util.Optional
 
-class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
+class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) with Async.Responder[HttpServletResponse]{
   def inputStream = req.getInputStream
   def reader = req.getReader
   def protocol = req.getProtocol
@@ -29,6 +30,7 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
 
   def isSecure = req.isSecure
   def remoteAddr = req.getRemoteAddr
+  def respond(rf: unfiltered.response.ResponseFunction[HttpServletResponse]) = {throw new Exception("this method is not implemented for this backend")}
 }
 
 class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
