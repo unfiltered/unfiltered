@@ -22,7 +22,7 @@ case class AuthorizationCodeRequest[T](
   req: Req[T],
   clientId: String,
   redirectURI: String,
-  scope: Option[String],
+  scope: Seq[String],
   state: Option[String]
 ) extends AuthorizationRequest
 
@@ -35,7 +35,7 @@ case class ImplicitAuthorizationRequest[T](
   req: Req[T],
   clientId: String,
   redirectURI: String,
-  scope: Option[String],
+  scope: Seq[String],
   state: Option[String]
 ) extends AuthorizationRequest
 
@@ -44,7 +44,7 @@ case class IndeterminateAuthorizationRequest[T](
   responseType: String,
   clientId: String,
   redirectURI: String,
-  scope: Option[String],
+  scope: Seq[String],
   state: Option[String]
 ) extends AuthorizationRequest
 
@@ -64,7 +64,7 @@ case class AccessTokenRequest(
 case class ClientCredentialsRequest(
   clientId: String,
   secret: String,
-  scope: Option[String]
+  scope: Seq[String]
 ) extends AccessRequest
 
 /**
@@ -74,7 +74,7 @@ case class RefreshTokenRequest(
   refreshToken: String,
   clientId: String,
   clientSecret: String,
-  scope: Option[String]
+  scope: Seq[String]
 ) extends AccessRequest
 
 /**
@@ -85,5 +85,5 @@ case class PasswordRequest(
   password: String,
   clientId: String,
   clientSecret: String,
-  scope: Option[String]
+  scope: Seq[String]
 ) extends AccessRequest

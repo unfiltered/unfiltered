@@ -104,7 +104,7 @@ trait AuthorizationServer {
                 else {
                   val t = exchangeAuthorizationCode(token)
                   AccessTokenResponse(
-                    t.value, t.tokenType, t.expiresIn, t.refresh, None, None
+                    t.value, t.tokenType, t.expiresIn, t.refresh, Nil, None
                  )
                 }
               case _ => ErrorResponse(
@@ -123,14 +123,14 @@ trait AuthorizationServer {
                  if(t.clientId == clientId) {
                    val r = refresh(t)
                    AccessTokenResponse(
-                     r.value, r.tokenType, r.expiresIn, r.refresh, None, scope
+                     r.value, r.tokenType, r.expiresIn, r.refresh, scope, None
                    )
                  } else ErrorResponse(
-                   UnauthorizedClient, "refresh token does not belong to client", errorUri(UnauthorizedClient), scope
+                   UnauthorizedClient, "refresh token does not belong to client", errorUri(UnauthorizedClient), None
                  )
-               case _ => ErrorResponse(InvalidRequest, "unknown request token", errorUri(InvalidRequest), scope)
+               case _ => ErrorResponse(InvalidRequest, "unknown request token", errorUri(InvalidRequest), None)
              }
-          case _ => ErrorResponse(InvalidClient, UnknownClientMsg, errorUri(InvalidClient), scope)
+          case _ => ErrorResponse(InvalidClient, UnknownClientMsg, errorUri(InvalidClient), None)
         }
 
     case ClientCredentialsRequest(clientId, clientSecret, scope) =>
@@ -138,9 +138,9 @@ trait AuthorizationServer {
         case Some(c) =>
            val tok = generateClientToken(c, scope)
            AccessTokenResponse(
-             tok.value, tok.tokenType, tok.expiresIn, tok.refresh, None/* no scope for client */, None/* no state for client*/
+             tok.value, tok.tokenType, tok.expiresIn, tok.refresh, Nil/* no scope for client */, None/* no state for client*/
            )
-        case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, errorUri(InvalidClient), scope)
+        case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, errorUri(InvalidClient), None)
       }
 
     case PasswordRequest(userName, password, clientId, clientSecret, scope) =>
@@ -152,9 +152,9 @@ trait AuthorizationServer {
               AccessTokenResponse(
                 tok.value, tok.tokenType, tok.expiresIn, tok.refresh, scope, None
               )
-            case None => ErrorResponse(InvalidRequest, UnauthorizedClient, errorUri(InvalidClient), scope)
+            case None => ErrorResponse(InvalidRequest, UnauthorizedClient, errorUri(InvalidClient), None)
           }
-        case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, errorUri(InvalidClient), scope)
+        case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, errorUri(InvalidClient), None)
       }
     }
 }

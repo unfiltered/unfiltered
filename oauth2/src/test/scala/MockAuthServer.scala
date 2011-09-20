@@ -7,10 +7,10 @@ case class MockResourceOwner(id:  String) extends ResourceOwner {
 }
 
 case class MockToken(val value: String, val clientId: String,
-                     val redirectUri: String, val owner: String, refresh: Option[String]=Some("refreshToken"))
+                     val redirectUri: String, val owner: String, refresh: Option[String] = Some("refreshToken"))
      extends Token {
   def expiresIn = Some(10)
-  def scopes = None
+  def scopes = Nil
   def tokenType = "tokenType"
 }
 
@@ -42,15 +42,15 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
     def exchangeAuthorizationCode(other: Token): Token = mock
 
     def generateAuthorizationCode(owner: ResourceOwner, client: Client,
-                          scope: Option[String], redirectURI: String) =
+                          scope: Seq[String], redirectURI: String) =
                             mock.value
-    def generateClientToken(client: Client, scope: Option[String]) = mock
+    def generateClientToken(client: Client, scope: Seq[String]) = mock
     def generateImplicitAccessToken(owner: ResourceOwner, client: Client,
-                                    scope: Option[String], redirectURI: String) =
+                                    scope: Seq[String], redirectURI: String) =
                                         mock
 
     def generatePasswordToken(owner: ResourceOwner, client: Client,
-                              scope: Option[String]) = mock
+                              scope: Seq[String]) = mock
   }
 
   trait MockContainer extends Container {
@@ -96,9 +96,9 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
       false
     }
 
-    def validScopes(scopes: Option[String]) = true
+    def validScopes(scopes: Seq[String]) = true
 
-    def validScopes[T](owner: ResourceOwner, scopes: Option[String], req: Req[T]) = {
+    def validScopes[T](owner: ResourceOwner, scopes: Seq[String], req: Req[T]) = {
       // would normally validate that the scopes are valid for the owner here
       true
     }

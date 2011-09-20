@@ -45,7 +45,7 @@ case class AccessTokenResponse(
   tokenType: String,
   expiresIn: Option[Int],
   refreshToken: Option[String],
-  scope: Option[String],
+  scope: Seq[String],
   state: Option[String]
 ) extends AccessResponse with AuthorizationResponse
 
@@ -56,13 +56,13 @@ case class ImplicitAccessTokenResponse(
   accessToken: String,
   tokenType: String,
   expiresIn: Option[Int],
-  scope: Option[String],
+  scope: Seq[String],
   state: Option[String]
 ) extends AuthorizationResponse
 
 case class AuthorizedPass(
   owner: String,
-  scope: Option[String]
+  scope: Seq[String]
 ) extends OAuthResponse
 
 case class ContainerResponse[T](

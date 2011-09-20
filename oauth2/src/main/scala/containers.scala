@@ -14,7 +14,7 @@ trait ResourceOwner {
  *  behavior before an authorization request can be processed */
 case class RequestBundle[T](request: Req[T], responseType: String, client: Client,
                             owner: Option[ResourceOwner], redirectUri: String,
-                            scope: Option[String], state: Option[String])
+                            scope: Seq[String], state: Option[String])
 
 /** Request responses a Container must implement to complete OAuth flows */
 trait ContainerResponses {
@@ -57,8 +57,8 @@ trait Container extends ContainerResponses {
   def denied[T](r: Req[T]): Boolean
 
   /** @return true if provides scopes are valid and not malformed */
-  def validScopes(scopes: Option[String]): Boolean
+  def validScopes(scopes: Seq[String]): Boolean
 
   /** @return true if the provided scopes are valid for a given client and resource owner */
-  def validScopes[T](resourceOwner: ResourceOwner, scopes: Option[String], req: Req[T]): Boolean
+  def validScopes[T](resourceOwner: ResourceOwner, scopes: Seq[String], req: Req[T]): Boolean
 }

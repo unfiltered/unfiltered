@@ -55,11 +55,11 @@ trait AuthorizationEndpoints {
 }
 
 trait DefaultAuthorizationPaths extends AuthorizationEndpoints {
-  /** 
+  /**
    * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-3
    */
   val AuthorizePath = "/authorize"
-  
+
   /**
    * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-3
    * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-3.2
@@ -90,16 +90,23 @@ trait Authorized extends AuthorizationProvider
      def ?(qs: String) = "%s%s%s" format(uri, if(uri.indexOf("?") > 0) "&" else "?", qs)
   }
 
-  protected def accessResponder(accessToken: String, kind: String, expiresIn: Option[Int], refreshToken: Option[String], scope: Option[String]) =
+  protected def accessResponder(accessToken: String, kind: String, expiresIn: Option[Int], refreshToken: Option[String], scope:Seq[String]) =
     Json(Map(AccessTokenKey -> accessToken, TokenType -> kind) ++
         expiresIn.map (ExpiresIn -> (_:Int).toString) ++
         refreshToken.map (RefreshToken -> _) ++
-        scope.map(Scope -> _)) ~> CacheControl("no-store")
+        (scope match {
+          case Seq() => None
+          case xs => Some(scopeEncoder(xs))
+        }).map (Scope -> _)) ~> CacheControl("no-store")
 
   protected def errorResponder(error: String, desc: String, euri: Option[String], state: Option[String]) =
     Json(Map(Error -> error, ErrorDescription -> desc) ++
         euri.map (ErrorURI -> (_: String)) ++
         state.map (State -> _)) ~> BadRequest ~> CacheControl("no-store")
+
+  private def scopeDecoder(raw: String) = raw.replace("""\s+"""," ").split(" ").toSeq
+
+  private def scopeEncoder(scopes: Seq[String]) = scopes.mkString("+")
 
   def intent = {
 
@@ -108,7 +115,7 @@ trait Authorized extends AuthorizationProvider
         responseType <- lookup(ResponseType) is required(requiredMsg(ResponseType))
         clientId     <- lookup(ClientId) is required(requiredMsg(ClientId))
         redirectURI  <- lookup(RedirectURI) is required(requiredMsg(RedirectURI))
-        scope        <- lookup(Scope) is optional[String, String]
+        scope        <- lookup(Scope) is watch(_.map(scopeDecoder), e => "")
         state        <- lookup(State) is optional[String, String]
       } yield {
 
@@ -116,7 +123,7 @@ trait Authorized extends AuthorizationProvider
 
            // authorization code flow
            case (ruri, Code) =>
-             auth(AuthorizationCodeRequest(req, clientId.get, ruri, scope.get, state.get)) match {
+             auth(AuthorizationCodeRequest(req, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
 
                case ContainerResponse(resp) => resp
 
@@ -137,13 +144,16 @@ trait Authorized extends AuthorizationProvider
 
            // implicit token flow
            case (ruri, TokenKey) =>
-             auth(ImplicitAuthorizationRequest(req, clientId.get, ruri, scope.get, state.get)) match {
+             auth(ImplicitAuthorizationRequest(req, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
                case ContainerResponse(cr) => cr
                case ImplicitAccessTokenResponse(accessToken, tokenType, expiresIn, scope, state) =>
                    val frag = qstr(
                      Map(AccessTokenKey -> accessToken, TokenType -> tokenType) ++
                      expiresIn.map(ExpiresIn -> (_:Int).toString) ++
-                     scope.map(Scope -> _) ++
+                     (scope match {
+                       case Seq() => None
+                       case xs => Some(scopeEncoder(xs))
+                     }).map(Scope -> _) ++
                      state.map(State -> _ )
                    )
                Redirect("%s#%s" format(ruri, frag))
@@ -158,7 +168,7 @@ trait Authorized extends AuthorizationProvider
 
            // unsupported grant type
            case (ruri, unsupported) =>
-             auth(IndeterminateAuthorizationRequest(req, unsupported, clientId.get, ruri, scope.get, state.get)) match {
+             auth(IndeterminateAuthorizationRequest(req, unsupported, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
                case ContainerResponse(cr) => cr
                case ErrorResponse(error, desc, euri, state) =>
                  Redirect(ruri ? qstr(
@@ -199,7 +209,7 @@ trait Authorized extends AuthorizationProvider
         // encoded in a basic auth header http://tools.ietf.org/html/draft-ietf-oauth-v2-16#section-3.1
         clientSecret  <- lookup(ClientSecret) is required(requiredMsg(ClientSecret))
         refreshToken  <- lookup(RefreshToken) is optional[String, String]
-        scope         <- lookup(Scope) is  optional[String, String]
+        scope         <- lookup(Scope) is watch(_.map(scopeDecoder), e => "")
         userName      <- lookup(Username) is optional[String, String]
         password      <- lookup(Password) is optional[String, String]
       } yield {
@@ -238,7 +248,7 @@ trait Authorized extends AuthorizationProvider
           case RefreshToken =>
             refreshToken.get match {
               case Some(rtoken) =>
-                auth(RefreshTokenRequest(rtoken, clientId.get, clientSecret.get, scope.get)) match {
+                auth(RefreshTokenRequest(rtoken, clientId.get, clientSecret.get, scope.getOrElse(Nil))) match {
                   case AccessTokenResponse(accessToken, kind, expiresIn, refreshToken, scope, _) =>
                      accessResponder(
                        accessToken, kind, expiresIn, refreshToken, scope

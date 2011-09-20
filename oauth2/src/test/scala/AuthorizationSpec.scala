@@ -38,17 +38,21 @@ object AuthorizationSpec
   val token = host / "oauth" / "token"
 
   // turning off redirects for validation
-  def http = new Http {
-    override def make_client = {
-      val c = new ConfiguredHttpClient(credentials)
-      c.setRedirectHandler(new org.apache.http.client.RedirectHandler() {
-         import org.apache.http.protocol.HttpContext
-         import org.apache.http.{HttpResponse=>HcResponse}
-         def getLocationURI(res: HcResponse, ctx: HttpContext) = null
-         def isRedirectRequested(res: HcResponse, ctx: HttpContext) = false
-      })
-      c
+  override def http[T](handler: Handler[T]): T = {
+    val h = new Http {
+      override def make_client = {
+        val c = new ConfiguredHttpClient(credentials)
+        c.setRedirectHandler(new org.apache.http.client.RedirectHandler() {
+          import org.apache.http.protocol.HttpContext
+          import org.apache.http.{HttpResponse=>HcResponse}
+          def getLocationURI(res: HcResponse, ctx: HttpContext) = null
+          def isRedirectRequested(res: HcResponse, ctx: HttpContext) = false
+        })
+       c
+      }
     }
+    try { h.x(handler) }
+    finally { h.shutdown() }
   }
 
   def json[T](body: String)(f: Map[String, Any] => T) =
@@ -67,7 +71,7 @@ object AuthorizationSpec
   "OAuth2 requests for response_type 'token'" should {
     // http://tools.ietf.org/html/draft-ietf-oauth-v2-15#section-2.1
     "require a `response_type`, encoding errors as query string params" in {
-       val head = http.x(authorize <<? Map(
+       val head = http(authorize <<? Map(
           "client_id" -> client.id,
           "redirect_uri" -> client.redirectUri
        ) >:> { h => h })
@@ -81,7 +85,7 @@ object AuthorizationSpec
     }
     // http://tools.ietf.org/html/draft-ietf-oauth-v2-15#section-4.2.1
     "require a `client_id`, encoding errors as url fragment params" in {
-       val head = http.x(authorize <<? Map(
+       val head = http(authorize <<? Map(
          "response_type" -> "token",
          "redirect_uri" -> client.redirectUri
        ) >:> { h => h })
@@ -94,7 +98,7 @@ object AuthorizationSpec
        }
     }
     "not redirect to an unknown client" in {
-      val body = http.x(authorize <<? Map(
+      val body = http(authorize <<? Map(
         "response_type" -> "token",
         "client_id" -> "bogus",
         "redirect_uri" -> "bogus"
@@ -102,7 +106,7 @@ object AuthorizationSpec
       body must_==("invalid client")
     }
     "not redirect to an invalid redirect_uri" in {
-      val body = http.x(authorize <<? Map(
+      val body = http(authorize <<? Map(
         "response_type" -> "token",
         "client_id" -> client.id,
         "redirect_uri" -> "bogus"
@@ -111,7 +115,7 @@ object AuthorizationSpec
     }
     // http://tools.ietf.org/html/draft-ietf-oauth-v2-15#section-4.2.2.1
     "require a `redirect_uri`, encoding errors by notifying the resource owner" in {
-       val body = http.x(authorize <<? Map(
+       val body = http(authorize <<? Map(
          "response_type" -> "token",
          "client_id" -> client.id
        ) as_str)
@@ -119,7 +123,7 @@ object AuthorizationSpec
     }
     // http://tools.ietf.org/html/draft-ietf-oauth-v2-15#section-4.2.2
     "receive access token in the form of a url fragment" in {
-       val head = http.x(authorize <<? Map(
+       val head = http(authorize <<? Map(
          "response_type" -> "token",
          "client_id" -> client.id,
          "redirect_uri" -> client.redirectUri,
@@ -157,7 +161,7 @@ object AuthorizationSpec
        }
     }
     "not redirect to an unknown client" in {
-      val body = http.x(authorize <<? Map(
+      val body = http(authorize <<? Map(
         "response_type" -> "token",
         "client_id" -> "bogus",
         "redirect_uri" -> "bogus"
@@ -165,7 +169,7 @@ object AuthorizationSpec
       body must_==("invalid client")
     }
     "not redirect to an invalid redirect_uri" in {
-      val body = http.x(authorize <<? Map(
+      val body = http(authorize <<? Map(
         "response_type" -> "token",
         "client_id" -> client.id,
          "redirect_uri" -> "bogus"
@@ -251,7 +255,7 @@ object AuthorizationSpec
   //
   "OAuth2 requests for response_type 'code'" should {
     "require a response_type" in {
-       val head = http.x(authorize <<? Map(
+       val head = http(authorize <<? Map(
          "client_id" -> client.id,
          "redirect_uri" -> client.redirectUri
        )  >:> { h => h })
@@ -265,7 +269,7 @@ object AuthorizationSpec
        }
     }
     "require a client_id" in {
-       val head = http.x(authorize <<? Map(
+       val head = http(authorize <<? Map(
          "response_type" -> "code",
          "redirect_uri" -> client.redirectUri
        ) >:> { h => h })
@@ -280,7 +284,7 @@ object AuthorizationSpec
     }
 
     "require a redirect_uri" in {
-       val body = http.x(authorize <<? Map(
+       val body = http(authorize <<? Map(
          "response_type" -> "code",
          "client_id" -> client.id
        ) as_str)
@@ -288,7 +292,7 @@ object AuthorizationSpec
     }
 
     "not accept invalid credentials in a basic auth header" in {
-       val head = http.x(authorize <<? Map(
+       val head = http(authorize <<? Map(
          "response_type" -> "code",
          "client_id" -> client.id,
          "redirect_uri" -> client.redirectUri
@@ -296,7 +300,7 @@ object AuthorizationSpec
        val Code = """code=(\S+)""".r
        new java.net.URI(head("Location").head).getQuery match {
           case Code(code) =>
-             val invalid = http.x(token << Map(
+             val invalid = http(token << Map(
                "grant_type" -> "authorization_code",
                "client_id" -> "bogus",
                "redirect_uri" -> client.redirectUri
@@ -309,7 +313,7 @@ object AuthorizationSpec
     }
 
     "provide a authorization code flow" in {
-       val head = http.x(authorize <<? Map(
+       val head = http(authorize <<? Map(
          "response_type" -> "code",
          "client_id" -> client.id,
          "redirect_uri" -> client.redirectUri,
@@ -324,7 +328,7 @@ object AuthorizationSpec
        uri.getQuery match {
          case Code(code) =>
            var ares =
-             http.x(token << Map(
+             http(token << Map(
                "grant_type" -> "authorization_code",
                "client_id" -> client.id,
                "redirect_uri" -> client.redirectUri,
@@ -334,7 +338,7 @@ object AuthorizationSpec
              map must haveKey("access_token")
              map must haveKey("expires_in")
              map must haveKey("refresh_token")
-             val rres = http.x(token << Map(
+             val rres = http(token << Map(
                "grant_type" -> "refresh_token",
                "client_id" -> client.id,
                "client_secret" -> client.secret,

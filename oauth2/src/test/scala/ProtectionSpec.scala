@@ -21,7 +21,7 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
       }
   }
 
-  val GoodBearerToken = """!#$%&'()*+=./:<=>?@[]^_`{|}~\good_token7""" // note had issues parsing as header with , and ;
+  val GoodBearerToken = """!#$%&'()*+=./:<=>?@[]^_`{|}~\good_token7"""
   val GoodMacToken = "good_token"
 
   def setup = { server =>
@@ -29,19 +29,15 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
       def authenticateToken[T](access_token: AccessToken, request: HttpRequest[T]): Either[String, (ResourceOwner, Option[String])] =
         access_token match {
           case BearerToken(GoodBearerToken) =>
-            println("is bearer")
             Right((new User("test_user"), None))
           case MacAuthToken(GoodMacToken, _, _, _, _) =>
-            println("is mac")
             Right((new User("test_user"), None))
           case _ =>
-            println("is bad")
             Left("bad token")
         }
 
       override def realm: Option[String] = Some("Mock Source")
     }
-
     server.filter(Protection(source))
     .filter(unfiltered.filter.Planify {
       case User(user) => ResponseString(user.id)

@@ -24,7 +24,7 @@ trait Token {
   def tokenType: String
   def refresh: Option[String]
   def expiresIn: Option[Int]
-  def scopes: Option[String]
+  def scopes: Seq[String]
 }
 
 /**
@@ -34,8 +34,8 @@ trait Token {
  * with the some kind of storage
  */
 trait TokenStore {
-  /** 
-   * 
+  /**
+   *
    * @see AuthorizationServer
    * @see RefreshTokenRequest
    * @notes http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-6
@@ -43,18 +43,18 @@ trait TokenStore {
    */
   def refresh(other: Token): Token
 
-  /** 
-   * 
-   * query for Token by client 
+  /**
+   *
+   * query for Token by client
    * @see AuthorizationServer
    * @see RefreshTokenRequest
    * @notes http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-6
    * @return Given the a refresh token gives a new access token
    */
   def refreshToken(refreshToken: String): Option[Token]
-  
+
   /**
-   * 
+   *
    * @see AuthorizationServer
    * @see AccessTokenRequest
    * @notes http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.3
@@ -62,46 +62,46 @@ trait TokenStore {
    */
   def token(code: String): Option[Token]
 
-  /** 
-   * 
+  /**
+   *
    * @see AuthorizationServer
    * @see AccessTokenRequest
    * @notes http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.3
-   * @return Create an access token given a code token 
+   * @return Create an access token given a code token
    */
   def exchangeAuthorizationCode(codeToken: Token): Token
-  
-  /** 
-   * 
+
+  /**
+   *
    * @see AuthorizationServer
    * @see AuthorizationCodeRequest
    * @notes http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1
    * @return a short lived authorization code bound to a client
-   * and redirect uri for a given resource owner. 
+   * and redirect uri for a given resource owner.
    */
   def generateAuthorizationCode(
         owner: ResourceOwner, client: Client,
-        scope: Option[String], redirectUri: String): String
-  
-  /** 
-   * 
+        scope: Seq[String], redirectUri: String): String
+
+  /**
+   *
    * @see AuthorizationServer
    * @see ImplicitAuthorizationRequest
    * @notes http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.2
    * @return an access token for an implicit client
    */
   def generateImplicitAccessToken(owner: ResourceOwner, client: Client,
-                                  scope: Option[String], redirectUri: String): Token
+                                  scope: Seq[String], redirectUri: String): Token
 
-  /** 
-   * 
+  /**
+   *
    * @see AuthorizationServer
    * @see ClientCredentialsRequest
    * @notes http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.4
-   * @return an access token for a given client, not tied to 
+   * @return an access token for a given client, not tied to
    * a given resource owner
    */
-  def generateClientToken(client: Client, scope: Option[String]): Token
+  def generateClientToken(client: Client, scope: Seq[String]): Token
 
   /**
    * @see AuthorizationServer
@@ -109,5 +109,5 @@ trait TokenStore {
    * @notes http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-4.3.3
    * @return an access token for a client, given the resource owner's credentials
    */
-  def generatePasswordToken(owner: ResourceOwner, client: Client, scope: Option[String]): Token
+  def generatePasswordToken(owner: ResourceOwner, client: Client, scope: Seq[String]): Token
 }
