@@ -186,6 +186,17 @@ object AuthorizationSpec
          map must havePair("error_description", "client_secret is required")
        }
     }
+    "accept our mock client" in {
+       val (head, body) = http(token << Map(
+         "grant_type" -> "client_credentials",
+         "client_id" -> client.id,
+         "client_secret" -> client.secret,
+         "redirect_uri" -> client.redirectUri
+       ) >+ { r => (r >:> { h => r }, r as_str ) })
+       json(body) { map =>
+         map must haveKey("access_token")
+       }
+    }
   }
 
   //
@@ -246,6 +257,18 @@ object AuthorizationSpec
        json(body) { map =>
          map must havePair("error", "invalid_request")
          map must havePair("error_description", "client_secret is required")
+       }
+    }
+    "accept our mock user's password credentials" in {
+      val (head, body) = http(token << Map(
+         "grant_type" -> "password",
+         "client_id" -> client.id,
+         "client_secret" -> client.secret,
+         "username" -> owner.id,
+         "password" -> password
+       ) >+ { r => (r >:> { h => r }, r as_str ) })
+       json(body) { map =>
+         map must haveKey("access_token")
        }
     }
   }
