@@ -3,7 +3,7 @@ package unfiltered.oauth2
 import unfiltered.response._
 import unfiltered.request.{HttpRequest => Req}
 
-/** A ResourceOwner belongs to a Container */
+/** A ResourceOwner belongs to a Service */
 trait ResourceOwner {
   def id: String
   def password: Option[String]
@@ -16,8 +16,8 @@ case class RequestBundle[T](request: Req[T], responseType: String, client: Clien
                             owner: Option[ResourceOwner], redirectUri: String,
                             scope: Seq[String], state: Option[String])
 
-/** Request responses a Container must implement to complete OAuth flows */
-trait ContainerResponses {
+/** Request responses a Service must implement to complete OAuth flows */
+trait ServiceResponses {
 
   /** @return a function that provides a means of logging a user in.
    *          the handling of a successfully login should post back to
@@ -39,7 +39,7 @@ trait ContainerResponses {
   def invalidClient: ResponseFunction[Any]
 }
 
-trait Container extends ContainerResponses {
+trait Service extends ServiceResponses {
 
   /** @return a uri for more information on a privded error code */
   def errorUri(error: String): Option[String]

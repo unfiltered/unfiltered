@@ -11,7 +11,7 @@ object AuthorizationServer {
  * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-1.1
  */
 trait AuthorizationServer {
-  self: ClientStore with TokenStore with Container =>
+  self: ClientStore with TokenStore with Service =>
   import OAuthorization._
   import AuthorizationServer._
 
@@ -31,7 +31,7 @@ trait AuthorizationServer {
     case AuthorizationCodeRequest(req, clientId, redirectUri, scope, state) =>
       client(clientId, None) match {
         case Some(client) =>
-          if(!validRedirectUri(redirectUri, client)) ContainerResponse(
+          if(!validRedirectUri(redirectUri, client)) ServiceResponse(
             invalidRedirectUri(Some(redirectUri), Some(client))
           ) else if(!validScopes(scope)) {
             ErrorResponse(InvalidScope, "invalid scope", errorUri(InvalidScope), state)
@@ -43,18 +43,18 @@ trait AuthorizationServer {
                     val code = generateAuthorizationCode(owner, client, scope, redirectUri)
                     AuthorizationCodeResponse(code, state)
                  }
-                 else ContainerResponse(requestAuthorization(RequestBundle(req, Code, client, Some(owner), redirectUri, scope, state)))
-              case _ => ContainerResponse(login(RequestBundle(req, Code, client, None, redirectUri, scope, state)))
+                 else ServiceResponse(requestAuthorization(RequestBundle(req, Code, client, Some(owner), redirectUri, scope, state)))
+              case _ => ServiceResponse(login(RequestBundle(req, Code, client, None, redirectUri, scope, state)))
             }
 
           }
-        case _ => ContainerResponse(invalidClient)
+        case _ => ServiceResponse(invalidClient)
       }
 
     case ImplicitAuthorizationRequest(req, clientId, redirectUri, scope, state) =>
       client(clientId, None) match {
         case Some(c) =>
-          if(!validRedirectUri(redirectUri, c)) ContainerResponse(
+          if(!validRedirectUri(redirectUri, c)) ServiceResponse(
             invalidRedirectUri(Some(redirectUri), Some(c))
           )
           else {
@@ -67,21 +67,21 @@ trait AuthorizationServer {
                     t.value, t.tokenType, t.expiresIn, scope, state
                   )
                 }
-                else ContainerResponse(requestAuthorization(RequestBundle(req, TokenKey, c, Some(owner), redirectUri, scope, state)))
-             case _ => ContainerResponse(login(RequestBundle(req, TokenKey, c, None, redirectUri, scope, state)))
+                else ServiceResponse(requestAuthorization(RequestBundle(req, TokenKey, c, Some(owner), redirectUri, scope, state)))
+             case _ => ServiceResponse(login(RequestBundle(req, TokenKey, c, None, redirectUri, scope, state)))
             }
           }
-        case _ => ContainerResponse(invalidClient)
+        case _ => ServiceResponse(invalidClient)
       }
 
     case IndeterminateAuthorizationRequest(req, responseType, clientId, redirectUri, scope, state) =>
         client(clientId, None) match {
           case Some(c) =>
-            if(!validRedirectUri(redirectUri, c)) ContainerResponse(
+            if(!validRedirectUri(redirectUri, c)) ServiceResponse(
               invalidRedirectUri(Some(redirectUri), Some(c))
             )
             else ErrorResponse(UnsupportedResponseType, "unsupported response type %s" format responseType, errorUri(UnsupportedResponseType), state)
-          case _ => ContainerResponse(invalidClient)
+          case _ => ServiceResponse(invalidClient)
         }
   }
 

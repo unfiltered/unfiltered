@@ -65,7 +65,7 @@ case class AuthorizedPass(
   scope: Seq[String]
 ) extends OAuthResponse
 
-case class ContainerResponse[T](
+case class ServiceResponse[T](
   handler: unfiltered.response.ResponseFunction[T]
 ) extends AuthorizationResponse
 

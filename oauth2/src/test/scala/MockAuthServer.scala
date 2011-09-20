@@ -53,7 +53,7 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
                               scope: Seq[String]) = mock
   }
 
-  trait MockContainer extends Container {
+  trait MockService extends Service {
     import unfiltered.request._
     import unfiltered.response._
     import unfiltered.request.{HttpRequest => Req}
@@ -106,7 +106,7 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
 
   object MockAuthorizationServer
      extends AuthorizationServer
-     with MockClients with MockTokens with MockContainer
+     with MockClients with MockTokens with MockService
 
   val auth = MockAuthorizationServer
 }

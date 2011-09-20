@@ -125,7 +125,7 @@ trait Authorized extends AuthorizationProvider
            case (ruri, Code) =>
              auth(AuthorizationCodeRequest(req, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
 
-               case ContainerResponse(resp) => resp
+               case ServiceResponse(resp) => resp
 
                case AuthorizationCodeResponse(code, state) =>
                   Redirect(ruri ? "code=%s%s".format(
@@ -145,7 +145,7 @@ trait Authorized extends AuthorizationProvider
            // implicit token flow
            case (ruri, TokenKey) =>
              auth(ImplicitAuthorizationRequest(req, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
-               case ContainerResponse(cr) => cr
+               case ServiceResponse(cr) => cr
                case ImplicitAccessTokenResponse(accessToken, tokenType, expiresIn, scope, state) =>
                    val frag = qstr(
                      Map(AccessTokenKey -> accessToken, TokenType -> tokenType) ++
@@ -169,7 +169,7 @@ trait Authorized extends AuthorizationProvider
            // unsupported grant type
            case (ruri, unsupported) =>
              auth(IndeterminateAuthorizationRequest(req, unsupported, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
-               case ContainerResponse(cr) => cr
+               case ServiceResponse(cr) => cr
                case ErrorResponse(error, desc, euri, state) =>
                  Redirect(ruri ? qstr(
                    Map(Error -> error, ErrorDescription -> desc) ++
