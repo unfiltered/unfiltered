@@ -5,10 +5,11 @@ import org.specs._
 object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
   import unfiltered.response._
   import unfiltered.request._
-  import unfiltered.request.{Path => UFPath}
   import dispatch._
 
-  class User(val id: String) extends ResourceOwner
+  class User(val id: String) extends ResourceOwner {
+    override val password = None
+  }
 
   object User {
     import javax.servlet.http.{HttpServletRequest}
@@ -48,7 +49,7 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
   }
 
   "oauth 2" should {
-   /* "authenticate a valid access token via query parameter" in {
+    "authenticate a valid access token via query parameter" in {
       val oauth_token = Map("bearer_token" -> GoodBearerToken)
       try {
         Http.x(host / "user" <<? oauth_token as_str) must_== "test_user"
@@ -72,11 +73,11 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
       val bearer_header = Map("Authorization" -> "Bearer bad_token")
       println(host / "user" <:< bearer_header as_str)
       Http.when(_ == 401)(host / "user" <:< bearer_header as_str) must_== """error="%s" error_description="%s" """.trim.format("invalid_token", "bad token")
-    }*/
-
+    }
+/*
     "authenticate a valid access token via MAC header" in {
       val mac_header = Map("Authorization" -> """MAC id="%s",nonce="123:x",bodyhash="x",mac="x" """.format(GoodMacToken).trim)
       Http(host / "user" <:< mac_header as_str) must_== "test_user"
-    }
+    }*/
   }
 }

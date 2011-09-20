@@ -2,12 +2,13 @@ package unfiltered.oauth2
 
 case class MockClient(id: String, secret: String, redirectUri: String) extends Client
 
-case class MockResourceOwner(id:  String) extends ResourceOwner
+case class MockResourceOwner(id:  String) extends ResourceOwner {
+  override val password = None
+}
 
 case class MockToken(val value: String, val clientId: String,
-                     val redirectUri: String, val owner: String)
+                     val redirectUri: String, val owner: String, refresh: Option[String]=Some("refreshToken"))
      extends Token {
-  def refresh = Some("refreshToken")
   def expiresIn = Some(10)
   def scopes = None
   def tokenType = "tokenType"
@@ -30,8 +31,9 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
 
   trait MockTokens extends TokenStore {
     private val mock = MockToken("test", cli.id, cli.redirectUri, owner.id)
+
     def refresh(other: Token) = MockToken(
-       other.value, other.clientId, other.redirectUri, other.owner
+       "newValue", other.clientId, other.redirectUri, other.owner, Some("differentRefreshToken")
     )
     def token(code: String): Option[Token] = Some(mock)
     def refreshToken(refreshToken: String): Option[Token] = Some(mock)
@@ -46,6 +48,9 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
     def generateImplicitAccessToken(owner: ResourceOwner, client: Client,
                                     scope: Option[String], redirectURI: String) =
                                         mock
+
+    def generatePasswordToken(owner: ResourceOwner, client: Client,
+                              scope: Option[String]) = mock
   }
 
   trait MockContainer extends Container {
@@ -73,6 +78,11 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
 
     def resourceOwner[T](r: Req[T]): Option[ResourceOwner] = {
       // would normally look for a resource owners session here
+      Some(owner)
+    }
+
+    def resourceOwner(userName: String, password: String): Option[ResourceOwner] = {
+      // would normally authenticate the resource owner
       Some(owner)
     }
 

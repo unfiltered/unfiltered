@@ -6,6 +6,7 @@ import unfiltered.request.{HttpRequest => Req}
 /** A ResourceOwner belongs to a Container */
 trait ResourceOwner {
   def id: String
+  def password: Option[String]
 }
 
 /** Encapsulates information sent by a Client Authorization request that may
@@ -45,6 +46,9 @@ trait Container extends ContainerResponses {
 
   /** @return Some(resourceOwner) if one is authenticated, None otherwise. None will trigger a login request */
   def resourceOwner[T](r: Req[T]): Option[ResourceOwner]
+
+  /** @return Some(resourceOwner) if they can be authenticated by the given password credentials, otherwise None */
+  def resourceOwner(userName: String, password: String): Option[ResourceOwner]
 
   /** @return true if application-specific logic determines this request was accepted, false otherwise */
   def accepted[T](r: Req[T]): Boolean

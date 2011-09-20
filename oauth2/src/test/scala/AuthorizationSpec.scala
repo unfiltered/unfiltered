@@ -7,7 +7,6 @@ object AuthorizationSpec
   with unfiltered.spec.jetty.Served {
 
   import unfiltered.response._
-  import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
 
   import dispatch._
@@ -21,6 +20,7 @@ object AuthorizationSpec
   )
 
   val owner = MockResourceOwner("doug")
+  val password = "mockuserspassword"
 
   def setup = { server =>
     val authProvider = new MockAuthServerProvider(client, owner)
@@ -40,7 +40,7 @@ object AuthorizationSpec
   // turning off redirects for validation
   def http = new Http {
     override def make_client = {
-      val c = super.make_client
+      val c = new ConfiguredHttpClient(credentials)
       c.setRedirectHandler(new org.apache.http.client.RedirectHandler() {
          import org.apache.http.protocol.HttpContext
          import org.apache.http.{HttpResponse=>HcResponse}
@@ -185,6 +185,68 @@ object AuthorizationSpec
   }
 
   //
+  // resource owner password credentials flow
+  //
+  "OAuth2 requests for grant type password" should {
+    "require a grant_type" in {
+      val body = http(token << Map(
+         "client_id" -> client.id,
+         "client_secret" -> client.secret,
+         "username" -> owner.id,
+         "password" -> password
+      ) as_str)
+      json(body) { map =>
+        map must havePair("error", "invalid_request")
+        map must havePair("error_description", "grant_type is required")
+      }
+    }
+    "require a username" in {
+       val (head, body) = http(token << Map(
+          "grant_type" -> "password",
+          "client_id" -> client.id,
+          "client_secret" -> client.secret,
+          "password" -> password
+       ) >+ { r => (r >:> { h => h }, r as_str ) })
+       json(body) { map =>
+         map must havePair("error", "invalid_request")
+         map must havePair("error_description", "username is required and password is required")
+       }
+    }
+    "require a password" in {
+       val (head, body) = http(token << Map(
+         "grant_type" -> "password",
+         "client_id" -> client.id,
+         "client_secret" -> client.secret,
+         "username" -> owner.id
+       ) >+ { r => (r >:> { h => r }, r as_str ) })
+       json(body) { map =>
+         map must havePair("error", "invalid_request")
+         map must havePair("error_description", "username is required and password is required")
+       }
+    }
+    "require a client_id" in {
+       val (head, body) = http(token << Map(
+          "grant_type" -> "password",
+          "client_secret" -> client.secret
+       ) >+ { r => (r >:> { h => h }, r as_str ) })
+       json(body) { map =>
+         map must havePair("error", "invalid_request")
+         map must havePair("error_description", "client_id is required")
+       }
+    }
+    "require a client_secret" in {
+       val (head, body) = http(token << Map(
+         "grant_type" -> "password",
+         "client_id" -> client.id
+       ) >+ { r => (r >:> { h => r }, r as_str ) })
+       json(body) { map =>
+         map must havePair("error", "invalid_request")
+         map must havePair("error_description", "client_secret is required")
+       }
+    }
+  }
+
+  //
   // authorization code flow spec
   //
   "OAuth2 requests for response_type 'code'" should {
@@ -276,12 +338,14 @@ object AuthorizationSpec
                "grant_type" -> "refresh_token",
                "client_id" -> client.id,
                "client_secret" -> client.secret,
-               "refresh_token" -> map("refresh_token")
+               "refresh_token" -> map("refresh_token").toString
              ) as_str)
              json(rres) { map2  =>
                map2 must haveKey("access_token")
                map2 must haveKey("expires_in")
                map2 must haveKey("refresh_token")
+               map2("refresh_token") must not be equalTo(map("refresh_token"))
+               map2("access_token") must not be equalTo(map("access_token"))
              }
            }
          case _ => fail("!")

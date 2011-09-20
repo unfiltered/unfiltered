@@ -225,7 +225,7 @@ object Unfiltered extends Build {
               s ++ f
             },
             libraryDependencies <++= scalaVersion(v =>
-              Seq(dispatchOAuthDep(v)) ++ integrationTestDeps(v))
+              Seq(dispatchOAuthDep) ++ integrationTestDeps(v))
          )) dependsOn(library)
 
   lazy val oauth2 =
@@ -238,6 +238,6 @@ object Unfiltered extends Build {
               s ++ f
            },
            libraryDependencies <++= scalaVersion(v =>
-             Seq(dispatchOAuthDep(v)) ++ integrationTestDeps(v))
+             Seq(dispatchOAuthDep) ++ integrationTestDeps(v))
          )) dependsOn(jetty, filters, mac)
 }
