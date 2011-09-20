@@ -217,7 +217,7 @@ trait Authorized extends AuthorizationProvider
         grantType.get match {
 
           case ClientCredentials =>
-            auth(ClientCredentialsRequest(clientId.get, clientSecret.get, scope.get)) match {
+            auth(ClientCredentialsRequest(clientId.get, clientSecret.get, scope.getOrElse(Nil))) match {
               case AccessTokenResponse(accessToken, kind, expiresIn, refreshToken, scope, _) =>
                 accessResponder(
                   accessToken, kind, expiresIn, refreshToken, scope
@@ -229,7 +229,7 @@ trait Authorized extends AuthorizationProvider
           case Password =>
             (userName.get, password.get) match {
               case (Some(u), Some(pw)) =>
-                auth(PasswordRequest(u, pw, clientId.get, clientSecret.get, scope.get)) match {
+                auth(PasswordRequest(u, pw, clientId.get, clientSecret.get, scope.getOrElse(Nil))) match {
                   case AccessTokenResponse(accessToken, kind, expiresIn, refreshToken, scope, _) =>
                     accessResponder(
                       accessToken, kind, expiresIn, refreshToken, scope
