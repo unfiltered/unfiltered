@@ -25,18 +25,20 @@ object Intent {
 }
 
 /**
- * Servlet filter that wraps an Intent and adheres to standard filter chain behaviour.
+ * Servlet filter that wraps an Intent and adheres to standard filter
+ * chain behaviour.
  */
 trait Plan extends InittedFilter {
-  val complete: Plan.Intent => Plan.Intent = Cycle.Intent.complete
   def intent: Plan.Intent
-      
-  def doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
+
+  def doFilter(request: ServletRequest,
+               response: ServletResponse,
+               chain: FilterChain) {
     (request, response) match {
       case (hreq: HttpServletRequest, hres: HttpServletResponse) =>
         val request = new RequestBinding(hreq)
         val response = new ResponseBinding(hres)
-        complete(intent)(request) match {
+        Cycle.Intent.complete(intent)(request) match {
           case Pass =>
             chain.doFilter(request.underlying, response.underlying)
           case responseFunction => responseFunction(response)

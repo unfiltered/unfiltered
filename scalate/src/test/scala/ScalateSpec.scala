@@ -26,7 +26,8 @@ class ScalateSpec extends Specification {
   def responseString(scalate: ResponseWriter) = {
     val res = mock(classOf[HttpResponse[Nothing]])
     val bos = new ByteArrayOutputStream
-    when(res.getOutputStream).thenReturn(bos)
+    when(res.outputStream).thenReturn(bos)
+    when(res.charset).thenReturn(HttpResponse.UTF8)
     scalate.respond(res)
     new String(bos.toByteArray)
   }

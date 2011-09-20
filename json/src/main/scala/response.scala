@@ -8,8 +8,8 @@ object Json {
   def jsonToString(json: JValue) = compact(render(json))
 
   def apply(json: JValue) =
-    new ChainResponse(JsonContent ~> ResponseString(jsonToString(json)))
+    new ComposeResponse(JsonContent ~> ResponseString(jsonToString(json)))
 
   def apply(json: JValue, cb: String) =
-    new ChainResponse(JsContent ~> ResponseString("%s(%s)" format(cb, jsonToString(json))))
+    new ComposeResponse(JsContent ~> ResponseString("%s(%s)" format(cb, jsonToString(json))))
 }

@@ -20,23 +20,21 @@ private [websockets] object SecKeyOne extends StringHeader(HttpHeaders.Names.SEC
 private [websockets] object SecKeyTwo extends StringHeader(HttpHeaders.Names.SEC_WEBSOCKET_KEY2)
 private [websockets] object OriginRequestHeader extends StringHeader(HttpHeaders.Names.ORIGIN)
 private [websockets] object ConnectionUpgrade {
-  def unapply[T](r: HttpRequest[T]) = r match {
-    case unfiltered.request.Connection(value) =>
-      if(value.equalsIgnoreCase(HttpHeaders.Values.UPGRADE)) Some(r)
-      else None
-  }
+  def unapply[T](req: HttpRequest[T]) =
+    unfiltered.request.Connection(req).filter {
+      _.equalsIgnoreCase(HttpHeaders.Values.UPGRADE)
+    }
 }
 
 private [websockets] object UpgradeWebsockets {
-  def unapply[T](r: HttpRequest[T]) = r match {
-    case Upgrade(values) =>
-      if(values.exists { _.equalsIgnoreCase(HttpHeaders.Values.WEBSOCKET) }) Some(r)
-      else None
-  }
+  def unapply[T](req: HttpRequest[T]) =
+    Upgrade(req).filter {
+      _.equalsIgnoreCase(HttpHeaders.Values.WEBSOCKET)
+    }.headOption.map { _ => req }
 }
 
 private [websockets] object WSLocation {
-  def apply[T](r: HttpRequest[T]) = "ws://%s%s" format(Host(r).get, r.uri.split('?')(0))
+  def apply[T](r: HttpRequest[T]) = "ws://%s%s" format(Host(r).get, r.uri)
 }
 
 trait Plan extends SimpleChannelUpstreamHandler {
@@ -86,7 +84,7 @@ trait Plan extends SimpleChannelUpstreamHandler {
             def respond(res: HttpResponse[NHttpResponse]) {
               ProtocolRequestHeader(binding) match {
                 case Some(protocol) =>
-                  res.addHeader(SEC_WEBSOCKET_PROTOCOL, protocol)
+                  res.header(SEC_WEBSOCKET_PROTOCOL, protocol)
                 case _ => ()
               }
             }
@@ -101,7 +99,8 @@ trait Plan extends SimpleChannelUpstreamHandler {
                     buff.writeInt((k.replaceAll("[^0-9]", "").toLong / k.replaceAll("[^ ]", "").length).toInt)
                   )
                   buff.writeLong(request.getContent().readLong)
-                  res.underlying.setContent(ChannelBuffers.wrappedBuffer(MessageDigest.getInstance("MD5").digest(buff.array)))
+                  res.underlying.setContent(ChannelBuffers.wrappedBuffer(
+                    MessageDigest.getInstance("MD5").digest(buff.array)))
                 case _ => ()
               }
             }
@@ -122,8 +121,9 @@ trait Plan extends SimpleChannelUpstreamHandler {
               Protocol ~> HandShake)
           )
           ctx.getChannel.getCloseFuture.addListener(new ChannelFutureListener {
-            def operationComplete(future: ChannelFuture) =
+            def operationComplete(future: ChannelFuture) = {
               attempt(Close(WebSocket(ctx.getChannel)))
+            }
           })
           pipe.replace("encoder", "wsencoder", new WebSocketFrameEncoder)
           attempt(Open(WebSocket(ctx.getChannel)))
@@ -171,23 +171,25 @@ object Planify {
 }
 
 case class SocketPlan(intent: Plan.SocketIntent,
-                      pass: Plan.Pass)
-     extends SimpleChannelUpstreamHandler {
-       import jnetty.channel.ExceptionEvent
-       import jnetty.handler.codec.http.websocket.{WebSocketFrame}
+                      pass: Plan.Pass) extends SimpleChannelUpstreamHandler {
+  import jnetty.channel.ExceptionEvent
+  import jnetty.handler.codec.http.websocket.{WebSocketFrame}
 
-       /** 0x00-0x7F typed frame becomes (UTF-8) Text
-        0x80-0xFF typed frame becomes Binary */
-       implicit def wsf2msg(wsf: WebSocketFrame): Msg =
-         if(wsf.isText) Text(wsf.getTextData) else Binary(wsf.getBinaryData)
+  /** 0x00-0x7F typed frame becomes (UTF-8) Text
+   0x80-0xFF typed frame becomes Binary */
+  implicit def wsf2msg(wsf: WebSocketFrame): Msg =
+    if(wsf.isText) Text(wsf.getTextData) else Binary(wsf.getBinaryData)
 
-       def attempt = intent.orElse({ case _ => () }: Plan.SocketIntent)
+  def attempt = intent.orElse({ case _ => () }: Plan.SocketIntent)
 
-       override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) =
-         event.getMessage match {
-           case frame: WebSocketFrame => attempt(Message(WebSocket(ctx.getChannel), frame))
-           case _ =>  pass(ctx, event)
-         }
+  override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) =
+    event.getMessage match {
+      case f: WebSocketFrame => f.getType match {
+        case 0xFF => ctx.getChannel.close
+        case _ => attempt(Message(WebSocket(ctx.getChannel), f))
+      }
+      case _ => pass(ctx, event)
+    }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, event: ExceptionEvent) = {
     attempt(Error(WebSocket(ctx.getChannel), event.getCause))

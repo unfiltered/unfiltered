@@ -1,0 +1,15 @@
+Application Structure
+---------------------
+
+The previous section showed how to respond to requests using a simple
+intent function. The building blocks of Unfiltered are easy to grasp,
+but how do you build a much larger application with them?
+
+The short answer is, *by using Scala*. Unfiltered does not impose
+idioms on your application structure, it's just an HTTP translation
+layer to be applied as you see fit.
+
+That said, partial functions are not the most common entry point for
+web applications and their heavy use in this context may disorient the
+beginner. This section explores some logical structures to put you on
+the path to determining your own application design.

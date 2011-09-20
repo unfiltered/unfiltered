@@ -2,7 +2,7 @@ package unfiltered.response
 
 
 case class Status(code: Int) extends Responder[Any] {
-  def respond(res: HttpResponse[Any]) { res.setStatus(code) }
+  def respond(res: HttpResponse[Any]) { res.status(code) }
 }
 
 // http://www.iana.org/assignments/http-status-codes & http://en.wikipedia.org/wiki/List_of_HTTP_status_codes

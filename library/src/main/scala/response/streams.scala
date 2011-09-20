@@ -11,7 +11,7 @@ object Stream {
 
 trait ResponseStreamer extends Responder[Any] {
   def respond(res: HttpResponse[Any]) {
-    Stream.closeAfter(res.getOutputStream())(stream)
+    Stream.closeAfter(res.outputStream)(stream)
   }
   def stream(os: OutputStream): Unit
 }

@@ -20,12 +20,12 @@ The Java Servlet API enables you to write applications that run on
 servlet containers, anything from Tomcat to Google App Engine. Its
 plan trait is a servlet filter.
 
-#### Netty Channels (unfiltered-netty)
+#### Netty Channel Handlers (unfiltered-netty)
 
 Netty defines *channels* for network I/O and implements them using
 Java's Native I/O (NIO) interface. Its plan traits are upstream
 channel handlers, and the module defines intents and plans in separate
-`cycle` and `channel` subpackages, the former for traditional
+`cycle` and `async` subpackages, the former for traditional
 request-response cycles and the latter for open-ended interaction.
 
 ### Server Modules
@@ -47,11 +47,11 @@ supports it.
 import unfiltered.request._
 import unfiltered.response._
 val hello = unfiltered.filter.Planify {
-   case _ => ResponseString("hello world")
+  case _ => ResponseString("hello world")
 }
-unfiltered.jetty.Http.anylocal.filter(hello).run { s =>
+unfiltered.jetty.Http.anylocal.plan(hello).run { s =>
   unfiltered.util.Browser.open(
-      "http://127.0.0.1:%d/".format(s.port)
+    "http://127.0.0.1:%d/".format(s.port)
   )
 }
 ```
@@ -70,7 +70,7 @@ Bootstraps and binds a server for your channel handlers.
 import unfiltered.request._
 import unfiltered.response._
 val hello = unfiltered.netty.cycle.Planify {
-   case _ => ResponseString("hello world")
+  case _ => ResponseString("hello world")
 }
-unfiltered.netty.Http(8080).handler(hello).run()
+unfiltered.netty.Http(8080).plan(hello).run()
 ```

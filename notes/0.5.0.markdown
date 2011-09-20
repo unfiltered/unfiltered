@@ -1,0 +1,47 @@
+### Library
+
+New [unfiltered-agents][agents] module for targeting and identifying
+common [user agents][ua] provided by [chrislewis][clewis]
+
+### Upload
+
+`unfiltered-upload`s `StreamedFileWrapper#stream` method now returns a
+generic type `T` [#47][i47]
+
+### Scalate
+
+Display of template compilation errors in development mode and fix for
+additional attribute overrides was contributed by [teamon][scalate].
+
+### Netty
+
+Unfiltered's Netty support undergoes a number of changes with this
+release. Most noticeably, applications are now required to define
+exception handling behavior for both `async.Plan` and `cycle.Plan`,
+and request execution behavior for the `cycle.Plan`. Details are
+available in the [expanded Unfiltered documentation][netty].
+
+[netty]: http://unfiltered.databinder.net/Netty+Plans.html
+
+`netty-server` now depends on the `netty` module. This will provide
+more design consistency when implementing server behavior. If you were
+depending on `unfiltered-netty` before, you likely need to depend
+on `unfiltered-netty-server` now.
+
+There is a new `resources` method in the `netty-server` module's
+`Http` and `Https` objects. By default, this handler will pass netty
+MessageEvents upstream if a file can not be resolved. To return
+`NotFound` or `Forbidden` responses for stand-alone static resource
+servers, use `Http(...).resources(url, passOnFail = false)`
+
+`netty-server` `Http` and `Https` objects now define `local` and
+`anylocal` methods for binding to loopback interfaces
+
+Headers parsed as Dates should now be parsed using a US Locale to
+avoid potentional conflict when parsing dates
+
+[i47]: https://github.com/n8han/Unfiltered/issues/47
+[agents]: https://github.com/n8han/Unfiltered/tree/master/agents
+[ua]: http://en.wikipedia.org/wiki/User_agent
+[clewis]: https://github.com/chrislewis
+[scalate]: https://github.com/n8han/Unfiltered/pull/57

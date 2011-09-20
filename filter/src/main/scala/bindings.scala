@@ -7,7 +7,7 @@ import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import unfiltered.Cookie
 import unfiltered.util.Optional
 
-private [filter] class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
+class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   def inputStream = req.getInputStream
   def reader = req.getReader
   def protocol = req.getProtocol
@@ -31,12 +31,11 @@ private [filter] class RequestBinding(req: HttpServletRequest) extends HttpReque
   def remoteAddr = req.getRemoteAddr
 }
 
-private [filter] class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
-  def setContentType(contentType: String) = res.setContentType(contentType)
-  def setStatus(statusCode: Int) = res.setStatus(statusCode)
-  def getOutputStream() = res.getOutputStream
-  def sendRedirect(url: String) = res.sendRedirect(url)
-  def addHeader(name: String, value: String) = res.addHeader(name, value)
+class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
+  def status(statusCode: Int) = res.setStatus(statusCode)
+  def outputStream() = res.getOutputStream
+  def redirect(url: String) = res.sendRedirect(url)
+  def header(name: String, value: String) = res.addHeader(name, value)
   def cookies(resCookies: Seq[Cookie]) = {
     import javax.servlet.http.{Cookie => JCookie}
     resCookies.foreach { c =>
