@@ -1,0 +1,96 @@
+Remember Me?
+------------
+
+At some point may want to remember a client. For that, you may need to spinkle a bit of authentication around your app. Out of the box, HTTP provides you with a simple means of doing so called [basic authentication](http://en.wikipedia.org/wiki/Basic_access_authentication).
+
+Below is one way of handling basic authentication in unfiltered by extending the use of a `kit`.
+
+```scala
+case class Auth(users: Users)
+  extends unfiltered.kit.Prepend {
+
+  def intent = Cycle.Intent[Any, Any] {
+    case r => r match {
+      case BasicAuth(user, pass)
+        if(users.authentic(user, pass)) =>
+          Pass
+      case _ => Unauthorized ~>
+        WWWAuthenticate("""Basic realm="/"""")
+    }
+  }
+}
+```
+
+Here, we created a reusable module of code that extracts a username and password from basic http authentication and verifies those credentials before letting anyone through the gate.
+This module takes a fictuious Users service that ensures the user authenticating is providing valid credentials.
+
+With the code above in hand, we can now layer basic authentication around our client appliction.
+
+```scala
+case class App(users: Users)
+  extends unfiltered.filter.Plan {
+
+  def intent = Auth(users) {
+    case _ => ResponseString("The inner wall")
+  }
+}
+```
+
+You've got be authentic to make it to that inner wall!
+
+Basic authentication turns out to be a great light-weight solution to general authentication, but what if we need to remember a little more information about a user's session? That's where [cookies](http://en.wikipedia.org/wiki/HTTP_cookie) come in.
+
+Let's build on our authenticated application and add support for simple cookie handling.
+
+```scala
+import unfiltered.Cookie
+
+case class App(users: Users)
+  extends unfiltered.filter.Plan {
+
+  def intent = Auth(users) {
+    case Path("/") & Cookies(cookies) =>
+      ResponseString(cookies("pref") match {
+        case Some(Cookie(_, pref, _, _, _, _)) =>
+          "you pref %s, don't you?" format pref
+        case _ => "no preference?"
+      })
+    case Path("/prefer") & Params(p) =>
+       // let's store it on the client
+       ResponseCookies(Cookie("pref", p("pref")(0))) ~>
+         Redirect("/")
+    case Path("/forget") =>
+       ResponseCookies(Cookie("pref", "")) ~>
+         Redirect("/")
+  }
+}
+```
+
+Now that we have a slightly more sophisitcated basic application let's mount it with a user named `jim` and a password of `j@m`.
+
+```scala
+import unfiltered.jetty._
+
+object Main {
+  def main(args: Array[String]) {
+    jetty.Http(8080).filter(App(new Users {
+      def authentic(u: String, p: String) =
+       u == "jim" && p == "j@m"
+    })).run
+  }
+}
+```
+
+In your browser, open the url `http://localhost:8080` and you should be greeted with your browser's native basic authentication dialog. Enter `jim` and `j@m` if you are feeling authentic, otherwise have fun getting passed the dialog :).
+
+Once you get through you should see simple text questioning your preferences. Why is this? Well, you have yet to tell the server what you prefer.
+
+Let's do that now. In your url bar, enter the address `http://localhost:8080/prefer?pref=kittens` or what ever else you are currently have a preference for.
+
+Afterwards every time you hit the `http://localhost:8080` the server has remembered your preference for you. This is a cookie at work!
+
+When you change your mind you can always hit the `prefer` path with a new pref or just tell the server to forget it but entering the address `http://localhost:8080/forget`.
+
+You may notice that we are not doing any validation or error handing on the server but that is a different topic for a different chapter.
+
+You may also have noticed that we have not left a way for the user to `log out`. Basic authentication alone doesn't provide a programatic means of logging out besides closing your browser which means for a more sophisitcated application that requires log out functionality, you will want to implement a more complex authentication stategy.
