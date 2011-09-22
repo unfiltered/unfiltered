@@ -197,6 +197,19 @@ object AuthorizationSpec
          map must haveKey("access_token")
        }
     }
+    // http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-4.2.2
+    "have appropriate Cache-Control and Pragma headers" in {
+      val headers = http(token << Map(
+         "grant_type" -> "client_credentials",
+         "client_id" -> client.id,
+         "client_secret" -> client.secret,
+         "redirect_uri" -> client.redirectUri
+      ) >:> { h => h })
+      headers must haveKey("Cache-Control")
+      headers must haveKey("Pragma")
+      headers("Cache-Control") must be_==(Set("no-store"))
+      headers("Pragma") must be_==(Set("no-cache"))
+    }
   }
 
   //
@@ -270,6 +283,20 @@ object AuthorizationSpec
        json(body) { map =>
          map must haveKey("access_token")
        }
+    }
+    // http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-4.2.2
+    "have appropriate Cache-Control and Pragma headers" in {
+      val headers = http(token << Map(
+         "grant_type" -> "password",
+         "client_id" -> client.id,
+         "client_secret" -> client.secret,
+         "username" -> owner.id,
+         "password" -> password
+      ) >:> { h => h })
+      headers must haveKey("Cache-Control")
+      headers must haveKey("Pragma")
+      headers("Cache-Control") must be_==(Set("no-store"))
+      headers("Pragma") must be_==(Set("no-cache"))
     }
   }
 
@@ -350,13 +377,19 @@ object AuthorizationSpec
        State.findFirstMatchIn(uri.getQuery) must beSome
        uri.getQuery match {
          case Code(code) =>
-           var ares =
-             http(token << Map(
+           val req = token << Map(
                "grant_type" -> "authorization_code",
                "client_id" -> client.id,
                "redirect_uri" -> client.redirectUri,
                "code" -> code
-             ) as_!(client.id, client.secret) as_str)
+             ) as_!(client.id, client.secret)
+           val (header, ares) =
+             http(req >+ { r => (r >:> { h => h }, r as_str ) })
+           // http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-4.2.2:
+           header must haveKey("Cache-Control")
+           header must haveKey("Pragma")
+           header("Cache-Control") must be_== (Set("no-store"))
+           header("Pragma") must be_== (Set("no-cache"))
            json(ares) { map =>
              map must haveKey("access_token")
              map must haveKey("expires_in")

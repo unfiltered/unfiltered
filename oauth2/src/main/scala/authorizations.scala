@@ -91,13 +91,13 @@ trait Authorized extends AuthorizationProvider
   }
 
   protected def accessResponder(accessToken: String, kind: String, expiresIn: Option[Int], refreshToken: Option[String], scope:Seq[String]) =
-    Json(Map(AccessTokenKey -> accessToken, TokenType -> kind) ++
+    CacheControl("no-store") ~> Pragma("no-cache") ~> Json(Map(AccessTokenKey -> accessToken, TokenType -> kind) ++
         expiresIn.map (ExpiresIn -> (_:Int).toString) ++
         refreshToken.map (RefreshToken -> _) ++
         (scope match {
           case Seq() => None
           case xs => Some(scopeEncoder(xs))
-        }).map (Scope -> _)) ~> CacheControl("no-store")
+        }).map (Scope -> _))
 
   protected def errorResponder(error: String, desc: String, euri: Option[String], state: Option[String]) =
     Json(Map(Error -> error, ErrorDescription -> desc) ++
