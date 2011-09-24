@@ -19,13 +19,13 @@ object Plan {
 
 /** a light wrapper around both Sec-WebSocket-Draft + Sec-WebSocket-Version headers */
 private [websockets] object Version {
-  def apply[T](req: HttpRequest[T]) = EarlyDrafts.SecWebSocketDraft.unapply(req).orElse(
-    Draft14.SecWebSocketVersion.unapply(req)
+  def apply[T](req: HttpRequest[T]) = IetfDrafts.SecWebSocketDraft.unapply(req).orElse(
+    IetfDrafts.SecWebSocketVersion.unapply(req)
   )
 }
 
 /** See also http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-14 */
-private [websockets] object Draft14 {
+private [websockets] object IetfDrafts {
 
   /** Server handshake as described in
    *  http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-14#section-4.2.2 */
@@ -42,29 +42,29 @@ private [websockets] object Draft14 {
   // request headers
   object SecWebSocketKey extends StringHeader("Sec-WebSocket-Key")
   object SecWebSocketVersion extends StringHeader("Sec-WebSocket-Version")
+   /** Prior to draft 04, the websocket spec provided an optional draft header
+   *  http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-03#section-10.8 */
+  object SecWebSocketDraft extends StringHeader("Sec-WebSocket-Draft")
 
   // response headers
   object WebSocketAccept extends HeaderName("Sec-WebSocket-Accept")
   object SecWebSocketVersionName extends HeaderName("Sec-WebSocket-Version")
 }
 
-private [websockets] object EarlyDrafts {
+private [websockets] object HixieDrafts {
   import java.security.MessageDigest
   import jnetty.buffer.ChannelBuffers
   import jnetty.handler.codec.http.{HttpResponse => NHttpResponse, HttpRequest => NHttpRequest}
 
-  /** Sec-WebSocket-Key(1/2) as described in drafts 00-03
+  /** Sec-WebSocket-Key(1/2) included in the hixie drafts and later removed in ietf drafts
+   *  see the later in drafts 00-03
    *  http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-03#section-1.3 */
   object SecKeyOne extends StringHeader("Sec-WebSocket-Key1")
   object SecKeyTwo extends StringHeader("Sec-WebSocket-Key2")
 
-  /** Prior to draft 04, the websocket spec provided an optional draft header
-   *  http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-03#section-10.8 */
-  object SecWebSocketDraft extends StringHeader("Sec-WebSocket-Draft")
-
   case class Handshake(binding: RequestBinding) extends Responder[NHttpResponse] {
     def respond(res: HttpResponse[NHttpResponse]) {
-      (EarlyDrafts.SecKeyOne(binding), EarlyDrafts.SecKeyTwo(binding)) match {
+      (HixieDrafts.SecKeyOne(binding), HixieDrafts.SecKeyTwo(binding)) match {
         case (Some(k1), Some(k2)) =>
           val buff = ChannelBuffers.buffer(16)
           (k1 :: k2 :: Nil).foreach( k =>
@@ -196,10 +196,10 @@ trait Plan extends SimpleChannelUpstreamHandler {
               new HeaderName(SecWebSocketOrigin)(OriginRequestHeader(binding).getOrElse("*")) ~>
               new HeaderName(SecWebSocketLocation)(WSLocation(binding)) ~>
               Protocol ~> (
-                if(legacy) EarlyDrafts.Handshake(binding)
+                if(legacy) HixieDrafts.Handshake(binding)
                 else {
-                  Draft14.Handshake(Draft14.SecWebSocketKey.unapply(binding).get) ~>
-                  Draft14.SecWebSocketVersionName(version.getOrElse("0"))
+                  IetfDrafts.Handshake(IetfDrafts.SecWebSocketKey.unapply(binding).get) ~>
+                  IetfDrafts.SecWebSocketVersionName(version.getOrElse("0"))
                 })
             )
           )
@@ -285,6 +285,7 @@ case class SocketPlan(intent: Plan.SocketIntent,
         case _    => attempt(Message(WebSocket(ctx.getChannel), f))
       }
       case _ =>
+        // should we error out here?
         pass(ctx, event)
     }
 
