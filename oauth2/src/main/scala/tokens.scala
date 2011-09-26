@@ -72,7 +72,8 @@ trait TokenStore {
   def exchangeAuthorizationCode(codeToken: Token): Token
 
   /**
-   *
+   * Not responseTypes is a seq to enable oauth extentions but for most cases, it can
+   * be expected to contain one element
    * @see AuthorizationServer
    * @see AuthorizationCodeRequest
    * @notes http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1
@@ -80,17 +81,18 @@ trait TokenStore {
    * and redirect uri for a given resource owner.
    */
   def generateAuthorizationCode(
-        owner: ResourceOwner, client: Client,
+        responseTypes: Seq[String], owner: ResourceOwner, client: Client,
         scope: Seq[String], redirectUri: String): String
 
   /**
-   *
+   * Note responseTypes is a seq to enable oauth extentions but for most cases, it can
+   * be expected to contain one element
    * @see AuthorizationServer
    * @see ImplicitAuthorizationRequest
    * @notes http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.2
    * @return an access token for an implicit client
    */
-  def generateImplicitAccessToken(owner: ResourceOwner, client: Client,
+  def generateImplicitAccessToken(responseTypes: Seq[String], owner: ResourceOwner, client: Client,
                                   scope: Seq[String], redirectUri: String): Token
 
   /**

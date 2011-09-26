@@ -123,7 +123,7 @@ trait Authorized extends AuthorizationProvider
 
            // authorization code flow
            case (ruri, rtx) if(rtx contains(Code)) =>
-             auth(AuthorizationCodeRequest(req, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
+             auth(AuthorizationCodeRequest(req, rtx, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
 
                case ServiceResponse(resp) => resp
 
@@ -144,7 +144,7 @@ trait Authorized extends AuthorizationProvider
 
            // implicit token flow
            case (ruri, rtx) if(rtx contains(TokenKey)) =>
-             auth(ImplicitAuthorizationRequest(req, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
+             auth(ImplicitAuthorizationRequest(req, rtx, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
                case ServiceResponse(cr) => cr
                case ImplicitAccessTokenResponse(accessToken, tokenType, expiresIn, scope, state) =>
                  val frag = qstr(
