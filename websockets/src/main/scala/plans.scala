@@ -5,9 +5,19 @@ import unfiltered.response._
 import unfiltered.netty._
 
 import org.jboss.{netty => jnetty}
+
+import jnetty.channel.{Channel, ChannelFuture, ChannelFutureListener,
+                       ChannelHandlerContext, MessageEvent, SimpleChannelUpstreamHandler}
+import jnetty.buffer.{ChannelBuffer, ChannelBuffers}
 import jnetty.handler.codec.http.HttpHeaders
-import jnetty.channel.{Channel, ChannelHandlerContext, MessageEvent, SimpleChannelUpstreamHandler}
-import jnetty.buffer.ChannelBuffer
+import jnetty.handler.codec.http.{HttpRequest => NHttpRequest,
+                                  HttpResponse => NHttpResponse,
+                                  DefaultHttpResponse}
+import jnetty.handler.codec.http.HttpVersion.HTTP_1_1
+import jnetty.handler.codec.http.HttpResponseStatus.FORBIDDEN
+import jnetty.handler.codec.http.HttpHeaders.setContentLength
+
+import jnetty.util.CharsetUtil
 
 object Plan {
   /** The trasition from an http request handling to websocket request handling.
@@ -26,11 +36,23 @@ object Plan {
   }: SocketIntent)
 
   type PassHandler = (ChannelHandlerContext, MessageEvent) => Unit
+
+  val DefaultPassHandler = ({ (ctx, event) =>
+      event.getMessage match {
+        case request: NHttpRequest =>
+          val res = new DefaultHttpResponse(HTTP_1_1, FORBIDDEN)
+          res.setContent(ChannelBuffers.copiedBuffer(res.getStatus.toString, CharsetUtil.UTF_8))
+          setContentLength(res, res.getContent.readableBytes)
+          ctx.getChannel.write(res).addListener(ChannelFutureListener.CLOSE)
+        case msg =>
+          error("Invalid type of event message (%s) for Plan pass handling".format(
+            msg.getClass.getName))
+      }
+   }: PassHandler)
 }
 
 trait CloseOnException { self: ExceptionHandler =>
   def onException(ctx: ChannelHandlerContext, t: Throwable) {
-    println("Error occured in plan")
     t.printStackTrace
     ctx.getChannel.close
   }
@@ -72,8 +94,7 @@ private [websockets] object IetfDrafts {
 
 private [websockets] object HixieDrafts {
   import java.security.MessageDigest
-  import jnetty.buffer.ChannelBuffers
-  import jnetty.handler.codec.http.{HttpResponse => NHttpResponse, HttpRequest => NHttpRequest}
+  import jnetty.handler.codec.http.{HttpRequest => NHttpRequest}
 
   /** Sec-WebSocket-Key(1/2) included in the hixie drafts and later removed in ietf drafts
    *  see the later in drafts 00-03
@@ -125,23 +146,15 @@ private [websockets] object WSLocation {
 }
 
 trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
-
-  import java.security.MessageDigest
-  import jnetty.channel.{ChannelFuture, ChannelFutureListener,
-                         ChannelStateEvent, ExceptionEvent}
-  import jnetty.buffer.ChannelBuffers
+  import jnetty.channel.{ChannelStateEvent, ExceptionEvent}
   import jnetty.handler.codec.http.websocket.{DefaultWebSocketFrame, WebSocketFrame,
                                              WebSocketFrameDecoder => LegacyWebSocketFrameDecoder,
                                              WebSocketFrameEncoder => LegacyWebSocketFrameEncoder}
   import jnetty.handler.codec.http.{HttpHeaders, HttpMethod, HttpRequest => NHttpRequest,
-                                   HttpResponseStatus, HttpVersion,  DefaultHttpResponse,
-                                   HttpResponse => NHttpResponse}
-
+                                   HttpResponseStatus, HttpVersion,  DefaultHttpResponse}
   import HttpHeaders._
   import HttpHeaders.Names.{CONNECTION, ORIGIN, HOST, UPGRADE}
   import HttpHeaders.Values._
-
-  import jnetty.util.CharsetUtil
 
   val SecWebSocketLocation = "Sec-WebSocket-Location"
   val SecWebSocketOrigin = "Sec-WebSocket-Origin"
@@ -250,11 +263,8 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
 class Planify(val intent: Plan.Intent, val pass: Plan.PassHandler) extends Plan with CloseOnException
 
 object Planify {
-  import jnetty.channel.ChannelFutureListener
   import jnetty.buffer.ChannelBuffers
   import jnetty.handler.codec.http.{HttpRequest => NHttpRequest, DefaultHttpResponse}
-  import jnetty.handler.codec.http.HttpVersion.HTTP_1_1
-  import jnetty.handler.codec.http.HttpResponseStatus.FORBIDDEN
   import jnetty.handler.codec.http.HttpHeaders._
   import jnetty.util.CharsetUtil
 
@@ -263,18 +273,7 @@ object Planify {
   /** Creates a WebSocketHandler that, when `Passing`, will return a forbidden
    *  response to the client */
   def apply(intent: Plan.Intent): Plan =
-    Planify(intent, { (ctx, event) =>
-      event.getMessage match {
-        case request: NHttpRequest =>
-          val res = new DefaultHttpResponse(HTTP_1_1, FORBIDDEN)
-          res.setContent(ChannelBuffers.copiedBuffer(res.getStatus.toString, CharsetUtil.UTF_8))
-          setContentLength(res, res.getContent.readableBytes)
-          ctx.getChannel.write(res).addListener(ChannelFutureListener.CLOSE)
-        case msg =>
-          error("Invalid type of event message (%s) for Plan pass handling".format(
-            msg.getClass.getName))
-      }
-   })
+    Planify(intent, Plan.DefaultPassHandler)
 }
 
 case class SocketPlan(intent: Plan.SocketIntent,
