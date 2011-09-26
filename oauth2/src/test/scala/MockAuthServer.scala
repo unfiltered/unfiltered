@@ -7,7 +7,9 @@ case class MockResourceOwner(id:  String) extends ResourceOwner {
 }
 
 case class MockToken(val value: String, val clientId: String,
-                     val redirectUri: String, val owner: String, refresh: Option[String] = Some("refreshToken"))
+                     val redirectUri: String, val owner: String,
+                     refresh: Option[String] = Some("refreshToken"),
+                    override val extras: Iterable[(String, String)] = Map("example_parameter"->"example_value"))
      extends Token {
   def expiresIn = Some(10)
   def scopes = Nil

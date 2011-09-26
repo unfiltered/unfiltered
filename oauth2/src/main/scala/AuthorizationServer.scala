@@ -69,7 +69,7 @@ trait AuthorizationServer {
                 else if(accepted(req)) {
                   val t = generateImplicitAccessToken(responseTypes, owner, c, scope, redirectUri)
                   ImplicitAccessTokenResponse(
-                    t.value, t.tokenType, t.expiresIn, scope, state
+                    t.value, t.tokenType, t.expiresIn, scope, state, t.extras
                   )
                 }
                 else ServiceResponse(requestAuthorization(
@@ -115,7 +115,7 @@ trait AuthorizationServer {
                 else {
                   val t = exchangeAuthorizationCode(token)
                   AccessTokenResponse(
-                    t.value, t.tokenType, t.expiresIn, t.refresh, Nil, None
+                    t.value, t.tokenType, t.expiresIn, t.refresh, Nil, None, t.extras
                  )
                 }
               case _ => ErrorResponse(
@@ -134,7 +134,7 @@ trait AuthorizationServer {
                  if(t.clientId == clientId) {
                    val r = refresh(t)
                    AccessTokenResponse(
-                     r.value, r.tokenType, r.expiresIn, r.refresh, scope, None
+                     r.value, r.tokenType, r.expiresIn, r.refresh, scope, None, r.extras
                    )
                  } else ErrorResponse(
                    UnauthorizedClient, "refresh token does not belong to client", errorUri(UnauthorizedClient), None
@@ -149,7 +149,8 @@ trait AuthorizationServer {
         case Some(c) =>
            val tok = generateClientToken(c, scope)
            AccessTokenResponse(
-             tok.value, tok.tokenType, tok.expiresIn, tok.refresh, Nil/* no scope for client */, None/* no state for client*/
+             tok.value, tok.tokenType, tok.expiresIn, tok.refresh,
+             Nil/* no scope for client */, None/* no state for client*/, tok.extras
            )
         case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, errorUri(InvalidClient), None)
       }
@@ -161,7 +162,7 @@ trait AuthorizationServer {
             case Some(owner) =>
               val tok = generatePasswordToken(owner, c, scope)
               AccessTokenResponse(
-                tok.value, tok.tokenType, tok.expiresIn, tok.refresh, scope, None
+                tok.value, tok.tokenType, tok.expiresIn, tok.refresh, scope, None, tok.extras
               )
             case None => ErrorResponse(InvalidRequest, UnauthorizedClient, errorUri(InvalidClient), None)
           }

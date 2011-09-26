@@ -14,6 +14,9 @@ package unfiltered.oauth2
  * methods used to access protected resources are beyond the scope of
  * this specification and are defined by companion specifications.
  *
+ * A hook for providing extention properties is provided as the `extras`
+ * method which defaults to an empty map
+ *
  * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-1.3
  */
 trait Token {
@@ -25,6 +28,7 @@ trait Token {
   def refresh: Option[String]
   def expiresIn: Option[Int]
   def scopes: Seq[String]
+  def extras: Iterable[(String, String)] = Map.empty[String, String]
 }
 
 /**
