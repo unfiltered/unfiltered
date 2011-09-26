@@ -28,6 +28,14 @@ object Plan {
   type PassHandler = (ChannelHandlerContext, MessageEvent) => Unit
 }
 
+trait CloseOnException { self: ExceptionHandler =>
+  def onException(ctx: ChannelHandlerContext, t: Throwable) {
+    println("Error occured in plan")
+    t.printStackTrace
+    ctx.getChannel.close
+  }
+}
+
 /** a light wrapper around both Sec-WebSocket-Draft + Sec-WebSocket-Version headers */
 private [websockets] object Version {
   def apply[T](req: HttpRequest[T]) = IetfDrafts.SecWebSocketDraft.unapply(req).orElse(
@@ -116,7 +124,7 @@ private [websockets] object WSLocation {
   def apply[T](r: HttpRequest[T]) = "ws://%s%s" format(Host(r).get, r.uri)
 }
 
-trait Plan extends SimpleChannelUpstreamHandler {
+trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
 
   import java.security.MessageDigest
   import jnetty.channel.{ChannelFuture, ChannelFutureListener,
@@ -148,12 +156,6 @@ trait Plan extends SimpleChannelUpstreamHandler {
       case http: NHttpRequest => upgrade(ctx, http, event)
       case _ => pass(ctx, event)
     }
-
-  // todo, if there's an error we may want to bubble this up stream
-  override def exceptionCaught(ctx: ChannelHandlerContext, event: ExceptionEvent) = {
-    event.getCause.printStackTrace
-    event.getChannel.close
-  }
 
   private def upgrade(ctx: ChannelHandlerContext, request: NHttpRequest,
                       event: MessageEvent) = {
@@ -245,7 +247,7 @@ trait Plan extends SimpleChannelUpstreamHandler {
 
 }
 
-class Planify(val intent: Plan.Intent, val pass: Plan.PassHandler) extends Plan
+class Planify(val intent: Plan.Intent, val pass: Plan.PassHandler) extends Plan with CloseOnException
 
 object Planify {
   import jnetty.channel.ChannelFutureListener
@@ -278,7 +280,7 @@ object Planify {
 case class SocketPlan(intent: Plan.SocketIntent,
                       pass: Plan.PassHandler) extends SimpleChannelUpstreamHandler {
   import jnetty.channel.{ChannelFuture, ChannelFutureListener, ExceptionEvent}
-  import jnetty.handler.codec.http.websocket.{WebSocketFrame}
+  import jnetty.handler.codec.http.websocket.WebSocketFrame
 
   /** 0x00-0x7F typed frame becomes (UTF-8) Text
    0x80-0xFF typed frame becomes Binary */
