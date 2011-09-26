@@ -98,7 +98,7 @@ extends ReplayingDecoder[VoidEnum] {
           PingFrame(msg)
         }
       case (f, o) =>
-        println("unhandled fin byte: %s opcode: %s" format(f, o))
+        // unimplemented extension opt codes
         buffer.skipBytes(actualReadableBytes())
         null
     }
