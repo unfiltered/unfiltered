@@ -34,6 +34,7 @@ class RequestBinding(req: HttpServletRequest, c: org.eclipse.jetty.continuation.
   def isSecure = req.isSecure
   def remoteAddr = req.getRemoteAddr
   def respond(rf: unfiltered.response.ResponseFunction[HttpServletResponse]) {
+    if (c == null) throw new Exception("you need Continuation for this feature")
     rf(new ResponseBinding(c.getServletResponse.asInstanceOf[HttpServletResponse]))
     c.complete   
   }
