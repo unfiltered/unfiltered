@@ -41,7 +41,7 @@ case class ImplicitAuthorizationRequest[T](
 
 case class IndeterminateAuthorizationRequest[T](
   req: Req[T],
-  responseType: String,
+  responseType: Seq[String],
   clientId: String,
   redirectURI: String,
   scope: Seq[String],

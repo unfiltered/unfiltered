@@ -24,7 +24,7 @@ trait AuthorizationServer {
    *  validation rules
    * @return true if valid, false otherwise */
   def validRedirectUri(provided: String, client: Client): Boolean =
-    provided.startsWith(client.redirectUri)
+    !provided.contains("#") && provided.startsWith(client.redirectUri)
 
   def apply(r: AuthorizationRequest): AuthorizationResponse = r match {
 
@@ -80,7 +80,8 @@ trait AuthorizationServer {
             if(!validRedirectUri(redirectUri, c)) ServiceResponse(
               invalidRedirectUri(Some(redirectUri), Some(c))
             )
-            else ErrorResponse(UnsupportedResponseType, "unsupported response type %s" format responseType, errorUri(UnsupportedResponseType), state)
+            else ErrorResponse(UnsupportedResponseType, "unsupported response type(s) %s" format responseType,
+                               errorUri(UnsupportedResponseType), state)
           case _ => ServiceResponse(invalidClient)
         }
   }
