@@ -4,7 +4,7 @@ import unfiltered.request._
 import unfiltered.response._
 import unfiltered.filter.Plan
 
-/** 
+/**
  * After your application has obtained an access token, your app can use it to access APIs by
  * including it in either an oauth_token query parameter or an Authorization: OAuth header.
  *
@@ -56,7 +56,7 @@ trait ProtectionLike extends Plan {
 
 /** Represents the authorization source that issued the access token. */
 trait AuthSource {
-  def authenticateToken[T](token: AccessToken, request: HttpRequest[T]): Either[String, (ResourceOwner, Option[String])]
+  def authenticateToken[T](token: AccessToken, request: HttpRequest[T]): Either[String, (ResourceOwner, Seq[String])]
 
   def realm: Option[String] = None
 }
