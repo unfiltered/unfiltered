@@ -6,7 +6,7 @@ import unfiltered.netty._
 
 import org.jboss.{netty => jnetty}
 
-import jnetty.channel.{Channel, ChannelFuture, ChannelFutureListener,
+import jnetty.channel.{Channel, ChannelEvent, ChannelFuture, ChannelFutureListener,
                        ChannelHandlerContext, MessageEvent, SimpleChannelUpstreamHandler}
 import jnetty.buffer.{ChannelBuffer, ChannelBuffers}
 import jnetty.handler.codec.http.HttpHeaders
@@ -35,19 +35,23 @@ object Plan {
     case _ => ()
   }: SocketIntent)
 
-  type PassHandler = (ChannelHandlerContext, MessageEvent) => Unit
+  type PassHandler = (ChannelHandlerContext, ChannelEvent) => Unit
 
   val DefaultPassHandler = ({ (ctx, event) =>
-      event.getMessage match {
-        case request: NHttpRequest =>
-          val res = new DefaultHttpResponse(HTTP_1_1, FORBIDDEN)
-          res.setContent(ChannelBuffers.copiedBuffer(res.getStatus.toString, CharsetUtil.UTF_8))
-          setContentLength(res, res.getContent.readableBytes)
-          ctx.getChannel.write(res).addListener(ChannelFutureListener.CLOSE)
-        case msg =>
-          error("Invalid type of event message (%s) for Plan pass handling".format(
-            msg.getClass.getName))
-      }
+    event match {
+      case me: MessageEvent =>
+        me.getMessage match {
+          case request: NHttpRequest =>
+            val res = new DefaultHttpResponse(HTTP_1_1, FORBIDDEN)
+            res.setContent(ChannelBuffers.copiedBuffer(res.getStatus.toString, CharsetUtil.UTF_8))
+            setContentLength(res, res.getContent.readableBytes)
+            ctx.getChannel.write(res).addListener(ChannelFutureListener.CLOSE)
+          case msg =>
+            error("Invalid type of event message (%s) for Plan pass handling".format(
+              msg.getClass.getName))
+        }
+      case _ => () // we really only care about MessageEvents but need to support the more generic ChannelEvent
+    }
    }: PassHandler)
 }
 
@@ -191,7 +195,7 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
               )
             )_
 
-            def attempt = socketIntent.orElse({ case _ => Pass }: Plan.SocketIntent)
+            def attempt = socketIntent.orElse({ case _ => () }: Plan.SocketIntent)
 
             val Protocol = new Responder[NHttpResponse] {
               def respond(res: HttpResponse[NHttpResponse]) {
@@ -255,7 +259,7 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
 
   /** By default, when a websocket handler `passes` it writes an Http Forbidden response
    *  to the channel. To override that behavior, call this method with a function to handle
-   *  the MessageEvent with custom behavior */
+   *  the ChannelEvent with custom behavior */
   def onPass(handler: Plan.PassHandler) = Planify(intent, handler)
 
 }
