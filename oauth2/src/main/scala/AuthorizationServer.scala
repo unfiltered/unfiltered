@@ -21,8 +21,12 @@ trait AuthorizationServer {
   def errUri(error: String) = errorUri(error)
 
   /** Some servers may wish to override this with custom redirect_url
-   *  validation rules
-   * @return true if valid, false otherwise */
+   *  validation rules. We are being lenient here by checking the base
+   *  of the registered redirect_uri. The spec recommends using the `state`
+   *  param for per-request customization.
+   * @return true if valid, false otherwise
+   * see http://tools.ietf.org/html/draft-ietf-oauth-v2-22#section-3.1.2.2
+   */
   def validRedirectUri(provided: String, client: Client): Boolean =
     !provided.contains("#") && provided.startsWith(client.redirectUri)
 
