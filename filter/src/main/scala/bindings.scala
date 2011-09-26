@@ -8,7 +8,10 @@ import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import unfiltered.Cookie
 import unfiltered.util.Optional
 
-class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) with Async.Responder[HttpServletResponse]{
+class RequestBinding(req: HttpServletRequest, c: org.eclipse.jetty.continuation.Continuation) extends HttpRequest(req) with Async.Responder[HttpServletResponse]{
+  
+  def this(req: HttpServletRequest) = this(req,null) 
+    
   def inputStream = req.getInputStream
   def reader = req.getReader
   def protocol = req.getProtocol
@@ -30,7 +33,10 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) with Asyn
 
   def isSecure = req.isSecure
   def remoteAddr = req.getRemoteAddr
-  def respond(rf: unfiltered.response.ResponseFunction[HttpServletResponse]) = {throw new Exception("this method is not implemented for this backend")}
+  def respond(rf: unfiltered.response.ResponseFunction[HttpServletResponse]) {
+    rf(new ResponseBinding(c.getServletResponse.asInstanceOf[HttpServletResponse]))
+    c.complete   
+  }
 }
 
 class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
@@ -49,4 +55,7 @@ class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
       res.addCookie(jc)
     }
   }
+  def respond(rf: unfiltered.response.ResponseFunction[HttpServletResponse]) = 
+    unfiltered.response.Server("Scala Netty Unfiltered Server") ~> rf 
+
 }

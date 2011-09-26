@@ -23,25 +23,20 @@ object Intent {
 
 trait Plan extends unfiltered.filter.InittedFilter {
   
-  private lazy val continuation = new DynamicVariable[Continuation](null)
-
-  implicit def resume  = continuation.value.resume
-
   def intent: Plan.Intent
 
   def doFilter(request: ServletRequest,
                         response: ServletResponse,
                         chain: FilterChain) {
-   val localContinuation = ContinuationSupport.getContinuation(request)
-   if (localContinuation.isExpired) {
+   val continuation = ContinuationSupport.getContinuation(request)
+   if (continuation.isExpired) {
        response.asInstanceOf[HttpServletResponse].setStatus(408)
        chain.doFilter(request,response)
    } else {
-     localContinuation.suspend()
-     continuation.withValue(localContinuation) {
+     continuation.suspend()
           (request, response) match {
             case (hreq: HttpServletRequest, hres: HttpServletResponse) =>
-              val requestBinding = new RequestBinding(hreq)
+              val requestBinding = new RequestBinding(hreq, continuation)
               val responseBinding = new ResponseBinding(hres)
               intent.orElse({ case _ => Pass }: Plan.Intent)(requestBinding) match {
                 case Pass =>
@@ -49,7 +44,6 @@ trait Plan extends unfiltered.filter.InittedFilter {
                 case _ => ()
               }   
           }  
-     }
    }
  }
 }
