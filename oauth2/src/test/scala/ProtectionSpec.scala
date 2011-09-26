@@ -26,12 +26,12 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
 
   def setup = { server =>
     val source = new AuthSource {
-      def authenticateToken[T](access_token: AccessToken, request: HttpRequest[T]): Either[String, (ResourceOwner, Option[String])] =
+      def authenticateToken[T](access_token: AccessToken, request: HttpRequest[T]): Either[String, (ResourceOwner, Seq[String])] =
         access_token match {
           case BearerToken(GoodBearerToken) =>
-            Right((new User("test_user"), None))
+            Right((new User("test_user"), Nil))
           case MacAuthToken(GoodMacToken, _, _, _, _) =>
-            Right((new User("test_user"), None))
+            Right((new User("test_user"), Nil))
           case _ =>
             Left("bad token")
         }
