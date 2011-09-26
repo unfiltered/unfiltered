@@ -7,7 +7,6 @@ import org.jboss.netty.handler.codec.http.websocket.{WebSocketFrame,
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.{Channel,ChannelHandlerContext}
 import org.jboss.netty.channel.ChannelHandler.Sharable
-
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
 
 import org.jboss.netty.util.CharsetUtil
@@ -15,9 +14,10 @@ import org.jboss.netty.util.CharsetUtil
 class Draft14WebSocketFrameEncoder extends OneToOneEncoder {
 
   override protected def encode(ctx:ChannelHandlerContext,
-                            channel: Channel, msg: AnyRef): AnyRef = {
+                            channel: Channel, msg: AnyRef): AnyRef =
     msg match {
       case c: ControlFrame =>
+        // control frames may be written as is
         val data = c.getBinaryData
         val encoded =
           channel.getConfig().getBufferFactory().getBuffer(data.order(), data.readableBytes)
@@ -38,7 +38,7 @@ class Draft14WebSocketFrameEncoder extends OneToOneEncoder {
             channel.getConfig().getBufferFactory().getBuffer(
               data.order(), blen)
 
-          // write header (final 1000, text 001)
+          // write msg header
           encoded.writeByte(0x81.asInstanceOf[Byte])
 
           // write len
@@ -49,21 +49,19 @@ class Draft14WebSocketFrameEncoder extends OneToOneEncoder {
             encoded.writeByte(126 & 0xFF)
           } else {
             encoded.writeByte(127)
-            encoded.writeByte(rbytes >> 8)
-            encoded.writeByte(rbytes & 0xFF)
+            encoded.writeLong(rbytes)
           }
 
           // write data
           encoded.writeBytes(data, data.readerIndex, data.readableBytes)
           encoded
 
-        } else {
-          error("Binary frames not yet supported")
-          null
-        }
-      case unknownMsg =>
-        error("msg not a WebSocketFrame %s, bailing" format unknownMsg)
-        null
+        } else error(
+          "Binary frames not yet supported"
+        )
+
+      case unknownMsg => error(
+        "msg not a WebSocketFrame %s, bailing" format unknownMsg
+      )
     }
-  }
 }

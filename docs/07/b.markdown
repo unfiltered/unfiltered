@@ -39,17 +39,20 @@ call. That's why `Planify` uses the `cycle.ThreadPool` trait, which
 defers application of the intent partial function to a cached thread
 pool.
 
+### Deference has its Memory Limits
+
 Unfortunately, that's not the end of the story with deferred
 execution. Applications also need to worry about running out of
-memory; deferred request handling to an executor as fast as Netty can
-accept requests would do that.
+memory. If you defer request handling jobs to an executor queue as
+fast as Netty can accept requests, any heap limit can be exceeded with
+a severe enough usage spike.
 
-To avoid that scenario, you should equip your plans with an executor
-that consumes a limited amount of memory and blocks on incoming
-requests when that limit is reached. If you've defined a simple local
-base plan (like the `MyPlan` above), you can customize it later
-(ideally, before your server throws an out of memory exception) with
-with a memory-aware thread pool executor.
+To avoid that kind of failure, you should equip your plans with an
+executor that consumes a limited amount of memory and blocks on
+incoming requests when that limit is reached. If you've defined a
+simple local base plan (like the `MyPlan` above), you can customize it
+later (ideally, before your server throws an out of memory exception)
+with with a memory-aware thread pool executor.
 
 ```scala
 trait MyPlan extends cycle.Plan with
@@ -59,7 +62,6 @@ ServerErrorResponse {
 }
 object MyExecutor {
   import org.jboss.netty.handler.execution._
-  import java.util.concurrent.Executors
   lazy val underlying = new MemoryAwareThreadPoolExecutor(
     16, 65536, 1048576)
 }
@@ -70,26 +72,10 @@ object MyExecutor {
 The `ServerErrorResponse` trait also implements behavior that your
 application will likely need to customize, sooner or later. Instead of
 mixing in that trait, you can implement `onException` directly in your
-base plan. Below is the default exception handler, which merely logs
-the stack trace to stdout and serves a very terse error response.
+base plan. For a starting point see the source for the
+[provided exception handler][onexc], which logs the stack trace to
+stdout and serves a very terse error response. Normally an application
+will hook into its own logger and serve a custom error page or
+redirect.
 
-```scala
-trait MyPlan extends cycle.Plan with
-cycle.DeferralExecutor with cycle.DeferredIntent {
-  def underlying = MyExecutor.underlying
-  def onException(ctx: ChannelHandlerContext, t: Throwable) {
-    val ch = ctx.getChannel
-    if (ch.isOpen) try {
-      println("Exception caught handling request:")
-      t.printStackTrace()
-      val res = new DefaultHttpResponse(
-        HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR)
-      res.setContent(ChannelBuffers.copiedBuffer(
-        "Internal Server Error".getBytes("utf-8")))
-        ch.write(res).addListener(ChannelFutureListener.CLOSE)
-    } catch {
-      case _ => ch.close()
-    }
-  }
-}
-```
+[onexc]: https://github.com/n8han/Unfiltered/blob/master/netty/src/main/scala/exceptions.scala#L15
