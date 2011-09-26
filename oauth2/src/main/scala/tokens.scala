@@ -14,6 +14,9 @@ package unfiltered.oauth2
  * methods used to access protected resources are beyond the scope of
  * this specification and are defined by companion specifications.
  *
+ * A hook for providing extention properties is provided as the `extras`
+ * method which defaults to an empty map
+ *
  * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-1.3
  */
 trait Token {
@@ -25,6 +28,7 @@ trait Token {
   def refresh: Option[String]
   def expiresIn: Option[Int]
   def scopes: Seq[String]
+  def extras: Iterable[(String, String)] = Map.empty[String, String]
 }
 
 /**
@@ -72,7 +76,8 @@ trait TokenStore {
   def exchangeAuthorizationCode(codeToken: Token): Token
 
   /**
-   *
+   * Not responseTypes is a seq to enable oauth extentions but for most cases, it can
+   * be expected to contain one element
    * @see AuthorizationServer
    * @see AuthorizationCodeRequest
    * @notes http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1
@@ -80,17 +85,18 @@ trait TokenStore {
    * and redirect uri for a given resource owner.
    */
   def generateAuthorizationCode(
-        owner: ResourceOwner, client: Client,
+        responseTypes: Seq[String], owner: ResourceOwner, client: Client,
         scope: Seq[String], redirectUri: String): String
 
   /**
-   *
+   * Note responseTypes is a seq to enable oauth extentions but for most cases, it can
+   * be expected to contain one element
    * @see AuthorizationServer
    * @see ImplicitAuthorizationRequest
    * @notes http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.2
    * @return an access token for an implicit client
    */
-  def generateImplicitAccessToken(owner: ResourceOwner, client: Client,
+  def generateImplicitAccessToken(responseTypes: Seq[String], owner: ResourceOwner, client: Client,
                                   scope: Seq[String], redirectUri: String): Token
 
   /**

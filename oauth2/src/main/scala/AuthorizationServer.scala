@@ -21,14 +21,18 @@ trait AuthorizationServer {
   def errUri(error: String) = errorUri(error)
 
   /** Some servers may wish to override this with custom redirect_url
-   *  validation rules
-   * @return true if valid, false otherwise */
+   *  validation rules. We are being lenient here by checking the base
+   *  of the registered redirect_uri. The spec recommends using the `state`
+   *  param for per-request customization.
+   * @return true if valid, false otherwise
+   * see http://tools.ietf.org/html/draft-ietf-oauth-v2-22#section-3.1.2.2
+   */
   def validRedirectUri(provided: String, client: Client): Boolean =
-    provided.startsWith(client.redirectUri)
+    !provided.contains("#") && provided.startsWith(client.redirectUri)
 
   def apply(r: AuthorizationRequest): AuthorizationResponse = r match {
 
-    case AuthorizationCodeRequest(req, clientId, redirectUri, scope, state) =>
+    case AuthorizationCodeRequest(req, responseTypes, clientId, redirectUri, scope, state) =>
       client(clientId, None) match {
         case Some(client) =>
           if(!validRedirectUri(redirectUri, client)) ServiceResponse(
@@ -40,18 +44,19 @@ trait AuthorizationServer {
               case Some(owner) =>
                  if(denied(req)) ErrorResponse(AccessDenied, "user denied request", errorUri(AccessDenied), state)
                  else if(accepted(req)) {
-                    val code = generateAuthorizationCode(owner, client, scope, redirectUri)
-                    AuthorizationCodeResponse(code, state)
+                    AuthorizationCodeResponse(generateAuthorizationCode(responseTypes, owner, client, scope, redirectUri), state)
                  }
-                 else ServiceResponse(requestAuthorization(RequestBundle(req, Code, client, Some(owner), redirectUri, scope, state)))
-              case _ => ServiceResponse(login(RequestBundle(req, Code, client, None, redirectUri, scope, state)))
+                 else ServiceResponse(requestAuthorization(
+                   RequestBundle(req, responseTypes, client, Some(owner), redirectUri, scope, state)
+                 ))
+              case _ => ServiceResponse(login(RequestBundle(req, responseTypes, client, None, redirectUri, scope, state)))
             }
 
           }
         case _ => ServiceResponse(invalidClient)
       }
 
-    case ImplicitAuthorizationRequest(req, clientId, redirectUri, scope, state) =>
+    case ImplicitAuthorizationRequest(req, responseTypes, clientId, redirectUri, scope, state) =>
       client(clientId, None) match {
         case Some(c) =>
           if(!validRedirectUri(redirectUri, c)) ServiceResponse(
@@ -62,25 +67,30 @@ trait AuthorizationServer {
               case Some(owner) =>
                 if(denied(req)) ErrorResponse(AccessDenied, "user denied request", None, state)
                 else if(accepted(req)) {
-                  val t = generateImplicitAccessToken(owner, c, scope, redirectUri)
+                  val t = generateImplicitAccessToken(responseTypes, owner, c, scope, redirectUri)
                   ImplicitAccessTokenResponse(
-                    t.value, t.tokenType, t.expiresIn, scope, state
+                    t.value, t.tokenType, t.expiresIn, scope, state, t.extras
                   )
                 }
-                else ServiceResponse(requestAuthorization(RequestBundle(req, TokenKey, c, Some(owner), redirectUri, scope, state)))
-             case _ => ServiceResponse(login(RequestBundle(req, TokenKey, c, None, redirectUri, scope, state)))
+                else ServiceResponse(requestAuthorization(
+                  RequestBundle(req, responseTypes, c, Some(owner), redirectUri, scope, state)
+                ))
+             case _ => ServiceResponse(login(
+               RequestBundle(req, responseTypes, c, None, redirectUri, scope, state)
+             ))
             }
           }
         case _ => ServiceResponse(invalidClient)
       }
 
-    case IndeterminateAuthorizationRequest(req, responseType, clientId, redirectUri, scope, state) =>
+    case IndeterminateAuthorizationRequest(req, responseTypes, clientId, redirectUri, scope, state) =>
         client(clientId, None) match {
           case Some(c) =>
             if(!validRedirectUri(redirectUri, c)) ServiceResponse(
               invalidRedirectUri(Some(redirectUri), Some(c))
             )
-            else ErrorResponse(UnsupportedResponseType, "unsupported response type %s" format responseType, errorUri(UnsupportedResponseType), state)
+            else ErrorResponse(UnsupportedResponseType, "unsupported response type(s) %s" format responseTypes,
+                               errorUri(UnsupportedResponseType), state)
           case _ => ServiceResponse(invalidClient)
         }
   }
@@ -97,6 +107,7 @@ trait AuthorizationServer {
             token(code) match {
               case Some(token) =>
                 // tokens redirectUri must be exact match to the one provided
+                // in order further bind the access request to the auth request
                 if(token.clientId != client.id || token.redirectUri != redirectUri)
                   ErrorResponse(
                     UnauthorizedClient, "client not authorized", errorUri(UnauthorizedClient), None
@@ -104,7 +115,7 @@ trait AuthorizationServer {
                 else {
                   val t = exchangeAuthorizationCode(token)
                   AccessTokenResponse(
-                    t.value, t.tokenType, t.expiresIn, t.refresh, Nil, None
+                    t.value, t.tokenType, t.expiresIn, t.refresh, Nil, None, t.extras
                  )
                 }
               case _ => ErrorResponse(
@@ -123,7 +134,7 @@ trait AuthorizationServer {
                  if(t.clientId == clientId) {
                    val r = refresh(t)
                    AccessTokenResponse(
-                     r.value, r.tokenType, r.expiresIn, r.refresh, scope, None
+                     r.value, r.tokenType, r.expiresIn, r.refresh, scope, None, r.extras
                    )
                  } else ErrorResponse(
                    UnauthorizedClient, "refresh token does not belong to client", errorUri(UnauthorizedClient), None
@@ -138,7 +149,8 @@ trait AuthorizationServer {
         case Some(c) =>
            val tok = generateClientToken(c, scope)
            AccessTokenResponse(
-             tok.value, tok.tokenType, tok.expiresIn, tok.refresh, Nil/* no scope for client */, None/* no state for client*/
+             tok.value, tok.tokenType, tok.expiresIn, tok.refresh,
+             Nil/* no scope for client */, None/* no state for client*/, tok.extras
            )
         case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, errorUri(InvalidClient), None)
       }
@@ -150,7 +162,7 @@ trait AuthorizationServer {
             case Some(owner) =>
               val tok = generatePasswordToken(owner, c, scope)
               AccessTokenResponse(
-                tok.value, tok.tokenType, tok.expiresIn, tok.refresh, scope, None
+                tok.value, tok.tokenType, tok.expiresIn, tok.refresh, scope, None, tok.extras
               )
             case None => ErrorResponse(InvalidRequest, UnauthorizedClient, errorUri(InvalidClient), None)
           }

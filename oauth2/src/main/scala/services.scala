@@ -12,7 +12,7 @@ trait ResourceOwner {
 /** Encapsulates information sent by a Client Authorization request that may
  *  need to be repeated after authentication, account creation, or other container
  *  behavior before an authorization request can be processed */
-case class RequestBundle[T](request: Req[T], responseType: String, client: Client,
+case class RequestBundle[T](request: Req[T], responseTypes: Seq[String], client: Client,
                             owner: Option[ResourceOwner], redirectUri: String,
                             scope: Seq[String], state: Option[String])
 

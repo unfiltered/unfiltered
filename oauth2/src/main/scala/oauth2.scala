@@ -11,6 +11,7 @@ object OAuthResourceOwner {
   import javax.servlet.http.HttpServletRequest
   import unfiltered.request.HttpRequest
 
+  // todo: how can we accomplish this and not tie ourselves to underlying request?
   def unapply[T <: HttpServletRequest](r: HttpRequest[T]): Option[(String, Option[String])] =
     r.underlying.getAttribute(XAuthorizedIdentity) match {
       case null => None

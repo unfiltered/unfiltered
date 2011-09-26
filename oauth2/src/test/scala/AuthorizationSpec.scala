@@ -130,9 +130,14 @@ object AuthorizationSpec
          "state" -> "test_state"
        ) >:> { h => h })
        head must haveKey("Location")
-       val uri = new URI(head("Location").head)
-       val Frag = """access_token=(\S+)&token_type=(\S+)&expires_in=(\d+)&state=(\S+)""".r
-       Frag.findFirstMatchIn(uri.getFragment) must beSome
+       val responseParams = Map(new URI(head("Location").head).getFragment.split("&").map(_.split("=") match {
+          case Array(k,v) => (k, v)
+       }):_*)
+       responseParams.get("access_token") must beSome
+       responseParams.get("token_type") must beSome
+       responseParams.get("state") must beSome
+       responseParams.get("expires_in") must beSome
+       responseParams.get("example_parameter") must beSome
     }
   }
 
@@ -363,6 +368,7 @@ object AuthorizationSpec
     }
 
     "provide a authorization code flow" in {
+       // requesting authorization
        val head = http(authorize <<? Map(
          "response_type" -> "code",
          "client_id" -> client.id,
@@ -383,6 +389,8 @@ object AuthorizationSpec
                "redirect_uri" -> client.redirectUri,
                "code" -> code
              ) as_!(client.id, client.secret)
+
+           // requesting access token
            val (header, ares) =
              http(req >+ { r => (r >:> { h => h }, r as_str ) })
            // http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-4.2.2:
@@ -394,6 +402,9 @@ object AuthorizationSpec
              map must haveKey("access_token")
              map must haveKey("expires_in")
              map must haveKey("refresh_token")
+             map must haveKey("example_parameter")
+
+             // refreshing token
              val rres = http(token << Map(
                "grant_type" -> "refresh_token",
                "client_id" -> client.id,
@@ -404,6 +415,7 @@ object AuthorizationSpec
                map2 must haveKey("access_token")
                map2 must haveKey("expires_in")
                map2 must haveKey("refresh_token")
+               map2 must haveKey("example_parameter")
                map2("refresh_token") must not be equalTo(map("refresh_token"))
                map2("access_token") must not be equalTo(map("access_token"))
              }

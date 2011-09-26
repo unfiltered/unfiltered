@@ -7,7 +7,9 @@ case class MockResourceOwner(id:  String) extends ResourceOwner {
 }
 
 case class MockToken(val value: String, val clientId: String,
-                     val redirectUri: String, val owner: String, refresh: Option[String] = Some("refreshToken"))
+                     val redirectUri: String, val owner: String,
+                     refresh: Option[String] = Some("refreshToken"),
+                    override val extras: Iterable[(String, String)] = Map("example_parameter"->"example_value"))
      extends Token {
   def expiresIn = Some(10)
   def scopes = Nil
@@ -41,13 +43,14 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
 
     def exchangeAuthorizationCode(other: Token): Token = mock
 
-    def generateAuthorizationCode(owner: ResourceOwner, client: Client,
+    def generateAuthorizationCode(responseTypes: Seq[String], owner: ResourceOwner, client: Client,
                           scope: Seq[String], redirectURI: String) =
                             mock.value
-    def generateClientToken(client: Client, scope: Seq[String]) = mock
-    def generateImplicitAccessToken(owner: ResourceOwner, client: Client,
+
+    def generateImplicitAccessToken(responseTypes: Seq[String], owner: ResourceOwner, client: Client,
                                     scope: Seq[String], redirectURI: String) =
                                         mock
+    def generateClientToken(client: Client, scope: Seq[String]) = mock
 
     def generatePasswordToken(owner: ResourceOwner, client: Client,
                               scope: Seq[String]) = mock

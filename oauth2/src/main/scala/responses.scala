@@ -46,7 +46,8 @@ case class AccessTokenResponse(
   expiresIn: Option[Int],
   refreshToken: Option[String],
   scope: Seq[String],
-  state: Option[String]
+  state: Option[String],
+  extras: Iterable[(String, String)]
 ) extends AccessResponse with AuthorizationResponse
 
 /**
@@ -57,7 +58,8 @@ case class ImplicitAccessTokenResponse(
   tokenType: String,
   expiresIn: Option[Int],
   scope: Seq[String],
-  state: Option[String]
+  state: Option[String],
+  extras: Iterable[(String,String)]
 ) extends AuthorizationResponse
 
 case class AuthorizedPass(

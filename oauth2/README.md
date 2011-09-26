@@ -16,7 +16,16 @@ At a high level, your application configuration may looks something like the fol
       def main(args: Array[String]) {
         unfiltered.jetty.Http(8080)
           .context("/oauth/") {
-            _.filter(OAuthorization(...))
+            _.filter(OAuthorization(...)
+                      .onUnsupportedGrantType(r=>r)
+                      .onAuthCode
+                      .onAccessToken
+                      .onRefresh
+                      .onImplicitAccess
+                      .onError
+                      .authPath
+                      .tokenPath
+             )
           }.context("/api") {
             _.filter(Protection(...))
              .filter(new YourAwesomeApi)
