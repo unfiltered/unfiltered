@@ -10,11 +10,22 @@ import jnetty.channel.{Channel, ChannelHandlerContext, MessageEvent, SimpleChann
 import jnetty.buffer.ChannelBuffer
 
 object Plan {
-  /** The trasition from an http request handling to websocket request handling */
-  type Intent = PartialFunction[RequestBinding, SocketIntent]
+  /** The trasition from an http request handling to websocket request handling.
+   *  Note: This can not be an Async.Intent because RequestBinding is a Responder for HttpResponses */
+  type Intent =
+    PartialFunction[RequestBinding, SocketIntent]
+
   /** WebSockets may be responded to asynchronously, thus their handler does not need to return */
-  type SocketIntent = PartialFunction[SocketCallback, Unit]
-  type Pass = (ChannelHandlerContext, MessageEvent) => Unit
+  type SocketIntent =
+    PartialFunction[SocketCallback, Unit]
+
+  /** Equivalent of an HttpResponse's Pass fn.
+   *  A SocketIntent that does nothing */
+  val Pass  = ({
+    case _ => ()
+  }: SocketIntent)
+
+  type PassHandler = (ChannelHandlerContext, MessageEvent) => Unit
 }
 
 /** a light wrapper around both Sec-WebSocket-Draft + Sec-WebSocket-Version headers */
@@ -130,7 +141,7 @@ trait Plan extends SimpleChannelUpstreamHandler {
 
   def intent: Plan.Intent
 
-  def pass: Plan.Pass
+  def pass: Plan.PassHandler
 
   override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) =
     event.getMessage match {
@@ -147,78 +158,79 @@ trait Plan extends SimpleChannelUpstreamHandler {
   private def upgrade(ctx: ChannelHandlerContext, request: NHttpRequest,
                       event: MessageEvent) = {
     val msg = ReceivedMessage(request, ctx, event)
+
     val binding = new RequestBinding(msg)
+
     val version = Version(binding)
     binding match {
       case GET(ConnectionUpgrade(_) & UpgradeWebsockets(_)) =>
-        if(intent.isDefinedAt(binding)) {
-          val socketIntent = intent(binding)
-          val response = msg.response(
-            new DefaultHttpResponse(
-              HttpVersion.HTTP_1_1,
-              new HttpResponseStatus(101, "Web Socket Protocol Handshake")
-            )
-          )_
+        intent.orElse({ case _ => Plan.Pass }: Plan.Intent)(binding) match {
+          case Plan.Pass =>
+            pass(ctx, event)
+          case socketIntent =>
 
-          def attempt = socketIntent.orElse({ case _ => () }: Plan.SocketIntent)
+            val response = msg.response(
+              new DefaultHttpResponse(
+                HttpVersion.HTTP_1_1,
+                new HttpResponseStatus(101, "Web Socket Protocol Handshake")
+              )
+            )_
 
-          val Protocol = new Responder[NHttpResponse] {
-            def respond(res: HttpResponse[NHttpResponse]) {
-              ProtocolRequestHeader(binding) match {
-                case Some(protocol) =>
-                  res.header(SecWebSocketProtocol, protocol)
-                case _ => ()
+            def attempt = socketIntent.orElse({ case _ => Pass }: Plan.SocketIntent)
+
+            val Protocol = new Responder[NHttpResponse] {
+              def respond(res: HttpResponse[NHttpResponse]) {
+                ProtocolRequestHeader(binding) match {
+                  case Some(protocol) =>
+                    res.header(SecWebSocketProtocol, protocol)
+                  case _ => ()
+                }
               }
             }
-          }
 
-          val pipe = ctx.getChannel.getPipeline
+            val pipe = ctx.getChannel.getPipeline
 
-          if(pipe.get("aggregator") != null) {
-            pipe.remove("aggregator")
-          }
+            if(pipe.get("aggregator") != null) pipe.remove("aggregator")
 
-          val legacy = version match {
-            case None => true
-            case Some(earlier)
-              if(earlier.toInt < 4) => true
-            case Some(recent) => false
-          }
+            val legacy = version match {
+              case None => true
+              case Some(earlier)
+                if(earlier.toInt < 4) => true
+              case Some(recent) => false
+            }
 
-          pipe.replace("decoder", "wsdecoder",
-                       if(legacy) new LegacyWebSocketFrameDecoder
-                       else new Draft14WebSocketFrameDecoder)
+            pipe.replace("decoder", "wsdecoder",
+                         if(legacy) new LegacyWebSocketFrameDecoder
+                         else new Draft14WebSocketFrameDecoder)
 
-          ctx.getChannel.write(
-            response(
-              new HeaderName(UPGRADE)(Values.WEBSOCKET) ~>
-              new HeaderName(CONNECTION)(Values.UPGRADE) ~>
-              new HeaderName(SecWebSocketOrigin)(OriginRequestHeader(binding).getOrElse("*")) ~>
-              new HeaderName(SecWebSocketLocation)(WSLocation(binding)) ~>
-              Protocol ~> (
-                if(legacy) EarlyDrafts.Handshake(binding)
-                else {
-                  Draft14.Handshake(Draft14.SecWebSocketKey.unapply(binding).get) ~>
-                  Draft14.SecWebSocketVersionName(version.getOrElse("0"))
-                })
+            ctx.getChannel.write(
+              response(
+                new HeaderName(UPGRADE)(Values.WEBSOCKET) ~>
+                new HeaderName(CONNECTION)(Values.UPGRADE) ~>
+                new HeaderName(SecWebSocketOrigin)(OriginRequestHeader(binding).getOrElse("*")) ~>
+                new HeaderName(SecWebSocketLocation)(WSLocation(binding)) ~>
+                Protocol ~> (
+                  if(legacy) EarlyDrafts.Handshake(binding)
+                  else {
+                    Draft14.Handshake(Draft14.SecWebSocketKey.unapply(binding).get) ~>
+                    Draft14.SecWebSocketVersionName(version.getOrElse("0"))
+                  })
+              )
             )
-          )
 
-          ctx.getChannel.getCloseFuture.addListener(new ChannelFutureListener {
-            def operationComplete(future: ChannelFuture) =
-              attempt(Close(WebSocket(ctx.getChannel)))
-          })
+            ctx.getChannel.getCloseFuture.addListener(new ChannelFutureListener {
+              def operationComplete(future: ChannelFuture) =
+                attempt(Close(WebSocket(ctx.getChannel)))
+            })
 
-          pipe.replace("encoder", "wsencoder",
-                       if(legacy) new LegacyWebSocketFrameEncoder
-                       else new Draft14WebSocketFrameEncoder)
+            pipe.replace("encoder", "wsencoder",
+                         if(legacy) new LegacyWebSocketFrameEncoder
+                         else new Draft14WebSocketFrameEncoder)
 
-          attempt(Open(WebSocket(ctx.getChannel)))
+            attempt(Open(WebSocket(ctx.getChannel)))
 
-          pipe.replace(this, ctx.getName, SocketPlan(socketIntent, pass))
+            pipe.replace(this, ctx.getName, SocketPlan(socketIntent, pass))
 
-        } else {
-          pass(ctx, event)
         }
       case _ =>
         pass(ctx, event)
@@ -228,11 +240,11 @@ trait Plan extends SimpleChannelUpstreamHandler {
   /** By default, when a websocket handler `passes` it writes an Http Forbidden response
    *  to the channel. To override that behavior, call this method with a function to handle
    *  the MessageEvent with custom behavior */
-  def onPass(handler: Plan.Pass) = Planify(intent, handler)
+  def onPass(handler: Plan.PassHandler) = Planify(intent, handler)
 
 }
 
-class Planify(val intent: Plan.Intent, val pass: Plan.Pass) extends Plan
+class Planify(val intent: Plan.Intent, val pass: Plan.PassHandler) extends Plan
 
 object Planify {
   import jnetty.channel.ChannelFutureListener
@@ -243,7 +255,7 @@ object Planify {
   import jnetty.handler.codec.http.HttpHeaders._
   import jnetty.util.CharsetUtil
 
-  def apply(intent: Plan.Intent, pass: Plan.Pass) = new Planify(intent, pass)
+  def apply(intent: Plan.Intent, pass: Plan.PassHandler) = new Planify(intent, pass)
 
   /** Creates a WebSocketHandler that, when `Passing`, will return a forbidden
    *  response to the client */
@@ -263,7 +275,7 @@ object Planify {
 }
 
 case class SocketPlan(intent: Plan.SocketIntent,
-                      pass: Plan.Pass) extends SimpleChannelUpstreamHandler {
+                      pass: Plan.PassHandler) extends SimpleChannelUpstreamHandler {
   import jnetty.channel.{ChannelFuture, ChannelFutureListener, ExceptionEvent}
   import jnetty.handler.codec.http.websocket.{WebSocketFrame}
 
@@ -276,16 +288,17 @@ case class SocketPlan(intent: Plan.SocketIntent,
 
   override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) =
     event.getMessage match {
-      case c: ControlFrame =>
+      case c @ ClosingFrame(_) =>
         ctx.getChannel.write(c).addListener(new ChannelFutureListener {
           override def operationComplete(f: ChannelFuture) = ctx.getChannel.close
         })
+      case p @ PingFrame(_) => ctx.getChannel.write(p)
+      case p @ PongFrame(_) => ctx.getChannel.write(p)
       case f: WebSocketFrame => f.getType match {
-        case 0xFF => ctx.getChannel.close
+        case 0xFF => /* binary not impl */()
         case _    => attempt(Message(WebSocket(ctx.getChannel), f))
       }
-      case _ =>
-        pass(ctx, event)
+      case _ => pass(ctx, event)
     }
 
   // todo: if there's an error we may want to bubble this upstream
