@@ -102,6 +102,7 @@ trait AuthorizationServer {
             token(code) match {
               case Some(token) =>
                 // tokens redirectUri must be exact match to the one provided
+                // in order further bind the access request to the auth request
                 if(token.clientId != client.id || token.redirectUri != redirectUri)
                   ErrorResponse(
                     UnauthorizedClient, "client not authorized", errorUri(UnauthorizedClient), None
