@@ -101,9 +101,9 @@ trait Authorized extends AuthorizationProvider
         }).map (Scope -> _) ++ extras)
 
   protected def errorResponder(error: String, desc: String, euri: Option[String], state: Option[String]) =
-    Json(Map(Error -> error, ErrorDescription -> desc) ++
+    BadRequest ~> CacheControl("no-store") ~> Pragma("so-cache") ~> Json(Map(Error -> error, ErrorDescription -> desc) ++
         euri.map (ErrorURI -> (_: String)) ++
-        state.map (State -> _)) ~> BadRequest ~> CacheControl("no-store")
+        state.map (State -> _))
 
   private def spaceDecoder(raw: String) = raw.replace("""\s+"""," ").split(" ").toSeq
 
