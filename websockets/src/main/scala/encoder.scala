@@ -56,12 +56,12 @@ class Draft14WebSocketFrameEncoder extends OneToOneEncoder {
           encoded.writeBytes(data, data.readerIndex, data.readableBytes)
           encoded
 
-        } else error(
+        } throw new UnsupportedOperationException(
           "Binary frames not yet supported"
         )
 
-      case unknownMsg => error(
-        "msg not a WebSocketFrame %s, bailing" format unknownMsg
+      case unknownMsg => new IllegalArgumentException(
+        "Message must be a WebSocket or Control frame. %s" format unknownMsg
       )
     }
 }
