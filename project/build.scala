@@ -49,7 +49,7 @@ object Unfiltered extends Build {
             settings = buildSettings) aggregate(
             library, filters, uploads, util, jetty, jettyAjpProject,
             netty, nettyServer, json, specHelpers, scalaTestHelpers,
-            scalate, websockets, oauth, agents)
+            scalate, websockets, oauth, mac, oauth2, agents)
 
   lazy val library: Project =
     Project("unfiltered", file("library"),
