@@ -1,5 +1,6 @@
 package unfiltered.filter
 
+import unfiltered.Async
 import unfiltered.JEnumerationIterator
 import unfiltered.response.HttpResponse
 import unfiltered.request.HttpRequest
@@ -7,7 +8,10 @@ import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import unfiltered.Cookie
 import unfiltered.util.Optional
 
-class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
+class RequestBinding(req: HttpServletRequest, c: org.eclipse.jetty.continuation.Continuation) extends HttpRequest(req) with Async.Responder[HttpServletResponse]{
+  
+  def this(req: HttpServletRequest) = this(req,null) 
+    
   def inputStream = req.getInputStream
   def reader = req.getReader
   def protocol = req.getProtocol
@@ -29,6 +33,11 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
 
   def isSecure = req.isSecure
   def remoteAddr = req.getRemoteAddr
+  def respond(rf: unfiltered.response.ResponseFunction[HttpServletResponse]) {
+    if (c == null) throw new Exception("you need Continuation for this feature")
+    rf(new ResponseBinding(c.getServletResponse.asInstanceOf[HttpServletResponse]))
+    c.complete   
+  }
 }
 
 class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
@@ -47,4 +56,7 @@ class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
       res.addCookie(jc)
     }
   }
+  def respond(rf: unfiltered.response.ResponseFunction[HttpServletResponse]) = 
+    unfiltered.response.Server("Scala Netty Unfiltered Server") ~> rf 
+
 }

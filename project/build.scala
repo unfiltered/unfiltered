@@ -4,6 +4,7 @@ import Keys._
 object Shared {
 
   val servletApiDep = "javax.servlet" % "servlet-api" % "2.3" % "provided"
+  val continuation = "org.eclipse.jetty" % "jetty-continuation" % "7.5.1.v20110908" % "compile" 
   val jettyVersion = "7.2.2.v20101205"
 
   def specsDep(sv: String) =
@@ -72,7 +73,7 @@ object Unfiltered extends Build {
             name := "Unfiltered Filter",
             unmanagedClasspath in (local("filter"), Test) <++=
               (fullClasspath in (local("spec"), Compile)).identity,
-            libraryDependencies <++= scalaVersion(v => Seq(servletApiDep) ++
+            libraryDependencies <++= scalaVersion(v => Seq(servletApiDep, continuation) ++
               integrationTestDeps(v))
           )) dependsOn(library)
 
