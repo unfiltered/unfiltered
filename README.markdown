@@ -12,6 +12,10 @@ The core application library for Unfiltered. This module provides interfaces and
 
 Binds the core library to filters in the servlet 2.3 API.
 
+### filter-async
+
+Provides asynchronous support for the filter module
+
 ### jetty
 
 Provides an embedded web server abstraction for serving filters.

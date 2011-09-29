@@ -18,6 +18,7 @@ names are as follows:
 
 * unfiltered_$scala$
 * unfiltered-filter_$scala$
+* unfiltered-filter-async_$scala$
 * unfiltered-netty_$scala$
 * unfiltered-websockets_$scala$
 * unfiltered-jetty_$scala$
