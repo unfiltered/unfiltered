@@ -5,6 +5,7 @@ object Shared {
 
   val servletApiDep = "javax.servlet" % "servlet-api" % "2.3" % "provided"
   val jettyVersion = "7.2.2.v20101205"
+  val continuation = "org.eclipse.jetty" % "jetty-continuation" % "7.5.1.v20110908" % "compile"
 
   def specsDep(sv: String) =
     sv.split('.').toList match {
@@ -47,7 +48,7 @@ object Unfiltered extends Build {
   lazy val unfiltered =
     Project("unfiltered-all", file("."),
             settings = buildSettings) aggregate(
-            library, filters, uploads, util, jetty, jettyAjpProject,
+            library, filters, filtersAsync , uploads, util, jetty, jettyAjpProject,
             netty, nettyServer, json, specHelpers, scalaTestHelpers,
             scalate, websockets, oauth, agents)
 
@@ -75,6 +76,16 @@ object Unfiltered extends Build {
             libraryDependencies <++= scalaVersion(v => Seq(servletApiDep) ++
               integrationTestDeps(v))
           )) dependsOn(library)
+
+  lazy val filtersAsync =
+    Project(id("filter-async"), file("filter-async"),
+          settings = buildSettings ++ Seq(
+            name := "Unfiltered Filter Async",
+            unmanagedClasspath in (local("filter-async"), Test) <++=
+              (fullClasspath in (local("spec"), Compile)).identity,
+            libraryDependencies <++= scalaVersion(v => Seq(servletApiDep,continuation) ++
+              integrationTestDeps(v))
+          )) dependsOn(filters)
 
   lazy val agents =
     Project(id("agents"), file("agents"),
