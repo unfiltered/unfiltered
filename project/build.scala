@@ -101,8 +101,9 @@ object Unfiltered extends Build {
       settings = Seq(
         unmanagedClasspath in (local("filter-async"), Test) <++=
           (fullClasspath in (local("spec"), Compile)).identity,
-        libraryDependencies <++= scalaVersion(v => Seq(servletApiDep,continuation) ++
-          integrationTestDeps(v))
+        libraryDependencies <++= scalaVersion {
+          v => Seq(servletApiDep,continuation) ++ integrationTestDeps(v)
+        }
       )) dependsOn(filters)
 
   lazy val agents =
