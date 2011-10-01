@@ -222,7 +222,7 @@ object Unfiltered extends Build {
   lazy val websockets =
     module("netty-websockets")(
       settings = Seq(
-        unmanagedClasspath in (local("websockets"), Test) <++=
+        unmanagedClasspath in (local("netty-websockets"), Test) <++=
           (fullClasspath in (local("spec"), Compile)).identity,
         libraryDependencies <++= scalaVersion(integrationTestDeps _)
       )) dependsOn(nettyServer)
