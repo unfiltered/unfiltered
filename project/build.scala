@@ -37,8 +37,8 @@ object Unfiltered extends Build {
     organization := "net.databinder",
     name := "Unfiltered",
     version := "0.5.1-SNAPSHOT",
-    crossScalaVersions := Seq("2.8.0", "2.8.1", "2.8.2", "2.9.0", "2.9.0-1", "2.9.1"),
-    scalaVersion := "2.8.2",
+    crossScalaVersions := Seq("2.8.0", "2.8.1", "2.9.0", "2.9.0-1", "2.9.1"),
+    scalaVersion := "2.8.1",
     publishTo := Some("Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"),
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     scalacOptions ++= Seq("-Xcheckinit", "-encoding", "utf8"),
@@ -206,9 +206,10 @@ object Unfiltered extends Build {
               },
             libraryDependencies <++= scalaVersion(v => Seq(
               v.split('.').toList match {
-                case "2" :: "8" :: _ => "net.liftweb" %% "lift-json" % "2.3"
-                case "2" :: "9" :: "1" :: _ =>  "net.liftweb" % "lift-json_2.9.1" % "2.4-M4"
-                case _ => "net.liftweb" %% "lift-json" % "2.4-M3"
+                case "2" :: "8" :: "2" :: _ =>
+                  "net.liftweb" % "lift-json_2.8.1" % "2.4-M4"
+                case _ =>
+                  "net.liftweb" %% "lift-json" % "2.4-M4"
               }) ++ integrationTestDeps(v))
           )) dependsOn(library)
 
