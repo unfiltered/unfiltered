@@ -44,11 +44,12 @@ object Unfiltered extends Build {
     parallelExecution in Test := false // :( test servers collide on same port
   )
 
-  def srcPath(projectId: String, rootPkg: String) = {
-    mappings in (LocalProject(projectId), Compile, packageSrc) ~= { defaults: Seq[(File,String)] =>
-      defaults.map { case(file, path) =>
-        (file, rootPkg + "/" + path)
-      }
+  def srcPathSetting(projectId: String, rootPkg: String) = {
+    mappings in (LocalProject(projectId), Compile, packageSrc) ~= {
+      defaults: Seq[(File,String)] =>
+        defaults.map { case(file, path) =>
+          (file, rootPkg + "/" + path)
+        }
     }
   }
 
@@ -56,11 +57,10 @@ object Unfiltered extends Build {
     settings: Seq[Setting[_]],
     projectId: String = "unfiltered-" + moduleName,
     dirName: String = moduleName,
-    srcPackage: String = "unfiltered/" + moduleName.replace("-","/")
+    srcPath: String = "unfiltered/" + moduleName.replace("-","/")
   ) = Project(projectId, file(dirName),
-              settings = buildSettings ++ Seq(
-                srcPath(projectId, srcPackage)
-              ) ++ settings)
+              settings = (buildSettings :+
+                          srcPathSetting(projectId, srcPath)) ++ settings)
 
   lazy val unfiltered =
     Project("unfiltered-all", file("."),
@@ -107,7 +107,7 @@ object Unfiltered extends Build {
 
   lazy val agents =
     module("agents")(
-      srcPackage = "unfiltered/request",
+      srcPath = "unfiltered/request",
       settings = Seq(
         unmanagedClasspath in (local("agents"), Test) <++=
             (fullClasspath in (local("spec"), Compile),
@@ -120,7 +120,7 @@ object Unfiltered extends Build {
 
   lazy val uploads =
     module("uploads")(
-      srcPackage = "unfiltered/request",
+      srcPath = "unfiltered/request",
       settings = Seq(
         unmanagedClasspath in (local("uploads"), Test) <++=
           (fullClasspath in (local("spec"), Compile)).identity,
@@ -131,13 +131,7 @@ object Unfiltered extends Build {
         ) ++ integrationTestDeps(v))
        )) dependsOn(filters)
 
-  lazy val util =
-    module("utils")(
-      srcPackage = "unfiltered/util",
-      settings = Seq(
-        // https://github.com/harrah/xsbt/issues/76
-        publishArtifact in packageDoc := false)
-    )
+  lazy val util = module("util")(settings = Seq.empty)
 
   lazy val jetty =
     module("jetty")(
@@ -157,7 +151,7 @@ object Unfiltered extends Build {
 
   lazy val nettyServer =
     module("netty-server")(
-      srcPackage = "unfiltered/netty",
+      srcPath = "unfiltered/netty",
       settings = Seq(
         unmanagedClasspath in (local("netty-server"), Test) <++=
             (fullClasspath in (local("spec"), Compile)).identity,
@@ -226,7 +220,7 @@ object Unfiltered extends Build {
 
   lazy val websockets =
     module("websockets")(
-      srcPackage = "unfiltered/netty/websockets",
+      srcPath = "unfiltered/netty/websockets",
       settings = Seq(
         unmanagedClasspath in (local("websockets"), Test) <++=
           (fullClasspath in (local("spec"), Compile)).identity,
