@@ -20,12 +20,12 @@ names are as follows:
 * unfiltered-filter_$scala$
 * unfiltered-filter-async_$scala$
 * unfiltered-netty_$scala$
-* unfiltered-websockets_$scala$
+* unfiltered-netty-websockets_$scala$
 * unfiltered-jetty_$scala$
 * unfiltered-jetty-ajp_$scala$
 * unfiltered-netty-server_$scala$
 * unfiltered-uploads_$scala$
-* unfiltered-utils_$scala$
+* unfiltered-util_$scala$
 * unfiltered-spec_$scala$
 * unfiltered-scalatest_$scala$
 * unfiltered-json_$scala$

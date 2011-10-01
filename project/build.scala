@@ -186,7 +186,8 @@ object Unfiltered extends Build {
       )) dependsOn(jetty, nettyServer)
 
   lazy val json =
-    module("json")( // todo: mv files so that srcPath can work
+    module("json")(
+      srcPath = "unfiltered",
       settings = Seq(
         unmanagedClasspath in (local("json"), Test) <++=
           (fullClasspath in (local("spec"), Compile),
@@ -219,8 +220,7 @@ object Unfiltered extends Build {
         )) dependsOn(library)
 
   lazy val websockets =
-    module("websockets")(
-      srcPath = "unfiltered/netty/websockets",
+    module("netty-websockets")(
       settings = Seq(
         unmanagedClasspath in (local("websockets"), Test) <++=
           (fullClasspath in (local("spec"), Compile)).identity,
