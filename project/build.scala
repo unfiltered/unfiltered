@@ -184,11 +184,11 @@ object Unfiltered extends Build {
       )) dependsOn(filters, jetty, nettyServer)
 
   lazy val scalaTestHelpers =
-    Project(id("scalatest"), file("scalatest"),
-      settings = buildSettings ++ Seq(
-        libraryDependencies ++=
-          ("org.scalatest" % "scalatest" % "1.3") :: dispatchDeps,
-        srcPath(id("scalatest"), "unfiltered/scalatest")
+    module("scalatest")(
+      settings = Seq(
+        libraryDependencies ~= { _ ++
+          ("org.scalatest" % "scalatest" % "1.3" :: dispatchDeps)
+        }
       )) dependsOn(jetty, nettyServer)
 
   lazy val json =
