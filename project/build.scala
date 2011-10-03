@@ -132,7 +132,11 @@ object Unfiltered extends Build {
         ) ++ integrationTestDeps(v))
        )) dependsOn(filters)
 
-  lazy val util = module("util")(settings = Seq.empty)
+  lazy val util = module("util")(
+    settings = Seq(
+      // https://github.com/harrah/xsbt/issues/76
+      publishArtifact in packageDoc := false
+    ))
 
   lazy val jetty =
     module("jetty")(
