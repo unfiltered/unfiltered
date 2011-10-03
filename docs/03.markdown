@@ -20,6 +20,25 @@ The Java Servlet API enables you to write applications that run on
 servlet containers, anything from Tomcat to Google App Engine. Its
 plan trait is a servlet filter.
 
+#### Asynchronous Servlet Filters (unfiltered-filter-async)
+
+Asynchronous Servlet Filters are using jetty-continuation under the hood which
+should provide a general purpose API that will work asynchronously on any servlet-3.0 container, as well as on Jetty 6, 7 or 8
+(Continuations will also work in blocking mode with any servlet 2.5 container.)
+
+```scala
+object AsyncPlan extends unfiltered.filter.async.Plan  {
+    def intent = { 
+      case GET(UFPath("/pass")) => Pass
+      case req@GET(UFPath("/async")) =>
+        //"respond" is usually called from an asynchronous callback handler
+        req.respond(ResponseString("test") ~> Ok) 
+    }   
+}
+//then you can register this plan with jetty as usual
+unfiltered.jetty.Http.local(8080).filter(ASyncPlan).run()
+
+
 #### Netty Channel Handlers (unfiltered-netty)
 
 Netty defines *channels* for network I/O and implements them using
