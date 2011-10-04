@@ -34,7 +34,7 @@ trait ProtectionLike extends Plan {
       case Left(msg) => errorResponse(Unauthorized, msg, request)
       case Right((user, scopes)) =>
         request.underlying.setAttribute(OAuth2.XAuthorizedIdentity, user.id)
-        scopes.map(request.underlying.setAttribute(OAuth2.XAuthorizedScopes, _))
+        request.underlying.setAttribute(OAuth2.XAuthorizedScopes, scopes)
         Pass
     }
 
