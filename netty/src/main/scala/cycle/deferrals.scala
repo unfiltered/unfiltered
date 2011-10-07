@@ -2,7 +2,7 @@ package unfiltered.netty.cycle
 
 import java.util.concurrent.{ExecutorService,Executors}
 
-/** Evaluates the intent in an unbonuded CachedThreadPool
+/** Evaluates the intent in an unbounded CachedThreadPool
  * executor. For a production environment with known
  * memory constraints, it is better to extend
  * `DeferralExecutor with DeferredIntent` and supply
