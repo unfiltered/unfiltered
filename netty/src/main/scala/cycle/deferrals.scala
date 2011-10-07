@@ -9,11 +9,11 @@ import java.util.concurrent.{ExecutorService,Executors}
  * a configured MemoryAwareThreadPoolExecutor.*/
 trait ThreadPool extends DeferralExecutor with DeferredIntent {
   self: Plan =>
-  def underlying = ThreadPool.executor
+  val underlying = ThreadPool.executor
 }
 
 object ThreadPool {
-  lazy val executor = Executors.newCachedThreadPool()
+  def executor = Executors.newCachedThreadPool()
 }
 
 /** Evaluates the intent and its response function on
