@@ -241,7 +241,7 @@ object Unfiltered extends Build {
 
   lazy val mac =
     module("mac")(
-      settings = buildSettings ++ Seq(
+      settings = Seq(
         name := "Unfiltered MAC",
         unmanagedClasspath in (local("mac"), Test) <++=
           (fullClasspath in (local("spec"), Compile),
@@ -254,7 +254,7 @@ object Unfiltered extends Build {
 
   lazy val oauth2 =
     module("oauth2")(
-      settings = buildSettings ++ Seq(
+      settings = Seq(
         name := "Unfiltered OAuth2",
         unmanagedClasspath in (local("oauth2"), Test) <++=
           (fullClasspath in (local("spec"), Compile),
