@@ -1,44 +1,45 @@
-Planning for Any-thing
-----------------------
+Who's Who
+---------
 
-Thanks to one of the darker corners of the Scala type system
-(*variance*), it's a cinch to define intents that work with all plans.
+Out of the box, HTTP provides you with [basic authentication][basic],
+a simple way to specify a name and password for a request. These
+credentials are transferred as an unencrypted request header;
+applications should secure both credentials and message bodies by
+requiring HTTPS for any protected resources.
 
-### Agnostic Intents
+[basic]: http://en.wikipedia.org/wiki/Basic_access_authentication
+
+Below, we define a *kit* that extracts a username and password via
+basic HTTP authentication and verifies those credentials before
+letting anyone through the gate. It presumes a `Users` service that
+would validate the user's credentials.
 
 ```scala
-import unfiltered.request._
-import unfiltered.response._
+case class Auth(users: Users)
+  extends unfiltered.kit.Prepend {
 
-object Hello {
-  val intent = unfiltered.Cycle.Intent[Any, Any] {
-    case _ => ResponseString("Hello")
+  def intent = Cycle.Intent[Any, Any] {
+    case r => r match {
+      case BasicAuth(user, pass)
+        if(users.authentic(user, pass)) =>
+          Pass
+      case _ => Unauthorized ~>
+        WWWAuthenticate("""Basic realm="/"""")
+    }
   }
 }
 ```
 
-The object `Hello` defines an intent with underlying request
-and response types of `Any`. As a result, the intent can not
-statically expect a particular underlying request or response
-binding. This makes sense, as we want to make an intent that
-works with any of them.
-
-### Specific Plans
-
-The next step is to supply the same generic intent to different kinds
-of plans.
+By applying this kit we can layer basic authentication around any
+intent in a client application.
 
 ```scala
-object HelloFilter extends
-       unfiltered.filter.Planify(Hello.intent)
+case class App(users: Users)
+  extends unfiltered.filter.Plan {
 
-object HelloHandler extends
-       unfiltered.netty.cycle.Planify(Hello.intent)
+  def intent = Auth(users) {
+    case _ => ResponseString("Shhhh!")
+  }
+}
 ```
-
-As usual the plans are actual servlet filters or Netty handlers, so
-you could use them with a server you have configured separately or
-with a [server configured by Unfiltered][servers].
-
-[servers]: Bindings+and+Servers.html
 

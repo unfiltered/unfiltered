@@ -37,7 +37,7 @@ object AsyncPlan extends unfiltered.filter.async.Plan  {
 }
 //then you can register this plan with jetty as usual
 unfiltered.jetty.Http.local(8080).filter(ASyncPlan).run()
-
+```
 
 #### Netty Channel Handlers (unfiltered-netty)
 

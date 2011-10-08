@@ -1,96 +1,96 @@
-Remember Me?
-------------
+Pattern Matching Pitfalls
+-------------------------
 
-At some point may want to remember a client. For that, you may need to spinkle a bit of authentication around your app. Out of the box, HTTP provides you with a simple means of doing so called [basic authentication](http://en.wikipedia.org/wiki/Basic_access_authentication).
+Java methods have a finite size, and the Scala compiler generates very
+large methods for complex pattern matching. It can be surprisingly
+easy to hit Java's limit and produce and exception in compilation. There
+is [an open bug][1133] to address the problem in Scala.
 
-Below is one way of handling basic authentication in unfiltered by extending the use of a `kit`.
+[1133]: https://lampsvn.epfl.ch/trac/scala/ticket/1133
+
+There are several techniques for avoiding this limitation when writing
+Unfiltered applications. One is to restructure matches so that common
+cases are handled in one case, and differentiated in subsequent
+matches. Instead of this:
 
 ```scala
-case class Auth(users: Users)
-  extends unfiltered.kit.Prepend {
+case ConditionA(Condition1(req)) => ...
+case ConditionA(Condition2(req)) => ...
+```
+You might write:
 
-  def intent = Cycle.Intent[Any, Any] {
-    case r => r match {
-      case BasicAuth(user, pass)
-        if(users.authentic(user, pass)) =>
-          Pass
-      case _ => Unauthorized ~>
-        WWWAuthenticate("""Basic realm="/"""")
-    }
+```scala
+case ConditionA(req) => req match {
+  case Condition1(_) => ...
+  case Condition2(_) => ...
+  case _ => Pass
+}
+```
+Another technique is to break up your cases into logical, named
+groups. These can be combined into a single intent.
+
+```scala
+val foos = unfiltered.filter.Intent {
+  case ConditionA(Condition1(req)) => ...
+  case ConditionA(Condition2(req)) => ...
+}
+val bars = unfiltered.filter.Intent {
+  case ConditionB(Condition1(req)) => ...
+}
+val fooBar = unfiltered.filter.Planify(foos.orElse(bars))
+```
+For larger groupings of functionality, it may be useful to define
+singleton objects holding logically divided intents.
+
+```scala
+object Foos {
+  import fun.stuff.into.scope._
+  def intent = unfiltered.filter.Intent {
+    case ConditionA(Condition1(req)) => ...
+    case ConditionA(Condition2(req)) => ...
+  }
+}
+object Bars {
+  def intent = unfiltered.filter.Intent {
+    case ConditionB(Condition1(req)) => ...
+  }
+}
+object FooBar extends unfiltered.filter.Plan {
+  def intent = Foos.intent.orElse(Bars.intent)
+}
+```
+You could also make use of separate plans, to be chained together by
+the server.
+
+```scala
+object Foos extends unfiltered.filter.Plan {
+  import fun.stuff.into.scope._
+  def intent = {
+    case ConditionA(Condition1(req)) => ...
+    case ConditionA(Condition2(req)) => ...
+  }
+}
+object Bars extends unfiltered.filter.Plan {
+  def intent = {
+    case ConditionB(Condition1(req)) => ...
   }
 }
 ```
-
-Here, we created a reusable module of code that extracts a username and password from basic http authentication and verifies those credentials before letting anyone through the gate.
-This module takes a fictuious Users service that ensures the user authenticating is providing valid credentials.
-
-With the code above in hand, we can now layer basic authentication around our client appliction.
+And lastly, if there is no logical way to divide up a partial function
+that is large enough to cause a compilation error, you can always
+split it arbitrarily with default cases:
 
 ```scala
-case class App(users: Users)
-  extends unfiltered.filter.Plan {
-
-  def intent = Auth(users) {
-    case _ => ResponseString("The inner wall")
+def intent = {
+  case ConditionA(Condition1(req)) => ...
+  case ConditionA(Condition2(req)) => ...
+  case req => req match => {
+    case ConditionB(Condition1(req)) => ...
+    case _ => Pass
   }
 }
 ```
-
-You've got be authentic to make it to that inner wall!
-
-Basic authentication turns out to be a great light-weight solution to general authentication, but what if we need to remember a little more information about a user's session? That's where [cookies](http://en.wikipedia.org/wiki/HTTP_cookie) come in.
-
-Let's build on our authenticated application and add support for simple cookie handling.
-
-```scala
-import unfiltered.Cookie
-
-case class App(users: Users)
-  extends unfiltered.filter.Plan {
-
-  def intent = Auth(users) {
-    case Path("/") & Cookies(cookies) =>
-      ResponseString(cookies("pref") match {
-        case Some(Cookie(_, pref, _, _, _, _)) =>
-          "you pref %s, don't you?" format pref
-        case _ => "no preference?"
-      })
-    case Path("/prefer") & Params(p) =>
-       // let's store it on the client
-       ResponseCookies(Cookie("pref", p("pref")(0))) ~>
-         Redirect("/")
-    case Path("/forget") =>
-       ResponseCookies(Cookie("pref", "")) ~>
-         Redirect("/")
-  }
-}
-```
-
-Now that we have a slightly more sophisitcated basic application let's mount it with a user named `jim` and a password of `j@m`.
-
-```scala
-import unfiltered.jetty._
-
-object Main {
-  def main(args: Array[String]) {
-    jetty.Http(8080).filter(App(new Users {
-      def authentic(u: String, p: String) =
-       u == "jim" && p == "j@m"
-    })).run
-  }
-}
-```
-
-In your browser, open the url `http://localhost:8080` and you should be greeted with your browser's native basic authentication dialog. Enter `jim` and `j@m` if you are feeling authentic, otherwise have fun getting passed the dialog :).
-
-Once you get through you should see simple text questioning your preferences. Why is this? Well, you have yet to tell the server what you prefer.
-
-Let's do that now. In your url bar, enter the address `http://localhost:8080/prefer?pref=kittens` or what ever else you are currently have a preference for.
-
-Afterwards every time you hit the `http://localhost:8080` the server has remembered your preference for you. This is a cookie at work!
-
-When you change your mind you can always hit the `prefer` path with a new pref or just tell the server to forget it but entering the address `http://localhost:8080/forget`.
-
-You may notice that we are not doing any validation or error handing on the server but that is a different topic for a different chapter.
-
-You may also have noticed that we have not left a way for the user to `log out`. Basic authentication alone doesn't provide a programatic means of logging out besides closing your browser which means for a more sophisitcated application that requires log out functionality, you will want to implement a more complex authentication stategy.
+Be aware that this last intent is *defined* for all requests. Because it
+includes a top-level default case, its `orElse` method will never call
+a partial function passed to it. The `Pass` object however will instruct
+a plan to treat requests that fall to the end as non-matching.
