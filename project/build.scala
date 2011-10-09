@@ -35,8 +35,9 @@ object Unfiltered extends Build {
 
   val buildSettings = Defaults.defaultSettings ++ Seq(
     organization := "net.databinder",
-    version := "0.5.1-SNAPSHOT",
-    crossScalaVersions := Seq("2.8.0", "2.8.1", "2.9.0", "2.9.0-1", "2.9.1"),
+    version := "0.5.1",
+    crossScalaVersions := Seq("2.8.0", "2.8.1", "2.8.2",
+                              "2.9.0", "2.9.0-1", "2.9.1"),
     scalaVersion := "2.8.1",
     publishTo := Some("Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"),
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
@@ -68,7 +69,7 @@ object Unfiltered extends Build {
             ) aggregate(
             library, filters, filtersAsync , uploads, util, jetty,
             jettyAjpProject, netty, nettyServer, json, specHelpers,
-            scalaTestHelpers, scalate, websockets, oauth, agents)
+            scalaTestHelpers, websockets, oauth, agents)
 
   lazy val library: Project =
     module("unfiltered")(
@@ -213,7 +214,7 @@ object Unfiltered extends Build {
       settings = Seq(
         libraryDependencies <++= scalaVersion { v =>
           val scalateVersion = v match {
-            case "2.8.0" | "2.8.1" => "1.4.1"
+            case "2.8.0" | "2.8.1" => "1.5.2-scala_2.8.1"
             case _ => "1.5.2"
           }
           Seq(

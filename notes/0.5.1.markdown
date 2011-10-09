@@ -36,3 +36,10 @@ are recommended, as before, to define their own memory-bound thread
 pools tailored to their production environment. { [n8han][n8] }
 
 [n8]: https://github.com/n8han
+
+### Eclipse-compatible Source Jars
+
+The published source jars now fully nested package-directories as
+required by Eclipse for navigation to library sources. { [tekul][src] }
+
+[tekul]: https://github.com/unfiltered/unfiltered/pull/79
