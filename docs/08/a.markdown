@@ -1,9 +1,9 @@
 Who's Who
 ---------
 
-Out of the box, HTTP provides you with [basic authentication][basic],
+Out of the box HTTP provides you with [basic authentication][basic],
 a simple way to specify a name and password for a request. These
-credentials are transferred as an unencrypted request header;
+credentials are transferred as an unencrypted request header, so
 applications should secure both credentials and message bodies by
 requiring HTTPS for any protected resources.
 
@@ -20,8 +20,7 @@ case class Auth(users: Users)
 
   def intent = Cycle.Intent[Any, Any] {
     case r => r match {
-      case BasicAuth(user, pass)
-        if(users.authentic(user, pass)) =>
+      case BasicAuth(user, pass) if(users.authentic(user, pass)) =>
           Pass
       case _ => Unauthorized ~>
         WWWAuthenticate("""Basic realm="/"""")
@@ -43,3 +42,4 @@ case class App(users: Users)
 }
 ```
 
+Also, don't give the password to any newspaper reporters.
