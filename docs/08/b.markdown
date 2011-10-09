@@ -64,11 +64,3 @@ preference for you. This is a cookie at work!
 If you change your mind you can always hit the `prefer` path with a
 new pref or just tell the server to forget it by entering the address
 `http://localhost:8080/forget`.
-
-You may notice that we are not doing any validation or error handing
-on the server but that is a different topic for a different chapter.
-
-You may also have noticed that we have not left a way for the user to
-"log out". Basic authentication alone doesn't provide a programmatic
-means of logging out besides closing your browser. A more
-sophisticated application would support an explicit logout function.
