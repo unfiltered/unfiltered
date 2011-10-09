@@ -1,8 +1,8 @@
 ### Asynchronous Servlet Responses
 
 Asynchronous responses are now supported for Servlet 3.0 filters, via
-the `unfiltered-filter-async` module using Jetty continuations. By
-[pk11][asf].
+the `unfiltered-filter-async` module using Jetty continuations. {
+[pk11][asf] }
 
 [asf]: https://github.com/unfiltered/unfiltered/pull/77
 
@@ -10,14 +10,14 @@ the `unfiltered-filter-async` module using Jetty continuations. By
 
 The `unfiltered-netty-websockets` module is updated to support IETF
 draft 10 of the specification, supported by Firefox 7 and Chrome 14.
-By [softprops][softprops].
+{ [softprops][softprops] }
 
 [softprops]: https://github.com/softprops
 
 ### Cookies
 
 Cookies are supported with request matchers and response functions,
-as described in a new documentation section. By [softprops][softprops].
+as described in a new documentation section. { [softprops][softprops] }
 
 ### Github Organization
 
@@ -30,9 +30,9 @@ organization. Bookmarks and **git remotes must be updated** to
 
 ### Netty Executors
 
-Netty cycle plans now have their own default thread pools instead
-of sharing a global pool, to avoid shutdown problems. Applications
+Netty cycle plans now have their own default thread pools instead of
+sharing a global pool, to simplify a graceful shutdown. Applications
 are recommended, as before, to define their own memory-bound thread
-pools tailored to their production environment. By [n8han][n8].
+pools tailored to their production environment. { [n8han][n8] }
 
 [n8]: https://github.com/n8han
