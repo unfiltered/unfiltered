@@ -11,9 +11,8 @@ Let's build on our authenticated application and add support for simple cookie h
 ```scala
 import unfiltered.Cookie
 
-case class App(users: Users)
-  extends unfiltered.filter.Plan {
-
+case class App(users: Users) extends
+unfiltered.filter.Plan {
   def intent = Auth(users) {
     case Path("/") & Cookies(cookies) =>
       ResponseString(cookies("pref") match {
@@ -35,16 +34,13 @@ case class App(users: Users)
 Now that we have a slightly more sophisitcated basic application let's mount it with a user named `jim` and a password of `j@m`.
 
 ```scala
-import unfiltered.jetty._
-
-object Main {
-  def main(args: Array[String]) {
-    jetty.Http(8080).filter(App(new Users {
-      def authentic(u: String, p: String) =
-       u == "jim" && p == "j@m"
-    })).run
-  }
+object JimsAuth extends Users {
+  def auth(u: String, p: String) =
+    u == "jim" && p == "j@m"
 }
+unfiltered.jetty.Http(8080).filter(
+  App(JimsAuth)
+).run
 ```
 
 In your browser, open the url `http://localhost:8080/` and you should
