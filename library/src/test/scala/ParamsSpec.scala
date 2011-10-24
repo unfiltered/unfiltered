@@ -75,7 +75,9 @@ trait ParamsSpec extends unfiltered.spec.Hosted {
       http(host / "basic" <<? Map("foo" -> "bar") as_str) must_=="foo is bar"
     }
     "map post params" in {
-      http(host / "basic" << Map("foo" -> "bar") as_str) must_=="foo is bar"
+      val value = List.tabulate(1024){ _ => "unfiltered"}.mkString("!")
+      http(host / "basic" << Map("foo" -> value) as_str) must_==
+        "foo is %s".format(value)
     }
   }
   "Params Extract matcher" should {
