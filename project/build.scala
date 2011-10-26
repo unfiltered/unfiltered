@@ -4,8 +4,8 @@ import Keys._
 object Shared {
 
   val servletApiDep = "javax.servlet" % "servlet-api" % "2.3" % "provided"
-  val jettyVersion = "7.2.2.v20101205"
-  val continuation = "org.eclipse.jetty" % "jetty-continuation" % "7.5.1.v20110908" % "compile"
+  val jettyVersion = "7.5.4.v20111024"
+  val continuation = "org.eclipse.jetty" % "jetty-continuation" % jettyVersion % "compile"
 
   def specsDep(sv: String) =
     sv.split('.').toList match {
