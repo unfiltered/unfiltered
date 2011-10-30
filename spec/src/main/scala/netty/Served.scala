@@ -8,7 +8,7 @@ import unfiltered.netty.cycle._
 trait Planned extends Served {
   import unfiltered.netty.cycle._
 
-  def setup = _.handler(planify(intent))
+  def setup = _.chunked().handler(planify(intent))
   def intent[A,B]: unfiltered.Cycle.Intent[A,B]
 }
 

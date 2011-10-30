@@ -18,7 +18,7 @@ object AsyncSpec extends unfiltered.spec.netty.Served {
     }
   }
 
-  def setup = _.handler(APlan).handler(planify {
+  def setup = _.chunked().handler(APlan).handler(planify {
     case GET(UFPath("/pass")) => ResponseString("pass") ~> Ok
   })
 

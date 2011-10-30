@@ -5,7 +5,8 @@ import java.util.concurrent.Executors
 import org.jboss.netty.bootstrap.ServerBootstrap
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
 import java.net.InetSocketAddress
-import org.jboss.netty.handler.codec.http.{HttpRequestDecoder, HttpResponseEncoder}
+import org.jboss.netty.handler.codec.http.{
+  HttpRequestDecoder, HttpResponseEncoder, HttpChunkAggregator}
 import org.jboss.netty.handler.stream.ChunkedWriteHandler
 import org.jboss.netty.channel._
 import group.{ChannelGroup, DefaultChannelGroup}
@@ -46,6 +47,12 @@ object Http {
 trait HttpServer extends Server with PlanServer[ChannelHandler] {
   def beforeStopBlock: () => Unit
   def handlers: List[() => ChannelHandler]
+  /** Convenience method for adding a HttpChunkAggregator to the
+   *  pipeline. Supports chunked request bodies up to the specified
+   *  maximum. Without this aggregater, chunked requests will not
+   *  not be handled. */
+  def chunked(maxContentLength: Int = 1048576) =
+    plan(new HttpChunkAggregator(maxContentLength))
   def stop() = {
     beforeStopBlock()
     closeConnections()
