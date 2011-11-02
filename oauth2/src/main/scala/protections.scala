@@ -61,10 +61,10 @@ trait AuthScheme {
    * (this depends on the authentication scheme).
    */
   def errorHeader(error: Option[String] = None, description: Option[String] = None) = {
-    description.foldLeft(
-      error.foldLeft(challenge) ((current, error) =>
-        """%s error="%s"""".format(current, error))) { (current, description) =>
-      current + ",\nerror_description=\"%s\"".trim.format(description)}
+    val attrs = List("error" -> error, "error_description" -> description).collect { case (key, Some(value)) => key -> value }
+    attrs.tail.foldLeft(
+      attrs.headOption.foldLeft(challenge) { case (current, (key, value)) => """%s %s="%s"""".format(current, key, value) }
+    ) { case (current, (key, value)) => current + ",\n%s=\"%s\"".format(key, value) }
   }
 
   /**
