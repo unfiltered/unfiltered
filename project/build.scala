@@ -185,10 +185,12 @@ object Unfiltered extends Build {
 
   lazy val scalaTestHelpers =
     module("scalatest")(
-      settings = Seq(
-        libraryDependencies ~= { _ ++
-          ("org.scalatest" % "scalatest" % "1.3" :: dispatchDeps)
-        }
+      settings = Seq(libraryDependencies <++= scalaVersion(v => Seq(v.split('.').toList match {
+        case "2" :: "8" :: _ => "org.scalatest" % "scalatest_2.8.2" % "1.5.1"
+        case "2" :: "9" :: "1" :: _ => "org.scalatest" % "scalatest_2.9.1" % "1.6.1"
+        case "2" :: "9" :: _ => "org.scalatest" % "scalatest_2.9.0-1" % "1.6.1"
+        case _ => error("ScalaTest not supported for scala version %s" format v)
+    }) ++ dispatchDeps)
       )) dependsOn(jetty, nettyServer)
 
   lazy val json =
