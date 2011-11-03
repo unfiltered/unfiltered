@@ -1,0 +1,5 @@
+### unfiltered-scalatest
+
+Corrected scala-test dependencies for different versions of Scala. { [dwestheide][dwestheide] }
+
+[dwestheide]: https://github.com/unfiltered/unfiltered/issues/92
