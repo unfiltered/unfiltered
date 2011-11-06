@@ -33,7 +33,9 @@ object Unfiltered extends Build {
 
   def local(name: String) = LocalProject(id(name))
 
-  val buildSettings = Defaults.defaultSettings ++ Seq(
+  val buildSettings = Defaults.defaultSettings ++
+    ls.Plugin.lsSettings ++
+    Seq(
     organization := "net.databinder",
     version := "0.5.2-SNAPSHOT",
     crossScalaVersions := Seq("2.8.0", "2.8.1", "2.8.2",
