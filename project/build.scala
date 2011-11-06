@@ -12,7 +12,7 @@ object Shared {
       case "2" :: "8" :: _ => "org.scala-tools.testing" % "specs_2.8.1" % "1.6.8"
       case "2" :: "9" :: "1" :: _ => "org.scala-tools.testing" % "specs_2.9.1" % "1.6.9"
       case "2" :: "9" :: _ => "org.scala-tools.testing" %% "specs" % "1.6.8"
-      case _ => error("specs not supported for scala version %s" format sv)
+      case _ => sys.error("specs not supported for scala version %s" format sv)
     }
 
   val dispatchVersion = "0.8.5"
@@ -92,7 +92,7 @@ object Unfiltered extends Build {
     module("filter")(
       settings = Seq(
         unmanagedClasspath in (local("filter"), Test) <++=
-          (fullClasspath in (local("spec"), Compile)).identity,
+          (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion(v => Seq(servletApiDep) ++
           integrationTestDeps(v))
       )) dependsOn(library)
@@ -101,7 +101,7 @@ object Unfiltered extends Build {
     module("filter-async")(
       settings = Seq(
         unmanagedClasspath in (local("filter-async"), Test) <++=
-          (fullClasspath in (local("spec"), Compile)).identity,
+          (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion {
           v => Seq(servletApiDep,continuation) ++ integrationTestDeps(v)
         }
@@ -125,7 +125,7 @@ object Unfiltered extends Build {
       srcPath = "unfiltered/request",
       settings = Seq(
         unmanagedClasspath in (local("uploads"), Test) <++=
-          (fullClasspath in (local("spec"), Compile)).identity,
+          (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion(v => Seq(
           servletApiDep,
           "commons-io" % "commons-io" % "1.4",
@@ -160,7 +160,7 @@ object Unfiltered extends Build {
       srcPath = "unfiltered/netty",
       settings = Seq(
         unmanagedClasspath in (local("netty-server"), Test) <++=
-            (fullClasspath in (local("spec"), Compile)).identity,
+            (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <<= scalaVersion(integrationTestDeps _)
        )) dependsOn(netty, util)
 
@@ -168,7 +168,7 @@ object Unfiltered extends Build {
     module("netty")(
       settings = Seq(
         unmanagedClasspath in (local("netty"), Test) <++=
-          (fullClasspath in (local("spec"), Compile)).identity,
+          (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion(v =>
           ("org.jboss.netty" % "netty" % "3.2.5.Final" withSources()) +:
           integrationTestDeps(v)
@@ -189,7 +189,7 @@ object Unfiltered extends Build {
         case "2" :: "8" :: _ => "org.scalatest" % "scalatest_2.8.2" % "1.5.1"
         case "2" :: "9" :: "1" :: _ => "org.scalatest" % "scalatest_2.9.1" % "1.6.1"
         case "2" :: "9" :: _ => "org.scalatest" % "scalatest_2.9.0-1" % "1.6.1"
-        case _ => error("ScalaTest not supported for scala version %s" format v)
+        case _ => sys.error("ScalaTest not supported for scala version %s" format v)
     }) ++ dispatchDeps)
       )) dependsOn(jetty, nettyServer)
 
@@ -231,7 +231,7 @@ object Unfiltered extends Build {
     module("netty-websockets")(
       settings = Seq(
         unmanagedClasspath in (local("netty-websockets"), Test) <++=
-          (fullClasspath in (local("spec"), Compile)).identity,
+          (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion(integrationTestDeps _)
       )) dependsOn(nettyServer)
 
@@ -239,7 +239,7 @@ object Unfiltered extends Build {
     module("oauth")(
       settings = Seq(
         unmanagedClasspath in (local("oauth"), Test) <++=
-          (fullClasspath in (local("spec"), Compile)).identity,
+          (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion(v =>
           Seq(dispatchOAuthDep) ++
           integrationTestDeps(v))
