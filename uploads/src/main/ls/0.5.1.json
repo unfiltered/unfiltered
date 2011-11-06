@@ -1,0 +1,39 @@
+
+{
+ "organization":"net.databinder",
+ "name":"unfiltered-uploads",
+ "version":"0.5.1",
+ "description":"unfiltered-uploads",
+ "site":"",
+ "tags":[],
+ "docs":"",
+ "licenses": [],
+ "resolvers": ["http://scala-tools.org/repo-releases"],
+ "dependencies": [{
+   "organization":"javax.servlet",
+   "name": "servlet-api",
+   "version": "2.3"
+  },{
+   "organization":"commons-io",
+   "name": "commons-io",
+   "version": "1.4"
+  },{
+   "organization":"commons-fileupload",
+   "name": "commons-fileupload",
+   "version": "1.2.1"
+  },{
+   "organization":"org.scala-tools.testing",
+   "name": "specs_2.8.1",
+   "version": "1.6.8"
+  },{
+   "organization":"net.databinder",
+   "name": "dispatch-mime",
+   "version": "0.8.5"
+  },{
+   "organization":"net.databinder",
+   "name": "dispatch-http",
+   "version": "0.8.5"
+  }],
+ "scalas": ["2.8.0","2.8.1","2.8.2","2.9.0","2.9.0-1","2.9.1"],
+ "sbt": false
+}
