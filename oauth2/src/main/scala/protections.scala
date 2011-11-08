@@ -36,8 +36,9 @@ trait ProtectionLike extends Plan {
     source.authenticateToken(token, request) match {
       //case Left(msg) => errorResponse(Unauthorized, msg, request)
       case Left(msg) => errorResp(msg)
-      case Right((user, scopes)) =>
+      case Right((user, client, scopes)) =>
         request.underlying.setAttribute(OAuth2.XAuthorizedIdentity, user.id)
+        request.underlying.setAttribute(OAuth2.XAuthorizedClientIdentity, client.id)
         request.underlying.setAttribute(OAuth2.XAuthorizedScopes, scopes)
         Pass
     }
@@ -45,7 +46,7 @@ trait ProtectionLike extends Plan {
 
 /** Represents the authorization source that issued the access token. */
 trait AuthSource {
-  def authenticateToken[T](token: AccessToken, request: HttpRequest[T]): Either[String, (ResourceOwner, Seq[String])]
+  def authenticateToken[T](token: AccessToken, request: HttpRequest[T]): Either[String, (ResourceOwner, Client, Seq[String])]
 
   def realm: Option[String] = None
 }

@@ -11,6 +11,12 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
     override val password = None
   }
 
+  object TestClient extends Client {
+    def redirectUri = "http://example.com"
+    def secret = "client_secret"
+    def id = "test_client"
+  }
+
   object User {
     import javax.servlet.http.{HttpServletRequest}
 
@@ -26,12 +32,13 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
 
   def setup = { server =>
     val source = new AuthSource {
-      def authenticateToken[T](access_token: AccessToken, request: HttpRequest[T]): Either[String, (ResourceOwner, Seq[String])] =
+      def authenticateToken[T](
+          access_token: AccessToken, request: HttpRequest[T]): Either[String, (ResourceOwner, Client, Seq[String])] =
         access_token match {
           case BearerToken(GoodBearerToken) =>
-            Right((new User("test_user"), Nil))
+            Right((new User("test_user"), TestClient, Nil))
           case MacAuthToken(GoodMacToken, _, _, _, _) =>
-            Right((new User("test_user"), Nil))
+            Right((new User("test_user"), TestClient, Nil))
           case _ =>
             Left("bad token")
         }
