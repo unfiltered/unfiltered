@@ -2,6 +2,7 @@ package unfiltered.oauth2
 
 object OAuth2 {
   val XAuthorizedIdentity = "X-Authorized-Identity"
+  val XAuthorizedClientIdentity = "X-Authorized-Client-Identity"
   val XAuthorizedScopes = "X-Authorized-Scopes"
 }
 
