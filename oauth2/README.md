@@ -144,13 +144,13 @@ Protection requires an `AuthSource` defined as
 
 The `Protection` trait handles the OAuth protected access verification in front of other Plans.
 
-After a a successfull authorization verification, your Plans can extract the resource owner's identity and access scopes from the requets with the `OAuthResourceOwner` extractor
+After a a successful authorization verification, your Plans can extract the resource owner's and client's identity as well as the access scopes from the requets with the `OAuthIdentity` extractor
 
 
     svr
      .filter(Protection(authSrc))
      .filter(Planify {
-       case OAuthResourceOwner(idenitity, scopes) => ResponseString("authed as %s" format identity)
+       case OAuthIdentity(user, client, scopes) => ResponseString("authed as %s" format user)
      })
 
 

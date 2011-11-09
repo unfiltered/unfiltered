@@ -6,19 +6,26 @@ object OAuth2 {
   val XAuthorizedScopes = "X-Authorized-Scopes"
 }
 
-/** resource owner extractor */
-object OAuthResourceOwner {
+/** Extractor for a resource owner and the client they authorized, as well as the granted scope. */
+object OAuthIdentity {
   import OAuth2._
   import javax.servlet.http.HttpServletRequest
   import unfiltered.request.HttpRequest
 
   // todo: how can we accomplish this and not tie ourselves to underlying request?
-  def unapply[T <: HttpServletRequest](r: HttpRequest[T]): Option[(String, Seq[String])] =
+  /**
+   * @return a 3-tuple of (resource-owner-id, client-id, scopes) as an Option, or None if any of these is not available
+   * in the request
+   */
+  def unapply[T <: HttpServletRequest](r: HttpRequest[T]): Option[(String, String, Seq[String])] =
     r.underlying.getAttribute(XAuthorizedIdentity) match {
       case null => None
-      case id: String => r.underlying.getAttribute(XAuthorizedScopes) match {
-         case null => Some((id, Nil))
-         case scopes: Seq[String] => Some((id, scopes))
+      case id: String => r.underlying.getAttribute(XAuthorizedClientIdentity) match {
+        case null => None
+        case clientId: String => r.underlying.getAttribute(XAuthorizedScopes) match {
+          case null => Some((id, clientId, Nil))
+          case scopes: Seq[String] => Some((id, clientId, scopes))
+        }
       }
     }
 }
