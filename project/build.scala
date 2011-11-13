@@ -1,5 +1,6 @@
 import sbt._
 import Keys._
+import ls.Plugin.LsKeys
 
 object Shared {
 
@@ -15,7 +16,7 @@ object Shared {
       case _ => sys.error("specs not supported for scala version %s" format sv)
     }
 
-  val dispatchVersion = "0.8.5"
+  val dispatchVersion = "0.8.6-SNAPSHOT"
   def dispatchDeps =
     "net.databinder" %% "dispatch-mime" % dispatchVersion ::
     "net.databinder" %% "dispatch-http" % dispatchVersion :: Nil
@@ -37,14 +38,16 @@ object Unfiltered extends Build {
     ls.Plugin.lsSettings ++
     Seq(
     organization := "net.databinder",
-    version := "0.5.2-SNAPSHOT",
+    version := "0.5.1",
     crossScalaVersions := Seq("2.8.0", "2.8.1", "2.8.2",
                               "2.9.0", "2.9.0-1", "2.9.1"),
     scalaVersion := "2.8.2",
     publishTo := Some("Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"),
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     scalacOptions ++= Seq("-Xcheckinit", "-encoding", "utf8"),
-    parallelExecution in Test := false // :( test servers collide on same port
+    parallelExecution in Test := false, // :( test servers collide on same port
+    LsKeys.docsUrl :=
+      Some(new java.net.URL("http://unfiltered.databinder.net/"))
   )
 
   def srcPathSetting(projectId: String, rootPkg: String) = {
@@ -67,8 +70,10 @@ object Unfiltered extends Build {
 
   lazy val unfiltered =
     Project("unfiltered-all", file("."),
-            settings = buildSettings ++ Seq(name := "Unfiltered")
-            ) aggregate(
+            settings = buildSettings ++ Seq(
+              name := "Unfiltered",
+              LsKeys.skipWrite := true
+            )) aggregate(
             library, filters, filtersAsync , uploads, util, jetty,
             jettyAjpProject, netty, nettyServer, json, specHelpers,
             scalaTestHelpers, websockets, oauth, agents)
