@@ -16,7 +16,7 @@ object Shared {
       case _ => sys.error("specs not supported for scala version %s" format sv)
     }
 
-  val dispatchVersion = "0.8.6-SNAPSHOT"
+  val dispatchVersion = "0.8.5"
   def dispatchDeps =
     "net.databinder" %% "dispatch-mime" % dispatchVersion ::
     "net.databinder" %% "dispatch-http" % dispatchVersion :: Nil
