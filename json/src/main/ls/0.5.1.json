@@ -6,7 +6,7 @@
  "description":"unfiltered-json",
  "site":"",
  "tags":[],
- "docs":"",
+ "docs":"http://unfiltered.databinder.net/",
  "licenses": [],
  "resolvers": ["http://scala-tools.org/repo-releases"],
  "dependencies": [{
