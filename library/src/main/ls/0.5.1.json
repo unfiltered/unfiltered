@@ -3,7 +3,7 @@
  "organization":"net.databinder",
  "name":"unfiltered",
  "version":"0.5.1",
- "description":"unfiltered",
+ "description":"Core library for describing requests and responses",
  "site":"",
  "tags":[],
  "docs":"http://unfiltered.databinder.net/",
