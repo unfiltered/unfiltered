@@ -3,7 +3,7 @@
  "organization":"net.databinder",
  "name":"unfiltered-scalatest",
  "version":"0.5.1",
- "description":"unfiltered-scalatest",
+ "description":"Facilitates testing Unfiltered servers with ScalaTest",
  "site":"",
  "tags":[],
  "docs":"http://unfiltered.databinder.net/",

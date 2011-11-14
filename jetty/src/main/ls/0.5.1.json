@@ -3,7 +3,7 @@
  "organization":"net.databinder",
  "name":"unfiltered-jetty",
  "version":"0.5.1",
- "description":"unfiltered-jetty",
+ "description":"Jetty server embedding module",
  "site":"",
  "tags":[],
  "docs":"http://unfiltered.databinder.net/",

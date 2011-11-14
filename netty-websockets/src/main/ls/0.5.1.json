@@ -3,7 +3,7 @@
  "organization":"net.databinder",
  "name":"unfiltered-netty-websockets",
  "version":"0.5.1",
- "description":"unfiltered-netty-websockets",
+ "description":"WebSockets plan support using Netty",
  "site":"",
  "tags":[],
  "docs":"http://unfiltered.databinder.net/",

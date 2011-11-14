@@ -3,7 +3,7 @@
  "organization":"net.databinder",
  "name":"unfiltered-filter",
  "version":"0.5.1",
- "description":"unfiltered-filter",
+ "description":"Server binding for Java Servlet filters",
  "site":"",
  "tags":[],
  "docs":"http://unfiltered.databinder.net/",
