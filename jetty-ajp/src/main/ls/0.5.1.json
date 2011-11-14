@@ -3,7 +3,7 @@
  "organization":"net.databinder",
  "name":"unfiltered-jetty-ajp",
  "version":"0.5.1",
- "description":"unfiltered-jetty-ajp",
+ "description":"Jetty AJP server embedding module",
  "site":"",
  "tags":[],
  "docs":"http://unfiltered.databinder.net/",

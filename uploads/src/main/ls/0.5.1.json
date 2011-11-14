@@ -3,7 +3,7 @@
  "organization":"net.databinder",
  "name":"unfiltered-uploads",
  "version":"0.5.1",
- "description":"unfiltered-uploads",
+ "description":"Support for multi-part uploads for servlet filters",
  "site":"",
  "tags":[],
  "docs":"http://unfiltered.databinder.net/",

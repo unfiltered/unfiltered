@@ -3,7 +3,7 @@
  "organization":"net.databinder",
  "name":"unfiltered-filter-async",
  "version":"0.5.1",
- "description":"unfiltered-filter-async",
+ "description":"Server binding for Java Servlet 3.0 async filters",
  "site":"",
  "tags":[],
  "docs":"http://unfiltered.databinder.net/",

@@ -3,7 +3,7 @@
  "organization":"net.databinder",
  "name":"unfiltered-oauth",
  "version":"0.5.1",
- "description":"unfiltered-oauth",
+ "description":"OAuth plans for servlet filters",
  "site":"",
  "tags":[],
  "docs":"http://unfiltered.databinder.net/",

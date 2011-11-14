@@ -3,7 +3,7 @@
  "organization":"net.databinder",
  "name":"unfiltered-spec",
  "version":"0.5.1",
- "description":"unfiltered-spec",
+ "description":"Facilitates testing Unfiltered servers with Specs",
  "site":"",
  "tags":[],
  "docs":"http://unfiltered.databinder.net/",

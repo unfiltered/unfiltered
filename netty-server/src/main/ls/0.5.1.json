@@ -3,7 +3,7 @@
  "organization":"net.databinder",
  "name":"unfiltered-netty-server",
  "version":"0.5.1",
- "description":"unfiltered-netty-server",
+ "description":"Netty server embedding module",
  "site":"",
  "tags":[],
  "docs":"http://unfiltered.databinder.net/",
