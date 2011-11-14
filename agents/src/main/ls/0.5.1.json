@@ -4,9 +4,9 @@
  "name":"unfiltered-agents",
  "version":"0.5.1",
  "description":"User-Agent request matchers",
- "site":"",
+ "site":"http://unfiltered.databinder.net/",
  "tags":[],
- "docs":"http://unfiltered.databinder.net/",
+ "docs":"",
  "licenses": [],
  "resolvers": ["http://scala-tools.org/repo-releases"],
  "dependencies": [{

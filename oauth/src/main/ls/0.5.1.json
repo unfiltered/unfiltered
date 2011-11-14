@@ -4,9 +4,9 @@
  "name":"unfiltered-oauth",
  "version":"0.5.1",
  "description":"OAuth plans for servlet filters",
- "site":"",
+ "site":"http://unfiltered.databinder.net/",
  "tags":[],
- "docs":"http://unfiltered.databinder.net/",
+ "docs":"",
  "licenses": [],
  "resolvers": ["http://scala-tools.org/repo-releases"],
  "dependencies": [{
