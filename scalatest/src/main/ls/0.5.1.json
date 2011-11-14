@@ -4,9 +4,9 @@
  "name":"unfiltered-scalatest",
  "version":"0.5.1",
  "description":"Facilitates testing Unfiltered servers with ScalaTest",
- "site":"",
+ "site":"http://unfiltered.databinder.net/",
  "tags":[],
- "docs":"http://unfiltered.databinder.net/",
+ "docs":"",
  "licenses": [],
  "resolvers": ["http://scala-tools.org/repo-releases"],
  "dependencies": [{

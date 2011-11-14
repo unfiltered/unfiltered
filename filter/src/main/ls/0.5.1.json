@@ -4,9 +4,9 @@
  "name":"unfiltered-filter",
  "version":"0.5.1",
  "description":"Server binding for Java Servlet filters",
- "site":"",
+ "site":"http://unfiltered.databinder.net/",
  "tags":[],
- "docs":"http://unfiltered.databinder.net/",
+ "docs":"",
  "licenses": [],
  "resolvers": ["http://scala-tools.org/repo-releases"],
  "dependencies": [{

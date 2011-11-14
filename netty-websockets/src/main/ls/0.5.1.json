@@ -4,9 +4,9 @@
  "name":"unfiltered-netty-websockets",
  "version":"0.5.1",
  "description":"WebSockets plan support using Netty",
- "site":"",
+ "site":"http://unfiltered.databinder.net/",
  "tags":[],
- "docs":"http://unfiltered.databinder.net/",
+ "docs":"",
  "licenses": [],
  "resolvers": ["http://scala-tools.org/repo-releases"],
  "dependencies": [{
