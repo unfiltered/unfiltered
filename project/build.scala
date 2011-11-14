@@ -100,6 +100,8 @@ object Unfiltered extends Build {
   lazy val filters =
     module("filter")(
       settings = Seq(
+        description :=
+          "Server binding for Java Servlet filters",
         unmanagedClasspath in (local("filter"), Test) <++=
           (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion(v => Seq(servletApiDep) ++
@@ -109,6 +111,8 @@ object Unfiltered extends Build {
   lazy val filtersAsync =
     module("filter-async")(
       settings = Seq(
+        description :=
+          "Server binding for Java Servlet 3.0 async filters",
         unmanagedClasspath in (local("filter-async"), Test) <++=
           (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion {
@@ -120,6 +124,8 @@ object Unfiltered extends Build {
     module("agents")(
       srcPath = "unfiltered/request",
       settings = Seq(
+        description :=
+          "User-Agent request matchers",
         unmanagedClasspath in (local("agents"), Test) <++=
             (fullClasspath in (local("spec"), Compile),
              fullClasspath in (local("filter"), Compile)) map { (s, f) =>
@@ -133,6 +139,8 @@ object Unfiltered extends Build {
     module("uploads")(
       srcPath = "unfiltered/request",
       settings = Seq(
+        description :=
+          "Support for multi-part uploads for servlet filters",
         unmanagedClasspath in (local("uploads"), Test) <++=
           (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion(v => Seq(
@@ -151,6 +159,8 @@ object Unfiltered extends Build {
   lazy val jetty =
     module("jetty")(
       settings = Seq(
+        description :=
+          "Jetty server embedding module",
         libraryDependencies := Seq(
           "org.eclipse.jetty" % "jetty-webapp" % jettyVersion
         )
@@ -159,6 +169,8 @@ object Unfiltered extends Build {
   lazy val jettyAjpProject =
     module("jetty-ajp")(
       settings = Seq(
+        description :=
+          "Jetty AJP server embedding module",
         libraryDependencies := Seq(
           "org.eclipse.jetty" % "jetty-ajp" % jettyVersion
         )
@@ -168,6 +180,8 @@ object Unfiltered extends Build {
     module("netty-server")(
       srcPath = "unfiltered/netty",
       settings = Seq(
+        description :=
+          "Netty server embedding module",
         unmanagedClasspath in (local("netty-server"), Test) <++=
             (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <<= scalaVersion(integrationTestDeps _)
@@ -176,6 +190,8 @@ object Unfiltered extends Build {
   lazy val netty =
     module("netty")(
       settings = Seq(
+        description :=
+          "Netty server binding module",
         unmanagedClasspath in (local("netty"), Test) <++=
           (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion(v =>
@@ -187,6 +203,8 @@ object Unfiltered extends Build {
   lazy val specHelpers =
     module("spec")(
       settings = Seq(
+        description :=
+          "Facilitates testing Unfiltered servers with Specs",
         libraryDependencies <++= scalaVersion { v =>
           specsDep(v) :: dispatchDeps
         }
@@ -194,7 +212,10 @@ object Unfiltered extends Build {
 
   lazy val scalaTestHelpers =
     module("scalatest")(
-      settings = Seq(libraryDependencies <++= scalaVersion(v => Seq(v.split('.').toList match {
+      settings = Seq(
+        description :=
+          "Facilitates testing Unfiltered servers with ScalaTest",
+        libraryDependencies <++= scalaVersion(v => Seq(v.split('.').toList match {
         case "2" :: "8" :: _ => "org.scalatest" % "scalatest_2.8.2" % "1.5.1"
         case "2" :: "9" :: "1" :: _ => "org.scalatest" % "scalatest_2.9.1" % "1.6.1"
         case "2" :: "9" :: _ => "org.scalatest" % "scalatest_2.9.0-1" % "1.6.1"
@@ -206,6 +227,8 @@ object Unfiltered extends Build {
     module("json")(
       srcPath = "unfiltered",
       settings = Seq(
+        description :=
+          "Json requset matchers and response functions",
         unmanagedClasspath in (local("json"), Test) <++=
           (fullClasspath in (local("spec"), Compile),
            fullClasspath in (local("filter"), Compile)) map { (s, f) =>
@@ -223,6 +246,8 @@ object Unfiltered extends Build {
   lazy val scalate =
     module("scalate")(
       settings = Seq(
+        description :=
+          "Scalate response functions",
         libraryDependencies <++= scalaVersion { v =>
           val scalateVersion = v match {
             case "2.8.0" | "2.8.1" => "1.5.2-scala_2.8.1"
@@ -239,6 +264,8 @@ object Unfiltered extends Build {
   lazy val websockets =
     module("netty-websockets")(
       settings = Seq(
+        description :=
+          "WebSockets plan support using Netty",
         unmanagedClasspath in (local("netty-websockets"), Test) <++=
           (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion(integrationTestDeps _)
@@ -247,6 +274,8 @@ object Unfiltered extends Build {
   lazy val oauth =
     module("oauth")(
       settings = Seq(
+        description :=
+          "OAuth plans for servlet filters",
         unmanagedClasspath in (local("oauth"), Test) <++=
           (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion(v =>
