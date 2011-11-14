@@ -46,7 +46,7 @@ object Unfiltered extends Build {
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     scalacOptions ++= Seq("-Xcheckinit", "-encoding", "utf8"),
     parallelExecution in Test := false, // :( test servers collide on same port
-    LsKeys.docsUrl :=
+    homepage :=
       Some(new java.net.URL("http://unfiltered.databinder.net/"))
   )
 
