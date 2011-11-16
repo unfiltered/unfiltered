@@ -13,18 +13,6 @@
    "organization":"net.liftweb",
    "name": "lift-json_2.8.1",
    "version": "2.4-M4"
-  },{
-   "organization":"org.scala-tools.testing",
-   "name": "specs_2.8.1",
-   "version": "1.6.8"
-  },{
-   "organization":"net.databinder",
-   "name": "dispatch-mime",
-   "version": "0.8.5"
-  },{
-   "organization":"net.databinder",
-   "name": "dispatch-http",
-   "version": "0.8.5"
   }],
  "scalas": ["2.8.0","2.8.1","2.8.2","2.9.0","2.9.0-1","2.9.1"],
  "sbt": false
