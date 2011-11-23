@@ -9,16 +9,20 @@ trait Prepend { self =>
   def intent: Cycle.Intent[Any,Any]
   /** The produced intent is defined for all inputs, is Pass
    *  where the given intent parameter is not defined. */
-  def apply[A,B](intent: unfiltered.Cycle.Intent[A,B]) = {
+  def apply[A,B](intent: unfiltered.Cycle.Intent[A,B]) =
     Cycle.Intent[A,B] {
       case req =>
-        Cycle.Intent.complete(intent)(req) match {
-          case Pass => Pass
-          case rf =>
-            self.intent.lift(req).getOrElse(NoOpResponder) ~> rf
-        }
+        Pass.fold(
+          intent,
+          (_: HttpRequest[A]) => Pass,
+          (_: HttpRequest[A], rf: ResponseFunction[B]) =>
+            Pass.orElse(
+              self.intent,
+              (_: HttpRequest[A]) => NoOpResponder
+            )(req) ~> rf
+        )(req)
     }
-  }
+
   def async[A,B](intent: Async.Intent[A,B]) =
     Async.Intent[A,B] {
       case req =>
@@ -28,7 +32,10 @@ trait Prepend { self =>
             req.respond(kitRf ~> rf)
           }
         }
-        intent.lift(dreq).getOrElse(Pass)
+        Pass.orElse(
+          intent,
+          (_: HttpRequest[A]) => Pass
+        )(dreq)
     }
 }
 
