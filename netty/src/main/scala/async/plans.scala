@@ -22,7 +22,7 @@ object Intent {
 /** A Netty Plan for request-only handling. */
 trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
   def intent: Plan.Intent
-  private lazy val guardedIntent = Pass.orElse(
+  private lazy val guardedIntent = Pass.onPass(
     intent,
     { req: HttpRequest[ReceivedMessage] =>
       req.underlying.context.sendUpstream(req.underlying.event) }

@@ -7,7 +7,7 @@ import unfiltered.{Cycle,Async}
 /** A kit that conditionally prepends a response function */
 trait Prepend { self =>
   def intent: Cycle.Intent[Any,Any]
-  private def intentOrNoOp = Pass.orElse(
+  private def intentOrNoOp = Pass.onPass(
     intent,
     (_: HttpRequest[_]) => NoOpResponder
   )
@@ -29,7 +29,7 @@ trait Prepend { self =>
             req.respond(intentOrNoOp(req) ~> rf)
           }
         }
-        Pass.orElse(
+        Pass.onPass(
           intent,
           (_: HttpRequest[A]) => Pass
         )(dreq)

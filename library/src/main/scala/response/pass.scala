@@ -5,17 +5,17 @@ object Pass extends ResponseFunction[Any] {
   type RF = ResponseFunction[Any]
   def apply[T](res: HttpResponse[T]) = res
 
-  def orElse[A, B >: RF, A1 <: A, B1 >: B](
+  def onPass[A, B >: RF, A1 <: A, B1 >: B](
     intent: PartialFunction[A,B],
     onPass: PartialFunction[A1, B1]
   ): PartialFunction[A1, B1] =
-    new OrElseAttempt(asAttempt(intent), asAttempt(onPass))
+    new OnPassAttempt(asAttempt(intent), asAttempt(onPass))
 
-  def orElse[A, B >: RF, A1 <: A, B1 >: B](
+  def onPass[A, B >: RF, A1 <: A, B1 >: B](
     intent: PartialFunction[A,B],
     onPass: Function1[A1, B1]
   ): PartialFunction[A1, B1] =
-    new OrElseAttempt(asAttempt(intent), new FunctionAttempt(onPass))
+    new OnPassAttempt(asAttempt(intent), new FunctionAttempt(onPass))
 
   def fold[A, B, C](
     intent: PartialFunction[A,B],
@@ -56,7 +56,7 @@ object Pass extends ResponseFunction[Any] {
     def apply(x: A) = underlying(x)
     def attemptWithPass(x: A) = Some(underlying(x))
   }
-  private class OrElseAttempt[A,B >: RF,A1 <: A, B1 >: B](
+  private class OnPassAttempt[A,B >: RF,A1 <: A, B1 >: B](
     left: Attempt[A,B],
     right: Attempt[A1,B1]
   ) extends Attempt[A1,B1] {

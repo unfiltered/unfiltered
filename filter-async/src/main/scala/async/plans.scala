@@ -46,7 +46,7 @@ trait Plan extends unfiltered.filter.InittedFilter {
              val con = continuation
            }
           val responseBinding = new ResponseBinding(hres)
-          Pass.orElse(
+          Pass.onPass(
             intent,
             (_: HttpRequest[HttpServletRequest]) =>
               chain.doFilter(requestBinding.underlying,

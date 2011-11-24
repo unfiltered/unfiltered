@@ -18,7 +18,7 @@ trait PassSpec extends unfiltered.spec.Hosted {
   import dispatch._
 
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] =
-    Pass.orElse(intent1, intent2)
+    Pass.onPass(intent1, intent2)
 
   def intent1[A,B]: unfiltered.Cycle.Intent[A,B] = {
     case GET(UFPath(Seg("intent1"::Nil))) => ResponseString("intent1")
