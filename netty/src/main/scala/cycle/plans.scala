@@ -26,8 +26,7 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
     }
   }
 
-  private lazy val guardedIntent = Pass.fold(
-    intent,
+  private lazy val guardedIntent = intent.fold(
     (req: HttpRequest[ReceivedMessage]) =>
       req.underlying.context.sendUpstream(req.underlying.event),
     (req: HttpRequest[ReceivedMessage],
