@@ -2,30 +2,33 @@ package unfiltered.response
 
 /** Tells the binding implentation to treat the request as non-matching */
 object Pass extends ResponseFunction[Any] {
+  type RF = ResponseFunction[Any]
   def apply[T](res: HttpResponse[T]) = res
 
-  def orElse[A, B, A1 <: A, B1 >: B](
+  def orElse[A, B >: RF, A1 <: A, B1 >: B](
     intent: PartialFunction[A,B],
     onPass: PartialFunction[A1, B1]
   ): PartialFunction[A1, B1] =
     new OrElseAttempt(asAttempt(intent), asAttempt(onPass))
 
-  def orElse[A, B, A1 <: A, B1 >: B](
+  def orElse[A, B >: RF, A1 <: A, B1 >: B](
     intent: PartialFunction[A,B],
     onPass: Function1[A1, B1]
-  ): Function[A1, B1] =
+  ): PartialFunction[A1, B1] =
     new OrElseAttempt(asAttempt(intent), new FunctionAttempt(onPass))
 
-  def fold[A, B, A1 >: A, A2 >: A, C](
+  def fold[A, B, C](
     intent: PartialFunction[A,B],
-    onPass: A1 => C,
-    andThen: (A2, B) => C
-  ) = (a: A) =>
-    asAttempt(intent).attempt(a).map { b =>
-      andThen(a, b)
-    }.getOrElse {
-      onPass(a)
-    }
+    onPass: A => C,
+    andThen: (A, B) => C
+  ): PartialFunction[A, C] = new FunctionAttempt(
+    (a: A) =>
+      asAttempt(intent).attempt(a).map { b =>
+        andThen(a, b)
+      }.getOrElse {
+        onPass(a)
+      }
+  )
 
   private def asAttempt[A,B](pf: Function[A,B]): Attempt[A,B] =
     pf match {
@@ -44,7 +47,7 @@ object Pass extends ResponseFunction[Any] {
   extends PassingAttempt[A,B] {
     val lifted = underlying.lift
     def isDefinedAt(x: A) = underlying.isDefinedAt(x)
-    def apply(x: A) = underlying.apply(x)
+    def apply(x: A) = underlying(x)
     def attemptWithPass(x: A) = lifted(x)
   }
   private class FunctionAttempt[-A,+B](underlying: A => B)
@@ -53,7 +56,7 @@ object Pass extends ResponseFunction[Any] {
     def apply(x: A) = underlying(x)
     def attemptWithPass(x: A) = Some(underlying(x))
   }
-  private class OrElseAttempt[A,B,A1 <: A, B1 >: B](
+  private class OrElseAttempt[A,B >: RF,A1 <: A, B1 >: B](
     left: Attempt[A,B],
     right: Attempt[A1,B1]
   ) extends Attempt[A1,B1] {
@@ -64,7 +67,7 @@ object Pass extends ResponseFunction[Any] {
       left.attempt(x) orElse {
         right.attempt(x)
       } getOrElse {
-        throw new MatchError(x)
+        Pass
       }
     }
     def attempt(x: A1): Option[B1] = { 
