@@ -16,10 +16,10 @@ object Pass extends ResponseFunction[Any] {
   ): Function[A1, B1] =
     new OrElseAttempt(asAttempt(intent), new FunctionAttempt(onPass))
 
-  def fold[A, B, A1 >: A, A2 >: A, B1](
+  def fold[A, B, A1 >: A, A2 >: A, C](
     intent: PartialFunction[A,B],
-    onPass: A1 => B1,
-    andThen: (A2, B) => B1
+    onPass: A1 => C,
+    andThen: (A2, B) => C
   ) = (a: A) =>
     asAttempt(intent).attempt(a).map { b =>
       andThen(a, b)
