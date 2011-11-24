@@ -5,18 +5,35 @@ object Pass extends ResponseFunction[Any] {
   type RF = ResponseFunction[Any]
   def apply[T](res: HttpResponse[T]) = res
 
+  /**
+   * Similar to PartialFunction#orElse, but is Pass-aware. If intent
+   * is not defined or returns Pass, the onPass function is attempted.
+   * 
+   * This function is also implicitly defined as a method of
+   * PartialFunction when unfiltered.response._ is imported. */
   def onPass[A, B >: RF, A1 <: A, B1 >: B](
     intent: PartialFunction[A,B],
     onPass: PartialFunction[A1, B1]
   ): PartialFunction[A1, B1] =
     new OnPassAttempt(asAttempt(intent), asAttempt(onPass))
 
+  /**
+   * Similar to onPass for partial functions, but for an onPass
+   * handler that is defined for all requests.
+   * 
+   * This function is also implicitly defined as a method of
+   * PartialFunction when unfiltered.response._ is imported. */
   def onPass[A, B >: RF, A1 <: A, B1 >: B](
     intent: PartialFunction[A,B],
     onPass: Function1[A1, B1]
   ): PartialFunction[A1, B1] =
     new OnPassAttempt(asAttempt(intent), new FunctionAttempt(onPass))
 
+  /**
+   * Handle the passing and the matching case in new function.
+   * 
+   * This function is also implicitly defined as a method of
+   * PartialFunction when unfiltered.response._ is imported. */
   def fold[A, B, C](
     intent: PartialFunction[A,B],
     onPass: A => C,

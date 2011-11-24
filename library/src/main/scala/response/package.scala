@@ -2,6 +2,8 @@ package unfiltered
 
 package object response {
   import Pass.RF
+  /** Implicit methods on PartialFunction: onPass and onFold.
+   *  See unfiltered.response.Pass the explicit versions. */
   implicit def partialToPassing[A,B >: RF](
     intent: PartialFunction[A,B]
   ) = new {
