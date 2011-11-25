@@ -2,10 +2,15 @@ package unfiltered.request
 
 trait DateParser extends (String => java.util.Date)
 
-private [request] object DateFormatting {
+object DateFormatting {
   import java.text.SimpleDateFormat
   import java.util.Date
   import java.util.Locale
+
+  def formater =
+    new java.text.SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", java.util.Locale.ENGLISH) {
+      setTimeZone(java.util.TimeZone.getTimeZone("GMT"))
+    }
 
   def parseAs(fmt: String)(value: String): Option[Date] =
     try { Some(new SimpleDateFormat(fmt, Locale.US).parse(value)) }
