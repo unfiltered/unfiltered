@@ -41,3 +41,18 @@ Fixed issue [#99][i99], error when decoding large web socket messages.
 
 [i99]: https://github.com/unfiltered/unfiltered/issues/99
 >>>>>>> d30c5d60b99781d3ba11cb4f7799c9298378527c
+
+### Jetty secured server
+
+Fixed issue [#89][89], use of deprecated Jetty keystore methods.
+
+[89]: https://github.com/unfiltered/unfiltered/issues/89
+
+### ls.implicit.ly
+
+Added ls plugin to the build and metadata to the repository, so
+that Unfiltered releases are recorded at [ls/unfiltered][ls]. Also,
+FYI! The ls server is [built with Unfiltered][lsuf].
+
+[ls]: http://ls.implicit.ly/unfiltered/unfiltered
+[lsuf]: https://github.com/softprops/ls/tree/master/server/src/main/scala
