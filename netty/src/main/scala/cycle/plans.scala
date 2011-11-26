@@ -8,7 +8,6 @@ import org.jboss.netty.handler.codec.http.HttpVersion._
 import unfiltered.netty._
 import unfiltered.response.{ResponseFunction, Pass}
 import unfiltered.request.HttpRequest
-import unfiltered.Cycle.Intent.complete
 
 object Plan {
   type Intent = unfiltered.Cycle.Intent[ReceivedMessage,NHttpResponse]
@@ -21,6 +20,23 @@ object Intent {
 /** A Netty Plan for request cycle handling. */
 trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
   def intent: Plan.Intent
+  def catching(ctx: ChannelHandlerContext)(thunk: => Unit) {
+    try { thunk } catch {
+      case e => onException(ctx, e)
+    }
+  }
+
+  private lazy val guardedIntent = intent.fold(
+    (req: HttpRequest[ReceivedMessage]) =>
+      req.underlying.context.sendUpstream(req.underlying.event),
+    (req: HttpRequest[ReceivedMessage],
+     rf: ResponseFunction[NHttpResponse]) =>
+      executeResponse {
+        catching(req.underlying.context) {
+          req.underlying.respond(rf)
+        }
+      }
+  )
   override def messageReceived(ctx: ChannelHandlerContext,
                                e: MessageEvent) {
     val request = e.getMessage() match {
@@ -28,22 +44,11 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
       case msg => error("Unexpected message type from upstream: %s"
                         .format(msg))
     }
-    val requestBinding =
-      new RequestBinding(ReceivedMessage(request, ctx, e))
-    def catching(thunk: => Unit) {
-      try { thunk } catch {
-        case e => onException(ctx, e)
-      }
+    catching(ctx) {
+      executeIntent { guardedIntent(
+        new RequestBinding(ReceivedMessage(request, ctx, e))
+      ) }
     }
-    executeIntent { catching {
-      intent.lift(requestBinding).getOrElse(Pass) match {
-        case Pass => ctx.sendUpstream(e)
-        case responseFunction =>
-          executeResponse { catching {
-            requestBinding.underlying.respond(responseFunction)
-          } } 
-      }
-    } }
   }
   def executeIntent(thunk: => Unit)
   def executeResponse(thunk: => Unit)

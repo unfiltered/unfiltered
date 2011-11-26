@@ -29,8 +29,3 @@ class ComposeResponse[A](rf: ResponseFunction[A]) extends
     Responder[A] {
   def respond(res: HttpResponse[A]) { rf(res) }
 }
-
-/** Tells the binding implentation to treat the request as non-matching */
-object Pass extends ResponseFunction[Any] {
-  def apply[T](res: HttpResponse[T]) = res
-}

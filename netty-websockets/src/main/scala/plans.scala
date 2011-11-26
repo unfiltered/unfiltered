@@ -19,24 +19,33 @@ import jnetty.handler.codec.http.HttpHeaders.setContentLength
 
 import jnetty.util.CharsetUtil
 
+/** Module defining function types used in the WebSockets module as well as
+ *  function defaults */
 object Plan {
+
   /** The trasition from an http request handling to websocket request handling.
    *  Note: This can not be an Async.Intent because RequestBinding is a Responder for HttpResponses */
   type Intent =
     PartialFunction[RequestBinding, SocketIntent]
 
-  /** WebSockets may be responded to asynchronously, thus their handler does not need to return */
+  /** A SocketIntent is the result of a handler `lift`ing a request into
+   *  the WebSocket protocol. WebSockets may be responded to asynchronously,
+   * thus their handler will not need to return a value */
   type SocketIntent =
     PartialFunction[SocketCallback, Unit]
 
-  /** Equivalent of an HttpResponse's Pass fn.
+  /** A pass handler serves as a means to forward a request upstream for
+   *  unhandled patterns and protocol messages */
+  type PassHandler = (ChannelHandlerContext, ChannelEvent) => Unit
+
+  /** Equivalent of an HttpResponse's Pass function
    *  A SocketIntent that does nothing */
   val Pass  = ({
     case _ => ()
   }: SocketIntent)
 
-  type PassHandler = (ChannelHandlerContext, ChannelEvent) => Unit
-
+  /** A default implementation of a PassHandler which returns a HTTP protocol
+   *  forbidden response code to the channel before closing the channel */
   val DefaultPassHandler = ({ (ctx, event) =>
     event match {
       case me: MessageEvent =>
@@ -55,6 +64,9 @@ object Plan {
    }: PassHandler)
 }
 
+/** Serves the same purpose of unfiltered.netty.ServerErrorResponse, which is to
+ *  satisfy ExceptionHandler#onException, except that it is not specific to the HTTP protocol.
+ *  It will simply log the Throwable and close the Channel */
 trait CloseOnException { self: ExceptionHandler =>
   def onException(ctx: ChannelHandlerContext, t: Throwable) {
     t.printStackTrace
@@ -62,7 +74,7 @@ trait CloseOnException { self: ExceptionHandler =>
   }
 }
 
-/** a light wrapper around both Sec-WebSocket-Draft + Sec-WebSocket-Version headers */
+/** A light wrapper around both Sec-WebSocket-Draft + Sec-WebSocket-Version headers */
 private [websockets] object Version {
   def apply[T](req: HttpRequest[T]) = IetfDrafts.SecWebSocketDraft.unapply(req).orElse(
     IetfDrafts.SecWebSocketVersion.unapply(req)
@@ -96,6 +108,8 @@ private [websockets] object IetfDrafts {
   object SecWebSocketVersionName extends HeaderName("Sec-WebSocket-Version")
 }
 
+/** An implementation of the older Websocket spec. As more browses start adopting the official
+ *  spec, this module should be deprecared then removed */
 private [websockets] object HixieDrafts {
   import java.security.MessageDigest
   import jnetty.handler.codec.http.{HttpRequest => NHttpRequest}
@@ -149,6 +163,9 @@ private [websockets] object WSLocation {
   def apply[T](r: HttpRequest[T]) = "ws://%s%s" format(Host(r).get, r.uri)
 }
 
+
+/** Provides an extention point for netty ChannelHandlers that wish to
+ *  support the WebSocket protocol */
 trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
   import jnetty.channel.{ChannelStateEvent, ExceptionEvent}
   import jnetty.handler.codec.http.websocket.{DefaultWebSocketFrame, WebSocketFrame,
@@ -174,6 +191,10 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
       case _ => pass(ctx, event)
     }
 
+  /** `Lifts` an HTTP request into a WebSocket request. If the HTTP request handling intent is not defined or results
+   *   in a Plan.Pass the `pass` method will be invoked. If the HTTP request handling intent is
+   *   defined for the HttpRequest, its SocketIntent return value will be used to
+   *   evaluate WebSocket protocol requests */
   private def upgrade(ctx: ChannelHandlerContext, request: NHttpRequest,
                       event: MessageEvent) = {
     val msg = ReceivedMessage(request, ctx, event)
@@ -181,13 +202,13 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
     val binding = new RequestBinding(msg)
 
     val version = Version(binding)
+
     binding match {
       case GET(ConnectionUpgrade(_) & UpgradeWebsockets(_)) =>
         intent.orElse({ case _ => Plan.Pass }: Plan.Intent)(binding) match {
           case Plan.Pass =>
             pass(ctx, event)
           case socketIntent =>
-
             val response = msg.response(
               new DefaultHttpResponse(
                 HttpVersion.HTTP_1_1,
@@ -252,20 +273,21 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
             pipe.replace(this, ctx.getName, SocketPlan(socketIntent, pass))
 
         }
-      case _ =>
-        pass(ctx, event)
+      case _ => pass(ctx, event)
     }
   }
 
   /** By default, when a websocket handler `passes` it writes an Http Forbidden response
-   *  to the channel. To override that behavior, call this method with a function to handle
-   *  the ChannelEvent with custom behavior */
+   *  to the channel in Plan.DefaultPassHandler. To override this behavior, call this method
+   *   with a function to handle the ChannelEvent with custom behavior */
   def onPass(handler: Plan.PassHandler) = Planify(intent, handler)
 
 }
 
+/** A Plan configued to handle Throwables by printing them before closing the channel */
 class Planify(val intent: Plan.Intent, val pass: Plan.PassHandler) extends Plan with CloseOnException
 
+/** A companion module for building web socket Plans */
 object Planify {
   import jnetty.buffer.ChannelBuffers
   import jnetty.handler.codec.http.{HttpRequest => NHttpRequest, DefaultHttpResponse}
@@ -274,12 +296,17 @@ object Planify {
 
   def apply(intent: Plan.Intent, pass: Plan.PassHandler) = new Planify(intent, pass)
 
-  /** Creates a WebSocketHandler that, when `Passing`, will return a forbidden
+  /** Creates a WebSocketHandler that, when `Pass`ing, will return a forbidden
    *  response to the client */
   def apply(intent: Plan.Intent): Plan =
     Planify(intent, Plan.DefaultPassHandler)
 }
 
+/** The result of defined Plan.Intent should result in a SocketPlan value.
+ *  SocketPlans are handlers for messages in WebSocket protocol format through SocketCallbacks.
+ *  If an unexpected message is recieved by a SocketPlan, the request handling will automatically
+ *  be delegated the Plan.PassHandler. As part of the WebSocket protocol, server errors should
+ *  be reported to the websocket before closing. This is handled for you. */
 case class SocketPlan(intent: Plan.SocketIntent,
                       pass: Plan.PassHandler) extends SimpleChannelUpstreamHandler {
   import jnetty.channel.{ChannelFuture, ChannelFutureListener, ExceptionEvent}
@@ -309,7 +336,6 @@ case class SocketPlan(intent: Plan.SocketIntent,
 
   // todo: if there's an error we may want to bubble this upstream
   override def exceptionCaught(ctx: ChannelHandlerContext, event: ExceptionEvent) = {
-    event.getCause.printStackTrace
     attempt(Error(WebSocket(ctx.getChannel), event.getCause))
     event.getChannel.close
   }

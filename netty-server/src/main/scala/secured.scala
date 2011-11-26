@@ -32,9 +32,11 @@ with Ssl { self =>
 
   type ServerBuilder = Https
 
-  def handler(h: => ChannelHandler) =
+  def handler(h: ChannelHandler) = makePlan(h)
+
+  def makePlan(h: => ChannelHandler) =
     Https(port, host, { () => h } :: handlers, beforeStopBlock)
-  def plan(plan: => ChannelHandler) = handler(plan)
+
   def beforeStop(block: => Unit) =
     Https(port, host, handlers, { () => beforeStopBlock(); block })
 }

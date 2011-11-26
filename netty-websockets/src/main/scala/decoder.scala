@@ -9,6 +9,8 @@ import org.jboss.netty.handler.codec.replay.{ReplayingDecoder, VoidEnum}
 
 import java.nio.charset.Charset
 
+/** Companion object of Draft14WebSocketFrameDecoder which
+ *  declares constants defined the the WebSockets spec */
 object Draft14WebSocketFrameDecoder {
 
   implicit def i2b(i: Int) = i.asInstanceOf[Byte]
@@ -34,7 +36,7 @@ object Draft14WebSocketFrameDecoder {
 }
 
 // todo: perhaps we may want to pass in a handler fn
-// to be invoken on an error condition
+// to be invoked on an error condition
 class Draft14WebSocketFrameDecoder
 extends ReplayingDecoder[VoidEnum] {
   import Draft14WebSocketFrameDecoder._
@@ -44,7 +46,6 @@ extends ReplayingDecoder[VoidEnum] {
   override protected def decode(
     ctx: ChannelHandlerContext, channel: Channel,
     buffer: ChannelBuffer, state: VoidEnum): AnyRef = {
-
     // Decode a frame otherwise.
     // first byte [fin, rsv1, rsv2, rsv3, opcode]
     val first = buffer.readByte
@@ -108,7 +109,8 @@ extends ReplayingDecoder[VoidEnum] {
                                 (f: ChannelBuffer => ControlFrame) = {
     buffer.skipBytes(actualReadableBytes)
     val msg = channel.getConfig().getBufferFactory().getBuffer(
-      buffer.order, 1)
+      buffer.order, 1
+    )
     msg.writeByte(header)
     f(msg)
   }
@@ -125,6 +127,8 @@ extends ReplayingDecoder[VoidEnum] {
 
   private def dataFrame(second: Int, buffer: ChannelBuffer)
                                 (f: Array[Byte] => WebSocketFrame): WebSocketFrame = {
+    import java.math.BigInteger
+
     val ridx = buffer.readerIndex()
 
     val rbytes = actualReadableBytes()
@@ -136,9 +140,12 @@ extends ReplayingDecoder[VoidEnum] {
     if (mask != ValidMask) error("Client mask %s not 1" format mask)
 
     var len = (second & 0x7f) match {
-      case less if(less < 126) => less
-      case 126 => buffer.readShort()
-      case more => buffer.readLong().toInt
+      case less if(less < 126) =>
+        less
+      case 126 =>
+        new BigInteger(buffer.readBytes(2).array()).intValue
+      case more =>
+        new BigInteger(buffer.readBytes(8).array()).intValue
     }
     if(len > MaxFrameSize) throw new TooLongFrameException()
 
@@ -146,9 +153,7 @@ extends ReplayingDecoder[VoidEnum] {
     // present if mask is set to 1, absent if 0
     val maskKey = buffer.readBytes(4)
 
-    val payload = buffer.readBytes(actualReadableBytes)
-
-    //val unmasked = unmask(len, text, maskKey)
+    val payload = buffer.readBytes(len)
 
     f(unmask(len, payload, maskKey))
   }

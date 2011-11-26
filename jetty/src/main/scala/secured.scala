@@ -23,6 +23,7 @@ case class Https(port: Int, host: String) extends Server with Ssl {
   * For added trust store support, mix in the Trusted trait */
 trait Ssl { self: Server =>
   import org.eclipse.jetty.server.ssl.SslSocketConnector
+  import org.eclipse.jetty.http.ssl.SslContextFactory
 
   def tryProperty(name: String) = System.getProperty(name) match {
     case null => error("required system property not set %s" format name)
@@ -35,15 +36,16 @@ trait Ssl { self: Server =>
   lazy val keyStore = tryProperty("jetty.ssl.keyStore")
   lazy val keyStorePassword = tryProperty("jetty.ssl.keyStorePassword")
 
-  val sslConn = new SslSocketConnector() {
+  val sslContextFactory = new SslContextFactory {
+      setKeyStorePath(keyStore)
+      setKeyStorePassword(keyStorePassword)
+  }
+  val sslConn = new SslSocketConnector(sslContextFactory) {
     setPort(sslPort)
-    setKeystore(keyStore)
-    setKeyPassword(keyStorePassword)
     setMaxIdleTime(sslMaxIdleTime)
     setHandshakeTimeout(sslHandshakeTimeout)
   }
   underlying.addConnector(sslConn)
-
 }
 
 /** Provides truststore support to an Ssl supported Server
@@ -53,6 +55,6 @@ trait Ssl { self: Server =>
 trait Trusted { self: Ssl =>
   lazy val trustStore = tryProperty("jetty.ssl.trustStore")
   lazy val trustStorePassword = tryProperty("jetty.ssl.trustStorePassword")
-  sslConn.setTruststore(trustStore)
-  sslConn.setTrustPassword(trustStorePassword)
+  sslContextFactory.setTrustStore(trustStore)
+  sslContextFactory.setTrustStorePassword(trustStorePassword)
 }

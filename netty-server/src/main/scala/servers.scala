@@ -24,9 +24,9 @@ extends HttpServer { self =>
   def pipelineFactory: ChannelPipelineFactory =
     new ServerPipelineFactory(channels, handlers)
 
-  def plan(plan: => ChannelHandler) = handler(plan)
-  def handler(h: => ChannelHandler) =
+  def makePlan(h: => ChannelHandler) =
     Http(port, host, { () => h } :: handlers, beforeStopBlock)
+  def handler(h: ChannelHandler) = makePlan(h)
   def beforeStop(block: => Unit) =
     Http(port, host, handlers, { () => beforeStopBlock(); block })
 }
@@ -52,7 +52,7 @@ trait HttpServer extends Server with PlanServer[ChannelHandler] {
    *  maximum. Without this aggregater, chunked requests will not
    *  not be handled. */
   def chunked(maxContentLength: Int = 1048576) =
-    plan(new HttpChunkAggregator(maxContentLength))
+    makePlan(new HttpChunkAggregator(maxContentLength))
   def stop() = {
     beforeStopBlock()
     closeConnections()
