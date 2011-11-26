@@ -25,7 +25,7 @@ it would be shared for all requests.
 
 To avoid confusion, we've restored the previous parameter types to
 `plan` and `handler` methods. If you need to pass in a plan "factory",
-such as the chunk aggregator, there is a new method `makePlan` that
+such as for a chunk aggregator, there is a new method `makePlan` that
 takes a by-name parameter. The new `chunked(maxContentLength: Int)`
 convenience method also [provides this behavior directly][chunked].
 
