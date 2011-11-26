@@ -8,7 +8,8 @@ trait Server { self =>
 }
 trait PlanServer[T] extends Server { self =>
   type ServerBuilder >: self.type <: PlanServer[T]
-  def plan(plan: => T): ServerBuilder
+  def plan(plan: T): ServerBuilder = makePlan(plan)
+  def makePlan(plan: => T): ServerBuilder
 }
 trait StartableServer extends Server {
   def start(): ServerBuilder

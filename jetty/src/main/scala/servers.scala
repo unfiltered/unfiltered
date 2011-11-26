@@ -52,11 +52,13 @@ trait Server
 extends ContextBuilder
 with unfiltered.util.PlanServer[Filter]
 with unfiltered.util.RunnableServer { self =>
+  type ServerBuilder >: self.type <: Server
+
   val underlying = new JettyServer()
   val handlers = new ContextHandlerCollection
   val counter = new AtomicInteger
   val url: String
-  def plan(plan: => Filter) = filter(plan)
+  def makePlan(plan: => Filter) = filter(plan)
 
   underlying.setHandler(handlers)
 
