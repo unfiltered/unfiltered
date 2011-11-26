@@ -22,25 +22,27 @@ Corrected scala-test dependencies for different versions of Scala. {
 
 [dwestheide]: https://github.com/unfiltered/unfiltered/issues/92
 
-### Server plan/handler methods
+### netty-server
 
-In recent releases these methods took a by-name parameter to support
-the case where new instances of Netty handlers (the chunk aggregator
-in particular) are required for each request. This lead to unexpected
-behavior for some more common use cases, where the caller passed in a
-`new` handler thinking it would be shared for all requests.
+In recent releases `plan` and `handler` took a by-name parameter to
+support the case where new instances of Netty handlers are required
+for each request. This lead to unexpected behavior for some more
+common use cases, where the caller passed in a `new` handler thinking
+it would be shared for all requests.
 
 To avoid confusion, we've restored the previous parameter types to
 `plan` and `handler` methods. If you need to pass in a plan "factory",
 such as the chunk aggregator, there is a new method `makePlan` that
-takes a by-name parameter.
+takes a by-name parameter. The new `chunked(maxContentLength: Int)`
+convenience method also [provides this behavior directly][chunked].
+
+[chunked]: https://github.com/unfiltered/unfiltered/blob/master/netty-server/src/main/scala/servers.scala#L50
 
 ### netty-websockets
 
 Fixed issue [#99][i99], error when decoding large web socket messages.
 
 [i99]: https://github.com/unfiltered/unfiltered/issues/99
->>>>>>> d30c5d60b99781d3ba11cb4f7799c9298378527c
 
 ### Jetty
 
