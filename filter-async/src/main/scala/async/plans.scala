@@ -46,12 +46,13 @@ trait Plan extends unfiltered.filter.InittedFilter {
              val con = continuation
            }
           val responseBinding = new ResponseBinding(hres)
-          intent.orElse({ case _ => Pass }: Plan.Intent)(requestBinding) match {
-            case Pass =>
-              chain.doFilter(requestBinding.underlying, responseBinding.underlying)
-            case _ => ()
-          }   
-      }  
+          Pass.onPass(
+            intent,
+            (_: HttpRequest[HttpServletRequest]) =>
+              chain.doFilter(requestBinding.underlying,
+                             responseBinding.underlying)
+          )(requestBinding)
+      }
     }
  }
 }
