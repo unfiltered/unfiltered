@@ -309,7 +309,6 @@ case class SocketPlan(intent: Plan.SocketIntent,
 
   // todo: if there's an error we may want to bubble this upstream
   override def exceptionCaught(ctx: ChannelHandlerContext, event: ExceptionEvent) = {
-    event.getCause.printStackTrace
     attempt(Error(WebSocket(ctx.getChannel), event.getCause))
     event.getChannel.close
   }
