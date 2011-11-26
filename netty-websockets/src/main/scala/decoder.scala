@@ -9,6 +9,8 @@ import org.jboss.netty.handler.codec.replay.{ReplayingDecoder, VoidEnum}
 
 import java.nio.charset.Charset
 
+/** Companion object of Draft14WebSocketFrameDecoder which
+ *  declares constants defined the the WebSockets spec */
 object Draft14WebSocketFrameDecoder {
 
   implicit def i2b(i: Int) = i.asInstanceOf[Byte]
