@@ -24,7 +24,8 @@ private [request] object DateFormatting {
   def parseDate(raw: String) = RFC1123(raw) orElse RFC1036(raw) orElse ANSICTime(raw)
 }
 
-/** a header with comma delimited values */
+/** A header with comma delimited values. Implementations of this extractor
+ * will not match requests for which the header `name` is not present.*/
 private [request] class SeqRequestHeader[T](val name: String)(parser: Iterator[String] => List[T]) {
   def unapply[T](req: HttpRequest[T]) = parser(req.headers(name)) match {
     case Nil => None
@@ -33,7 +34,8 @@ private [request] class SeqRequestHeader[T](val name: String)(parser: Iterator[S
   def apply[T](req: HttpRequest[T]) = parser(req.headers(name))
 }
 
-/** a header with a single value */
+/** A header with a single value. Implementations of this extractor
+ * will not match requests for which the header `name` is not present.*/
 private [request] class RequestHeader[A](val name: String)(parser: Iterator[String] => List[A]) {
    def unapply[T](req: HttpRequest[T]) =  parser(req.headers(name)) match {
      case head :: _ => Some(head)
@@ -78,13 +80,19 @@ private [request] object SeqValueParser extends (Iterator[String] => List[String
    }
 }
 
+/** Header whose value should be a date and time. Parsing is attempted
+ * for formats defined in the DateFormatting object, in this order:
+ * RFC1123, RFC1036,  ANSICTime. */
 class DateHeader(name: String) extends RequestHeader(name)(DateValueParser)
 /** A repeatable header may be specified in more than one header k-v pair and
  *  whose values are a list delimited by comma
  *  see also http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2 */
 class RepeatableHeader(name: String) extends SeqRequestHeader(name)(SeqValueParser)
+/** Header whose value should be a valid URI. */
 class UriHeader(name: String) extends RequestHeader(name)(UriValueParser)
+/** Header whose value can be any string. */
 class StringHeader(name: String) extends RequestHeader(name)(StringValueParser)
+/** Header whose value should be an integer. (Is stored in an Int.) */
 class IntHeader(name: String) extends RequestHeader(name)(IntValueParser)
 
 // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.10
@@ -115,6 +123,7 @@ object UserAgent extends StringHeader("User-Agent")// maybe a bit more structure
 object Via extends RepeatableHeader("Via")
 object XForwardedFor extends RepeatableHeader("X-Forwarded-For")
 
+/** Extracts the charset value from the Content-Type header, if present */
 object Charset {
   val Setting = """.*;.*\bcharset=(\S+).*""".r
   def unapply[T](req: HttpRequest[T]) =
@@ -124,6 +133,7 @@ object Charset {
     }.headOption
 }
 
+/** Extracts the port number from the Host header, if present */
 object HostPort {
   val Port = """^\S+[:](\d{4})$""".r
   def unapply[T](req: HttpRequest[T]): Option[(String, Int)] =
