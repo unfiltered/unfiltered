@@ -58,6 +58,7 @@ extends HttpRequest(msg) with Async.Responder[NHttpResponse] {
   def parameterValues(param: String) = params(param)
   def headers(name: String) = new JIteratorIterator(req.getHeaders(name).iterator)
 
+  @deprecated("use the header extractor request.Cookies instead")
   lazy val cookies = {
     import org.jboss.netty.handler.codec.http.{Cookie => NCookie, CookieDecoder}
     import unfiltered.Cookie
@@ -137,6 +138,7 @@ class ResponseBinding[U <: NHttpResponse](res: U)
 
   def outputStream = byteOutputStream
 
+  @deprecated("use the response combinator response.ResponseCookies(cookies) instead")
   def cookies(resCookies: Seq[Cookie]) = {
     import org.jboss.netty.handler.codec.http.{DefaultCookie, CookieEncoder}
     if(!resCookies.isEmpty) {

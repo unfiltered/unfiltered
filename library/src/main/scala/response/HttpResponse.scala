@@ -30,6 +30,7 @@ abstract class HttpResponse[+T](val underlying: T) {
   def header(name: String, value: String)
   @deprecated("renamed header")
   def addHeader(name: String, value: String) { header(name, value) }
+  @deprecated("use response combinator response.ResponseCookies(cookies)")
   def cookies(cookie: Seq[Cookie])
 
   @deprecated("Use a ResponseWriter, or underlying")

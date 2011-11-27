@@ -4,13 +4,12 @@ trait DateParser extends (String => java.util.Date)
 
 object DateFormatting {
   import java.text.SimpleDateFormat
-  import java.util.Date
-  import java.util.Locale
+  import java.util.{ Date, Locale, TimeZone }
 
-  def formater =
-    new java.text.SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", java.util.Locale.ENGLISH) {
-      setTimeZone(java.util.TimeZone.getTimeZone("GMT"))
-    }
+  def format(date: Date) =
+    new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH) {
+      setTimeZone(TimeZone.getTimeZone("GMT"))
+    }.format(date)
 
   def parseAs(fmt: String)(value: String): Option[Date] =
     try { Some(new SimpleDateFormat(fmt, Locale.US).parse(value)) }
@@ -27,6 +26,14 @@ object DateFormatting {
 
   /** @return various date coersion formats falling back on None value */
   def parseDate(raw: String) = RFC1123(raw) orElse RFC1036(raw) orElse ANSICTime(raw)
+}
+
+/** A header with values mapped to keys */
+private [request] class MappedRequestHeader[A, B](val name: String)(parser: Iterator[String] => Map[A, B]) {
+  def unapply[T](req: HttpRequest[T]) = parser(req.headers(name)) match {
+    case hs => Some(hs)
+  }
+  def apply[T](req: HttpRequest[T]) = parser(req.headers(name))
 }
 
 /** a header with comma delimited values */

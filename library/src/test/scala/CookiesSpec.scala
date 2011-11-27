@@ -21,7 +21,7 @@ trait CookiesSpec extends unfiltered.spec.Hosted {
 
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = {
     case UFPath("/") & Cookies(cookies) => ResponseString(cookies("foo") match {
-      case Some(Cookie(name, value, domain, path, maxAge, secure)) => value match {
+      case Some(Cookie(name, value, domain, path, maxAge, secure, _ /* httpOnly added in 0.5.2 */, _ /* version added in 0.5.2*/)) => value match {
         case "" => "foo who?"
         case foo => "foo %s!" format foo
       }
@@ -52,7 +52,6 @@ trait CookiesSpec extends unfiltered.spec.Hosted {
       } finally {
         h.shutdown()
       }
-
     }
   }
 }
