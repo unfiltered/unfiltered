@@ -24,7 +24,7 @@ private [request] object CookieValueParser extends (Iterator[String] => Map[Stri
 /** Cookie extractor using custom cookie parser */
 object Cookies extends MappedRequestHeader[String, Option[Cookie]]("Cookie")(CookieValueParser)
 
-/** Module Cookie deserialization */
+/** Module for Cookie deserialization */
 object FromCookies {
   import unfiltered.CookieKeys._
   val Cutter = "(?:\\s|[;,])*\\$*([^;=]+)(?:=(?:[\"']((?:\\\\.|[^\"])*)[\"']|([^;,]*)))?(\\s*(?:[;,]+\\s*|$))".r
@@ -78,7 +78,7 @@ object FromCookies {
       else {
         // baking the cookies.
         // Given a seq of names and a seq of values
-        // iterate by one value, i, which creating a base cookie using a name, value combo 
+        // iterate by one value, i, which creates a base cookie using a name, value combo 
         // then fold over the rest of the names & values building up the cookie
         // along with a flag that indicates of the a cookie has been build.
         // On each application of the fold, move the top level iterator's cursor

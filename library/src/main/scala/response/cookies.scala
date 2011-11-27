@@ -38,9 +38,9 @@ object ToCookies {
   def append(sb: StringBuilder, c: Cookie) = {
     sb.append(add(c.name, c.value))
     c.maxAge match {
-      case Some(ma) =>
+      case Some(ma) if(ma > 0) =>
         sb.append(c.version match {
-          case v if(v >= 0) =>
+          case v if(v == 0) =>
             literal(Expires, unfiltered.request.DateFormatting.format(
               new java.util.Date(System.currentTimeMillis() + ma * 1000L)
             ))
@@ -75,6 +75,9 @@ object ToCookies {
       case _ => ()
     }
     if(c.httpOnly) sb.append("%s;" format HTTPOnly)
+    if (c.version > 0) {
+       sb.append(add(Version, c.version.toString))
+    }
     // ignore v1 extras for now
   }
 
