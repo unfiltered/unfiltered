@@ -15,12 +15,9 @@ import unfiltered.Cookie
 private [request] object CookieValueParser extends (Iterator[String] => Map[String, Option[Cookie]]) {
   def apply(values: Iterator[String]) = {
     val vs = values.toList
-    println(vs)
-    val cs = ((Map.empty[String, Option[Cookie]] /: vs.flatMap(FromCookies.apply _))(
+    ((Map.empty[String, Option[Cookie]] /: vs.flatMap(FromCookies.apply _))(
       (m, c) => m + (c.name -> Some(c))
     ).withDefaultValue(None))
-    println(cs)
-    cs
   }
 }
 
