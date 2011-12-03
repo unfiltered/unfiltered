@@ -21,7 +21,9 @@ trait CookiesSpec extends unfiltered.spec.Hosted {
 
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = {
     case UFPath("/") & Cookies(cookies) => ResponseString(cookies("foo") match {
-      case Some(Cookie(name, value, domain, path, maxAge, secure, _ /* httpOnly added in 0.5.2 */, _ /* version added in 0.5.2*/)) => value match {
+      case Some(Cookie(
+        name, value, domain, path, maxAge, secure,
+        _ /* httpOnly added in 0.5.3 */, _ /* Version added in 0.5.3*/)) => value match {
         case "" => "foo who?"
         case foo => "foo %s!" format foo
       }
@@ -29,11 +31,11 @@ trait CookiesSpec extends unfiltered.spec.Hosted {
     })
 
     case POST(UFPath("/save") & Params(p)) =>
-      ResponseCookies(Cookie("foo", p("foo")(0))) ~> Redirect("/")
+      SetCookies(Cookie("foo", p("foo")(0))) ~> Redirect("/")
 
     case UFPath("/clear") =>
       // clearing cookie value is the same as deleting in http
-      ResponseCookies(Cookie("foo", "")) ~> Redirect("/")
+      SetCookies(Cookie("foo", "")) ~> Redirect("/")
   }
 
   "Cookies" should {
