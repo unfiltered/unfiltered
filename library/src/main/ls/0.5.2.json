@@ -1,0 +1,19 @@
+
+{
+ "organization":"net.databinder",
+ "name":"unfiltered",
+ "version":"0.5.2",
+ "description":"Core library for describing requests and responses",
+ "site":"http://unfiltered.databinder.net/",
+ "tags":[],
+ "docs":"",
+ "licenses": [],
+ "resolvers": ["http://scala-tools.org/repo-releases"],
+ "dependencies": [{
+   "organization":"commons-codec",
+   "name": "commons-codec",
+   "version": "1.4"
+  }],
+ "scalas": ["2.8.0","2.8.1","2.8.2","2.9.0","2.9.0-1","2.9.1"],
+ "sbt": false
+}

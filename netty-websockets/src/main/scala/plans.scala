@@ -160,7 +160,7 @@ private [websockets] object UpgradeWebsockets {
 }
 
 private [websockets] object WSLocation {
-  def apply[T](r: HttpRequest[T]) = "ws://%s%s" format(Host(r).get, r.uri)
+  def apply[T](r: HttpRequest[T]) = "%s://%s%s" format(if(r.isSecure) "wss" else "ws", Host(r).get, r.uri)
 }
 
 
