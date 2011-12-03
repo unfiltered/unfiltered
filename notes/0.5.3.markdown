@@ -1,9 +1,10 @@
-#### Cookies changes
+* [Fix][resources] for regression introduced in 0.5.2 in the
+  `resources` handler of unfiltered-netty-server. Unique instances of
+  the ChunkedWriteHandler were not created for each request, causing
+  bad responses.
+* Fix for [issue #100][i100] (woot?), _Sec-WebSocket-Location
+  (WSLocation) is hard-coded to ws:// protocol_ { [romusz][romusz] }
 
-We've added support for the [HttpOnly](http://en.wikipedia.org/wiki/HTTP_cookie#HttpOnly_cookie) and Version, properties of cookies. This change affects the source of extraction of Cookies. Rather than delegating to `HttpRequest`, Cookies are now extracted directly from the headers of an HTTP request on demand. Since this change added two new properties to the Cookie case class, this affects any cookie extraction you may be doing.
-
-We have removed the deprecated methods on `Cookie`: `domain`, `path`, `maxAge`, and `secure` in favor of using built-in support for named arguements provided by case classes.
-
-`ResponseCookies` has been deprecated in favor of `SetCookies` which is more in line with the `Set-Cookie` header it wraps.
-
-The method `cookies` on `unfiltered.request.HttpRequest` has been deprecated along with the `cookies` methods implementations defined on `unfiltered.filter.RequestBinding` and `unfiltered.netty.RequestBinding`
+[i100]: https://github.com/unfiltered/unfiltered/issues/100
+[romusz]: https://github.com/romusz
+[resources]: https://github.com/unfiltered/unfiltered/commit/5bc2dcb57e2b15d3baf954a3791e8f4e784f3dfe

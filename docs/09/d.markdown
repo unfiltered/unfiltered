@@ -1,63 +1,73 @@
-Asyncrazy Temperature Server
-------------------------------
+Going Asynchronous
+------------------
 
-Putting this all together, we can build a server that would very
-efficiently get your IP address banned by Google if you actually put
-it on the web. But it's totally cool to run it locally. We think.
+While the `cycle.Plan` gives us the means to implement a traditional
+request-response cycle, with unfiltered-netty you also have the
+option to respond asynchronously to the request. When used with other
+asynchronous libraries, this can result in more efficient use of
+threads and support for more simultaneous connections.
 
+### Other Asynchronous Libraries
+
+Luckily, the "nettyplayin" project created in the last few pages
+already depends on a second asynchronous library, dispatch-nio, which
+acts as client for HTTP requests to other services. Using an
+`async.Plan` with `dispatch.nio.Http`, we can query other HTTP
+services to satisfy a request without hoarding a thread for the many
+milliseconds it could take to perform that request.
+
+### Always Sunny in...
+
+Google has a [secret][weather] weather API. Let's use that until
+they take it offline.
+
+[weather]: http://blog.programmableweb.com/2010/02/08/googles-secret-weather-api/
 
 ```scala
 import dispatch._
-import unfiltered.request._
+val h = new nio.Http
+def weather(loc: String) =
+  :/("www.google.com") / "ig/api" <<? Map(
+    "weather" -> loc)
+```
+
+Paste that into a console, then you can print the response like this:
+
+```scala
+h(weather("San+Francisco") >- { x => println(x) })
+```
+
+You may notice that the prompt for the next command appears before
+the response is printed. It's working!
+
+### Taking the Temperature
+
+Now all we have to do is consume this service from a server.
+
+```scala
 import unfiltered.response._
 import unfiltered.netty._
 
-object Location extends 
-Params.Extract("location", Params.first ~> Params.nonempty)
-
-object Temperature extends async.Plan with ServerErrorResponse {
-  val http = new nio.Http
-  def intent = {
-    case req @ GET(_) =>
-      req.respond(view("", None))
-    case req @ POST(Params(Location(loc))) =>
-      http(:/("www.google.com") / "ig/api" <<? Map(
-        "weather" -> loc) <> { reply =>
-          val tempC = for {
-            elem <- reply \\\\ "temp_c"
-            attr <- elem.attribute("data") 
-          } yield attr.toString
-          req.respond(view(loc, tempC.headOption))
-        }
-      )
-  }
-  def view(loc: String, temp: Option[String]) = Html(
-    <html>
-      <body>
-        <form method="POST">
-          Location:
-          <input value={loc} name="location" />
-          <input type="submit" />
-        </form>
-        { temp.map { t => <p>It's {t}°C in {loc}!</p> }.toSeq }
-      </body>
-    </html>
-  )
+val temp = async.Planify {
+  case req =>
+    h(weather("San+Francisco") <> { reply =>
+      val tempC = (reply \\\\ "temp_c").headOption.flatMap {
+        _.attribute("data") 
+      }.getOrElse("unknown")
+      req.respond(PlainTextContent ~>
+                  ResponseString(tempC + "°C"))
+    })
 }
+
+Http(8080).plan(temp).run()
 ```
 
-Put *all that* into a console, then start it:
+Pasting all that into a console should start up a server that always
+gives you the temperature in San Francisco (the closest city by that
+name to Google's headquarters, anyway). When you are done with this
+hardcoded showpiece, shut down the Dispatch executor it was using so we
+can move on real deal.
 
 ```scala
-Http(8080).plan(Temperature).run()
-```
-
-You can lookup the current temperature for almost anywhere; just type
-in a place name or postal code and Google will probably figure it out.
-
-When you are done checking the temperature of exciting places around
-the world, shutdown the handler's Dispatch executor.
-
-```scala
-Temperature.http.shutdown()
+h.shutdown()
 ```

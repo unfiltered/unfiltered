@@ -1,73 +1,36 @@
-Going Asynchronous
-------------------
+## Chunked Requests
 
-While the `cycle.Plan` gives us the means to implement a traditional
-request-response cycle, with unfiltered-netty you also have the
-option to respond asynchronously to the request. When used with other
-asynchronous libraries, this can result in more efficient use of
-threads and support for more simultaneous connections.
+If you're handling HTTP POSTs, it's very possible that your browser or
+non-browser clients will send requests using
+[chunked transfer encoding][chunked]. This part of HTTP 1.1 is great
+for keeping messages short, but not so great for short short and
+simple NIO servers.
 
-### Other Asynchronous Libraries
+[chunked]: https://en.wikipedia.org/wiki/Chunked_transfer_encoding
 
-Luckily, the "nettyplayin" project created in the last few pages
-already depends on a second asynchronous library, dispatch-nio, which
-acts as client for HTTP requests to other services. Using an
-`async.Plan` with `dispatch.nio.Http`, we can query other HTTP
-services to satisfy a request without hoarding a thread for the many
-milliseconds it could take to perform that request.
+### An Inconvenient Party Line
 
-### Always Sunny in...
+The challenge for your server, as it is handling many concurrent
+requests, is to maintain the state of a message that is split into
+many chunks. For example if the request body contains url-encoded
+parameters, you must assemble all the chunks together to have uniform
+access to any parameter.
 
-Google has a [secret][weather] weather API. Let's use that until
-they take it offline.
+Netty provides a simple solution for cases like this: its
+[HttpChunkAggregator][agg] assembles chunks into a single message. The
+caveat is that the full message is necessarily loaded into memory, and
+it could be arbitrarily large. The interface therefore requires you to
+chose a limit for the aggregated message size; any chunked request
+that exceeds this limit will raise a TooLongFrameException.
 
-[weather]: http://blog.programmableweb.com/2010/02/08/googles-secret-weather-api/
+Unfiltered's Netty server-builder provides a convenient `chunked`
+interface for adding aggregating handlers to your pipeline:
 
-```scala
-import dispatch._
-val h = new nio.Http
-def weather(loc: String) =
-  :/("www.google.com") / "ig/api" <<? Map(
-    "weather" -> loc)
-```
-
-Paste that into a console, then you can print the response like this:
+[agg]: http://docs.jboss.org/netty/3.2/api/org/jboss/netty/handler/codec/http/HttpChunkAggregator.html
 
 ```scala
-h(weather("San+Francisco") >- { x => println(x) })
+unfiltered.netty.Http(8080).chunked(1048576).plan(hello).run()
 ```
 
-You may notice that the prompt for the next command appears before
-the response is printed. It's working!
-
-### Taking the Temperature
-
-Now all we have to do is consume this service from a server.
-
-```scala
-import unfiltered.response._
-import unfiltered.netty._
-
-val temp = async.Planify {
-  case req =>
-    h(weather("San+Francisco") <> { reply =>
-      val tempC = (reply \\\\ "temp_c").headOption.flatMap {
-        _.attribute("data") 
-      }.getOrElse("unknown")
-      req.respond(PlainTextContent ~>
-                  ResponseString(tempC + "°C"))
-    })
-}
-
-Http(8080).plan(temp).run()
-```
-
-Pasting all that into a console should start up a server that always
-gives you the temperature in San Francisco (the closest city by that
-name to Google's headquarters, anyway). When you are done with this
-hardcoded showpiece, shut down the Dispatch executor it was using so we
-can move on real deal.
-
-```scala
-h.shutdown()
-```
+If you want quick, easy, and limited support for chunked requests,
+don't forget to call this method on your server builder.
