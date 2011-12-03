@@ -6,36 +6,46 @@ import unfiltered.Cookie
 //  def respond(res: HttpResponse[Any]) = res.cookies(cookies)
 //}
 
-/** Cookie response header using custom cookie deserializer
- * */
+/** Set-Cookie response header using custom cookie deserializer */
 object ResponseCookies {
+  @deprecated("Use unfiltered.response.SetCookie(cookies) instead")
   def apply(cookies: Cookie*) =
     new ResponseHeader("Set-Cookie",
-                       ToCookies.toCookieString(cookies:_*) :: Nil)
+                       ToCookies(cookies:_*) :: Nil)
 }
 
+/** Set-Cookie response header using custom cookie deserializer */
+object SetCookies {
+  def apply(cookies: Cookie*) =
+    new ResponseHeader("Set-Cookie",
+                       ToCookies(cookies:_*) :: Nil)
+}
 
 /** Module for Cookie serialization */
 object ToCookies {
   import unfiltered.CookieKeys._
-  val Quotables = Array('\t', ' ', '"', '(', ')', ',', '/', ':', ';', '<',
+  private val Quotables = Array('\t', ' ', '"', '(', ')', ',', '/', ':', ';', '<',
                         '=', '>', '?', '@', '[', '\\', ']', '{', '}')
-  def quoted(k: String, v: String) =
+
+  def apply(cs: Cookie*): String =
+    (new StringBuilder /: cs) { (b, c) => append(b, c); b } toString
+
+  private def quoted(k: String, v: String) =
     """%s="%s";""" format(k, v match {
       case null => ""
       case value => value.replace("\\", "\\\\").replace("\"", "\\\"")
     })
 
-  def literal(k: String, v: String) = "%s=%s;" format(k, v)
+  private def literal(k: String, v: String) = "%s=%s;" format(k, v)
 
-  def add(k: String, v: String) = v match {
+  private def add(k: String, v: String) = v match {
     case null => quoted(k, v)
     case value =>
       if(value.find(Quotables.contains).isDefined) quoted(k, v)
       else literal(k, v)
   }
 
-  def append(sb: StringBuilder, c: Cookie) = {
+  private def append(sb: StringBuilder, c: Cookie) = {
     sb.append(add(c.name, c.value))
     c.maxAge match {
       case Some(ma) if(ma > 0) =>
@@ -80,8 +90,4 @@ object ToCookies {
     }
     // ignore v1 extras for now
   }
-
-  def toCookieString(cs: Cookie*): String =
-    (new StringBuilder /: cs) { (b, c) => append(b, c); b } toString
-
 }

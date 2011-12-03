@@ -10,26 +10,31 @@ import unfiltered.Cookie
 //  def apply[T](r: HttpRequest[T]): Map[String, Option[Cookie]] = Cookies.unapply(r).get
 //}
 
+/** An implementation of a function used to map cookie names to their value as an Option. If there
+ *  is no associated Cookie value. None will always be returned. */
 private [request] object CookieValueParser extends (Iterator[String] => Map[String, Option[Cookie]]) {
   def apply(values: Iterator[String]) = {
     val vs = values.toList
     println(vs)
-    val cs = ((Map.empty[String, Option[Cookie]] /: vs.flatMap(FromCookies.fromCookieString _))(
-      (m,c) => m + (c.name -> Some(c))).withDefaultValue(None))
+    val cs = ((Map.empty[String, Option[Cookie]] /: vs.flatMap(FromCookies.apply _))(
+      (m, c) => m + (c.name -> Some(c))
+    ).withDefaultValue(None))
     println(cs)
     cs
   }
 }
 
-/** Cookie extractor using custom cookie parser */
+/** Cookie extractor used for obtaining a collection cookies mapped to their names from the HTTP `Cookie` header */
 object Cookies extends MappedRequestHeader[String, Option[Cookie]]("Cookie")(CookieValueParser)
 
-/** Module for Cookie deserialization */
+/** Module for Cookie deserialization.
+ * Some cookie optional properties defined in http://tools.ietf.org/html/rfc2965 are not included in this implementation's 
+ * deserialized cookies. This list includes `Comment`, `CommentURL`, `Discard`, and `Port` */
 object FromCookies {
   import unfiltered.CookieKeys._
   val Cutter = "(?:\\s|[;,])*\\$*([^;=]+)(?:=(?:[\"']((?:\\\\.|[^\"])*)[\"']|([^;,]*)))?(\\s*(?:[;,]+\\s*|$))".r
 
-  def fromCookieString(cstr: String): Seq[Cookie] = {
+  def apply(cstr: String): Seq[Cookie] = {
     val (names, values) =
       (((List.empty[String], List.empty[String], (None: Option[(String, String, String)])) /:
          Cutter.findAllIn(cstr)) {

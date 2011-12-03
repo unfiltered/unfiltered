@@ -8,7 +8,7 @@ object ToCookiesSpec extends Specification {
   import java.util.Date
 
   "ToCookies" should {
-    "serialize a single v0 cookie" in {
+    "serialize a single version 0 cookie" in {
       val expected = "myCookie=myValue;Expires=(.+);Path=/apathsomewhere;Domain=.adomainsomewhere;Secure"
       val cookie = Cookie("myCookie", "myValue",
         domain = Some(".adomainsomewhere"),
@@ -16,10 +16,10 @@ object ToCookiesSpec extends Specification {
         path   = Some("/apathsomewhere"),
         secure = Some(true)
       )
-      ToCookies.toCookieString(cookie) must beMatching(expected)
+      ToCookies(cookie) must beMatching(expected)
     }
 
-    "serialize a single v1 cookie" in {
+    "serialize a single version 1 cookie" in {
       val expected = "myCookie=myValue;Max-Age=50;Path=\"/apathsomewhere\";Domain=.adomainsomewhere;Secure;Version=1;";
       val cookie = Cookie("myCookie", "myValue",
         version = 1,
@@ -28,10 +28,10 @@ object ToCookiesSpec extends Specification {
         path    = Some("/apathsomewhere"),
         secure  = Some(true)
       )
-      ToCookies.toCookieString(cookie)  must_== expected
+      ToCookies(cookie)  must_== expected
     }
 
-    "serialize a single v2 cookie" in {
+    "serialize a single version 2 cookie" in {
       val expected = "myCookie=myValue;Max-Age=50;Path=\"/apathsomewhere\";Domain=.adomainsomewhere;Secure;Version=2;";
       val cookie = Cookie("myCookie", "myValue",
         version = 2,
@@ -40,7 +40,7 @@ object ToCookiesSpec extends Specification {
         path    = Some("/apathsomewhere"),
         secure  = Some(true)
       )
-      ToCookies.toCookieString(cookie) must_== expected
+      ToCookies(cookie) must_== expected
     }
 
     "serialize multiple cookies" in {
@@ -65,11 +65,11 @@ object ToCookiesSpec extends Specification {
        
       val cookie3 = Cookie("myCookie3", "myValue3", version = 1)
 
-      ToCookies.toCookieString(cookie, cookie2, cookie3) must_== (c1 + c2 + c3)
+      ToCookies(cookie, cookie2, cookie3) must_== (c1 + c2 + c3)
     }
     
     "seralize no cookies" in {
-      ToCookies.toCookieString() must_== ""
+      ToCookies() must_== ""
     }
   }    
 }

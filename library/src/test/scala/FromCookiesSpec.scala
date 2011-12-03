@@ -9,11 +9,11 @@ object FromCookiesSpec extends Specification {
   implicit val nameOrdering: Ordering[Cookie] = Ordering.by((_:Cookie).name.toLowerCase)
 
   "FromCookies" should {
-    "parse a v0 cookie" in {
+    "parse a version 0 cookie" in {
       val cs = "myCookie=myValue;expires=XXX;path=/apathsomewhere;domain=.adomainsomewhere;secure;".replace(
         "XXX", DateFormatting.format(new Date(System.currentTimeMillis() + 50000))
       )
-      val cookies = FromCookies.fromCookieString(cs)
+      val cookies = FromCookies(cs)
 
       cookies.size must_== 1
       val cookie  = cookies(0)
@@ -29,9 +29,9 @@ object FromCookiesSpec extends Specification {
       //assertTrue(cookie.getPorts().isEmpty())
     }
 
-    "parse a single v0 cookie ignoring extra params" in {
+    "parse a single version 0 cookie ignoring extra params" in {
       val cs = "myCookie=myValue;max-age=50;path=/apathsomewhere;domain=.adomainsomewhere;secure;comment=this is a comment;version=0;commentURL=http://aurl.com;port=\"80,8080\";discard;"
-      val cookies = FromCookies.fromCookieString(cs)
+      val cookies = FromCookies(cs)
       cookies.size must_== 1
       val cookie = cookies(0)
       cookie.value must_== "myValue"
@@ -46,9 +46,9 @@ object FromCookiesSpec extends Specification {
       // assertTrue(cookie.getPorts().isEmpty())
     }
 
-    "parse a simple v1 cookie" in {
+    "parse a simple version 0 cookie" in {
       val cs = "myCookie=myValue;max-age=50;path=/apathsomewhere;domain=.adomainsomewhere;secure;comment=this is a comment;version=1;"
-      val cookies = FromCookies.fromCookieString(cs)
+      val cookies = FromCookies(cs)
       cookies.size must_== 1
       val cookie = cookies(0)
       cookie.value must_== "myValue" 
@@ -63,9 +63,9 @@ object FromCookiesSpec extends Specification {
       //assertNull(cookie.getCommentUrl());
     }
 
-    "parse a single v1 cookie w/ extra params ignored" in {
+    "parse a single version 1 cookie w/ extra params ignored" in {
       val cookieString = "myCookie=myValue;max-age=50;path=/apathsomewhere;domain=.adomainsomewhere;secure;comment=this is a comment;version=1;commentURL=http://aurl.com;port='80,8080';discard;"
-      val cookies = FromCookies.fromCookieString(cookieString)
+      val cookies = FromCookies(cookieString)
       cookies.size must_== 1
       val cookie = cookies(0)
       cookie.value must_== "myValue"
@@ -80,9 +80,9 @@ object FromCookiesSpec extends Specification {
       //assertTrue(cookie.getPorts().isEmpty());
     }
 
-    "parse a single v2 cookie" in {
+    "parse a single version 2 cookie" in {
       val cs = "myCookie=myValue;max-age=50;path=/apathsomewhere;domain=.adomainsomewhere;secure;comment=this is a comment;version=2;commentURL=http://aurl.com;port=\"80,8080\";discard;"
-      val cookies = FromCookies.fromCookieString(cs)
+      val cookies = FromCookies(cs)
       cookies.size must_== 1
       val cookie = cookies(0)
       cookie.value must_== "myValue"
@@ -106,7 +106,7 @@ object FromCookiesSpec extends Specification {
         "myCookie3=myValue3;max-age=0;version=2;" ::
         Nil mkString("")
 
-      val cookies = FromCookies.fromCookieString(cs)
+      val cookies = FromCookies(cs)
       cookies.size must_== 3
 
       val c1 = cookies(0)
@@ -158,7 +158,7 @@ object FromCookiesSpec extends Specification {
         "f=\"1\\\"\\\"2\"," +
         "g=\"\\\\\"";
 
-      val cookies = FromCookies.fromCookieString(source).iterator
+      val cookies = FromCookies(source).iterator
 
       val a = cookies.next
       a.name must_== "a"
@@ -198,7 +198,7 @@ object FromCookiesSpec extends Specification {
         "__utma=48461872.1094088325.1258140131.1258140131.1258140131.1; " ::
         "__utmb=48461872.13.10.1258140131; __utmc=48461872; " ::
         "__utmz=48461872.1258140131.1.1.utmcsr=overstock.com|utmccn=(referral)|utmcmd=referral|utmcct=/Home-Garden/Furniture/Clearance,/clearance,/32/dept.html" :: Nil mkString("")
-      val cookies = FromCookies.fromCookieString(source).sorted.iterator
+      val cookies = FromCookies(source).sorted.iterator
 
       val a = cookies.next
       a.name must_== "__utma"
