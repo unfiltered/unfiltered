@@ -1,0 +1,15 @@
+
+{
+ "organization":"net.databinder",
+ "name":"unfiltered-netty-websockets",
+ "version":"0.5.3",
+ "description":"WebSockets plan support using Netty",
+ "site":"http://unfiltered.databinder.net/",
+ "tags":[],
+ "docs":"",
+ "licenses": [],
+ "resolvers": ["http://scala-tools.org/repo-releases"],
+ "dependencies": [],
+ "scalas": ["2.8.0","2.8.1","2.8.2","2.9.0","2.9.0-1","2.9.1"],
+ "sbt": false
+}
