@@ -31,6 +31,11 @@ object CookieKeys {
   val KeyOnly = Seq(Discard, Secure, HTTPOnly)
 }
 
+object Cookie {
+  /** Convenience method for removing a cookie */
+  def clear(name: String) = Cookie(name, "", maxAge = Some(0))
+}
+
 case class Cookie(name: String, value: String, domain: Option[String] = None,
                   path: Option[String] = None, maxAge: Option[Int] = None,
                   secure: Option[Boolean] = None, httpOnly: Boolean = false,
