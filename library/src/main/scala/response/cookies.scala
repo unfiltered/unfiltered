@@ -8,17 +8,21 @@ import unfiltered.Cookie
 
 /** Set-Cookie response header using custom cookie deserializer */
 object ResponseCookies {
+  private val Name = "Set-Cookie"
   @deprecated("Use unfiltered.response.SetCookie(cookies) instead")
   def apply(cookies: Cookie*) =
-    new ResponseHeader("Set-Cookie",
-                       ToCookies(cookies:_*) :: Nil)
+    new ResponseHeader(Name, (Seq.empty[String] /: cookies)(
+      (a,e) => ToCookies(e) +: a)
+    )
 }
 
 /** Set-Cookie response header using custom cookie deserializer */
 object SetCookies {
+  private val Name = "Set-Cookie"
   def apply(cookies: Cookie*) =
-    new ResponseHeader("Set-Cookie",
-                       ToCookies(cookies:_*) :: Nil)
+    new ResponseHeader(Name, (Seq.empty[String] /: cookies)(
+      (a,e) => ToCookies(e) +: a)
+    )
 }
 
 /** Module for Cookie serialization */
@@ -28,7 +32,12 @@ object ToCookies {
                         '=', '>', '?', '@', '[', '\\', ']', '{', '}')
 
   def apply(cs: Cookie*): String =
-    (new StringBuilder /: cs) { (b, c) => append(b, c); b } toString
+    ((new StringBuilder /: cs) { (b, c) => append(b, c); b }) match {
+      case sb if(!sb.isEmpty) =>
+        sb.setLength(sb.length - 1)
+        sb.toString
+      case empty => empty.toString
+    }
 
   private def quoted(k: String, v: String) =
     """%s="%s";""" format(k, v match {
@@ -57,6 +66,8 @@ object ToCookies {
           case _ =>
             add(MaxAge, ma.toString)
         })
+      case Some(ma) if(ma == 0) => // discarding
+        sb.append(add(MaxAge, ma.toString))
       case _ => ()
     }
     c.path match {
@@ -88,6 +99,7 @@ object ToCookies {
     if (c.version > 0) {
        sb.append(add(Version, c.version.toString))
     }
+    if(sb.isEmpty) sb.setLength(sb.length - 1)
     // ignore v1 extras for now
   }
 }
