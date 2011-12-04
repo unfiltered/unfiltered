@@ -20,7 +20,7 @@ object ToCookiesSpec extends Specification {
     }
 
     "serialize a single version 1 cookie" in {
-      val expected = "myCookie=myValue;Max-Age=50;Path=\"/apathsomewhere\";Domain=.adomainsomewhere;Secure;Version=1;";
+      val expected = "myCookie=myValue;Max-Age=50;Path=\"/apathsomewhere\";Domain=.adomainsomewhere;Secure;Version=1";
       val cookie = Cookie("myCookie", "myValue",
         version = 1,
         domain  = Some(".adomainsomewhere"),
@@ -28,11 +28,11 @@ object ToCookiesSpec extends Specification {
         path    = Some("/apathsomewhere"),
         secure  = Some(true)
       )
-      ToCookies(cookie)  must_== expected
+      ToCookies(cookie) must_== expected
     }
 
     "serialize a single version 2 cookie" in {
-      val expected = "myCookie=myValue;Max-Age=50;Path=\"/apathsomewhere\";Domain=.adomainsomewhere;Secure;Version=2;";
+      val expected = "myCookie=myValue;Max-Age=50;Path=\"/apathsomewhere\";Domain=.adomainsomewhere;Secure;Version=2";
       val cookie = Cookie("myCookie", "myValue",
         version = 2,
         domain  = Some(".adomainsomewhere"),
@@ -46,7 +46,7 @@ object ToCookiesSpec extends Specification {
     "serialize multiple cookies" in {
       val c1 = "myCookie=myValue;Max-Age=50;Path=\"/apathsomewhere\";Domain=.adomainsomewhere;Secure;Version=1;"
       val c2 = "myCookie2=myValue2;Path=\"/anotherpathsomewhere\";Domain=.anotherdomainsomewhere;Version=1;"
-      val c3 = "myCookie3=myValue3;Version=1;"
+      val c3 = "myCookie3=myValue3;Version=1"
 
       val cookie = Cookie("myCookie", "myValue",
         version = 1,
