@@ -46,7 +46,7 @@ Now that you have a `scala>` prompt with the `unfiltered-filter` and
 import unfiltered.request._
 import unfiltered.response._
 val echo = unfiltered.filter.Planify {
-   case Path(Seg(p :: Nil)) => ResponseString(p)
+  case Path(Seg(p :: Nil)) => ResponseString(p)
 }
 ```
 This filter `echo` would work with any servlet container. We can
@@ -71,10 +71,10 @@ matching expression. (Press enter to stop the running server.)
 
 ```scala
 val echoNice = unfiltered.filter.Planify {
-   case Path(Seg(p :: Nil)) => ResponseString(p)
-   case _ => ResponseString(
-       "I can echo exactly one path element."
-   )
+  case Path(Seg(p :: Nil)) => ResponseString(p)
+  case _ => ResponseString(
+    "I can echo exactly one path element."
+  )
 }
 unfiltered.jetty.Http.anylocal.filter(echoNice).run()
 ```
@@ -82,9 +82,9 @@ Or we could define another filter chain it to the first.
 
 ```scala
 val nice = unfiltered.filter.Planify {
-   case _ => ResponseString(
-       "I can echo exactly one path element."
-   )
+  case _ => ResponseString(
+    "I can echo exactly one path element."
+  )
 }
 unfiltered.jetty.Http.anylocal.filter(echo).filter(nice).run()
 ```
