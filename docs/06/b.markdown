@@ -117,4 +117,5 @@ val intEcho = unfiltered.filter.Planify {
 unfiltered.jetty.Http.anylocal.filter(intEcho).run()
 ```
 
-> Note the use of the `&` extractor to require multiple parameters.
+> The `&` extractor matches when the extractor to its left and right
+  match, in this case to require multiple parameters.
