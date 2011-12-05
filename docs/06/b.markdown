@@ -96,17 +96,25 @@ object NotShortTest2 extends Params.Extract(
 ```
 
 Try it all out in this server, which returns 404 unless provided with
-a "test" parameter that is a positive integer.
+a "pos" parameter that is a positive integer, and "neg" that is
+negative.
 
 ```scala
-object PosTest extends Params.Extract(
-  "test",
+object Pos extends Params.Extract(
+  "pos",
   Params.first ~> Params.int ~>
     Params.pred { _ > 0 }
 )
-val posEcho = unfiltered.filter.Planify {
-  case Params(PosTest(test)) =>
-    ResponseString(test.toString)
+object Neg extends Params.Extract(
+  "neg",
+  Params.first ~> Params.int ~>
+    Params.pred { _ < 0 }
+)
+val intEcho = unfiltered.filter.Planify {
+  case Params(Pos(pos) & Neg(neg)) =>
+    ResponseString("%d %d".format(pos,neg))
 }
-unfiltered.jetty.Http.anylocal.filter(posEcho).run()
+unfiltered.jetty.Http.anylocal.filter(intEcho).run()
 ```
+
+> Note the use of the `&` extractor to require multiple parameters.
