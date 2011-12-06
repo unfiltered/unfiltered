@@ -42,14 +42,18 @@ trait AuthorizationServer {
           } else {
             resourceOwner(req) match {
               case Some(owner) =>
-                 if(denied(req)) ErrorResponse(AccessDenied, "user denied request", errorUri(AccessDenied), state)
+                 if(denied(req)) ErrorResponse(
+                   AccessDenied, "user denied request", errorUri(AccessDenied), state)
                  else if(accepted(req)) {
-                    AuthorizationCodeResponse(generateAuthorizationCode(responseTypes, owner, client, scope, redirectUri), state)
+                    AuthorizationCodeResponse(
+                      generateAuthorizationCode(responseTypes, owner, client, scope, redirectUri),
+                      state)
                  }
                  else ServiceResponse(requestAuthorization(
                    RequestBundle(req, responseTypes, client, Some(owner), redirectUri, scope, state)
                  ))
-              case _ => ServiceResponse(login(RequestBundle(req, responseTypes, client, None, redirectUri, scope, state)))
+              case _ => ServiceResponse(
+                login(RequestBundle(req, responseTypes, client, None, redirectUri, scope, state)))
             }
 
           }
@@ -83,14 +87,16 @@ trait AuthorizationServer {
         case _ => ServiceResponse(invalidClient)
       }
 
-    case IndeterminateAuthorizationRequest(req, responseTypes, clientId, redirectUri, scope, state) =>
+    case IndeterminateAuthorizationRequest(
+      req, responseTypes, clientId, redirectUri, scope, state) =>
         client(clientId, None) match {
           case Some(c) =>
             if(!validRedirectUri(redirectUri, c)) ServiceResponse(
               invalidRedirectUri(Some(redirectUri), Some(c))
             )
-            else ErrorResponse(UnsupportedResponseType, "unsupported response type(s) %s" format responseTypes,
-                               errorUri(UnsupportedResponseType), state)
+            else ErrorResponse(
+              UnsupportedResponseType, "unsupported response type(s) %s" format responseTypes,
+              errorUri(UnsupportedResponseType), state)
           case _ => ServiceResponse(invalidClient)
         }
   }
@@ -123,7 +129,8 @@ trait AuthorizationServer {
               )
             }
           }
-        case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, errorUri(InvalidRequest), None)
+        case _ => ErrorResponse(
+          InvalidRequest, UnknownClientMsg, errorUri(InvalidRequest), None)
       }
 
     case RefreshTokenRequest(rToken, clientId, clientSecret, scope) =>
@@ -137,9 +144,11 @@ trait AuthorizationServer {
                      r.value, r.tokenType, r.expiresIn, r.refresh, scope, None, r.extras
                    )
                  } else ErrorResponse(
-                   UnauthorizedClient, "refresh token does not belong to client", errorUri(UnauthorizedClient), None
+                   UnauthorizedClient, "refresh token does not belong to client",
+                   errorUri(UnauthorizedClient), None
                  )
-               case _ => ErrorResponse(InvalidRequest, "unknown request token", errorUri(InvalidRequest), None)
+               case _ => ErrorResponse(
+                 InvalidRequest, "unknown request token", errorUri(InvalidRequest), None)
              }
           case _ => ErrorResponse(InvalidClient, UnknownClientMsg, errorUri(InvalidClient), None)
         }
@@ -164,9 +173,11 @@ trait AuthorizationServer {
               AccessTokenResponse(
                 tok.value, tok.tokenType, tok.expiresIn, tok.refresh, scope, None, tok.extras
               )
-            case None => ErrorResponse(InvalidRequest, UnauthorizedClient, errorUri(InvalidClient), None)
+            case None => ErrorResponse(
+              InvalidRequest, UnauthorizedClient, errorUri(InvalidClient), None)
           }
-        case _ => ErrorResponse(InvalidRequest, UnknownClientMsg, errorUri(InvalidClient), None)
+        case _ => ErrorResponse(
+          InvalidRequest, UnknownClientMsg, errorUri(InvalidClient), None)
       }
     }
 }

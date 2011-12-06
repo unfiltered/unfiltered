@@ -15,5 +15,5 @@ The 3 components of a mac that should be provided by a server are
 
 ## TODO
 
-  * Non-oauth2 stuff
+  * Non-oauth2 Cookie stuff
   * More tests (header parsing regex, body hashing, ect)

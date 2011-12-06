@@ -11,7 +11,8 @@ object Mac extends Signing {
   }))
 }
 
-/** MAC Authorization extractor */
+/** MAC Authorization extractor
+ *  See also http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-00 */
 object MacAuthorization {
   val Id = "id"
   val Nonce = "nonce"
@@ -45,7 +46,6 @@ object MacAuthorization {
           Some(id.get, nonce.get, bodyhash.get, ext.get, mac.get)
         }
         expect(map) orFail { f =>
-          println(f.map(_.error) mkString(" and "))
           None
         }
       case _ => None

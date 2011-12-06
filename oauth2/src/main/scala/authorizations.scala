@@ -76,44 +76,60 @@ trait DefaultValidationMessages extends ValidationMessages {
   def requiredMsg(what: String) = "%s is required" format what
 }
 
-/** Configured Authorization server */
+/** Configured Authorization server module */
 case class OAuthorization(val auth: AuthorizationServer) extends Authorized
      with DefaultAuthorizationPaths with DefaultValidationMessages
 
+/** A composition of components which respond to authorization requests */
 trait Authorized extends AuthorizationProvider
   with AuthorizationEndpoints with Formatting
   with ValidationMessages with unfiltered.filter.Plan {
   import QParams._
   import OAuthorization._
 
+  /** Syntactic sugar for appending query strings to paths */
   implicit def s2qs(uri: String) = new {
-     def ?(qs: String) = "%s%s%s" format(uri, if(uri.indexOf("?") > 0) "&" else "?", qs)
+     def ?(qs: String) =
+       "%s%s%s" format(uri, if(uri.indexOf("?") > 0) "&" else "?", qs)
   }
 
-  protected def accessResponder(accessToken: String, kind: String, expiresIn: Option[Int],
-                                refreshToken: Option[String], scope:Seq[String], extras: Iterable[(String, String)]) =
-    CacheControl("no-store") ~> Pragma("no-cache") ~> Json(Map(AccessTokenKey -> accessToken, TokenType -> kind) ++
-        expiresIn.map (ExpiresIn -> (_:Int).toString) ++
-        refreshToken.map (RefreshToken -> _) ++
-        (scope match {
-          case Seq() => None
-          case xs => Some(spaceEncoder(xs))
-        }).map (Scope -> _) ++ extras)
+  /** Returns a function which builds a
+   *  response for an accept token request */
+  protected def accessResponder(
+    accessToken: String, kind: String,
+    expiresIn: Option[Int],
+    refreshToken: Option[String],
+    scope:Seq[String],
+    extras: Iterable[(String, String)]) =
+      CacheControl("no-store") ~> Pragma("no-cache") ~>
+        Json(Map(AccessTokenKey -> accessToken, TokenType -> kind) ++
+          expiresIn.map (ExpiresIn -> (_:Int).toString) ++
+             refreshToken.map (RefreshToken -> _) ++
+             (scope match {
+               case Seq() => None
+               case xs => Some(spaceEncoder(xs))
+             }).map (Scope -> _) ++ extras)
 
-  protected def errorResponder(error: String, desc: String, euri: Option[String], state: Option[String]) =
-    BadRequest ~> CacheControl("no-store") ~> Pragma("so-cache") ~> Json(Map(Error -> error, ErrorDescription -> desc) ++
-        euri.map (ErrorURI -> (_: String)) ++
-        state.map (State -> _))
+  /** Returns a function which builds a
+   *  response for error responses */
+  protected def errorResponder(
+    error: String, desc: String,
+    euri: Option[String], state: Option[String]) =
+      BadRequest ~> CacheControl("no-store") ~> Pragma("no-cache") ~>
+        Json(Map(Error -> error, ErrorDescription -> desc) ++
+          euri.map (ErrorURI -> (_: String)) ++
+          state.map (State -> _))
 
-  private def spaceDecoder(raw: String) = raw.replace("""\s+"""," ").split(" ").toSeq
+  protected def spaceDecoder(raw: String) = raw.replace("""\s+"""," ").split(" ").toSeq
 
-  private def spaceEncoder(scopes: Seq[String]) = scopes.mkString("+")
+  protected def spaceEncoder(scopes: Seq[String]) = scopes.mkString("+")
 
   def intent = {
 
     case req @ ContextPath(_, AuthorizePath) & Params(params) =>
       val expected = for {
-        responseType <- lookup(ResponseType) is required(requiredMsg(ResponseType)) is watch(_.map(spaceDecoder), e => "")
+        responseType <- lookup(ResponseType) is required(requiredMsg(ResponseType)) is
+                          watch(_.map(spaceDecoder), e => "")
         clientId     <- lookup(ClientId) is required(requiredMsg(ClientId))
         redirectURI  <- lookup(RedirectURI) is required(requiredMsg(RedirectURI))
         scope        <- lookup(Scope) is watch(_.map(spaceDecoder), e => "")
@@ -124,7 +140,8 @@ trait Authorized extends AuthorizationProvider
 
            // authorization code flow
            case (ruri, rtx) if(rtx contains(Code)) =>
-             auth(AuthorizationCodeRequest(req, rtx, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
+             auth(AuthorizationCodeRequest(
+               req, rtx, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
 
                case ServiceResponse(resp) => resp
 
@@ -145,10 +162,12 @@ trait Authorized extends AuthorizationProvider
 
            // implicit token flow
            case (ruri, rtx) if(rtx contains(TokenKey)) =>
-             auth(ImplicitAuthorizationRequest(req, rtx, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
+             auth(ImplicitAuthorizationRequest(
+               req, rtx, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
                case ServiceResponse(cr) => cr
-               case ImplicitAccessTokenResponse(accessToken, tokenType, expiresIn, scope, state, extras) =>
-                 val frag = qstr(
+               case ImplicitAccessTokenResponse(
+                 accessToken, tokenType, expiresIn, scope, state, extras) =>
+                 val fragment = qstr(
                    Map(AccessTokenKey -> accessToken, TokenType -> tokenType) ++
                      expiresIn.map(ExpiresIn -> (_:Int).toString) ++
                      (scope match {
@@ -157,7 +176,7 @@ trait Authorized extends AuthorizationProvider
                      }).map(Scope -> _) ++
                      state.map(State -> _ ) ++ extras
                    )
-                 Redirect("%s#%s" format(ruri, frag))
+                 Redirect("%s#%s" format(ruri, fragment))
                case ErrorResponse(error, desc, euri, state) =>
                  Redirect("%s#%s" format(ruri, qstr(
                    Map(Error -> error, ErrorDescription -> desc) ++
@@ -169,7 +188,8 @@ trait Authorized extends AuthorizationProvider
 
            // unsupported grant type
            case (ruri, unsupported) =>
-             auth(IndeterminateAuthorizationRequest(req, unsupported, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
+             auth(IndeterminateAuthorizationRequest(
+               req, unsupported, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
                case ServiceResponse(cr) => cr
                case ErrorResponse(error, desc, euri, state) =>
                  Redirect(ruri ? qstr(
@@ -185,9 +205,10 @@ trait Authorized extends AuthorizationProvider
       expected(params) orFail { errs =>
         params(RedirectURI) match {
           case Seq(uri) =>
-            val qs = qstr(
-              Map(Error -> InvalidRequest, ErrorDescription ->  errs.map { _.error }.mkString(", "))
-            )
+            val qs = qstr(Map(
+              Error -> InvalidRequest,
+              ErrorDescription -> errs.map { _.error }.mkString(", ")
+            ))
             params(ResponseType) match {
               case Seq(TokenKey) =>
                  Redirect("%s#%s" format(
@@ -218,8 +239,10 @@ trait Authorized extends AuthorizationProvider
         grantType.get match {
 
           case ClientCredentials =>
-            auth(ClientCredentialsRequest(clientId.get, clientSecret.get, scope.getOrElse(Nil))) match {
-              case AccessTokenResponse(accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
+            auth(ClientCredentialsRequest(
+              clientId.get, clientSecret.get, scope.getOrElse(Nil))) match {
+              case AccessTokenResponse(
+                accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
                 accessResponder(
                   accessToken, kind, expiresIn, refreshToken, scope, extras
                 )
@@ -230,8 +253,10 @@ trait Authorized extends AuthorizationProvider
           case Password =>
             (userName.get, password.get) match {
               case (Some(u), Some(pw)) =>
-                auth(PasswordRequest(u, pw, clientId.get, clientSecret.get, scope.getOrElse(Nil))) match {
-                  case AccessTokenResponse(accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
+                auth(PasswordRequest(
+                  u, pw, clientId.get, clientSecret.get, scope.getOrElse(Nil))) match {
+                  case AccessTokenResponse(
+                    accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
                     accessResponder(
                       accessToken, kind, expiresIn, refreshToken, scope, extras
                     )
@@ -249,8 +274,10 @@ trait Authorized extends AuthorizationProvider
           case RefreshToken =>
             refreshToken.get match {
               case Some(rtoken) =>
-                auth(RefreshTokenRequest(rtoken, clientId.get, clientSecret.get, scope.getOrElse(Nil))) match {
-                  case AccessTokenResponse(accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
+                auth(RefreshTokenRequest(
+                  rtoken, clientId.get, clientSecret.get, scope.getOrElse(Nil))) match {
+                  case AccessTokenResponse(
+                    accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
                      accessResponder(
                        accessToken, kind, expiresIn, refreshToken, scope, extras
                      )
@@ -264,7 +291,8 @@ trait Authorized extends AuthorizationProvider
             (code.get, redirectURI.get) match {
               case (Some(c), Some(r)) =>
                 auth(AccessTokenRequest(c, r, clientId.get, clientSecret.get)) match {
-                  case AccessTokenResponse(accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
+                  case AccessTokenResponse(
+                    accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
                     accessResponder(
                       accessToken, kind, expiresIn, refreshToken, scope, extras
                     )
@@ -279,23 +307,34 @@ trait Authorized extends AuthorizationProvider
                 )
             }
           case unsupported =>
-            // note the oauth2 spec does allow for extention grant types, this implementation currently does not
-            errorResponder(UnsupportedGrantType, "%s is unsupported" format unsupported, auth.errUri(UnsupportedGrantType), None)
+            // note the oauth2 spec does allow for extention grant types,
+            // this implementation currently does not
+            errorResponder(
+              UnsupportedGrantType, "%s is unsupported" format unsupported,
+              auth.errUri(UnsupportedGrantType), None)
         }
       }
 
-     val all = ((Right(params): Either[String, Map[String, Seq[String]]]) /: BasicAuth(req))((a,e) => e match {
-       case (cid, csec) =>
-         val pref = Right(a.right.get ++ Map(ClientId -> Seq(cid), ClientSecret-> Seq(csec)))
+    // here, we are combining requests parameters with basic authentication headers
+    // the preferred way of providing client credentials is through 
+    // basic auth but this is not required. The following folds basic auth data
+    // into the params ensuring there is no conflict in transports
+     val combinedParams = (
+       (Right(params): Either[String, Map[String, Seq[String]]]) /: BasicAuth(req)
+     )((a,e) => e match {
+       case (clientId, clientSecret) =>
+         val preferred = Right(
+           a.right.get ++ Map(ClientId -> Seq(clientId), ClientSecret-> Seq(clientSecret))
+         )
          a.right.get(ClientId) match {
            case Seq(id) =>
-             if(id == cid) pref else Left("client ids did not match")
-           case _ => pref
+             if(id == clientId) preferred else Left("client ids did not match")
+           case _ => preferred
          }
        case _ => a
      })
 
-     all fold({ err =>
+     combinedParams fold({ err =>
        errorResponder(InvalidRequest, err, None, None)
      }, { mixed =>
        expected(mixed) orFail { errs =>

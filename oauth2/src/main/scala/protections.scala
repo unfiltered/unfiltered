@@ -6,35 +6,46 @@ import unfiltered.filter.Plan
 
 /**
  * After your application has obtained an access token, your app can use it to access APIs by
- * including it in either an oauth_token query parameter or an Authorization: OAuth header.
+ * including it in either an access_token query parameter or an Authorization: Beader header.
  *
  * To call API using HTTP header.
  *
  *     GET /api/1/feeds.js HTTP/1.1
- *     Authorization: OAuth YOUR_ACCESS_TOKEN
  *     Host: www.example.com
+ *     Authorization: Bearer vF9dft4qmT
  */
 case class Protection(source: AuthSource) extends ProtectionLike {
+  /** List or ResourceServer token schemes. By default,
+   *  this includes BearerAuth which extracts Bearer tokens for a header,
+   *  QParamBeaerAuth which extracts Bearer tokens request params and
+   *  MacAuth which extracts tokens from using the `Mac` authentication encoding */
   val schemes = Seq(BearerAuth, QParamBearerAuth, MacAuth)
 }
 
-/** Provides OAuth2 protection implementation. Extend this trait to customize query string `oauth_token`, etc. */
+/** Provides OAuth2 protection implementation.
+ *  Extend this trait to customize query string `oauth_token`, etc. */
 trait ProtectionLike extends Plan {
   import javax.servlet.http.HttpServletRequest
 
+  /** Provides a means of verifying a deserialized access token */
   val source: AuthSource
+
+  /** Provides a list of schemes used for decoding access tokens in request */
   val schemes: Seq[AuthScheme]
-  def intent = ((schemes map {_.intent(this)}) :\ fallback) {_ orElse _}
+
+  final def intent = ((schemes map { _.intent(this) }) :\ fallback) { _ orElse _ }
+  
+  /** If no authentication token is provided at all, demand the first
+    * authentication scheme of all that are supported */
   def fallback: Plan.Intent = {
-    case request =>
-      println("did not match any scheme in %s" format schemes)
-      // if no authentication token is provided at all, demand the first authentication scheme of all that are supported:
-      schemes.head.errorResponse(Unauthorized, "", request)
+    case r =>
+      schemes.head.errorResponse(Unauthorized, "", r)
   }
 
-  def authenticate[T <: HttpServletRequest](token: AccessToken, request: HttpRequest[T])(errorResp: (String => ResponseFunction[Any])) =
+  /** Returns access token response to client */
+  def authenticate[T <: HttpServletRequest](
+    token: AccessToken, request: HttpRequest[T])(errorResp: (String => ResponseFunction[Any])) =
     source.authenticateToken(token, request) match {
-      //case Left(msg) => errorResponse(Unauthorized, msg, request)
       case Left(msg) => errorResp(msg)
       case Right((user, client, scopes)) =>
         request.underlying.setAttribute(OAuth2.XAuthorizedIdentity, user.id)
@@ -46,17 +57,31 @@ trait ProtectionLike extends Plan {
 
 /** Represents the authorization source that issued the access token. */
 trait AuthSource {
-  def authenticateToken[T](token: AccessToken, request: HttpRequest[T]): Either[String, (ResourceOwner, Client, Seq[String])]
+  /** Given an deserialized access token and request, extract the resource owner, client, and list of scopes
+   *  associated with the request, if there is an error return it represented as a string message
+   *  to return the the oauth client */
+  def authenticateToken[T](
+    token: AccessToken,
+    request: HttpRequest[T]): Either[String, (ResourceOwner, Client, Seq[String])]
 
+  /**
+   * Auth sources which 
+   */
   def realm: Option[String] = None
 }
 
-/** Represents the authentication scheme. */
+/** Represents the scheme used for decoding access tokens from a given requests. */
 trait AuthScheme {
+
   def intent(protection: ProtectionLike): Plan.Intent
+
   def errorString(status: String, description: String) =
     """error="%s" error_description="%s" """.trim format(status, description)
+
+  /** The WWW-Authenticate challege returned to the clien tin a 401 response
+   *  for invalid requests */
   val challenge: String
+
   /**
    * An error header, consisting of the challenge and possibly an error and error_description attribute
    * (this depends on the authentication scheme).
@@ -76,6 +101,8 @@ trait AuthScheme {
     Unauthorized ~> WWWAuthenticate(errorHeader(Some("invalid_token"), Some(msg))) ~>
       ResponseString(errorString("invalid_token", msg))
   }
+
+  /** Return a function representing an error response */
   def errorResponse[T](status: Status, description: String,
       request: HttpRequest[T]): ResponseFunction[Any] = (status, description) match {
     case (Unauthorized, "") => Unauthorized ~> WWWAuthenticate(challenge) ~> ResponseString(challenge)
@@ -85,19 +112,22 @@ trait AuthScheme {
     case _ => status ~> ResponseString(errorString(status.toString, description))
   }
 }
+
 trait AccessToken
 
 case class BearerToken(value: String) extends AccessToken
 
-/** Represents Bearer auth. */
+/** Represents Bearer auth encoded in a header.
+ *  see also http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-14 */
 trait BearerAuth extends AuthScheme {
   val challenge = "Bearer"
   val defaultBearerHeader = """Bearer ([\w\d!#$%&'\(\)\*+\-\.\/:<=>?@\[\]^_`{|}~\\,;]+)""".r
+  
+  /** bearer header format */
   def header = defaultBearerHeader
 
   object BearerHeader {
     val HeaderPattern = header
-
     def unapply(hval: String) = hval match {
       case HeaderPattern(token) => Some(token)
       case _ => None
@@ -112,10 +142,11 @@ trait BearerAuth extends AuthScheme {
 
 object BearerAuth extends BearerAuth {}
 
-/** Represents Bearer auth. */
+/** Represents Bearer auth encoded in query params.
+ *  ses also http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-14 */
 trait QParamBearerAuth extends AuthScheme {
   val challenge = "Bearer"
-  val defaultQueryParam = "bearer_token"
+  val defaultQueryParam = "access_token"
   def queryParam = defaultQueryParam
 
   object BearerParam {
@@ -132,12 +163,14 @@ object QParamBearerAuth extends QParamBearerAuth {}
 
 /** Represents MAC auth. */
 trait MacAuth extends AuthScheme {
-  import unfiltered.mac.{Mac, MacAuthorization}
+  import unfiltered.mac.{ Mac, MacAuthorization }
 
   val challenge = "MAC"
 
+  /** The algorigm used to sign the request */
   def algorithm: String
 
+  /** Given a token value, returns the associated token secret */
   def tokenSecret(key: String): Option[String]
 
   def intent(protection: ProtectionLike) = {
@@ -145,24 +178,20 @@ trait MacAuth extends AuthScheme {
       try {
          tokenSecret(id) match {
            case Some(key) =>
-              Mac.sign(req, nonce, ext, bodyhash, key, algorithm).fold({ err =>
-                println("err signing %s" format err)
-                errorResponse(Unauthorized, err, req)
-              }, { sig =>
-                println("sig %s" format sig)
-                println("mac %s" format mac)
-                if(sig == mac) protection.authenticate(MacAuthToken(id, key, nonce, bodyhash, ext), req) {
-                  failedAuthenticationResponse
-                }
-                else errorResponse(Unauthorized, "invalid MAC signature", req)
+             // compare a signed request with the signature provided
+             Mac.sign(req, nonce, ext, bodyhash, key, algorithm).fold({ err =>
+               errorResponse(Unauthorized, err, req)
+             }, { sig =>
+               if(sig == mac) protection.authenticate(MacAuthToken(id, key, nonce, bodyhash, ext), req) {
+                 failedAuthenticationResponse
+               }
+               else errorResponse(Unauthorized, "invalid MAC signature", req)
              })
            case _ =>
-             println("could not find token for id %s" format id)
              errorResponse(Unauthorized, "invalid token", req)
          }
-      }
-      catch {
-        case e: Exception => errorResponse(Unauthorized, "invalid MAC header.", req)
+      } catch {
+        case _ => errorResponse(Unauthorized, "invalid MAC header.", req)
       }
   }
 

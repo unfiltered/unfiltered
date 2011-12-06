@@ -39,17 +39,21 @@ object MacSpec extends Specification with unfiltered.spec.jetty.Served {
       })
     }
     "respond with a challege with a malformed nonce" in {
-       Http.when(_ == 401)(host / "echo" <:< Map("Authorization" -> """MAC id="%s",nonce="%s",mac="%s" """.format("test_id", "test:test", "asdfasdf")) >:> { h =>
+       Http.when(_ == 401)(host / "echo" <:< Map(
+         "Authorization" -> """MAC id="%s",nonce="%s",mac="%s" """.format("test_id", "test:test", "asdfasdf")) >:> { h =>
          h must havePair(("WWW-Authenticate", Set("MAC")))
        })
      }
     "respond with a body when authorization is valid" in {
-       val body = Http(host / "echo" <:<  Map("Authorization" -> """MAC id="%s",nonce="%s",mac="%s" """.format("test_id", "123:test", "asdfasdf")) as_str)
-       println(body)
+       val body = Http(host / "echo" <:<  Map(
+         "Authorization" -> """MAC id="%s",nonce="%s",mac="%s" """.format("test_id", "123:test", "asdfasdf")) as_str)
+       body must_== "id test_id nonce 123:test bodyhash None ext None mac asdfasdf" 
     }
     "respond with a body when authorization is valid" in {
-       val body = Http(host / "echo" <:<  Map("Authorization" -> """MAC id="%s",nonce="%s",mac="%s",bodyhash="%s",ext="%s" """.format("test_id", "123:test", "asdfasdf","asdfasf",java.net.URLEncoder.encode("a,b,c"))) as_str)
-       println(body)
+       val body = Http(host / "echo" <:<  Map(
+         "Authorization" -> """MAC id="%s",nonce="%s",mac="%s",bodyhash="%s",ext="%s" """.format(
+           "test_id", "123:test", "asdfasdf","asdfasf", java.net.URLEncoder.encode("a,b,c", "utf8"))) as_str)
+       body must_== "id test_id nonce 123:test bodyhash Some(asdfasf) ext Some(a%2Cb%2Cc) mac asdfasdf"
     }
     "respond ok with with a valid mac signed request" in {
        val (key, nonce, method,  uri, hostname, hport, bodyhash, ext) = (
