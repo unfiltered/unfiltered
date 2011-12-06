@@ -1,58 +1,121 @@
-Response Functions
-------------------
+Within the Parameters
+---------------------
 
-### Response Function and Combinators
+### Extracting Params
 
-With a typical request-response cycle intent, the partial function's
-return value is of Unfiltered's type `ResponseFunction`. A response
-function takes a response object, presumably mutates it, and returns
-the same response object.
+Requests are commonly accompanied by named parameters, either in the
+[query string][query] of the URL or in the body of a
+[POST][post]. Unfiltered supports access to these parameters with the
+`Params` extractor.
 
-Unfiltered includes a number of response functions for common response
-types. Continuing the "record" example, in some cases we may want to
-respond with a particular string:
-
-```scala
-  case PUT(_) =>
-    ...
-    ResponseString("Record created")
-```
-
-We should also set a status code for this response. Fortunately there
-is a predefined function for this too, and response functions are
-easily composed. Unfiltered even supplies a chaining combinator `~>`
-to make it pretty:
+[query]: https://en.wikipedia.org/wiki/Query_string
+[post]: https://en.wikipedia.org/wiki/POST_%28HTTP%29#Use_for_submitting_web_forms
 
 ```scala
-  case PUT(_) =>
-    ...
-    Created ~> ResponseString("Record created")
+import unfiltered.request._
+import unfiltered.response._
+val pEcho = unfiltered.filter.Planify {
+  case Params(params) =>
+    ResponseString(params("test").toString)
+}
 ```
 
-If we had some bytes, they would be as easy to serve as strings:
+The type of `params` extracted is `Map[String, Seq[String]]`, with a
+default value of `Seq.empty`. With this interface, it is always safe
+to apply the map. But keep in mind that parameters may be specified
+with no value, and may occur multiple times. The `Params` extractor
+returns empty strings for named parameters with no value, as many
+times in the sequence as they occurred in the request.
+
+For example, the query string `?test&test=3&test` produces the
+sequence of strings `"", "3", ""`. You can check this yourself by
+querying the plan defined above:
 
 ```scala
-  case GET(_) =>
-    ...
-    ResponseBytes(bytes)
+unfiltered.jetty.Http.anylocal.filter(pEcho).run()
 ```
 
-Passing or Handling Errors
---------------------------
+### Routing by Parameter
 
-And finally, for the case of unexpected methods we have a few
-choices. One option is to *pass* on the request:
+While the `Params` extractor is useful for accessing parameters, it
+doesn't provide any control flow to an intent partial function.
+
+If you want to route requests based on the parameters present, you'll
+need to nest a custom extractor inside `Params`. For this Unfiltered
+provides a `Params.Extract` base class:
+
 
 ```scala
-  case _ => Pass
+object Test extends Params.Extract("test", Params.first)
 ```
 
-The `Pass` response function is a signal for the plan act as if the
-request was not defined for this intent. If no other plan responds to
-the request, the server may respond with a 404 eror. But we can
-improve on that by ensuring that any request to this path that is not
-an expected method receives an appropriate response:
+The above extractor will match on the first parameter named "test" in
+a request. If no parameters are named test, the pattern does not
+match. However, a named parameter with no value would match. We can
+exclude this possibility with a richer definition.
 
 ```scala
-  case _ => MethodNotAllowed ~> ResponseString("Must be GET or PUT")
+object NonEmptyTest extends Params.Extract(
+  "test",
+  Params.first ~> Params.nonempty
+)
 ```
+
+The second parameter of the `Params.Extract` constructor is a function
+`Seq[String] => Option[B]`, with `B` being the type extracted. The
+values `first` and `nonempty` are functions defined in the `Params`
+object that may be chained together with `~>` (as with response
+functions).
+
+Typically the chain begins with `first`, to require at least one
+parameter of the given name and discard the rest. Subsequent functions
+may require a `nonempty` value as above, or produce a `trimmed`
+string, or an `int` value from the string.
+
+When a parameter transformation function fails, `None` is produced an
+the extractor dose not match for the request. Knowing this, you can
+write your own transformation functions using `map` and `filter`.
+
+```scala
+object NotShortTest extends Params.Extract(
+  "test",
+  Params.first ~> { p: Option[String] =>
+    p.filter { _.length > 4 }
+  }
+)
+```
+
+There's also a convenience function to simplify the definition of
+transformation *predicates*.
+
+```scala
+object NotShortTest2 extends Params.Extract(
+  "test",
+  Params.first ~> Params.pred { _.length > 4 }
+)
+```
+
+Try it all out in this server, which returns 404 unless provided with
+a "pos" parameter that is a positive integer, and "neg" that is
+negative.
+
+```scala
+object Pos extends Params.Extract(
+  "pos",
+  Params.first ~> Params.int ~>
+    Params.pred { _ > 0 }
+)
+object Neg extends Params.Extract(
+  "neg",
+  Params.first ~> Params.int ~>
+    Params.pred { _ < 0 }
+)
+val intEcho = unfiltered.filter.Planify {
+  case Params(Pos(pos) & Neg(neg)) =>
+    ResponseString("%d %d".format(pos,neg))
+}
+unfiltered.jetty.Http.anylocal.filter(intEcho).run()
+```
+
+> The `&` extractor matches when the extractor to its left and right
+  match, in this case to require multiple parameters.
