@@ -1,0 +1,19 @@
+
+{
+ "organization":"net.databinder",
+ "name":"unfiltered-oauth",
+ "version":"0.5.3",
+ "description":"OAuth plans for servlet filters",
+ "site":"http://unfiltered.databinder.net/",
+ "tags":[],
+ "docs":"",
+ "licenses": [],
+ "resolvers": ["http://scala-tools.org/repo-releases"],
+ "dependencies": [{
+   "organization":"net.databinder",
+   "name": "dispatch-oauth",
+   "version": "0.8.6"
+  }],
+ "scalas": ["2.8.0","2.8.1","2.8.2","2.9.0","2.9.0-1","2.9.1"],
+ "sbt": false
+}

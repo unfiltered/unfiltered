@@ -2,18 +2,18 @@ package unfiltered.netty.cycle
 
 import java.util.concurrent.{ExecutorService,Executors}
 
-/** Evaluates the intent in an unbonuded CachedThreadPool
+/** Evaluates the intent in an unbounded CachedThreadPool
  * executor. For a production environment with known
  * memory constraints, it is better to extend
  * `DeferralExecutor with DeferredIntent` and supply
  * a configured MemoryAwareThreadPoolExecutor.*/
 trait ThreadPool extends DeferralExecutor with DeferredIntent {
   self: Plan =>
-  def underlying = ThreadPool.executor
+  val underlying = ThreadPool.executor
 }
 
 object ThreadPool {
-  lazy val executor = Executors.newCachedThreadPool()
+  def executor = Executors.newCachedThreadPool()
 }
 
 /** Evaluates the intent and its response function on

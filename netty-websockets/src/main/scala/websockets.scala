@@ -20,7 +20,9 @@ case class WebSocket(channel: Channel) {
 
   def send(str: String) = channel.write(new DefaultWebSocketFrame(str))
 
-  /** will throw an IllegalArgumentException if (type & 0x80 == 0) and the data is not
-   * encoded in UTF-8 */
-  def send(mtype: Int, buf: ChannelBuffer) = channel.write(new DefaultWebSocketFrame(mtype, buf))
+  /** will throw an IllegalArgumentException if (type & 0x80 == 0)
+   * and the data is not encoded in UTF-8 */
+  def send(mtype: Int, buf: ChannelBuffer) = channel.write(
+    new DefaultWebSocketFrame(mtype, buf)
+  )
 }

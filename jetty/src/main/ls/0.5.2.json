@@ -1,0 +1,19 @@
+
+{
+ "organization":"net.databinder",
+ "name":"unfiltered-jetty",
+ "version":"0.5.2",
+ "description":"Jetty server embedding module",
+ "site":"http://unfiltered.databinder.net/",
+ "tags":[],
+ "docs":"",
+ "licenses": [],
+ "resolvers": ["http://scala-tools.org/repo-releases"],
+ "dependencies": [{
+   "organization":"org.eclipse.jetty",
+   "name": "jetty-webapp",
+   "version": "7.5.4.v20111024"
+  }],
+ "scalas": ["2.8.0","2.8.1","2.8.2","2.9.0","2.9.0-1","2.9.1"],
+ "sbt": false
+}

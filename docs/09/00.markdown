@@ -1,0 +1,9 @@
+Netty Plans
+-----------
+
+Unfiltered's interfaces to Netty reflect the lower-level nature of
+Netty as compared to Servlet Filters. This gives greater flexibility
+and power to the application, necessarily requiring greater
+responsibility and attention to detail by the programmer. If you're
+up for the challenge or just want to play with something new, then
+give it a whirl.

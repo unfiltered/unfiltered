@@ -8,7 +8,8 @@ import org.jboss.netty.channel.{ChannelHandlerContext, ChannelFutureListener,
 trait Secured extends SimpleChannelUpstreamHandler {
   import org.jboss.netty.handler.ssl.SslHandler
   
-  override def channelConnected(ctx: ChannelHandlerContext, e: ChannelStateEvent) =
+  override def channelConnected(ctx: ChannelHandlerContext,
+                                e: ChannelStateEvent) =
     ctx.getPipeline.get(classOf[SslHandler]) match {
       case null => ()
       case ssl: SslHandler => ssl.handshake.addListener(channelSecured(ctx))

@@ -1,0 +1,62 @@
+### Intent chaining
+
+Applications that internally chain intent functions are now
+recommended to use `Pass.onPass` rather than the `orElse` method
+defined on `PartialFunction`.
+
+`Pass.onPass` is aware of the explicit `Pass` object that may be
+returned by intents and it is also more efficient than `orElse` for
+many chained intent functions. There are two ways to use `onPass`:
+
+    import unfiltered.request._
+    val combined1 = Pass.onPass(intent1, intent2)
+    val combined2 = intent1.onPass(intent2)
+
+These two produce the same combined intent function; the second uses
+an implicit conversion imported from the package object.
+
+### unfiltered-netty-server
+
+In recent releases `plan` and `handler` took a by-name parameter to
+support the case where new instances of Netty handlers are required
+for each request. This lead to unexpected behavior for some more
+common use cases, where the caller passed in a `new` handler thinking
+it would be shared for all requests.
+
+To avoid confusion, we've restored the previous parameter types to
+`plan` and `handler` methods. If you need to pass in a plan "factory",
+such as for a chunk aggregator, there is a new method `makePlan` that
+takes a by-name parameter. The new `chunked(maxContentLength: Int)`
+convenience method also [provides this behavior directly][chunked].
+
+[chunked]: https://github.com/unfiltered/unfiltered/blob/master/netty-server/src/main/scala/servers.scala#L50
+
+### unfiltered-netty-websockets
+
+Fixed issue [#99][i99], error when decoding large web socket messages.
+
+[i99]: https://github.com/unfiltered/unfiltered/issues/99
+
+### unfiltered-scalatest
+
+Corrected scala-test dependencies for different versions of Scala. {
+[dwestheide][dwestheide] }
+
+[dwestheide]: https://github.com/unfiltered/unfiltered/issues/92
+
+### unfiltered-jetty
+
+Updated dependency to 7.5.4.v20111024 { [max-l](https://github.com/max-l/) }
+
+Fixed issue [#89][89], use of deprecated Jetty keystore methods.
+
+[89]: https://github.com/unfiltered/unfiltered/issues/89
+
+### ls.implicit.ly
+
+Added ls plugin to the build and metadata to the repository, so
+that Unfiltered releases are recorded at [ls/unfiltered][ls]. Also,
+FYI! The ls server is [built with Unfiltered][lsuf].
+
+[ls]: http://ls.implicit.ly/unfiltered/unfiltered
+[lsuf]: https://github.com/softprops/ls/tree/master/server/src/main/scala

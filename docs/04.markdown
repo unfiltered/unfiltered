@@ -39,7 +39,7 @@ names are as follows:
 
 With **simple-build-tool** it's best to have the Scala version
 [automatically appended][sbt] so it will always match your
-project's. In an sbt 0.10.x project:
+project's. In an sbt 0.11.x project:
 
 ```scala
 libraryDependencies += "net.databinder" %% "unfiltered-filter" % "$version$"
@@ -69,7 +69,7 @@ So for example:
 ```sh
 g8 n8han/unfiltered-netty --name=justplayin
 cd justplayin
-sbt # *or whatever your 0.10.x command is
+sbt # *or whatever your 0.11.x command is
 > run
 ```
 

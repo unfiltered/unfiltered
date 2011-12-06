@@ -1,0 +1,19 @@
+
+{
+ "organization":"net.databinder",
+ "name":"unfiltered-netty",
+ "version":"0.5.3",
+ "description":"Netty server binding module",
+ "site":"http://unfiltered.databinder.net/",
+ "tags":[],
+ "docs":"",
+ "licenses": [],
+ "resolvers": ["http://scala-tools.org/repo-releases"],
+ "dependencies": [{
+   "organization":"org.jboss.netty",
+   "name": "netty",
+   "version": "3.2.5.Final"
+  }],
+ "scalas": ["2.8.0","2.8.1","2.8.2","2.9.0","2.9.0-1","2.9.1"],
+ "sbt": false
+}

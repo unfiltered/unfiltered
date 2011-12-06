@@ -1,0 +1,10 @@
+* [Fix][resources] for regression introduced in 0.5.2 in the
+  `resources` handler of unfiltered-netty-server. Unique instances of
+  the ChunkedWriteHandler were not created for each request, causing
+  bad responses.
+* Fix for [issue #100][i100] (woot?), _Sec-WebSocket-Location
+  (WSLocation) is hard-coded to ws:// protocol_ { [romusz][romusz] }
+
+[i100]: https://github.com/unfiltered/unfiltered/issues/100
+[romusz]: https://github.com/romusz
+[resources]: https://github.com/unfiltered/unfiltered/commit/5bc2dcb57e2b15d3baf954a3791e8f4e784f3dfe

@@ -2,7 +2,8 @@ package unfiltered.netty
 
 import unfiltered.util.{IO, RunnableServer}
 import java.net.InetSocketAddress
-import org.jboss.netty.handler.codec.http.{HttpRequestDecoder, HttpResponseEncoder}
+import org.jboss.netty.handler.codec.http.{
+  HttpRequestDecoder, HttpResponseEncoder, HttpChunkAggregator}
 import org.jboss.netty.handler.stream.ChunkedWriteHandler
 import org.jboss.netty.channel._
 import group.ChannelGroup
@@ -30,9 +31,12 @@ with Ssl { self =>
     new SecureServerPipelineFactory(channels, handlers, this)
 
   type ServerBuilder = Https
-  def handler(h: => ChannelHandler) =
+
+  def handler(h: ChannelHandler) = makePlan(h)
+
+  def makePlan(h: => ChannelHandler) =
     Https(port, host, { () => h } :: handlers, beforeStopBlock)
-  def plan(plan: => ChannelHandler) = handler(plan)
+
   def beforeStop(block: => Unit) =
     Https(port, host, handlers, { () => beforeStopBlock(); block })
 }

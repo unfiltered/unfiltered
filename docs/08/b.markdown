@@ -1,58 +1,62 @@
-Just Kitting
-------------
+Remembrance of Things Past
+--------------------------
 
-Unfiltered gives you many extractors to facilitate pattern matching,
-and it might be helpful to create some extractors specific to an
-application, but often you want to factor-out broader functionality.
-That's where kits come in.
+Basic authentication is a lightweight solution to general
+authentication, but what if we need to remember a little more
+information about a user's session? That's where
+[cookies](http://en.wikipedia.org/wiki/HTTP_cookie) come in.
 
-### The GZip Kit
-
-We first had the idea for kits when considering how best to support
-GZip response encodings. An extractor to match an `Accept-Encoding`
-header for gzip would help, and a `ResponseFunction` to compress the
-response stream, but these would have to be repeated for every case
-expression.
-
-The GZip *kit* is a higher level abstraction that can be applied at
-once to full intent function. The kit will examine the request first,
-and if appropriate, prepends a compressing function to the response
-function chain provided by the intent.
-
-#### GZip Kit Definition
-
-This part is already done for you in `unfiltered-libary`, but in case
-you are curious this is how the GZip kit is defined.
+Let's build on our authenticated application and add support for simple cookie handling.
 
 ```scala
-object GZip extends unfiltered.kit.Prepend {
-  def intent = Cycle.Intent[Any,Any] {
-    case Decodes.GZip(req) =>
-      ContentEncoding.GZip ~> ResponseFilter.GZip
+import unfiltered.Cookie
+
+case class App(users: Users) extends
+unfiltered.filter.Plan {
+  def intent = Auth(users) {
+    case Path("/") & Cookies(cookies) =>
+      ResponseString(cookies("pref") match {
+        case Some(Cookie(_, pref, _, _, _, _)) =>
+          "you pref %s, don't you?" format pref
+        case _ => "no preference?"
+      })
+    case Path("/prefer") & Params(p) =>
+       // let's store it on the client
+       ResponseCookies(Cookie("pref", p("pref")(0))) ~>
+         Redirect("/")
+    case Path("/forget") =>
+       ResponseCookies(Cookie("pref", "")) ~>
+         Redirect("/")
   }
 }
 ```
 
-Unlike a plan's intent function, this one defines the conditions for
-which its response function is prepended another intent's. It sets
-a header and a `FilterOutputStream` for the response.
-
-### GZip Usage
-
-This is a very simple plan that will compress its responses if the
-user-agent supports it:
+Now that we have a slightly more sophisitcated basic application let's mount it with a user named `jim` and a password of `j@m`.
 
 ```scala
-object EchoPlan extends unfiltered.filter.Plan {
-  def intent = unfiltered.kit.GZip {
-    case Path(path) => ResponseString(path)
-  }
+object JimsAuth extends Users {
+  def auth(u: String, p: String) =
+    u == "jim" && p == "j@m"
 }
+unfiltered.jetty.Http(8080).filter(
+  App(JimsAuth)
+).run
 ```
 
-### Do Kit Yourself
+In your browser, open the url `http://localhost:8080/` and you should
+be greeted with its native authentication dialog. Enter `jim` and
+`j@m`, if you are feeling authentic.
 
-The higher level abstraction provided by kits can be applied to
-problems specific to an application just as well as for general
-problems. Don't be afraid to experiment, and if you happen to make
-something that does solve a general problem, please share it!
+Once authenticated you should see simple text questioning your
+preferences. Why is this? Well, you have yet to tell the server what
+you prefer. In your url bar, enter the address
+
+    http://localhost:8080/prefer?pref=kittens
+
+or whatever else you have a preference for. Now, every time you
+request `http://localhost:8080/` the server has remembered your
+preference for you. This is a cookie at work!
+
+If you change your mind you can always hit the `prefer` path with a
+new pref or just tell the server to forget it by entering the address
+`http://localhost:8080/forget`.

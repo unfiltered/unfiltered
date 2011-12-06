@@ -27,4 +27,3 @@ object Async {
     def respond(rf: unfiltered.response.ResponseFunction[R])
   }
 }
-

@@ -30,7 +30,6 @@ object Intent {
  */
 trait Plan extends InittedFilter {
   def intent: Plan.Intent
-
   def doFilter(request: ServletRequest,
                response: ServletResponse,
                chain: FilterChain) {
@@ -38,11 +37,14 @@ trait Plan extends InittedFilter {
       case (hreq: HttpServletRequest, hres: HttpServletResponse) =>
         val request = new RequestBinding(hreq)
         val response = new ResponseBinding(hres)
-        Cycle.Intent.complete(intent)(request) match {
-          case Pass =>
-            chain.doFilter(request.underlying, response.underlying)
-          case responseFunction => responseFunction(response)
-        }
+        Pass.fold(
+          intent,
+          (_: HttpRequest[HttpServletRequest]) =>
+            chain.doFilter(request.underlying, response.underlying),
+          (_: HttpRequest[HttpServletRequest], 
+           rf: ResponseFunction[HttpServletResponse]) =>
+            rf(response)
+        )(request)
      }
   }
 }

@@ -1,0 +1,49 @@
+### Asynchronous Servlet Responses
+
+Asynchronous responses are now supported for Servlet 3.0 filters, via
+the `unfiltered-filter-async` module using Jetty continuations. See
+the [updated bindings documentation][bind] for an example. { [pk11][asf] }
+
+[asf]: https://github.com/unfiltered/unfiltered/pull/77
+[bind]: http://unfiltered.databinder.net/Bindings+and+Servers.html
+
+### Websockets
+
+The `unfiltered-netty-websockets` module is updated to support IETF
+draft 10 of the specification, supported by Firefox 7 and Chrome 14.
+{ [softprops][softprops] }
+
+[softprops]: https://github.com/softprops
+
+### Cookies
+
+Cookies are supported with request matchers and response functions,
+as described in [a new documentation section][cook]. { [softprops][softprops] }
+
+[cook]: http://unfiltered.databinder.net/Identification+and+Cookies.html
+
+### Github Organization
+
+Our source repository now belongs to the [Unfiltered][ufs] github
+organization. Bookmarks and **git remotes must be updated** to
+[unfiltered/unfiltered][ufuf].
+
+[ufs]: https://github.com/unfiltered
+[ufuf]: https://github.com/unfiltered/unfiltered
+
+### Netty Executors
+
+Netty cycle plans now have their own default thread pools instead of
+sharing a global pool, to simplify a graceful shutdown. Applications
+are [recommended][exec], as before, to define their own memory-bound thread
+pools tailored to their production environment. { [n8han][n8] }
+
+[n8]: https://github.com/n8han
+[exec]: http://unfiltered.databinder.net/Execution+and+Exceptions.html
+
+### Eclipse-compatible Source Jars
+
+The published source jars now fully nested package-directories as
+required by Eclipse for navigation to library sources. { [tekul][tekul] }
+
+[tekul]: https://github.com/unfiltered/unfiltered/pull/79

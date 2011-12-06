@@ -49,7 +49,7 @@ object Temperature extends async.Plan with ServerErrorResponse {
 Put *all that* into a console, then start it:
 
 ```scala
-Http(8080).plan(Temperature).run()
+Http(8080).chunked(1048576).plan(Temperature).run()
 ```
 
 You can lookup the current temperature for almost anywhere; just type
