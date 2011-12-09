@@ -1,77 +1,58 @@
-Silly Store
------------
+Response Functions
+------------------
 
-### Opening the Store
+### Response Function and Combinators
 
-Using the request matchers and response functions outlined over the
-last couple of pages, we have everything we need to build a naive
-key-value store.
+With a typical request-response cycle intent, the partial function's
+return value is of Unfiltered's type `ResponseFunction`. A response
+function takes a response object, presumably mutates it, and returns
+the same response object.
 
-```scala
-import unfiltered.request._
-import unfiltered.response._
-
-object SillyStore extends unfiltered.filter.Plan {
-  @volatile private var store = Map.empty[String, Array[Byte]]
-  def intent = {
-    case req @ Path(Seg("record" :: id :: Nil)) => req match {
-      case GET(_) =>
-        store.get(id).map(ResponseBytes).getOrElse {
-          NotFound ~> ResponseString("No record: " + id)
-        }
-      case PUT(_) =>
-        SillyStore.synchronized {
-          store = store + (id -> Body.bytes(req))
-        }
-        Created ~> ResponseString("Created record: " + id)
-      case _ =>
-        MethodNotAllowed ~> ResponseString("Must be GET or PUT")
-    }
-  }
-}
-```
-
-Go ahead and paste that into a [console](Try+Unfiltered.html). Then,
-execute the plan with a server, adjusting the port if your system does
-not have 8080 available.
+Unfiltered includes a number of response functions for common response
+types. Continuing the "record" example, in some cases we may want to
+respond with a particular string:
 
 ```scala
-unfiltered.jetty.Http.local(8080).filter(SillyStore).run()
+  case PUT(_) =>
+    ...
+    ResponseString("Record created")
 ```
 
-The method `local`, like `anylocal`, binds only to the loopback
-interface, for safety. SillyStore is not quite "web-scale".
+We should also set a status code for this response. Fortunately there
+is a predefined function for this too, and response functions are
+easily composed. Unfiltered even supplies a chaining combinator `~>`
+to make it pretty:
 
-### Curling the Store
+```scala
+  case PUT(_) =>
+    ...
+    Created ~> ResponseString("Record created")
+```
 
-The command line utility [cURL][curl] is great for testing HTTP
-servers. First, we'll try to retrieve a record.
+If we had some bytes, they would be as easy to serve as strings:
 
-[curl]: http://curl.haxx.se/
+```scala
+  case GET(_) =>
+    ...
+    ResponseBytes(bytes)
+```
 
-    curl -i http://127.0.0.1:8080/record/my+file
+Passing or Handling Errors
+--------------------------
 
-The `-i` tells it to print out the response headers. Curl does a GET
-by default; since there is no record by that or any other name it
-prints out the 404 response with our error message. We have to PUT
-something into storage.
+And finally, for the case of unexpected methods we have a few
+choices. One option is to *pass* on the request:
 
-    echo "Ta daa" | curl -i http://127.0.0.1:8080/record/my+file -T -
+```scala
+  case _ => Pass
+```
 
-Curl's option `-T` is for uploading files with a PUT, and the hyphen
-tells it to read the data piped in from echo. Now, we should have
-better luck with a GET request:
+The `Pass` response function is a signal for the plan act as if the
+request was not defined for this intent. If no other plan responds to
+the request, the server may respond with a 404 eror. But we can
+improve on that by ensuring that any request to this path that is not
+an expected method receives an appropriate response:
 
-    curl -i http://127.0.0.1:8080/record/my+file
-
-That worked, right? We should also be able to replace items:
-
-    echo "Ta daa 2" | curl -i http://127.0.0.1:8080/record/my+file -T -
-    curl -i http://127.0.0.1:8080/record/my+file
-
-And lastly, test the method error message:
-
-    curl -i http://127.0.0.1:8080/record/my+file -X DELETE
-
-405 Method Not Allowed. But it's a shame, really. DELETE support would
-be easy to add. Why don't you give it a try?
+```scala
+  case _ => MethodNotAllowed ~> ResponseString("Must be GET or PUT")
+```
