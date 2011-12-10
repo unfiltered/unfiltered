@@ -32,7 +32,6 @@ object MacAuthorization {
         val map = Map(hvals map { _.replace(headerSpace, "") } flatMap {
           case KeyVal(k, v) if(keys.contains(k)) => Seq((k -> Seq(v)))
           case e =>
-            println("malformed %s" format e)
             Nil
         }: _*)
         val expect = for {

@@ -57,7 +57,7 @@ trait ProtectionLike extends Plan {
 
 /** Represents the authorization source that issued the access token. */
 trait AuthSource {
-  /** Given an deserialized access token and request, extract the resource owner, client, and list of scopes
+  /** Given an deserialized access token and request, extract the resource owner, client id, and list of scopes
    *  associated with the request, if there is an error return it represented as a string message
    *  to return the the oauth client */
   def authenticateToken[T](

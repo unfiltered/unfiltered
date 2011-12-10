@@ -3,7 +3,7 @@ package unfiltered.oauth2
 import unfiltered._
 import unfiltered.request._
 import unfiltered.response._
-import unfiltered.request.{HttpRequest => Req}
+import unfiltered.request.{ HttpRequest => Req }
 import unfiltered.filter.request.ContextPath // work on removing this dep
 
 object OAuthorization {
@@ -80,10 +80,14 @@ trait DefaultValidationMessages extends ValidationMessages {
 case class OAuthorization(val auth: AuthorizationServer) extends Authorized
      with DefaultAuthorizationPaths with DefaultValidationMessages
 
-/** A composition of components which respond to authorization requests */
+
+/** A composition of components which respond to authorization requests.
+ *  This trait provides default implementations of Oauth `Flows`. To override these,
+ *  simply override a target Flows callback methods */
 trait Authorized extends AuthorizationProvider
   with AuthorizationEndpoints with Formatting
-  with ValidationMessages with unfiltered.filter.Plan {
+  with ValidationMessages with Flows
+  with unfiltered.filter.Plan {
   import QParams._
   import OAuthorization._
 
@@ -93,7 +97,7 @@ trait Authorized extends AuthorizationProvider
        "%s%s%s" format(uri, if(uri.indexOf("?") > 0) "&" else "?", qs)
   }
 
-  /** Returns a function which builds a
+  /** @return a function which builds a
    *  response for an accept token request */
   protected def accessResponder(
     accessToken: String, kind: String,
@@ -110,7 +114,7 @@ trait Authorized extends AuthorizationProvider
                case xs => Some(spaceEncoder(xs))
              }).map (Scope -> _) ++ extras)
 
-  /** Returns a function which builds a
+  /** @return a function which builds a
    *  response for error responses */
   protected def errorResponder(
     error: String, desc: String,
@@ -124,8 +128,124 @@ trait Authorized extends AuthorizationProvider
 
   protected def spaceEncoder(scopes: Seq[String]) = scopes.mkString("+")
 
-  def intent = {
+  def onAuthCode[T](
+    req: HttpRequest[T], responseType: Seq[String], clientId: String,
+    redirectUri: String, scope: Seq[String], state: Option[String]) =
+      auth(AuthorizationCodeRequest(
+        req, responseType, clientId, redirectUri, scope, state)) match {
 
+          case ServiceResponse(resp) => resp
+
+          case AuthorizationCodeResponse(code, state) =>
+            Redirect(redirectUri ? "code=%s%s".format(
+              code, state.map("&state=%s".format(_)).getOrElse(""))
+            )
+
+          case ErrorResponse(error, desc, euri, state) =>
+            Redirect(redirectUri ? qstr(
+              Map(Error -> error, ErrorDescription -> desc) ++
+              euri.map(ErrorURI -> (_:String)) ++
+              state.map(State -> _)
+            ))
+
+          case _ => BadRequest
+        }
+
+  def onToken[T](
+    req: HttpRequest[T], 
+    responseType: Seq[String],
+    clientId: String,
+    redirectUri: String, scope: Seq[String],
+    state: Option[String]) =
+    auth(ImplicitAuthorizationRequest(
+      req, responseType, clientId, redirectUri, scope, state)) match {
+        case ServiceResponse(cr) => cr
+        case ImplicitAccessTokenResponse(
+          accessToken, tokenType, expiresIn, scope, state, extras) =>
+          val fragment = qstr(
+            Map(AccessTokenKey -> accessToken, TokenType -> tokenType) ++
+              expiresIn.map(ExpiresIn -> (_:Int).toString) ++
+              (scope match {
+                case Seq() => None
+                case xs => Some(spaceEncoder(xs))
+              }).map(Scope -> _) ++
+              state.map(State -> _ ) ++ extras
+            )
+          Redirect("%s#%s" format(redirectUri, fragment))
+        case ErrorResponse(error, desc, euri, state) =>
+          Redirect("%s#%s" format(redirectUri, qstr(
+            Map(Error -> error, ErrorDescription -> desc) ++
+              euri.map(ErrorURI -> (_:String)) ++
+              state.map(State -> _)
+            )))
+        case _ => BadRequest
+      }
+
+  protected def onUnsupportedAuth[T](
+    req: HttpRequest[T], responseType: Seq[String], clientId: String,
+    redirectUri: String, scope: Seq[String], state: Option[String]) =
+    auth(IndeterminateAuthorizationRequest(
+      req, responseType, clientId, redirectUri, scope, state)) match {
+      case ServiceResponse(cr) => cr
+      case ErrorResponse(error, desc, euri, state) =>
+        Redirect(redirectUri ? qstr(
+          Map(Error -> error, ErrorDescription -> desc) ++
+            euri.map(ErrorURI -> (_:String)) ++
+            state.map(State -> _)
+          ))
+      case _ => BadRequest
+    }
+
+  def onClientCredentials(clientId: String, clientSecret: String, scope: Seq[String]) =
+    auth(ClientCredentialsRequest(
+      clientId, clientSecret, scope)) match {
+        case AccessTokenResponse(
+          accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
+            accessResponder(
+              accessToken, kind, expiresIn, refreshToken, scope, extras
+            )
+        case ErrorResponse(error, desc, euri, state) =>
+          errorResponder(error, desc, euri, state)
+      }
+
+  def onPassword(
+    userName: String, password: String,
+    clientId: String, clientSecret: String, scope: Seq[String]) =
+    auth(PasswordRequest(
+      userName, password, clientId, clientSecret, scope)) match {
+        case AccessTokenResponse(
+          accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
+            accessResponder(
+              accessToken, kind, expiresIn, refreshToken, scope, extras
+            )
+        case ErrorResponse(error, desc, euri, state) =>
+          errorResponder(error, desc, euri, state)
+      }
+
+  def onGrantAuthCode(code: String, redirectUri: String, clientId: String, clientSecret: String) =
+     auth(AccessTokenRequest(code, redirectUri, clientId, clientSecret)) match {
+       case AccessTokenResponse(
+         accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
+           accessResponder(
+             accessToken, kind, expiresIn, refreshToken, scope, extras
+           )
+       case ErrorResponse(error, desc, euri, state) =>
+         errorResponder(error, desc, euri, state)
+     }
+
+  def onRefresh(refreshToken: String, clientId: String, clientSecret: String, scope: Seq[String]) =
+    auth(RefreshTokenRequest(
+      refreshToken, clientId, clientSecret, scope)) match {
+        case AccessTokenResponse(
+          accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
+            accessResponder(
+              accessToken, kind, expiresIn, refreshToken, scope, extras
+            )
+        case ErrorResponse(error, desc, euri, state) =>
+          errorResponder(error, desc, euri, state)
+      }
+
+  def intent = {
     case req @ ContextPath(_, AuthorizePath) & Params(params) =>
       val expected = for {
         responseType <- lookup(ResponseType) is required(requiredMsg(ResponseType)) is
@@ -135,71 +255,14 @@ trait Authorized extends AuthorizationProvider
         scope        <- lookup(Scope) is watch(_.map(spaceDecoder), e => "")
         state        <- lookup(State) is optional[String, String]
       } yield {
-
-         (redirectURI.get, responseType.get) match {
-
-           // authorization code flow
-           case (ruri, rtx) if(rtx contains(Code)) =>
-             auth(AuthorizationCodeRequest(
-               req, rtx, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
-
-               case ServiceResponse(resp) => resp
-
-               case AuthorizationCodeResponse(code, state) =>
-                  Redirect(ruri ? "code=%s%s".format(
-                    code, state.map("&state=%s".format(_)).getOrElse(""))
-                  )
-
-               case ErrorResponse(error, desc, euri, state) =>
-                 Redirect(ruri ? qstr(
-                   Map(Error -> error, ErrorDescription -> desc) ++
-                   euri.map(ErrorURI -> (_:String)) ++
-                   state.map(State -> _)
-                 ))
-
-               case _ => BadRequest
-             }
-
-           // implicit token flow
-           case (ruri, rtx) if(rtx contains(TokenKey)) =>
-             auth(ImplicitAuthorizationRequest(
-               req, rtx, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
-               case ServiceResponse(cr) => cr
-               case ImplicitAccessTokenResponse(
-                 accessToken, tokenType, expiresIn, scope, state, extras) =>
-                 val fragment = qstr(
-                   Map(AccessTokenKey -> accessToken, TokenType -> tokenType) ++
-                     expiresIn.map(ExpiresIn -> (_:Int).toString) ++
-                     (scope match {
-                       case Seq() => None
-                       case xs => Some(spaceEncoder(xs))
-                     }).map(Scope -> _) ++
-                     state.map(State -> _ ) ++ extras
-                   )
-                 Redirect("%s#%s" format(ruri, fragment))
-               case ErrorResponse(error, desc, euri, state) =>
-                 Redirect("%s#%s" format(ruri, qstr(
-                   Map(Error -> error, ErrorDescription -> desc) ++
-                   euri.map(ErrorURI -> (_:String)) ++
-                   state.map(State -> _)
-                 )))
-               case _ => BadRequest
-             }
-
-           // unsupported grant type
-           case (ruri, unsupported) =>
-             auth(IndeterminateAuthorizationRequest(
-               req, unsupported, clientId.get, ruri, scope.getOrElse(Nil), state.get)) match {
-               case ServiceResponse(cr) => cr
-               case ErrorResponse(error, desc, euri, state) =>
-                 Redirect(ruri ? qstr(
-                   Map(Error -> error, ErrorDescription -> desc) ++
-                   euri.map(ErrorURI -> (_:String)) ++
-                   state.map(State -> _)
-                 ))
-               case _ => BadRequest
-             }
-         }
+        (redirectURI.get, responseType.get) match {
+          case (ruri, rtx) if(rtx contains(Code)) =>
+            onAuthCode(req, rtx, clientId.get, ruri, scope.getOrElse(Nil), state.get)
+          case (ruri, rtx) if(rtx contains(TokenKey)) =>
+            onToken(req, rtx, clientId.get, ruri, scope.getOrElse(Nil), state.get)
+          case (ruri, unsupported) =>
+            onUnsupportedAuth(req, unsupported, clientId.get, ruri, scope.getOrElse(Nil), state.get)
+        }
       }
 
       expected(params) orFail { errs =>
@@ -217,7 +280,6 @@ trait Authorized extends AuthorizationProvider
               case _ => Redirect(uri ? qs)
             }
           case _ => auth.mismatchedRedirectUri
-
         }
       }
 
@@ -239,30 +301,12 @@ trait Authorized extends AuthorizationProvider
         grantType.get match {
 
           case ClientCredentials =>
-            auth(ClientCredentialsRequest(
-              clientId.get, clientSecret.get, scope.getOrElse(Nil))) match {
-              case AccessTokenResponse(
-                accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
-                accessResponder(
-                  accessToken, kind, expiresIn, refreshToken, scope, extras
-                )
-              case ErrorResponse(error, desc, euri, state) =>
-                errorResponder(error, desc, euri, state)
-            }
+            onClientCredentials(clientId.get, clientSecret.get, scope.getOrElse(Nil))
 
           case Password =>
             (userName.get, password.get) match {
               case (Some(u), Some(pw)) =>
-                auth(PasswordRequest(
-                  u, pw, clientId.get, clientSecret.get, scope.getOrElse(Nil))) match {
-                  case AccessTokenResponse(
-                    accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
-                    accessResponder(
-                      accessToken, kind, expiresIn, refreshToken, scope, extras
-                    )
-                  case ErrorResponse(error, desc, euri, state) =>
-                    errorResponder(error, desc, euri, state)
-                }
+                onPassword(u, pw, clientId.get, clientSecret.get, scope.getOrElse(Nil))
               case _ =>
                 errorResponder(
                   InvalidRequest,
@@ -274,31 +318,14 @@ trait Authorized extends AuthorizationProvider
           case RefreshToken =>
             refreshToken.get match {
               case Some(rtoken) =>
-                auth(RefreshTokenRequest(
-                  rtoken, clientId.get, clientSecret.get, scope.getOrElse(Nil))) match {
-                  case AccessTokenResponse(
-                    accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
-                     accessResponder(
-                       accessToken, kind, expiresIn, refreshToken, scope, extras
-                     )
-                  case ErrorResponse(error, desc, euri, state) =>
-                    errorResponder(error, desc, euri, state)
-                }
+                onRefresh(rtoken, clientId.get, clientSecret.get, scope.getOrElse(Nil))
               case _ => errorResponder(InvalidRequest, requiredMsg(RefreshToken), None, None)
             }
 
           case AuthorizationCode =>
             (code.get, redirectURI.get) match {
               case (Some(c), Some(r)) =>
-                auth(AccessTokenRequest(c, r, clientId.get, clientSecret.get)) match {
-                  case AccessTokenResponse(
-                    accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
-                    accessResponder(
-                      accessToken, kind, expiresIn, refreshToken, scope, extras
-                    )
-                  case ErrorResponse(error, desc, euri, state) =>
-                    errorResponder(error, desc, euri, state)
-                }
+                onGrantAuthCode(c, r, clientId.get, clientSecret.get)
               case _ =>
                 errorResponder(
                   InvalidRequest,

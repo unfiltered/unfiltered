@@ -31,6 +31,7 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
   val GoodMacToken = "good_token"
 
   def setup = { server =>
+    // source is responsible for authenticating a request given an extracted access token
     val source = new AuthSource {
       def authenticateToken[T](
           access_token: AccessToken, request: HttpRequest[T]): Either[String, (ResourceOwner, Client, Seq[String])] =
@@ -53,7 +54,7 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
 
   "oauth 2" should {
     "authenticate a valid access token via query parameter" in {
-      val oauth_token = Map("bearer_token" -> GoodBearerToken)
+      val oauth_token = Map("access_token" -> GoodBearerToken)
       try {
         Http.x(host / "user" <<? oauth_token as_str) must_== "test_user"
       } catch {
@@ -75,7 +76,6 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
     // see http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-08#section-2.4.1
     "fail on a bad Bearer header" in {
       val bearer_header = Map("Authorization" -> "Bearer bad_token")
-      println(host / "user" <:< bearer_header as_str)
       Http.when(_ == 401)(host / "user" <:< bearer_header as_str) must_== """error="%s" error_description="%s" """.trim.format("invalid_token", "bad token")
       val head = Http.when(_ == 401)(host / "user" <:< bearer_header >:> { h => h })
       head.get("WWW-Authenticate") must_!= (None)

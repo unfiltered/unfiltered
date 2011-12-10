@@ -134,6 +134,18 @@ If validation fails, the client will receive an error indicated in the [spec](ht
 If validation passes, the client to recieve a similar response to a valid access token request indicated in the [spec](http://tools.ietf.org/html/draft-ietf-oauth-v2-16#section-5.1)
 
 
+#### Opting out of flows
+
+You can opt out of the provided oauth flows by overriding callback functions associated with a given flow.
+
+
+     server.context("/oauth") {
+       _.filter(new OAuthorization(authServer) {
+         override def onToken(...) = BadResponse
+       })
+     }
+
+
 ### Protection
 
 Protection requires an `AuthSource` defined as

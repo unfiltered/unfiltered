@@ -76,7 +76,7 @@ object Unfiltered extends Build {
             )) aggregate(
             library, filters, filtersAsync , uploads, util, jetty,
             jettyAjpProject, netty, nettyServer, json, specHelpers,
-            scalaTestHelpers, scalate, websockets, oauth,  mac, 
+            scalaTestHelpers, /*scalate, */ websockets, oauth,  mac, 
             oauth2, agents)
 
   lazy val library: Project =
