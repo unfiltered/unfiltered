@@ -47,9 +47,9 @@ trait ProtectionLike extends Plan {
     token: AccessToken, request: HttpRequest[T])(errorResp: (String => ResponseFunction[Any])) =
     source.authenticateToken(token, request) match {
       case Left(msg) => errorResp(msg)
-      case Right((user, client, scopes)) =>
+      case Right((user, clientId, scopes)) =>
         request.underlying.setAttribute(OAuth2.XAuthorizedIdentity, user.id)
-        request.underlying.setAttribute(OAuth2.XAuthorizedClientIdentity, client.id)
+        request.underlying.setAttribute(OAuth2.XAuthorizedClientIdentity, clientId)
         request.underlying.setAttribute(OAuth2.XAuthorizedScopes, scopes)
         Pass
     }
@@ -62,7 +62,7 @@ trait AuthSource {
    *  to return the the oauth client */
   def authenticateToken[T](
     token: AccessToken,
-    request: HttpRequest[T]): Either[String, (ResourceOwner, Client, Seq[String])]
+    request: HttpRequest[T]): Either[String, (ResourceOwner, String, Seq[String])]
 
   /**
    * Auth sources which 
