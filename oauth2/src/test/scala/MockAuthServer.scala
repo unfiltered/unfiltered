@@ -13,7 +13,7 @@ case class MockToken(val value: String, val clientId: String,
      extends Token {
   def expiresIn = Some(10)
   def scopes = Nil
-  def tokenType = "tokenType"
+  def tokenType = Some("tokenType")
 }
 
 case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)

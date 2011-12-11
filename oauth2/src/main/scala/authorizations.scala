@@ -100,13 +100,15 @@ trait Authorized extends AuthorizationProvider
   /** @return a function which builds a
    *  response for an accept token request */
   protected def accessResponder(
-    accessToken: String, kind: String,
+    accessToken: String,
+    tokenType: Option[String],
     expiresIn: Option[Int],
     refreshToken: Option[String],
     scope:Seq[String],
     extras: Iterable[(String, String)]) =
       CacheControl("no-store") ~> Pragma("no-cache") ~>
-        Json(Map(AccessTokenKey -> accessToken, TokenType -> kind) ++
+        Json(Map(AccessTokenKey -> accessToken) ++
+          tokenType.map(TokenType -> _) ++
           expiresIn.map (ExpiresIn -> (_:Int).toString) ++
              refreshToken.map (RefreshToken -> _) ++
              (scope match {
@@ -163,7 +165,8 @@ trait Authorized extends AuthorizationProvider
         case ImplicitAccessTokenResponse(
           accessToken, tokenType, expiresIn, scope, state, extras) =>
           val fragment = qstr(
-            Map(AccessTokenKey -> accessToken, TokenType -> tokenType) ++
+            Map(AccessTokenKey -> accessToken) ++
+              tokenType.map(TokenType -> _) ++
               expiresIn.map(ExpiresIn -> (_:Int).toString) ++
               (scope match {
                 case Seq() => None
@@ -200,9 +203,9 @@ trait Authorized extends AuthorizationProvider
     auth(ClientCredentialsRequest(
       clientId, clientSecret, scope)) match {
         case AccessTokenResponse(
-          accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
+          accessToken, tokenType, expiresIn, refreshToken, scope, _, extras) =>
             accessResponder(
-              accessToken, kind, expiresIn, refreshToken, scope, extras
+              accessToken, tokenType, expiresIn, refreshToken, scope, extras
             )
         case ErrorResponse(error, desc, euri, state) =>
           errorResponder(error, desc, euri, state)
@@ -214,9 +217,9 @@ trait Authorized extends AuthorizationProvider
     auth(PasswordRequest(
       userName, password, clientId, clientSecret, scope)) match {
         case AccessTokenResponse(
-          accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
+          accessToken, tokenType, expiresIn, refreshToken, scope, _, extras) =>
             accessResponder(
-              accessToken, kind, expiresIn, refreshToken, scope, extras
+              accessToken, tokenType, expiresIn, refreshToken, scope, extras
             )
         case ErrorResponse(error, desc, euri, state) =>
           errorResponder(error, desc, euri, state)
@@ -225,9 +228,9 @@ trait Authorized extends AuthorizationProvider
   def onGrantAuthCode(code: String, redirectUri: String, clientId: String, clientSecret: String) =
      auth(AccessTokenRequest(code, redirectUri, clientId, clientSecret)) match {
        case AccessTokenResponse(
-         accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
+         accessToken, tokenType, expiresIn, refreshToken, scope, _, extras) =>
            accessResponder(
-             accessToken, kind, expiresIn, refreshToken, scope, extras
+             accessToken, tokenType, expiresIn, refreshToken, scope, extras
            )
        case ErrorResponse(error, desc, euri, state) =>
          errorResponder(error, desc, euri, state)
@@ -237,9 +240,9 @@ trait Authorized extends AuthorizationProvider
     auth(RefreshTokenRequest(
       refreshToken, clientId, clientSecret, scope)) match {
         case AccessTokenResponse(
-          accessToken, kind, expiresIn, refreshToken, scope, _, extras) =>
+          accessToken, tokenType, expiresIn, refreshToken, scope, _, extras) =>
             accessResponder(
-              accessToken, kind, expiresIn, refreshToken, scope, extras
+              accessToken, tokenType, expiresIn, refreshToken, scope, extras
             )
         case ErrorResponse(error, desc, euri, state) =>
           errorResponder(error, desc, euri, state)

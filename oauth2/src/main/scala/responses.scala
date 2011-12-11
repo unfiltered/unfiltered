@@ -42,7 +42,7 @@ case class AuthorizationCodeResponse(
  */
 case class AccessTokenResponse(
   accessToken: String,
-  tokenType: String,
+  tokenType: Option[String],
   expiresIn: Option[Int],
   refreshToken: Option[String],
   scope: Seq[String],
@@ -55,7 +55,7 @@ case class AccessTokenResponse(
  */
 case class ImplicitAccessTokenResponse(
   accessToken: String,
-  tokenType: String,
+  tokenType: Option[String],
   expiresIn: Option[Int],
   scope: Seq[String],
   state: Option[String],
