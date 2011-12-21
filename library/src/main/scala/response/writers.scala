@@ -24,3 +24,13 @@ extends ResponseFunction[Any] {
       override val charset = Charset.this.charset
     }
 }
+case class Html5(nodes: scala.xml.NodeSeq) extends ComposeResponse(HtmlContent ~> {
+  val w = new java.io.StringWriter()
+  val html = nodes.head match {
+    case <html>{_*}</html> => nodes.head
+    case _ => <html>{nodes}</html>
+  }
+  xml.XML.write( w, html, "UTF-8", xmlDecl = false, doctype =
+    xml.dtd.DocType( "html", xml.dtd.SystemID( "about:legacy-compat" ), Nil ))
+  ResponseString(w.toString)
+})
