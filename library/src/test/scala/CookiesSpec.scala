@@ -1,4 +1,3 @@
-
 package unfiltered.request
 
 import org.specs._
@@ -19,23 +18,20 @@ trait CookiesSpec extends unfiltered.spec.Hosted {
 
   import dispatch._
 
+  object Foo extends Cookies.Extract("foo", Cookies.value)
+
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = {
-    case UFPath("/") & Cookies(cookies) => ResponseString(cookies("foo") match {
-      case Some(Cookie(
-        name, value, domain, path, maxAge, secure,
-        _ /* httpOnly added in 0.5.3 */, _ /* Version added in 0.5.3*/)) => value match {
-        case "" => "foo who?"
-        case foo => "foo %s!" format foo
-      }
-      case _ => "foo who?"
-    })
+    case UFPath("/") & Cookies(Foo(f)) =>
+      ResponseString("foo %s!" format f)
+
+    case UFPath("/") & Cookies(c) =>
+      ResponseString("foo who?")
 
     case POST(UFPath("/save") & Params(p)) =>
       SetCookies(Cookie("foo", p("foo")(0))) ~> Redirect("/")
 
     case UFPath("/clear") =>
-      // clearing cookie value is the same as deleting in http
-      SetCookies(Cookie("foo", "")) ~> Redirect("/")
+      SetCookies.discarding("foo") ~> Redirect("/")
   }
 
   "Cookies" should {
@@ -46,7 +42,7 @@ trait CookiesSpec extends unfiltered.spec.Hosted {
       http(host.POST / "save" << Map("foo" -> "bar") as_str) must_=="foo bar!"
     }
     "and finally clear it when requested" in {
-      // statefull http so we need to ref the instance
+      // use a stateful http instance to maintain the cookie stash
       val h = new Http
       try {
         h(host.POST / "save" << Map("foo" -> "bar") as_str) must_=="foo bar!"

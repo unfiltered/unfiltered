@@ -2,14 +2,6 @@ package unfiltered.request
 
 import unfiltered.Cookie
 
-//object Cookies {
-//  def unapply[T](r: HttpRequest[T]) =
-//    Some((((Map.empty[String, Option[Cookie]] /: r.cookies)(
-//      (m,c) => m + (c.name -> Some(c)))).withDefaultValue(None)))
-      
-//  def apply[T](r: HttpRequest[T]): Map[String, Option[Cookie]] = Cookies.unapply(r).get
-//}
-
 /** An implementation of a function used to map cookie names to their value as an Option. If there
  *  is no associated Cookie value. None will always be returned. */
 private [request] object CookieValueParser extends (Iterator[String] => Map[String, Option[Cookie]]) {
@@ -21,8 +13,30 @@ private [request] object CookieValueParser extends (Iterator[String] => Map[Stri
   }
 }
 
-/** Cookie extractor used for obtaining a collection cookies mapped to their names from the HTTP `Cookie` header */
-object Cookies extends MappedRequestHeader[String, Option[Cookie]]("Cookie")(CookieValueParser)
+/** Primary Cookie extractor used for obtaining a collection cookies mapped
+ *  to their names from the HTTP `Cookie` header */
+object Cookies extends MappedRequestHeader[String, Option[Cookie]]("Cookie")(CookieValueParser) {
+
+  type Map = scala.collection.Map[String, Option[Cookie]]
+
+  /** Extractor container for cookies */
+  class Extract[E,T](f: Map => Option[T]) {
+    def this(name: String, f: Option[Cookie] => Option[T]) =
+      this({ cookies: Map => f(cookies(name)) })
+    def unapply(cookies: Map) = f(cookies)
+  }
+
+  /**
+   * A function Option[Cookie] => Option[B]  used to test and transform values
+   * from the parameter map. Conditions may be chained with `~>` */
+  class Mapper[A](f: Option[Cookie] => Option[A]) extends (Option[Cookie] => Option[A]) {
+    def apply(a: Option[Cookie]) = f(a)
+    def ~> [B](that: Option[A] => Option[B]) = new Mapper({ f andThen that })
+  }
+
+  /** Use as a named function value to extract a cookies value from Cookies.Extract("name", Cookies.value)*/
+  def value = new Mapper(_.map(_.value))
+}
 
 /** Module for Cookie deserialization.
  * Some cookie optional properties defined in http://tools.ietf.org/html/rfc2965 are not included in this implementation's 
@@ -129,7 +143,6 @@ object FromCookies {
         })
         // discard completion statuses
         .map(_._2).toSeq
-
       }
     }
   }
