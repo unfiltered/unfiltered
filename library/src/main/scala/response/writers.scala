@@ -8,10 +8,10 @@ trait ResponseWriter extends Responder[Any] {
     try { write(writer) }
     finally { writer.close() }
   }
-  def write(writer: Writer): Unit
+  def write(writer: OutputStreamWriter): Unit
 }
 case class ResponseString(content: String) extends ResponseWriter {
-  def write(writer: Writer) { writer.write(content) }
+  def write(writer: OutputStreamWriter) { writer.write(content) }
 }
 
 case class Html(nodes: scala.xml.NodeSeq) extends 
@@ -24,3 +24,13 @@ extends ResponseFunction[Any] {
       override val charset = Charset.this.charset
     }
 }
+case class Html5(nodes: scala.xml.NodeSeq) extends ComposeResponse(HtmlContent ~> new ResponseWriter {
+  def write(w: OutputStreamWriter) {
+    val html = nodes.head match {
+      case <html>{_*}</html> => nodes.head
+      case _ => <html>{nodes}</html>
+    }
+    xml.XML.write( w, html, w.getEncoding, xmlDecl = false, doctype =
+      xml.dtd.DocType( "html", xml.dtd.SystemID( "about:legacy-compat" ), Nil ))
+  }
+})

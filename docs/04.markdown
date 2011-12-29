@@ -29,22 +29,53 @@ names are as follows:
 * unfiltered-spec_$scala$
 * unfiltered-scalatest_$scala$
 * unfiltered-json_$scala$
-* unfiltered-scalate_$scala$
 * unfiltered-oauth_$scala$
 
 [st]: http://scala-tools.org/repo-releases/net/databinder/
 [sbt]: http://code.google.com/p/simple-build-tool/wiki/CrossBuild
 
+### Source Dependencies
+
+Some Unfiltered modules depend on external Scala libraries which are
+not [cross-built][sbt] across our supported versions of Scala. The
+overhead to produce binary artifacts for these modules is great, as we
+must maintain a map of Scala versions to compatible library versions,
+and also handle the case where there is no compatible version.
+
+Instead we tag releases of these modules in github and encourage their
+use as "source dependencies", which you build locally against a
+compatible set of artifacts.
+
+* [unfiltered/unfiltered-scalate](https://github.com/unfiltered/unfiltered-scalate) -- Interface to the [Scalate](http://scalate.fusesource.org/) template engine.
+
 ### Build Tools
 
-With **simple-build-tool** it's best to have the Scala version
-[automatically appended][sbt] so it will always match your
-project's. In an sbt 0.11.x project:
+#### Configuring sbt projects
+
+When using sbt with **binary dependencies** it's best to have the
+Scala version [automatically appended][sbt] so it will always match
+your project's. In an sbt 0.11.x project:
 
 ```scala
 libraryDependencies += "net.databinder" %% "unfiltered-filter" % "$version$"
 ```
-For **Maven**, specify the full artifact name:
+To use **source dependencies** with sbt, create a project build such
+as `project/build.scala`:
+
+```scala
+import sbt._
+object MyApp extends Build
+{
+  lazy val root =
+    Project("root", file(".")) dependsOn(unfilteredScalate)
+  lazy val unfilteredScalate =
+    uri("git://github.com/unfiltered/unfiltered-scalate#$version$")
+}
+```
+
+#### Maven
+
+For Maven, specify the full artifact name:
 
 ```xml
 <dependency>
@@ -53,6 +84,9 @@ For **Maven**, specify the full artifact name:
   <version>$version$</version>
 </dependency>
 ```
+
+To use source dependencies with Maven, your best bet is to check out
+the project as a submodule.
 
 ### Template Projects
 
