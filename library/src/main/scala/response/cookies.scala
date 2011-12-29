@@ -2,10 +2,6 @@ package unfiltered.response
 
 import unfiltered.Cookie
 
-//case class ResponseCookies(cookies: Cookie*) extends Responder[Any] {
-//  def respond(res: HttpResponse[Any]) = res.cookies(cookies)
-//}
-
 /** Set-Cookie response header using custom cookie deserializer */
 object ResponseCookies {
   private val Name = "Set-Cookie"
@@ -21,15 +17,19 @@ object SetCookies {
   private val Name = "Set-Cookie"
   def apply(cookies: Cookie*) =
     new ResponseHeader(Name, (Seq.empty[String] /: cookies)(
-      (a,e) => ToCookies(e) +: a)
+      (a, e) => ToCookies(e) +: a)
     )
+  /** Call this method with a list of names to discard cookies by name */
+  def discarding(names: String*) =
+    apply(names.map(Cookie(_, "", maxAge = Some(0))):_*)
 }
 
 /** Module for Cookie serialization */
 object ToCookies {
   import unfiltered.CookieKeys._
-  private val Quotables = Array('\t', ' ', '"', '(', ')', ',', '/', ':', ';', '<',
-                        '=', '>', '?', '@', '[', '\\', ']', '{', '}')
+  private val Quotables = Array(
+    '\t', ' ', '"', '(', ')', ',', '/', ':', ';', '<',
+    '=', '>', '?', '@', '[', '\\', ']', '{', '}')
 
   def apply(cs: Cookie*): String =
     ((new StringBuilder /: cs) { (b, c) => append(b, c); b }) match {
