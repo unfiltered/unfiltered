@@ -43,7 +43,7 @@ must maintain a map of Scala versions to compatible library versions,
 and also handle the case where there is no compatible version.
 
 Instead we tag releases of these modules in github and encourage their
-use as "source dependencies", which you build locally against a
+use as *source dependencies*, which you may build locally against a
 compatible set of artifacts.
 
 * [unfiltered/unfiltered-scalate](https://github.com/unfiltered/unfiltered-scalate) -- Interface to the [Scalate](http://scalate.fusesource.org/) template engine.
