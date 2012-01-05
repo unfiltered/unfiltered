@@ -37,7 +37,9 @@ val foos = unfiltered.filter.Intent {
 val bars = unfiltered.filter.Intent {
   case ConditionB(Condition1(req)) => ...
 }
-val fooBar = unfiltered.filter.Planify(foos.orElse(bars))
+val fooBar = unfiltered.filter.Planify(
+  foos.onPass(bars)
+)
 ```
 For larger groupings of functionality, it may be useful to define
 singleton objects holding logically divided intents.
@@ -56,7 +58,7 @@ object Bars {
   }
 }
 object FooBar extends unfiltered.filter.Plan {
-  def intent = Foos.intent.orElse(Bars.intent)
+  def intent = Foos.intent.onPass(Bars.intent)
 }
 ```
 You could also make use of separate plans, to be chained together by
@@ -90,7 +92,8 @@ def intent = {
   }
 }
 ```
-Be aware that this last intent is *defined* for all requests. Because it
-includes a top-level default case, its `orElse` method will never call
-a partial function passed to it. The `Pass` object however will instruct
-a plan to treat requests that fall to the end as non-matching.
+
+Be aware that this last intent is *defined* for all requests, so you
+must use `onPass` if you wish to chain another intent after it. Using
+the `orElse` method of such a `PartialFunction` would only produce a
+slower function that is otherwise identical to its parent.

@@ -54,5 +54,6 @@ improve on that by ensuring that any request to this path that is not
 an expected method receives an appropriate response:
 
 ```scala
-  case _ => MethodNotAllowed ~> ResponseString("Must be GET or PUT")
+  case _ => MethodNotAllowed ~>
+              ResponseString("Must be GET or PUT")
 ```
