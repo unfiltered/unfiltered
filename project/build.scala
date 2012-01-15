@@ -76,7 +76,7 @@ object Unfiltered extends Build {
             )) aggregate(
             library, filters, filtersAsync , uploads, util, jetty,
             jettyAjpProject, netty, nettyServer, json, specHelpers,
-            scalaTestHelpers, websockets, oauth, agents)
+            scalaTestHelpers, websockets, oauth, agents, nettyUploads)
 
   lazy val library: Project =
     module("unfiltered")(
@@ -264,4 +264,14 @@ object Unfiltered extends Build {
           Seq(dispatchOAuthDep) ++
           integrationTestDeps(v))
       )) dependsOn(jetty, filters)
+      
+  lazy val nettyUploads =
+    module("netty-uploads")(
+      settings = Seq(
+        description :=
+          "Uploads plan support using Netty",
+        unmanagedClasspath in (local("netty-uploads"), Test) <++=
+          (fullClasspath in (local("spec"), Compile)),
+        libraryDependencies <++= scalaVersion(integrationTestDeps _)
+      )) dependsOn(nettyServer)
 }
