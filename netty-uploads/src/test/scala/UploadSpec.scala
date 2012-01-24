@@ -26,12 +26,12 @@ object UploadSpec extends Specification
     })
     .handler(netty.cycle.Planify({
       case POST(UFPath("/b") & MultiPart(req)) => 
-        ResponseString("http response")
-      /*
+        //ResponseString("http response")
+      
         MultiPartParams.Disk(req).files("f") match {
         case Seq(f, _*) => ResponseString("disk read file f named %s with content type %s" format(f.name, f.contentType))
         case f =>  ResponseString("what's f?")
-      }*/
+      }
       /*{
         case Open(s) => s.send("socket opened b")
         case Message(s, Text(msg)) => s.send(msg)
@@ -60,7 +60,7 @@ object UploadSpec extends Specification
     "handle file uploads written to disk" in {
       val file = new JFile(getClass.getResource("netty-upload-test.txt").toURI)
       file.exists must_==true
-      http(host / "b" <<* ("f", file, "text/plain") as_str) must_=="disk read file f named upload-test.txt with content type text/plain"
+      http(host / "b" <<* ("f", file, "text/plain") as_str) must_=="disk read file f named netty-upload-test.txt with content type text/plain"
     }
   }
 }

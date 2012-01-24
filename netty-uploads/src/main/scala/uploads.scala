@@ -60,7 +60,7 @@ class DiskFileWrapper(item: IOFileUpload) extends AbstractDiskFile {
   def isInMemory = item.isInMemory
   def bytes = item.get
   def size = item.length
-  val name = item.getName
+  val name = item.getFilename
   val contentType = item.getContentType
 }
 

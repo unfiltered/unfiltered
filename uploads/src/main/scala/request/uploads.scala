@@ -76,12 +76,6 @@ trait MultiPartParamsExtractor[T] {
 
 }
 
-/*
-trait StreamedExtractor[T] {
-  def apply(req: HttpRequest[T])
-}
-*/
-
 /** Base trait for disk-based multi part form data extraction */
 trait AbstractDiskExtractor[R] {
   import fu.{FileItemFactory, FileItem => ACFileItem}
