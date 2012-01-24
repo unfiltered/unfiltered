@@ -29,8 +29,4 @@ object Implicits {
   implicit def netty3Chunk2netty4Chunk(v3Chunk: NHttpChunk): IOHttpChunk = {
     new IODefaultHttpChunk(IOChannelBuffers.copiedBuffer(v3Chunk.getContent.array))
   }
-  
-  implicit def recvdMsg2netty3Req(msg: ReceivedMessage): NHttpRequest = {
-    msg.request
-  } 
 }

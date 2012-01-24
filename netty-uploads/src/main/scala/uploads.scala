@@ -8,8 +8,9 @@ import unfiltered.request.{DiskExtractor,AbstractDiskExtractor, AbstractDiskFile
 import unfiltered.request.TupleGenerator
 
 import org.jboss.{netty => jnetty}  // 3.x
-import io.{netty => ionetty}        // 4.x
 import jnetty.handler.codec.http.{HttpRequest => NHttpRequest}
+
+import io.{netty => ionetty}        // 4.x
 import ionetty.handler.codec.http.{HttpPostRequestDecoder => IOHttpPostRequestDecoder}
 import ionetty.handler.codec.http.{DefaultHttpDataFactory => IODefaultHttpDataFactory}
 import ionetty.handler.codec.http.{InterfaceHttpData => IOInterfaceHttpData}
@@ -64,18 +65,18 @@ class DiskFileWrapper(item: IOFileUpload) extends AbstractDiskFile {
   val contentType = item.getContentType
 }
 
-object PostDecoder{
-  def apply(req: NHttpRequest) = new PostDecoder(req)
-}
-
+/** A PostDecoder wraps a HttpPostRequestDecoder which is available in netty 4.x onwards. We implicitly convert a netty 3.x HttpRequest to a netty 4.x HttpRequest to enable us to use the new multi-part decoding features. Decoding chunked messages, while supported by netty 4.x is not implemented here, so use of a HttpChunkAggregator in the handler pipeline is mandatory for now. */
 class PostDecoder(req: NHttpRequest) {
+  /** Enable implicit conversion between netty 3.x and 4.x. One day this won't be needed any more :) */
   import Implicits._
+
   import scala.collection.JavaConversions._
 
   private lazy val decoder = try {
     val factory = new IODefaultHttpDataFactory(IODefaultHttpDataFactory.MINSIZE)
     Some(new IOHttpPostRequestDecoder(factory, req))
   } catch {
+    /** Q. Would it be more useful to throw errors here? */
     case e: IOHttpPostRequestDecoder.ErrorDataDecoderException => None
     /** GET method. Can't create a decoder. */
     case e: IOHttpPostRequestDecoder.IncompatibleDataDecoderException => None
@@ -86,4 +87,8 @@ class PostDecoder(req: NHttpRequest) {
   def items: List[IOInterfaceHttpData] = decoder.map(_.getBodyHttpDatas.toList).getOrElse(List())
 
   def fileUploads = items collect { case file: IOFileUpload => file }
+}
+
+object PostDecoder{
+  def apply(req: NHttpRequest) = new PostDecoder(req)
 }
