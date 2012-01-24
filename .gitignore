@@ -8,3 +8,4 @@ project/plugins/project/
 .idea_modules
 \#*\#
 *~
+.ensime

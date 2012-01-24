@@ -272,6 +272,10 @@ object Unfiltered extends Build {
           "Uploads plan support using Netty",
         unmanagedClasspath in (local("netty-uploads"), Test) <++=
           (fullClasspath in (local("spec"), Compile)),
-        libraryDependencies <++= scalaVersion(integrationTestDeps _)
-      )) dependsOn(nettyServer)
+        libraryDependencies <++= scalaVersion(v =>
+          Seq("io.netty" % "netty" % "4.0.0.Alpha1-SNAPSHOT") 
+            ++ integrationTestDeps(v)
+        ), resolvers ++= Seq("cloudbees" at "http://repository-netty.forge.cloudbees.com/snapshot"),
+        scalacOptions ++= Seq("-deprecation", "-unchecked")
+      )) dependsOn(nettyServer, uploads)
 }

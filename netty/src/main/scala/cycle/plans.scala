@@ -1,7 +1,7 @@
 package unfiltered.netty.cycle
 
 import org.jboss.netty.handler.codec.http.{
-  HttpRequest=>NHttpRequest,HttpResponse=>NHttpResponse}
+  HttpRequest=>NHttpRequest,HttpResponse=>NHttpResponse,HttpChunk=>NHttpChunk}
 import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.http.HttpResponseStatus._
 import org.jboss.netty.handler.codec.http.HttpVersion._
