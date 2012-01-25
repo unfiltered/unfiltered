@@ -39,6 +39,10 @@ trait AbstractDiskFile extends FileWrapper {
   val contentType: String
 }
 
+trait AbstractStreamedFile extends FileWrapper {
+  def stream[T]: (java.io.InputStream => T) => T
+}
+
 /** Represents an uploaded file loaded into memory (and possibly written to disk) */
 class DiskFileWrapper(item: fu.FileItem) extends AbstractDiskFile {
   def write(out: JFile): Option[JFile] = try {
@@ -56,7 +60,7 @@ class DiskFileWrapper(item: fu.FileItem) extends AbstractDiskFile {
 }
 
 /** Represents an uploaded file exposing a stream to read its contents */
-class StreamedFileWrapper(fstm: fu.FileItemStream) extends FileWrapper
+class StreamedFileWrapper(fstm: fu.FileItemStream) extends AbstractStreamedFile
   with unfiltered.request.io.FileIO {
 
   def write(out: JFile): Option[JFile] = allCatch.opt {
@@ -70,10 +74,6 @@ class StreamedFileWrapper(fstm: fu.FileItemStream) extends FileWrapper
     MultiPartParams.Streamed.withStreamedFile[T](fstm)_
   val name = fstm.getName
   val contentType = fstm.getContentType
-}
-
-trait MultiPartParamsExtractor[T] {
-
 }
 
 /** Base trait for disk-based multi part form data extraction */
@@ -104,8 +104,78 @@ trait DiskExtractor {
   def factory(writeAfter: Int, writeDir: JFile) = new DiskFileItemFactory(writeAfter, writeDir)
 }
 
-trait MemoryExtractor {
-  class ByteArrayFileItem(var fieldName: String,
+/** Stream-based multi-part form data extractor */
+trait StreamedExtractor[R] {
+  import fu.{FileItemIterator, FileItemStream}
+  import java.io.{InputStream => JInputStream}
+  import fu.util.Streams
+
+  /**
+    Provides extraction similar to MultiPartParams.Disk, except the second map will
+    contain Map[String, Seq[StreamedFileWrapper]] rather than  Map[String, Seq[DiskFileWrapper]].
+    @note the seq returned by keys will only return the `first` named value. This is a limitation
+    on apache commons file upload streaming interface. To read from the stream iterator,
+    you must read before #next is called or the stream read will fail. */
+  def apply(req: R): MultipartData[Seq[AbstractStreamedFile]]
+
+  def withStreamedFile[T](istm: JInputStream)(f: java.io.InputStream => T): T = {
+    try { f(istm) } finally { istm.close }
+  }
+
+  def withStreamedFile[T](fstm: FileItemStream)(f: java.io.InputStream => T): T = {
+    val stm = fstm.openStream
+    try { f(stm) } finally { stm.close }
+  }
+
+  protected def extractStr(fstm: FileItemStream) = withStreamedFile[String](fstm) { stm =>
+    Streams.asString(stm)
+  }
+}
+
+trait TupleGenerator {
+  /** generates a tuple of (Map[String, List[A]], Map[String, List[B]]) */
+  protected def genTuple[A, B, C](iter: Iterator[C])(f: ((Map[String, List[A]], Map[String, List[B]]), C) => (Map[String, List[A]], Map[String, List[B]])) =
+   ((Map.empty[String, List[A]].withDefaultValue(Nil), Map.empty[String, List[B]].withDefaultValue(Nil)) /: iter)(f(_,_))
+}
+
+/** Extactors for multi-part form param processing
+  * @note a request can go through one pass of this extractor
+  * afterwards, the requests input stream will appear empty
+  */
+object MultiPartParams extends TupleGenerator {
+
+  object Streamed extends StreamedExtractor[HttpRequest[HttpServletRequest]] {
+    import fu.FileItemIterator
+    def apply(req: HttpRequest[HttpServletRequest]) = {
+      def items = new ServletFileUpload().getItemIterator(req.underlying).asInstanceOf[FileItemIterator]
+      /** attempt to extract the first named param from the stream */
+      def extractParam(name: String): Seq[String] = {
+         items.find(f => f.getFieldName == name && f.isFormField) match {
+           case Some(p) => Seq(extractStr(p))
+           case _ => Nil
+         }
+      }
+      /** attempt to extract the first named file from the stream */
+      def extractFile(name: String): Seq[StreamedFileWrapper] = {
+         items.find(f => f.getFieldName == name && !f.isFormField) match {
+           case Some(f) => Seq(new StreamedFileWrapper(f))
+           case _ => Nil
+         }
+      }
+      MultipartData(extractParam _,extractFile _)
+    }
+  }
+
+  /** On-disk  multi-part form data extractor */
+  object Disk extends AbstractDisk with DiskExtractor
+
+  /** All in memory multi-part form data extractor.
+      This exposes a very specific class of file references
+      intended for use in environments such as GAE where writing
+      to disk is prohibited.
+      */
+  object Memory extends AbstractDisk {
+    class ByteArrayFileItem(var fieldName: String,
       val contentType: String,
       var formField: Boolean,
       val name: String,
@@ -136,86 +206,19 @@ trait MemoryExtractor {
       override def setFieldName(value: String) { fieldName = value }
       override def setFormField(state: Boolean) { formField = state }
       override def write(file: JFile) { error("File writing is not permitted") }
-  }
-
-  class ByteArrayFileItemFactory extends fu.FileItemFactory {
-     override def createItem(fieldName: String , contentType: String ,
-                          isFormField: Boolean , fileName: String ) = new ByteArrayFileItem(
-                            fieldName, contentType, isFormField, fileName, Int.MaxValue
-                          )
-  }
-
-  val memLimit = Int.MaxValue
-  val tempDir = new java.io.File(".")
-  def factory(writeAfter: Int, writeDir: JFile) = new ByteArrayFileItemFactory
-}
-
-/** Stream-based multi-part form data extractor */
-trait StreamedExtractor[R] {
-  import fu.{FileItemIterator, FileItemStream}
-  import fu.util.Streams
-
-  /**
-    Provides extraction similar to MultiPartParams.Disk, except the second map will
-    contain Map[String, Seq[StreamedFileWrapper]] rather than  Map[String, Seq[DiskFileWrapper]].
-    @note the seq returned by keys will only return the `first` named value. This is a limitation
-    on apache commons file upload streaming interface. To read from the stream iterator,
-    you must read before #next is called or the stream read will fail. */
-  def apply(req: HttpRequest[R]): MultipartData[Seq[StreamedFileWrapper]]
-
-  def withStreamedFile[T](fstm: FileItemStream)(f: java.io.InputStream => T): T = {
-    val stm = fstm.openStream
-    try { f(stm) } finally { stm.close }
-  }
-
-  protected def extractStr(fstm: FileItemStream) = withStreamedFile[String](fstm) { stm =>
-    Streams.asString(stm)
-  }
-}
-
-trait TupleGenerator {
-  /** generates a tuple of (Map[String, List[A]], Map[String, List[B]]) */
-  protected def genTuple[A, B, C](iter: Iterator[C])(f: ((Map[String, List[A]], Map[String, List[B]]), C) => (Map[String, List[A]], Map[String, List[B]])) =
-   ((Map.empty[String, List[A]].withDefaultValue(Nil), Map.empty[String, List[B]].withDefaultValue(Nil)) /: iter)(f(_,_))
-}
-
-/** Extactors for multi-part form param processing
-  * @note a request can go through one pass of this extractor
-  * afterwards, the requests input stream will appear empty
-  */
-object MultiPartParams extends TupleGenerator {
-
-  object Streamed extends StreamedExtractor[HttpServletRequest] {
-    import fu.FileItemIterator
-    def apply(req: HttpRequest[HttpServletRequest]) = {
-      def items = new ServletFileUpload().getItemIterator(req.underlying).asInstanceOf[FileItemIterator]
-      /** attempt to extract the first named param from the stream */
-      def extractParam(name: String): Seq[String] = {
-         items.find(f => f.getFieldName == name && f.isFormField) match {
-           case Some(p) => Seq(extractStr(p))
-           case _ => Nil
-         }
-      }
-      /** attempt to extract the first named file from the stream */
-      def extractFile(name: String): Seq[StreamedFileWrapper] = {
-         items.find(f => f.getFieldName == name && !f.isFormField) match {
-           case Some(f) => Seq(new StreamedFileWrapper(f))
-           case _ => Nil
-         }
-      }
-      MultipartData(extractParam _,extractFile _)
     }
+
+    class ByteArrayFileItemFactory extends fu.FileItemFactory {
+      override def createItem(fieldName: String , contentType: String ,
+                            isFormField: Boolean , fileName: String ) = new ByteArrayFileItem(
+                              fieldName, contentType, isFormField, fileName, Int.MaxValue
+                            )
+    }
+
+    def factory(writeAfter: Int, writeDir: JFile) = new ByteArrayFileItemFactory
+    val memLimit = Int.MaxValue
+    val tempDir = new java.io.File(".")
   }
-
-  /** On-disk  multi-part form data extractor */
-  object Disk extends AbstractDisk with DiskExtractor
-
-  /** All in memory multi-part form data extractor.
-      This exposes a very specific class of file references
-      intended for use in environments such as GAE where writing
-      to disk is prohibited.
-      */
-  object Memory extends AbstractDisk with MemoryExtractor
 
   trait AbstractDisk extends AbstractDiskExtractor[HttpRequest[HttpServletRequest]] {
     import fu.{FileItemFactory, FileItem => ACFileItem}
