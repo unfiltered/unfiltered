@@ -1,4 +1,4 @@
-package unfiltered.request
+package unfiltered.request.uploads.filter
 
 import org.specs._
 
@@ -7,6 +7,7 @@ object UploadsSpec extends Specification with unfiltered.spec.jetty.Served {
   import java.io.{File => JFile,FileInputStream => FIS}
   import org.apache.commons.io.{IOUtils => IOU}
   import unfiltered.response._
+  import unfiltered.request._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
 

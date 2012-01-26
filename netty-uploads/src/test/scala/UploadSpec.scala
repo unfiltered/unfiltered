@@ -1,4 +1,4 @@
-package unfiltered.netty.uploads
+package unfiltered.request.uploads.netty
 
 import org.specs._
 

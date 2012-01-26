@@ -1,20 +1,23 @@
-package unfiltered.netty.uploads
+package unfiltered.request.uploads.netty
 
 import scala.util.control.Exception.allCatch
 
 import unfiltered.netty.RequestBinding
-
 import unfiltered.request.HttpRequest
-import unfiltered.request.{MultiPartMatcher,MultipartData}
-import unfiltered.request.{DiskExtractor,AbstractDiskExtractor, AbstractDiskFile,StreamedExtractor,AbstractStreamedFile }
-import unfiltered.request.TupleGenerator
+
+import unfiltered.request.uploads.MultiPartMatcher
+import unfiltered.request.uploads.MultipartData
+import unfiltered.request.uploads.AbstractDiskFile
+import unfiltered.request.uploads.TupleGenerator
+import unfiltered.request.uploads.AbstractStreamedFile
+import unfiltered.request.uploads.StreamedExtractor
+import unfiltered.request.uploads.AbstractDiskExtractor
+import unfiltered.request.uploads.DiskExtractor
 
 import org.jboss.{netty => jnetty}  // 3.x
 import jnetty.handler.codec.http.{HttpRequest => NHttpRequest}
 
 import io.{netty => ionetty}        // 4.x
-import ionetty.handler.codec.http.{HttpPostRequestDecoder => IOHttpPostRequestDecoder}
-import ionetty.handler.codec.http.{DefaultHttpDataFactory => IODefaultHttpDataFactory}
 import ionetty.handler.codec.http.{InterfaceHttpData => IOInterfaceHttpData}
 import ionetty.handler.codec.http.{Attribute => IOAttribute}
 import ionetty.handler.codec.http.{FileUpload => IOFileUpload}
@@ -30,8 +33,9 @@ object MultiPart extends MultiPartMatcher[RequestBinding] {
   }
 }
 
-object MultiPartParams extends TupleGenerator {
+object MultiPartParams {
 
+  /** Streamed multi-part data extractor */
   object Streamed extends StreamedExtractor[RequestBinding] {
     import java.util.{Iterator => JIterator}
     def apply(req: RequestBinding) = {
@@ -83,33 +87,23 @@ object MultiPartParams extends TupleGenerator {
       
     }
   }
-
-  trait AbstractDisk extends AbstractDiskExtractor[RequestBinding] {
-    import java.util.{Iterator => JIterator}
-    def apply(req: RequestBinding) = {
-      val items = PostDecoder(req.underlying.request).items.toIterator
-
-      val (params, files) = genTuple[String, DiskFileWrapper, IOInterfaceHttpData](items) ((maps, item) => item match {
-          case file: IOFileUpload =>
-            (maps._1, maps._2 + (file.getName -> (new DiskFileWrapper(file) :: maps._2(file.getName))))
-          case attr: IOAttribute =>
-            (maps._1 + (attr.getName -> (attr.getValue :: maps._1(attr.getName))), maps._2)
-        })
-
-      MultipartData(params, files)
-    }
-  }
-  
 }
 
-class MemoryFileWrapper(item: IOFileUpload) extends StreamedFileWrapper(item) {
-  override def write(out: JFile) = { 
-    //error("File writing is not permitted")
-    None
+/** Netty extractor for multi-part data destined for disk. */
+trait AbstractDisk extends AbstractDiskExtractor[RequestBinding] with TupleGenerator {
+  import java.util.{Iterator => JIterator}
+  def apply(req: RequestBinding) = {
+    val items = PostDecoder(req.underlying.request).items.toIterator
+
+    val (params, files) = genTuple[String, DiskFileWrapper, IOInterfaceHttpData](items) ((maps, item) => item match {
+        case file: IOFileUpload =>
+          (maps._1, maps._2 + (file.getName -> (new DiskFileWrapper(file) :: maps._2(file.getName))))
+        case attr: IOAttribute =>
+          (maps._1 + (attr.getName -> (attr.getValue :: maps._1(attr.getName))), maps._2)
+      })
+
+    MultipartData(params, files)
   }
-  def isInMemory = item.isInMemory
-  def bytes = item.get
-  def size = item.length
 }
 
 class StreamedFileWrapper(item: IOFileUpload) extends AbstractStreamedFile
@@ -146,32 +140,13 @@ class DiskFileWrapper(item: IOFileUpload) extends AbstractDiskFile {
   val contentType = item.getContentType
 }
 
-/** A PostDecoder wraps a HttpPostRequestDecoder which is available in netty 4 onwards. We implicitly convert a netty 3 HttpRequest to a netty 4 HttpRequest to enable us to use the new multi-part decoding features (until such time as netty 4 is officially released and unfiltered uses it by default). Decoding chunked messages, while supported by netty 4 is not implemented here, so use of a HttpChunkAggregator in the handler pipeline is mandatory for now. */
-class PostDecoder(req: NHttpRequest) {
-  /** Enable implicit conversion between netty 3.x and 4.x. One day this won't be needed any more :) */
-  import Implicits._
-
-  import scala.collection.JavaConversions._
-
-  private lazy val decoder = try {
-    val factory = new IODefaultHttpDataFactory(IODefaultHttpDataFactory.MINSIZE)
-    Some(new IOHttpPostRequestDecoder(factory, req))
-  } catch {
-    /** Q. Would it be more useful to throw errors here? */
-    case e: IOHttpPostRequestDecoder.ErrorDataDecoderException => None
-    /** GET method. Can't create a decoder. */
-    case e: IOHttpPostRequestDecoder.IncompatibleDataDecoderException => None
+/** Wrapper for an uploaded file with write functionality disabled. */
+class MemoryFileWrapper(item: IOFileUpload) extends StreamedFileWrapper(item) {
+  override def write(out: JFile) = { 
+    //error("File writing is not permitted")
+    None
   }
-
-  def isMultipart: Boolean = decoder.map(_.isMultipart).getOrElse(false)
-
-  def items: List[IOInterfaceHttpData] = decoder.map(_.getBodyHttpDatas.toList).getOrElse(List())
-
-  def fileUploads = items collect { case file: IOFileUpload => file }
-
-  def parameters = items collect { case param: IOAttribute => param }
-}
-
-object PostDecoder{
-  def apply(req: NHttpRequest) = new PostDecoder(req)
+  def isInMemory = item.isInMemory
+  def bytes = item.get
+  def size = item.length
 }
