@@ -12,7 +12,6 @@ object UploadSpec extends Specification
 
   import dispatch._
   import dispatch.mime.Mime._
-  import scala.io.Source
   import java.io.{File => JFile,FileInputStream => FIS}
   import org.apache.commons.io.{IOUtils => IOU}
 
