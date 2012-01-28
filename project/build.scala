@@ -140,15 +140,27 @@ object Unfiltered extends Build {
       srcPath = "unfiltered/request",
       settings = Seq(
         description :=
-          "Support for multi-part uploads for servlet filters",
+          "Generic support for multi-part uploads",
         unmanagedClasspath in (local("uploads"), Test) <++=
           (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion(v => Seq(
+          "commons-io" % "commons-io" % "1.4"
+        ) ++ integrationTestDeps(v))
+       )) dependsOn(library)
+
+  lazy val filterUploads =
+    module("filter-uploads")(
+      srcPath = "unfiltered/request",
+      settings = Seq(
+        description :=
+          "Support for multi-part uploads for servlet filters",
+        unmanagedClasspath in (local("filter-uploads"), Test) <++=
+          (fullClasspath in (local("spec"), Compile)),
+        libraryDependencies <++= scalaVersion(v => Seq(
           servletApiDep,
-          "commons-io" % "commons-io" % "1.4",
           "commons-fileupload" % "commons-fileupload" % "1.2.1"
         ) ++ integrationTestDeps(v))
-       )) dependsOn(filters)
+      )) dependsOn(uploads, filters)
 
   lazy val util = module("util")(
     settings = Seq(
