@@ -34,7 +34,7 @@ class DiskFileWrapper(item: fu.FileItem) extends AbstractDiskFile {
     case _ => None
   }
 
-  def isInMemory = item.isInMemory
+  def inMemory = item.isInMemory
   def bytes = item.get
   def size = item.getSize
   val name = item.getName
