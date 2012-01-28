@@ -27,20 +27,20 @@ object Cookies extends MappedRequestHeader[String, Option[Cookie]]("Cookie")(Coo
   }
 
   /**
-   * A function Option[Cookie] => Option[B]  used to test and transform values
-   * from the parameter map. Conditions may be chained with `~>` */
+   * A function Option[Cookie] => Option[B] used to test and transform values
+   * from the provided cookie. Conditions may be chained with `~>` */
   class Mapper[A](f: Option[Cookie] => Option[A]) extends (Option[Cookie] => Option[A]) {
     def apply(a: Option[Cookie]) = f(a)
     def ~> [B](that: Option[A] => Option[B]) = new Mapper({ f andThen that })
   }
 
-  /** Use as a named function value to extract a cookies value from Cookies.Extract("name", Cookies.value)*/
+  /** Used as a named function value to extract a cookies value from Cookies.Extract("name", Cookies.value)*/
   def value = new Mapper(_.map(_.value))
 }
 
 /** Module for Cookie deserialization.
- * Some cookie optional properties defined in http://tools.ietf.org/html/rfc2965 are not included in this implementation's 
- * deserialized cookies. This list includes `Comment`, `CommentURL`, `Discard`, and `Port` */
+ * Some optional cookie properties defined in http://tools.ietf.org/html/rfc2965 are not included in this implementation's 
+ * deserialized cookie representation. This list includes `Comment`, `CommentURL`, `Discard`, and `Port` */
 object FromCookies {
   import unfiltered.CookieKeys._
   val Cutter = "(?:\\s|[;,])*\\$*([^;=]+)(?:=(?:[\"']((?:\\\\.|[^\"])*)[\"']|([^;,]*)))?(\\s*(?:[;,]+\\s*|$))".r
@@ -79,7 +79,7 @@ object FromCookies {
         case (ns, vs, Some((n, v, _))) =>
           if(n == null) (ns.reverse, vs.reverse)
           else ((n :: ns).reverse, (v :: vs).reverse)
-        case _ => error("Error parsing cookie string %s" format cstr)
+        case _ => /*sys.*/error("Error parsing cookie string %s" format cstr)
       }
 
     if(names.isEmpty) { Seq.empty[Cookie] }

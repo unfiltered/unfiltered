@@ -27,7 +27,7 @@ object CookieKeys {
   val LCPort = Port.toLowerCase
   val LCVersion = Version.toLowerCase
 
-  /** Properties that do not have an associated value */
+  /** Named properties that do not have an associated value */
   val KeyOnly = Seq(Discard, Secure, HTTPOnly)
 }
 
