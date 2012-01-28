@@ -6,7 +6,7 @@ import unfiltered.request.{
   TupleGenerator, AbstractStreamedFile, StreamedExtractor,
   AbstractDiskExtractor, DiskExtractor }
 
-import unfiltered.util.IteratorConversions
+import unfiltered.filter.util.IteratorConversions
 import scala.util.control.Exception.allCatch
 
 import javax.servlet.http.HttpServletRequest
@@ -145,7 +145,7 @@ object MultiPartParams extends TupleGenerator {
                             )
     }
 
-    def factory(writeAfter: Int, writeDir: JFile) = new ByteArrayFileItemFactory
+    override def factory(writeAfter: Int, writeDir: JFile) = new ByteArrayFileItemFactory
     val memLimit = Int.MaxValue
     val tempDir = new java.io.File(".")
   }

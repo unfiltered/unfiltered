@@ -58,7 +58,7 @@ trait AbstractDiskExtractor[R] {
 
 trait DiskExtractor {
   val memLimit = Int.MaxValue
-  val tempDir = new Jile(".")
+  val tempDir = new JFile(".")
 }
 
 /** Stream-based multi-part form data extractor */
