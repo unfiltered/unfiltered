@@ -23,6 +23,9 @@ import java.io.{File => JFile}
 /** Matches requests that have multipart content */
 object MultiPart extends MultiPartMatcher[RequestBinding] {
   def unapply(req: RequestBinding) = {
+    /** TODO: Find a way to detect whether the req is multipart without parsing the whole thing first. 
+    Maybe something like this:
+    https://github.com/netty/netty/blob/master/codec-http/src/main/java/io/netty/handler/codec/http/HttpPostRequestDecoder.java#L246 */
     if (PostDecoder(req.underlying.request).isMultipart)
       Some(req)
     else None
