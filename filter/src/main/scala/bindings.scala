@@ -16,7 +16,7 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   def parameterNames = new JEnumerationIterator(
     req.getParameterNames.asInstanceOf[java.util.Enumeration[String]]
   )
-  def parameterValues(param: String) = req.getParameterValues(param)
+  def parameterValues(param: String) = Optional[Seq[String]](req.getParameterValues(param)).getOrElse(Nil)
   def headers(name: String) = new JEnumerationIterator(
     req.getHeaders(name).asInstanceOf[java.util.Enumeration[String]]
   )
