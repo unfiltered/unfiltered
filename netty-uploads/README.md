@@ -87,7 +87,7 @@ You can also get the content as an `Array[Byte]` with `f.bytes`. The file name w
 
 ### MultiPartParams.Streamed
 
-Extracts uploaded files to `StreamedFileWrappers` which expose a stream to read the content, as well as being able to write the content to disk.
+Extracts uploaded files to `StreamedFileWrapper`s which expose a stream to read the content, as well as being able to write the content to disk.
 
 ### MultiPartParams.Memory
 
