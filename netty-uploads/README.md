@@ -23,7 +23,7 @@ import unfiltered.request._
 import unfiltered.response._
 import unfiltered.netty._
 
-import unfiltered.request.uploads.netty._
+import unfiltered.netty.request._
 
 object App {
   def main(a: Array[String]) {
