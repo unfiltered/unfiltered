@@ -31,6 +31,7 @@ object Implicits {
 
   /** Converts a netty 3 chunk to a netty 4 chunk. */
   implicit def netty3Chunk2netty4Chunk(v3Chunk: NHttpChunk): IOHttpChunk = {
-    new IODefaultHttpChunk(IOChannelBuffers.copiedBuffer(v3Chunk.getContent.array))
+    val v4Chunk = new IODefaultHttpChunk(IOChannelBuffers.copiedBuffer(v3Chunk.getContent.array))
+    v4Chunk
   }
 }

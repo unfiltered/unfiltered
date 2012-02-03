@@ -2,6 +2,8 @@
 
 Provides extractors for working with multipart file uploads in your netty async and cycle plans.
 
+*Note: This feature should be considered experimental as it currently relies on the [Netty v4](https://github.com/netty/netty) alpha snapshot codebase.*
+
 ## Usage
 
 Add netty-uploads to your project, for example:
@@ -10,11 +12,16 @@ Add netty-uploads to your project, for example:
 libraryDependencies += "net.databinder" %% "unfiltered-netty-uploads" % "0.5.4-SNAPSHOT"
 ```
 
-Also add a resolver for the netty snapshots repository:
+Until there is a stable release of Netty v4 we must also add a resolver for the netty snapshots repository:
 
 ```scala
 resolvers += "netty-snapshots" at "http://repository-netty.forge.cloudbees.com/snapshot"
 ```
+There are a couple of different ways you can use the multipart extractors depending on your plan structure.
+
+### For netty async or cycle plans with a chunk aggregator
+
+You can use the multipart extractors in your plan, you just need to import them with `import unfiltered.netty.request._`. With a chunk aggregator you'll be limited to a maximum file upload size of `Int.MaxValue` bytes (approx. 2GB).
 
 A simple example using a cycle plan which extracts the file uploads as `DiskFileWrapper`s which can then be worked with and written to disk.
 
@@ -44,17 +51,45 @@ object App {
 
 A more complete example can be [found over here](https://gist.github.com/1695399).
 
-The netty server must opt in to using a chunk aggregator otherwise you will get errors. For example:
-
-```scala
-Http(8080).chunked().handler(...)
-```
+If you try to use the multipart extractors in a regular netty plan without the chunk aggregator then you'll get errors.
 
 By default the `maxContentLength` used by the chunk aggregator is `1048576` (1MB). You can pass an `Int` value to change this. For example, if you wanted to allow file uploads up to 5MB in size, you could specify:
 
 ```scala
 Http(8080).chunked(5242880).handler(...)
 ```
+
+### For netty async or cycle plans without a chunk aggregator
+
+If you want to handle uploads more efficiently and/or handle uploads > 2GB then you can swap your netty async or cycle plan for a `MultiPartDecoder` plan. This means you don't need a chunk aggregator in the handler pipeline as the plan takes care of it for you.
+
+For example:
+
+```scala
+import unfiltered.request._
+import unfiltered.response._
+import unfiltered.netty._
+
+import unfiltered.netty.request._
+
+object App {
+  def main(a: Array[String]) {
+    Http(8080).handler(async.MultiPartDecoder({
+      case POST(Path("/cycle/disk")) & MultiPart(req) =>
+        val disk = MultiPartParams.Disk(req)
+        (disk.files("f"), disk.params("p")) match {
+          case (Seq(f, _*), p) =>
+            ResponseString(
+              "cycle disk read file f named %s with content type %s and param p %s" format(
+                f.name, f.contentType, p))
+          case _ =>  ResponseString("what's f?")
+        }
+    })).run
+  }
+}
+```
+
+## Extractors
 
 Before you can work with the uploaded params and files, you must make sure that you have a POST request:
 
@@ -67,8 +102,6 @@ And that it contains some multipart encoded data:
 ```scala
 ... & MultiPart(req) => ...
 ```
-
-## Extractors
 
 There are three extractors to choose from depending on the environment your app is running in and what you want to do with the uploaded files.
 

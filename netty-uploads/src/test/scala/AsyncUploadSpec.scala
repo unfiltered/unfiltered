@@ -2,12 +2,13 @@ package unfiltered.netty.request
 
 import org.specs._
 
-object UploadSpec extends Specification
+object AsyncUploadSpec extends Specification
   with unfiltered.spec.netty.Served {
 
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath, _}
   import unfiltered.netty
+  import unfiltered.netty._
   import unfiltered.netty.{Http => NHttp}
 
   import dispatch._
@@ -16,9 +17,7 @@ object UploadSpec extends Specification
   import org.apache.commons.io.{IOUtils => IOU}
 
   def setup = {
-    /** Use of a HttpChunkAggregator is mandatory */
-    _.chunked()
-    .handler(netty.async.Planify({
+    val plan = async.MultiPartDecoder({
       case r@POST(UFPath("/disk-upload") & MultiPart(req)) => 
         MultiPartParams.Disk(req).files("f") match {
         case Seq(f, _*) => r.respond(ResponseString(
@@ -86,12 +85,13 @@ object UploadSpec extends Specification
             }
           case _ =>  r.respond(ResponseString("what's f?"))
         }
-    })).handler(planify {
+    })
+    _.handler(plan).handler(planify {
       case UFPath("/a") => ResponseString("http response a")
     })
   }
 
-  "Netty MultiPartParams" should {
+  "Netty async.MultiPartParams" should {
     shareVariables()
     doBefore {
       val out = new JFile("netty-upload-test-out.txt")
@@ -101,12 +101,6 @@ object UploadSpec extends Specification
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       http(host / "disk-upload" <<* ("f", file, "text/plain") as_str) must_=="disk read file f named netty-upload-big-text-test.txt with content type text/plain"
-      http(host / "a" as_str) must_==("http response a")
-    }
-    "handle writing file uploads written to disk" in {
-      val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
-      file.exists must_==true
-      http(host / "disk-upload" / "write" <<* ("f", file, "text/plain") as_str) must_=="wrote disk read file f named netty-upload-big-text-test.txt with content type text/plain with correct contents"
       http(host / "a" as_str) must_==("http response a")
     }
     "handle file uploads streamed" in {

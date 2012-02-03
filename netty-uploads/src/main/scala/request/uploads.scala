@@ -1,5 +1,8 @@
 package unfiltered.netty.request
 
+import unfiltered.netty
+import unfiltered.netty._
+
 import scala.util.control.Exception.allCatch
 
 import unfiltered.netty.RequestBinding
@@ -20,15 +23,25 @@ import ionetty.handler.codec.http.{FileUpload => IOFileUpload}
 
 import java.io.{File => JFile}
 
+class MultiPartBinding(val decoder: Option[PostDecoder], msg: ReceivedMessage) extends RequestBinding(msg)
+
 /** Matches requests that have multipart content */
 object MultiPart extends MultiPartMatcher[RequestBinding] {
   def unapply(req: RequestBinding) = {
     /** TODO: Find a way to detect whether the req is multipart without parsing the whole thing first. 
     Maybe something like this:
     https://github.com/netty/netty/blob/master/codec-http/src/main/java/io/netty/handler/codec/http/HttpPostRequestDecoder.java#L246 */
-    if (PostDecoder(req.underlying.request).isMultipart)
-      Some(req)
-    else None
+    req match {
+      //case r: MultiPartBinding if r.decoder.map(_.isMultipart).getOrElse(false) => Some(r)
+
+      case r: RequestBinding => 
+        PostDecoder(r.underlying.request) match {
+          case Some(dec) if dec.isMultipart => Some(r)
+          case _ => None
+        }
+      
+      case _ => None
+    }
   }
 }
 
@@ -39,9 +52,12 @@ object MultiPartParams {
     import java.util.{Iterator => JIterator}
     def apply(req: RequestBinding) = {
 
-      val decoder = PostDecoder(req.underlying.request)
-      val params = decoder.parameters
-      val files = decoder.fileUploads
+      val decoder = req match {
+        case r: MultiPartBinding => r.decoder
+        case _ => PostDecoder(req.underlying.request)
+      }
+      val params = decoder.map(_.parameters).getOrElse(List())
+      val files = decoder.map(_.fileUploads).getOrElse(List())
 
       /** attempt to extract the first named param from the stream */
       def extractParam(name: String): Seq[String] = {
@@ -69,9 +85,12 @@ object MultiPartParams {
     import java.util.{Iterator => JIterator}
     def apply(req: RequestBinding) = {
 
-      val decoder = PostDecoder(req.underlying.request)
-      val params = decoder.parameters
-      val files = decoder.fileUploads
+      val decoder = req match {
+        case r: MultiPartBinding => r.decoder
+        case _ => PostDecoder(req.underlying.request)
+      }
+      val params = decoder.map(_.parameters).getOrElse(List())
+      val files = decoder.map(_.fileUploads).getOrElse(List())
 
       /** attempt to extract the first named param from the stream */
       def extractParam(name: String): Seq[String] = {
@@ -93,7 +112,11 @@ trait AbstractDisk
 extends AbstractDiskExtractor[RequestBinding] with TupleGenerator {
   import java.util.{Iterator => JIterator}
   def apply(req: RequestBinding) = {
-    val items = PostDecoder(req.underlying.request).items.toIterator
+
+    val items = req match {
+      case r: MultiPartBinding => r.decoder.map(_.items).getOrElse(List()).toIterator
+      case _ => PostDecoder(req.underlying.request).map(_.items).getOrElse(List()).toIterator 
+    }  
 
     val (params, files) = genTuple[String, DiskFileWrapper, IOInterfaceHttpData](items) ((maps, item) => item match {
         case file: IOFileUpload =>

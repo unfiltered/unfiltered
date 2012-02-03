@@ -9,3 +9,6 @@ project/plugins/project/
 \#*\#
 *~
 .ensime
+.classpath
+.project
+.settings
