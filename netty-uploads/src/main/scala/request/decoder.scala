@@ -1,5 +1,9 @@
 package unfiltered.netty.request
 
+import unfiltered.netty.ReceivedMessage
+import unfiltered.netty.RequestBinding
+import unfiltered.request.POST
+
 import org.jboss.{netty => jnetty}  // 3.x
 import jnetty.handler.codec.http.{HttpRequest => NHttpRequest,HttpChunk => NHttpChunk,HttpMessage => NHttpMessage}
 import org.jboss.netty.channel._
@@ -71,75 +75,101 @@ case class MultiPartChannelState(
 
 /** Enriches a netty plan with multipart decoding capabilities. */
 trait AbstractMultiPartDecoder {
-    /** Whether the ChannelBuffer used in decoding is allowed to write to disk */
-    protected val useDisk: Boolean = true
-    /** Called when there are no more chunks to process. Implementation differs between cycle and async plans */
-    protected def complete(ctx: ChannelHandlerContext, e: MessageEvent)
+  /** Whether the ChannelBuffer used in decoding is allowed to write to disk */
+  protected val useDisk: Boolean = true
+  /** Called when there are no more chunks to process. Implementation differs between cycle and async plans */
+  protected def complete(ctx: ChannelHandlerContext, e: MessageEvent)//(body: => MultiPartBinding)
 
-    /** For help debugging */
-    private val logger = Logger(this.getClass.getCanonicalName)
+  /** For help debugging */
+  private val logger = Logger(this.getClass.getCanonicalName)
+  private val objId = System.identityHashCode(this).toHexString
+  private val className = this.getClass.getName
 
-    /** Provides multipart request handling common to both cycle and async plans */
-    protected def handle(ctx: ChannelHandlerContext, e: MessageEvent) = {
+  protected def pass(ctx: ChannelHandlerContext, e: MessageEvent) = {
+    ctx.sendUpstream(e)
+  }
 
-      /** Some debugging stuff */
-      val objId = System.identityHashCode(this).toHexString
-      val className = this.getClass.getName
+  protected def handleOrPass(ctx: ChannelHandlerContext, e: MessageEvent, binding: RequestBinding)(body: => Unit)
 
-      /** Maintain state as exlained here:
-          http://docs.jboss.org/netty/3.2/api/org/jboss/netty/channel/ChannelHandlerContext.html */
-      val channelState = ctx getAttachment match {
-        case s: MultiPartChannelState => s
-        case _ => MultiPartChannelState()
-      }
+  /** Provides multipart request handling common to both cycle and async plans */
+  protected def handle(ctx: ChannelHandlerContext, e: MessageEvent) = {
 
-      e.getMessage() match {
-        /** Should match the first chunk of multipart request */
-        case request: NHttpRequest =>
-          logger.debug("%s @%s Received HttpRequest: %s".format(className, objId, request))
-          if(!channelState.readingChunks) {
-            /** Initialise the decoder */
-            logger.debug("%s @%s Start reading chunks...".format(className, objId))
-            val decoder = PostDecoder(request, useDisk)
-            /** Store the initial state */
-            ctx.setAttachment(MultiPartChannelState(channelState.readingChunks, Some(request), decoder))
-            if(request.isChunked) {
-              /** Update the state to readingChunks = true */
-              logger.debug("%s @%s Request is chunked...".format(className, objId))
-              ctx.setAttachment(MultiPartChannelState(true, Some(request), decoder))
-            } else {
-              /** This is not a chunked request (could be an aggregated multipart request), 
-              so we should have received it all. Behave like a regular netty plan. */
-              logger.debug("Request is not chunked...")
-              complete(ctx, e)
-            }
-          } else {
-            /** Shouldn't get here */
-            error("%s @%s HttpRequest received while reading chunks: %s".format(className, objId, request))
-          }
-        /** Should match subsequent chunks of the same request */
-        case chunk: NHttpChunk =>
-          logger.debug("%s @%s Received HttpChunk: %s".format(className, objId, chunk))
-          /** Should be reading chunks here */
-          if(channelState.readingChunks) {
-            /** Give the chunk to the decoder */
-            logger.debug("%s @%s Continue to read chunks...".format(className, objId))
-            channelState.decoder.map(_.offer(chunk))
-            if(chunk.isLast) {
-              /** This was the last chunk so we can finish */
-              logger.debug("%s @%s Reached last chunk.".format(className, objId))
-              ctx.setAttachment(channelState.copy(readingChunks=false))
-              complete(ctx, e)
-            }
-          } else {
-              /** It shouldn't be possible to get here, but for some reason when both cycle.MultiPartDecoder plans
-              and async.MultiPartDecoder plans are used in the same pipeline the first one handles the request even
-              though the Path doesn't match, then a chunk gets passed upstream, so we end up here. @see MixedPlanSpec */
-            logger.debug("%s @%s HttpChunk received when not expected in: %s \nState: %s \nChannelBuffer: %s\nStack trace:"
-              .format(className, objId,this.getClass.getName, channelState, chunk.getContent))
-            error("HttpChunk received when not expected.")
-          }
-        case msg => error("Unexpected message type from upstream: %s".format(msg))
-      }
+    /** Maintain state as exlained here:
+        http://docs.jboss.org/netty/3.2/api/org/jboss/netty/channel/ChannelHandlerContext.html */
+    val channelState = ctx getAttachment match {
+      case s: MultiPartChannelState => s
+      case _ => MultiPartChannelState()
     }
+
+    e.getMessage() match {
+      case request: NHttpRequest =>
+        logger.debug("%s @%s Received HttpRequest: %s".format(className, objId, request))
+        val msg = ReceivedMessage(request, ctx, e)
+        val binding = new RequestBinding(msg)
+        binding match {
+          /** Should match the first chunk of multipart request */
+          case POST(MultiPart(_)) =>
+            logger.debug("Request is multipart...")
+            handleOrPass(ctx, e, binding) {
+              start(request, channelState, ctx, e)
+            }
+          /** The request is not destined for this plan */
+          case _ => pass(ctx, e)
+        }
+      /** Should match subsequent chunks of the same request */
+      case chunk: NHttpChunk => continue(chunk, channelState, ctx, e)
+    }
+  }
+
+  private def start(request: NHttpRequest, 
+                    channelState: MultiPartChannelState,
+                    ctx: ChannelHandlerContext, 
+                    e: MessageEvent) = {
+    if(!channelState.readingChunks) {
+      /** Initialise the decoder */
+      logger.debug("%s @%s Start reading chunks...".format(className, objId))
+      val decoder = PostDecoder(request, useDisk)
+      /** Store the initial state */
+      ctx.setAttachment(MultiPartChannelState(channelState.readingChunks, Some(request), decoder))
+      if(request.isChunked) {
+        /** Update the state to readingChunks = true */
+        logger.debug("%s @%s Request is chunked...".format(className, objId))
+        ctx.setAttachment(MultiPartChannelState(true, Some(request), decoder))
+      } else {
+        /** This is not a chunked request (could be an aggregated multipart request), 
+        so we should have received it all. Behave like a regular netty plan. */
+        logger.debug("Request is not chunked...")
+        complete(ctx, e)
+      }
+    } else {
+      /** Shouldn't get here */
+      error("%s @%s HttpRequest received while reading chunks: %s".format(className, objId, request))
+    }
+  }
+
+  private def continue(chunk: NHttpChunk,
+                       channelState: MultiPartChannelState,
+                       ctx: ChannelHandlerContext, 
+                       e: MessageEvent) = {
+    logger.debug("%s @%s Received HttpChunk: %s".format(className, objId, chunk))
+    /** Should be reading chunks here */
+    if(channelState.readingChunks) {
+      /** Give the chunk to the decoder */
+      logger.debug("%s @%s Continue to read chunks...".format(className, objId))
+      channelState.decoder.map(_.offer(chunk))
+      if(chunk.isLast) {
+        /** This was the last chunk so we can finish */
+        logger.debug("%s @%s Reached last chunk.".format(className, objId))
+        ctx.setAttachment(channelState.copy(readingChunks=false))
+        complete(ctx, e)
+      }
+    } else {
+        /** It shouldn't be possible to get here, but for some reason when both cycle.MultiPartDecoder plans
+        and async.MultiPartDecoder plans are used in the same pipeline the first one handles the request even
+        though the Path doesn't match, then a chunk gets passed upstream, so we end up here. @see MixedPlanSpec */
+      logger.debug("%s @%s HttpChunk received when not expected in: %s \nState: %s \nChannelBuffer: %s\nStack trace:"
+        .format(className, objId,this.getClass.getName, channelState, chunk.getContent))
+      error("HttpChunk received when not expected.")
+    }
+  }
 }

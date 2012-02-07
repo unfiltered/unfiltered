@@ -15,6 +15,9 @@ object MixedPlanSpec extends Specification
   import java.io.{File => JFile,FileInputStream => FIS}
   import org.apache.commons.io.{IOUtils => IOU}
 
+  import org.clapper.avsl.Logger
+
+  val l = Logger(this.getClass)
   val html = <html>
         <head><title>unfiltered file netty uploads test</title></head>
         <body>

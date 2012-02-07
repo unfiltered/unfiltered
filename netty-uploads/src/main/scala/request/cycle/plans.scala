@@ -11,8 +11,23 @@ import org.jboss.netty.handler.codec.http.{HttpRequest=>NHttpRequest,
                                            HttpResponse=>NHttpResponse,
                                            HttpChunk => NHttpChunk}
 
+import org.clapper.avsl.Logger
+
 /** Enriches an async netty plan with multipart decoding capabilities. */
 trait MultiPartDecoder extends cycle.Plan with AbstractMultiPartDecoder {
+
+    private val logger = Logger(this.getClass.getCanonicalName)
+
+    protected def handleOrPass(ctx: ChannelHandlerContext, e: MessageEvent, binding: RequestBinding)(body: => Unit) = {
+      intent.orElse({ case _ => Pass }: Plan.Intent)(binding) match {
+        case Pass => 
+          logger.debug("Passing...")
+          pass(ctx, e)
+        case intent =>
+          logger.debug("Handling...")
+          body
+      }
+    }
 
     protected def complete(ctx: ChannelHandlerContext, e: MessageEvent) = {
       val channelState = ctx getAttachment match {
@@ -23,6 +38,7 @@ trait MultiPartDecoder extends cycle.Plan with AbstractMultiPartDecoder {
         executeIntent { 
           guardedIntent {
             new MultiPartBinding(channelState.decoder, ReceivedMessage(channelState.originalReq.get, ctx, e))
+            //new RequestBinding(ReceivedMessage(channelState.originalReq.get, ctx, e))
           }
         }
       }
@@ -35,6 +51,7 @@ trait MultiPartDecoder extends cycle.Plan with AbstractMultiPartDecoder {
        rf: ResponseFunction[NHttpResponse]) =>
         executeResponse {
           catching(req.underlying.context) {
+            //decode(req.underlying.context, req.underlying.event)
             req.underlying.respond(rf)
           }
         }

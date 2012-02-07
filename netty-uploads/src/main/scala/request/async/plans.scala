@@ -11,8 +11,24 @@ import org.jboss.netty.handler.codec.http.{HttpRequest=>NHttpRequest,
                                            HttpResponse=>NHttpResponse,
                                            HttpChunk => NHttpChunk}
 
+import org.clapper.avsl.Logger
+
 /** Enriches an async netty plan with multipart decoding capabilities. */
 trait MultiPartDecoder extends async.Plan with AbstractMultiPartDecoder {
+
+    private val logger = Logger(this.getClass.getCanonicalName)
+
+    protected def handleOrPass(ctx: ChannelHandlerContext, e: MessageEvent, binding: RequestBinding)(body: => Unit) = {
+      intent.orElse({ case _ => Pass }: Plan.Intent)(binding) match {
+        case Pass => 
+          logger.debug("Passing...")
+          pass(ctx, e)
+        case intent => 
+          logger.debug("Handling...")
+          body
+      }
+    }
+
     private lazy val guardedIntent = intent.onPass(
       { req: HttpRequest[ReceivedMessage] =>
         req.underlying.context.sendUpstream(req.underlying.event) }
@@ -23,11 +39,14 @@ trait MultiPartDecoder extends async.Plan with AbstractMultiPartDecoder {
         case s: MultiPartChannelState => s
         case _ => MultiPartChannelState()
       }
-      guardedIntent(new MultiPartBinding(channelState.decoder, ReceivedMessage(channelState.originalReq.get, ctx, e)))
+      guardedIntent(
+        new MultiPartBinding(channelState.decoder, ReceivedMessage(channelState.originalReq.get, ctx, e))
+         //new RequestBinding(ReceivedMessage(channelState.originalReq.get, ctx, e))
+        )
     }
 
     override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
-      handle(ctx: ChannelHandlerContext, e: MessageEvent)
+      handle(ctx, e)
     }
 }
 

@@ -7,6 +7,7 @@ import scala.util.control.Exception.allCatch
 
 import unfiltered.netty.RequestBinding
 import unfiltered.request.HttpRequest
+import unfiltered.request.RequestContentType
 
 import unfiltered.request.{
   MultiPartMatcher,MultipartData, AbstractDiskFile, TupleGenerator,
@@ -28,21 +29,47 @@ class MultiPartBinding(val decoder: Option[PostDecoder], msg: ReceivedMessage) e
 /** Matches requests that have multipart content */
 object MultiPart extends MultiPartMatcher[RequestBinding] {
   def unapply(req: RequestBinding) = {
-    /** TODO: Find a way to detect whether the req is multipart without parsing the whole thing first. 
-    Maybe something like this:
-    https://github.com/netty/netty/blob/master/codec-http/src/main/java/io/netty/handler/codec/http/HttpPostRequestDecoder.java#L246 */
-    req match {
-      //case r: MultiPartBinding if r.decoder.map(_.isMultipart).getOrElse(false) => Some(r)
-
-      case r: RequestBinding => 
-        PostDecoder(r.underlying.request) match {
-          case Some(dec) if dec.isMultipart => Some(r)
-          case _ => None
-        }
-      
+    RequestContentType(req) match {
+      case Some(r) if isMultipart(r) => Some(req)
       case _ => None
     }
   }
+
+  /** Check from the request ContentType if this request is a Multipart request */
+  private def isMultipart(contentType: String) = {
+    val Multipart = "multipart/form-data"
+    val Boundary = "boundary"
+    /** Check if Post using "multipart/form-data; boundary=--89421926422648" */
+    splitContentTypeHeader(contentType) match {
+      case (Some(a), Some(b)) if a.toLowerCase.startsWith(Multipart) && b.toLowerCase.startsWith(Boundary) =>
+        if(b.split("=").length == 2)
+          true
+        else 
+          false
+      case _ => false
+    }
+  }
+
+  /** Split the Content-Type header value into 2 Strings */
+  private def splitContentTypeHeader(sb: String): Tuple2[Option[String],Option[String]] = {
+    val size = sb.length
+    val aStart = findFirstNonWhitespace(sb)
+    var aEnd = findFirstWhitespace(sb, aStart)
+    if(aEnd >= size)
+      return (Some(sb), None)
+    if(sb.endsWith(";"))
+      aEnd = aEnd - 1
+    val bStart = findFirstNonWhitespace(sb, aEnd)
+    val bEnd = findEndOfString(sb)
+    (Some(sb.substring(aStart, aEnd)), Some(sb.substring(bStart, bEnd)))
+  }
+
+  /** Find the first whitespace index */
+  private def findFirstWhitespace(s: String, startAt: Int = 0) = s.indexWhere(_.isWhitespace, startAt)
+  /** Find the first non-whitespace index */
+  private def findFirstNonWhitespace(s: String, startAt: Int = 0) = s.indexWhere(!_.isWhitespace, startAt)
+  /** Find the last non-whitespace index */
+  private def findEndOfString(s: String) = s.lastIndexWhere(!_.isWhitespace)
 }
 
 object MultiPartParams {
