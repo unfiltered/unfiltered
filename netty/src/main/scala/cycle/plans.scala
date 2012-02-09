@@ -39,15 +39,16 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
   )
   override def messageReceived(ctx: ChannelHandlerContext,
                                e: MessageEvent) {
-    val request = e.getMessage() match {
-      case req:NHttpRequest => req
+    e.getMessage() match {
+      case req:NHttpRequest =>
+        catching(ctx) {
+          executeIntent { guardedIntent(
+            new RequestBinding(ReceivedMessage(req, ctx, e))
+          ) }
+        }
+      case chunk:NHttpChunk => ctx.sendUpstream(e)
       case msg => error("Unexpected message type from upstream: %s"
                         .format(msg))
-    }
-    catching(ctx) {
-      executeIntent { guardedIntent(
-        new RequestBinding(ReceivedMessage(request, ctx, e))
-      ) }
     }
   }
   def executeIntent(thunk: => Unit)

@@ -15,9 +15,6 @@ object MixedPlanSpec extends Specification
   import java.io.{File => JFile,FileInputStream => FIS}
   import org.apache.commons.io.{IOUtils => IOU}
 
-  import org.clapper.avsl.Logger
-
-  val l = Logger(this.getClass)
   val html = <html>
         <head><title>unfiltered file netty uploads test</title></head>
         <body>
@@ -78,31 +75,63 @@ object MixedPlanSpec extends Specification
               f.name, f.contentType, p)))
           case _ => r.respond(ResponseString("what's f?"))
         }
-    }).handler(cycle.Planify{
+    }).handler(cycle.MultiPartDecoder{
+      case POST(UFPath("/end")) & MultiPart(req) => ResponseString("")
+      }
+    ).handler(cycle.Planify{
       case UFPath("/") => Html(html)
     })
   }
 
-  "Netty MultiPartParams" should {
+  "Netty mixed MultiPartDecoder plans" should {
     shareVariables()
     doBefore {
       val out = new JFile("netty-upload-test-out.txt")
       if(out.exists) out.delete
     }
-    /*
-    "pass GET request downstream" in {
+    "pass GET request upstream" in {
       http(host as_str) must_== html.toString
-    }*/
-    /*
-    "handle cycle file uploads to disk" in {
+    }
+    "respond with 404 when posting to a non-existent url" in {
+      val http = new dispatch.Http
+      val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
+      file.exists must_==true
+      try {
+        http x (host / "async" / "notexists" <<* ("f", file, "text/plain") >| ) {
+          case (code,_,_,_) =>
+            code must_== 404
+        }
+      } finally { http.shutdown }
+    }
+    "handle cycle file uploads disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       http(host / "cycle" / "disk" <<* ("f", file, "text/plain") as_str) must_=="cycle disk read file f named netty-upload-big-text-test.txt with content type text/plain and param p List()"
-    }*/
+    }
+    "handle cycle file uploads streamed" in {
+      val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
+      file.exists must_==true
+      http(host / "cycle" / "stream" <<* ("f", file, "text/plain") as_str) must_=="cycle stream read file f is named netty-upload-big-text-test.txt with content type text/plain and param p List()"
+    }
+    "handle cycle file uploads memory" in {
+      val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
+      file.exists must_==true
+      http(host / "cycle" / "mem" <<* ("f", file, "text/plain") as_str) must_=="cycle memory read file f is named netty-upload-big-text-test.txt with content type text/plain and param p List()"
+    }
     "handle async file uploads to disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       http(host / "async" / "disk" <<* ("f", file, "text/plain") as_str) must_=="async disk read file f named netty-upload-big-text-test.txt with content type text/plain and param p"
+    }
+    "handle async file uploads streamed" in {
+      val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
+      file.exists must_==true
+      http(host / "async" / "stream" <<* ("f", file, "text/plain") as_str) must_=="async stream read file f is named netty-upload-big-text-test.txt with content type text/plain and param p List()"
+    }
+    "handle async file uploads memory" in {
+      val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
+      file.exists must_==true
+      http(host / "async" / "mem" <<* ("f", file, "text/plain") as_str) must_=="async memory read file f is named netty-upload-big-text-test.txt with content type text/plain and param p List()"
     }
   }
 }

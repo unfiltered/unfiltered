@@ -2,6 +2,7 @@ package unfiltered.netty.request
 
 import unfiltered.netty.ReceivedMessage
 import unfiltered.netty.RequestBinding
+import unfiltered.netty.ExceptionHandler
 import unfiltered.request.POST
 
 import org.jboss.{netty => jnetty}  // 3.x
@@ -14,8 +15,6 @@ import ionetty.handler.codec.http.{DefaultHttpDataFactory => IODefaultHttpDataFa
 import ionetty.handler.codec.http.{InterfaceHttpData => IOInterfaceHttpData}
 import ionetty.handler.codec.http.{Attribute => IOAttribute}
 import ionetty.handler.codec.http.{FileUpload => IOFileUpload}
-
-import org.clapper.avsl.Logger
 
 /** A PostDecoder wraps a HttpPostRequestDecoder which is available in netty 4 onwards. 
     We implicitly convert a netty 3 HttpRequest to a netty 4 HttpRequest to enable us to use 
@@ -35,7 +34,7 @@ class PostDecoder(req: NHttpRequest, useDisk: Boolean = true) {
     val factory = new IODefaultHttpDataFactory(useDisk)
     Some(new IOHttpPostRequestDecoder(factory, req))
   } catch {
-    /** Q Would it be more useful to throw errors here? */
+    /** Would it be more useful to throw errors here? */
     case e: IOHttpPostRequestDecoder.ErrorDataDecoderException => None
     /** GET method. Can't create a decoder. */
     case e: IOHttpPostRequestDecoder.IncompatibleDataDecoderException => None
@@ -53,6 +52,7 @@ class PostDecoder(req: NHttpRequest, useDisk: Boolean = true) {
   /** Returns a collection of all the parts excluding file uploads from the parsed request */
   def parameters = items collect { case param: IOAttribute => param }
 
+  /** Add a received HttpChunk to the decoder */
   def offer(chunk: NHttpChunk) = decoder.map(_.offer(chunk))
 }
 
@@ -67,31 +67,42 @@ object PostDecoder{
 }
 
 /** Provides storage for state when attached to a ChannelHandlerContext */
-case class MultiPartChannelState(
+private [netty] case class MultiPartChannelState(
   readingChunks: Boolean = false,
   originalReq: Option[NHttpRequest] = None,
   decoder: Option[PostDecoder] = None
 )
 
+/** Provides useful defaults for Passing */
+object MultipartPlan {
+  /** A pass handler serves as a means to forward a request upstream for
+   *  unhandled patterns and protocol messages */
+  type PassHandler = (ChannelHandlerContext, ChannelEvent) => Unit
+
+  /** A default implementation of a PassHandler which sends the message upstream */
+  val DefaultPassHandler = ({ (ctx, event) =>
+    event match {
+      case me: MessageEvent => ctx.sendUpstream(event)
+      case _ => () // we really only care about MessageEvents but need to support the more generic ChannelEvent
+    }
+   }: PassHandler)
+}
+
 /** Enriches a netty plan with multipart decoding capabilities. */
-trait AbstractMultiPartDecoder {
+trait AbstractMultiPartDecoder extends CleanUp {
   /** Whether the ChannelBuffer used in decoding is allowed to write to disk */
   protected val useDisk: Boolean = true
   /** Called when there are no more chunks to process. Implementation differs between cycle and async plans */
-  protected def complete(ctx: ChannelHandlerContext, e: MessageEvent)//(body: => MultiPartBinding)
+  protected def complete(ctx: ChannelHandlerContext, e: MessageEvent)
 
-  /** For help debugging */
-  private val logger = Logger(this.getClass.getCanonicalName)
-  private val objId = System.identityHashCode(this).toHexString
-  private val className = this.getClass.getName
+  /** A pass handler that should be supplied when the plan is created. Default is to send upstream */
+  def pass: MultipartPlan.PassHandler
 
-  protected def pass(ctx: ChannelHandlerContext, e: MessageEvent) = {
-    ctx.sendUpstream(e)
-  }
-
+  /** Determine whether the intent could handle the request (without executing it). If so execute @param body, otherwise pass */
   protected def handleOrPass(ctx: ChannelHandlerContext, e: MessageEvent, binding: RequestBinding)(body: => Unit)
 
-  /** Provides multipart request handling common to both cycle and async plans */
+  /** Provides multipart request handling common to both cycle and async plans. 
+      Should be called by onMessageReceived. */
   protected def handle(ctx: ChannelHandlerContext, e: MessageEvent) = {
 
     /** Maintain state as exlained here:
@@ -101,75 +112,95 @@ trait AbstractMultiPartDecoder {
       case _ => MultiPartChannelState()
     }
 
-    e.getMessage() match {
+    e getMessage match {
       case request: NHttpRequest =>
-        logger.debug("%s @%s Received HttpRequest: %s".format(className, objId, request))
         val msg = ReceivedMessage(request, ctx, e)
         val binding = new RequestBinding(msg)
         binding match {
-          /** Should match the first chunk of multipart request */
+          // Should match the initial multipart request
           case POST(MultiPart(_)) =>
-            logger.debug("Request is multipart...")
+            // Determine whether the request is destined for this plan's intent and if not, pass
             handleOrPass(ctx, e, binding) {
+              // The request is destined for this intent, so start to handle it
               start(request, channelState, ctx, e)
             }
-          /** The request is not destined for this plan */
+          // The request is not valid for this plan so pass
           case _ => pass(ctx, e)
         }
-      /** Should match subsequent chunks of the same request */
-      case chunk: NHttpChunk => continue(chunk, channelState, ctx, e)
+      // Should match subsequent chunks of the same request
+      case chunk: NHttpChunk =>
+        channelState.originalReq match {
+          // Ensure that multipart handling was started for the request
+          case Some(request) => 
+            val msg = ReceivedMessage(request, ctx, e)
+            val binding = new RequestBinding(msg)
+            // Determine whether the chunk is destined for this plan's intent and if not, pass
+            handleOrPass(ctx, e, binding) {
+              // The chunk is destined for this intent, so handle it
+              continue(chunk, channelState, ctx, e)
+            }
+          case _ => pass(ctx, e)
+        }
     }
   }
 
+  /** Sets up for handling a multipart request */
   private def start(request: NHttpRequest, 
                     channelState: MultiPartChannelState,
                     ctx: ChannelHandlerContext, 
                     e: MessageEvent) = {
     if(!channelState.readingChunks) {
-      /** Initialise the decoder */
-      logger.debug("%s @%s Start reading chunks...".format(className, objId))
+      // Initialise the decoder
       val decoder = PostDecoder(request, useDisk)
-      /** Store the initial state */
+      // Store the initial state
       ctx.setAttachment(MultiPartChannelState(channelState.readingChunks, Some(request), decoder))
       if(request.isChunked) {
-        /** Update the state to readingChunks = true */
-        logger.debug("%s @%s Request is chunked...".format(className, objId))
+        // Update the state to readingChunks = true
         ctx.setAttachment(MultiPartChannelState(true, Some(request), decoder))
       } else {
-        /** This is not a chunked request (could be an aggregated multipart request), 
-        so we should have received it all. Behave like a regular netty plan. */
-        logger.debug("Request is not chunked...")
+        // This is not a chunked request (could be an aggregated multipart request), 
+        // so we should have received it all. Behave like a regular netty plan.
         complete(ctx, e)
+        cleanUp(ctx)
       }
     } else {
-      /** Shouldn't get here */
-      error("%s @%s HttpRequest received while reading chunks: %s".format(className, objId, request))
+      // Shouldn't get here
+      cleanUp(ctx)
+      error("HttpRequest received while reading chunks: %s".format(request))
     }
   }
 
+  /** Handles incoming chunks belonging to the original request */
   private def continue(chunk: NHttpChunk,
                        channelState: MultiPartChannelState,
                        ctx: ChannelHandlerContext, 
                        e: MessageEvent) = {
-    logger.debug("%s @%s Received HttpChunk: %s".format(className, objId, chunk))
-    /** Should be reading chunks here */
+    // Should be reading chunks here
     if(channelState.readingChunks) {
-      /** Give the chunk to the decoder */
-      logger.debug("%s @%s Continue to read chunks...".format(className, objId))
+      // Give the chunk to the decoder
       channelState.decoder.map(_.offer(chunk))
       if(chunk.isLast) {
-        /** This was the last chunk so we can finish */
-        logger.debug("%s @%s Reached last chunk.".format(className, objId))
+        // This was the last chunk so we can complete
         ctx.setAttachment(channelState.copy(readingChunks=false))
         complete(ctx, e)
+        cleanUp(ctx)
       }
     } else {
-        /** It shouldn't be possible to get here, but for some reason when both cycle.MultiPartDecoder plans
-        and async.MultiPartDecoder plans are used in the same pipeline the first one handles the request even
-        though the Path doesn't match, then a chunk gets passed upstream, so we end up here. @see MixedPlanSpec */
-      logger.debug("%s @%s HttpChunk received when not expected in: %s \nState: %s \nChannelBuffer: %s\nStack trace:"
-        .format(className, objId,this.getClass.getName, channelState, chunk.getContent))
+      // It shouldn't be possible to get here
       error("HttpChunk received when not expected.")
     }
+  }
+}
+
+trait CleanUp {
+  /** Erase the channel state in case the context gets recycled */
+  def cleanUp(ctx: ChannelHandlerContext) = ctx.setAttachment(null)
+}
+
+/** Ensure any state cleanup is done when an exception is caught */
+trait TidyExceptionHandler extends ExceptionHandler with CleanUp { self: SimpleChannelUpstreamHandler =>
+  override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
+    cleanUp(ctx)
+    super.exceptionCaught(ctx, e)
   }
 }

@@ -35,11 +35,11 @@ object MultiPart extends MultiPartMatcher[RequestBinding] {
     }
   }
 
-  /** Check from the request ContentType if this request is a Multipart request */
+  /** Check the ContentType header value to determine whether the request is multipart */
   private def isMultipart(contentType: String) = {
     val Multipart = "multipart/form-data"
     val Boundary = "boundary"
-    /** Check if Post using "multipart/form-data; boundary=--89421926422648" */
+    // Check if the Post is using "multipart/form-data; boundary=--89421926422648"
     splitContentTypeHeader(contentType) match {
       case (Some(a), Some(b)) if a.toLowerCase.startsWith(Multipart) && b.toLowerCase.startsWith(Boundary) =>
         if(b.split("=").length == 2)
@@ -50,7 +50,7 @@ object MultiPart extends MultiPartMatcher[RequestBinding] {
     }
   }
 
-  /** Split the Content-Type header value into 2 Strings */
+  /** Split the Content-Type header value into two strings */
   private def splitContentTypeHeader(sb: String): Tuple2[Option[String],Option[String]] = {
     val size = sb.length
     val aStart = findFirstNonWhitespace(sb)
