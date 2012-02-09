@@ -29,7 +29,7 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
         req.underlying.context.sendUpstream(req.underlying.event) }
     )
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
-    e getMessage match {
+    e.getMessage() match {
       case req:NHttpRequest => guardedIntent {
         new RequestBinding(ReceivedMessage(req, ctx, e))
       }
