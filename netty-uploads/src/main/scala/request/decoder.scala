@@ -54,6 +54,9 @@ class PostDecoder(req: NHttpRequest, useDisk: Boolean = true) {
 
   /** Add a received HttpChunk to the decoder */
   def offer(chunk: NHttpChunk) = decoder.map(_.offer(chunk))
+
+  /** Clean all HttpDatas (on Disk) for the current request */
+  def cleanFiles = decoder.map(_.cleanFiles)
 }
 
 object PostDecoder{
@@ -165,7 +168,6 @@ trait AbstractMultiPartDecoder extends CleanUp {
       }
     } else {
       // Shouldn't get here
-      cleanUp(ctx)
       error("HttpRequest received while reading chunks: %s".format(request))
     }
   }
@@ -195,11 +197,21 @@ trait AbstractMultiPartDecoder extends CleanUp {
 trait CleanUp {
   /** Erase the channel state in case the context gets recycled */
   def cleanUp(ctx: ChannelHandlerContext) = ctx.setAttachment(null)
+
+  /** Erase any temporary data that may be on disk */
+  def cleanFiles(ctx: ChannelHandlerContext) = channelState(ctx).decoder.map(_.cleanFiles)
+
+  /** Retrieve the channel state */
+  def channelState(ctx: ChannelHandlerContext) = ctx getAttachment match {
+    case s: MultiPartChannelState => s
+    case _ => MultiPartChannelState()
+  }
 }
 
 /** Ensure any state cleanup is done when an exception is caught */
 trait TidyExceptionHandler extends ExceptionHandler with CleanUp { self: SimpleChannelUpstreamHandler =>
-  override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
+  override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) = {
+    cleanFiles(ctx)
     cleanUp(ctx)
     super.exceptionCaught(ctx, e)
   }

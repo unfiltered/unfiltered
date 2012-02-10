@@ -41,6 +41,7 @@ trait MultiPartDecoder extends async.Plan with AbstractMultiPartDecoder with Tid
   }
 
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) = handle(ctx, e)
+  override def channelClosed(ctx: ChannelHandlerContext, e: ChannelStateEvent) = cleanFiles(ctx)
 }
 
 class MultiPartPlanifier(val intent: async.Plan.Intent, val pass: MultipartPlan.PassHandler)
