@@ -57,45 +57,32 @@ object ToCookies {
       else literal(k, v)
   }
 
+  private def gmt(secs: Int) =
+    DateFormatting.format(
+      new Date(System.currentTimeMillis() + secs * 1000L)
+    )
+
   private def append(sb: StringBuilder, c: Cookie) = {
     sb.append(add(c.name, c.value))
-    c.maxAge match {
-      case Some(ma) =>
-        sb.append(c.version match {
-          case v if(v == 0) =>
-            literal(Expires, DateFormatting.format(
-              new Date(System.currentTimeMillis() + ma * 1000L)
-            ))
-          case _ =>
-            add(MaxAge, ma.toString)
-        })
-      case _ => ()
+    c.maxAge map { ma =>
+      sb.append(
+        if(c.version == 0) literal(Expires, gmt(ma))
+        else add(MaxAge, ma.toString)
+      )
     }
-    c.path match {
-      case Some(p) =>
-        sb.append(c.version match {
-          case v if(v > 0) =>
-            add(Path, p)
-          case _ =>
-            literal(Path, p)
-        })
-      case _ => ()
+    c.path map { p =>
+      sb.append(
+        if(c.version > 0) add(Path, p)
+        else literal(Path, p)
+      )
     }
-    c.domain match {
-      case Some(d) =>
-        sb.append(c.version match {
-          case v if(v > 0) =>
-            add(Domain, d)
-          case _ =>
-            literal(Domain, d)
-        })
-      case _ => ()
+    c.domain map { d =>
+      sb.append(
+        if(c.version > 0) add(Domain, d)
+        else literal(Domain, d)
+      )
     }
-    c.secure match {
-      case Some(s) if(s) =>
-        sb.append("%s;" format Secure)
-      case _ => ()
-    }
+    c.secure map(if(_) sb.append("%s;" format Secure))
     if(c.httpOnly) sb.append("%s;" format HTTPOnly)
     if (c.version > 0) {
        sb.append(add(Version, c.version.toString))
