@@ -15,28 +15,7 @@ private [request] object CookieValueParser extends (Iterator[String] => Map[Stri
 
 /** Primary Cookie extractor used for obtaining a collection cookies mapped
  *  to their names from the HTTP `Cookie` header */
-object Cookies extends MappedRequestHeader[String, Option[Cookie]]("Cookie")(CookieValueParser) {
-
-  type Map = scala.collection.Map[String, Option[Cookie]]
-
-  /** Extractor container for cookies */
-  class Extract[E,T](f: Map => Option[T]) {
-    def this(name: String, f: Option[Cookie] => Option[T]) =
-      this({ cookies: Map => f(cookies(name)) })
-    def unapply(cookies: Map) = f(cookies)
-  }
-
-  /**
-   * A function Option[Cookie] => Option[B] used to test and transform values
-   * from the provided cookie. Conditions may be chained with `~>` */
-  class Mapper[A](f: Option[Cookie] => Option[A]) extends (Option[Cookie] => Option[A]) {
-    def apply(a: Option[Cookie]) = f(a)
-    def ~> [B](that: Option[A] => Option[B]) = new Mapper({ f andThen that })
-  }
-
-  /** Used as a named function value to extract a cookies value from Cookies.Extract("name", Cookies.value)*/
-  def value = new Mapper(_.map(_.value))
-}
+object Cookies extends MappedRequestHeader[String, Option[Cookie]]("Cookie")(CookieValueParser)
 
 /** Module for Cookie deserialization.
  * Some optional cookie properties defined in http://tools.ietf.org/html/rfc2965 are not included in this implementation's 
