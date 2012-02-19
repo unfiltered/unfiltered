@@ -26,7 +26,10 @@ object SetCookies {
 
 /** Module for Cookie serialization */
 object ToCookies {
+  import java.util.Date
   import unfiltered.CookieKeys._
+  import unfiltered.request.DateFormatting
+
   private val Quotables = Array(
     '\t', ' ', '"', '(', ')', ',', '/', ':', ';', '<',
     '=', '>', '?', '@', '[', '\\', ']', '{', '}')
@@ -60,8 +63,8 @@ object ToCookies {
       case Some(ma) if(ma > 0) =>
         sb.append(c.version match {
           case v if(v == 0) =>
-            literal(Expires, unfiltered.request.DateFormatting.format(
-              new java.util.Date(System.currentTimeMillis() + ma * 1000L)
+            literal(Expires, DateFormatting.format(
+              new Date(System.currentTimeMillis() + ma * 1000L)
             ))
           case _ =>
             add(MaxAge, ma.toString)
