@@ -2,7 +2,7 @@ package unfiltered.response
 
 import unfiltered.Cookie
 
-/** Set-Cookie response header using custom cookie deserializer */
+/** Set-Cookie response header. See SetCookies */
 object ResponseCookies {
   private val Name = "Set-Cookie"
   @deprecated("Use unfiltered.response.SetCookies(cookies) instead")
@@ -12,14 +12,14 @@ object ResponseCookies {
     )
 }
 
-/** Set-Cookie response header using custom cookie deserializer */
+/** Set-Cookie response header */
 object SetCookies {
   private val Name = "Set-Cookie"
   def apply(cookies: Cookie*) =
     new ResponseHeader(Name, (Seq.empty[String] /: cookies)(
       (a, e) => ToCookies(e) +: a)
     )
-  /** Call this method with a list of names to discard cookies by name */
+  /** Call this method with a list of names to discard cookies */
   def discarding(names: String*) =
     apply(names.map(Cookie(_, "", maxAge = Some(0))):_*)
 }
@@ -60,7 +60,7 @@ object ToCookies {
   private def append(sb: StringBuilder, c: Cookie) = {
     sb.append(add(c.name, c.value))
     c.maxAge match {
-      case Some(ma) if(ma > 0) =>
+      case Some(ma) =>
         sb.append(c.version match {
           case v if(v == 0) =>
             literal(Expires, DateFormatting.format(
@@ -69,8 +69,6 @@ object ToCookies {
           case _ =>
             add(MaxAge, ma.toString)
         })
-      case Some(ma) if(ma == 0) => // discarding
-        sb.append(add(MaxAge, ma.toString))
       case _ => ()
     }
     c.path match {
