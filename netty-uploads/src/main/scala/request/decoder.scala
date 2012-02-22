@@ -6,7 +6,10 @@ import unfiltered.netty.ExceptionHandler
 import unfiltered.request.POST
 
 import org.jboss.{netty => jnetty}  // 3.x
-import jnetty.handler.codec.http.{HttpRequest => NHttpRequest,HttpChunk => NHttpChunk,HttpMessage => NHttpMessage}
+import jnetty.handler.codec.http.{HttpRequest => NHttpRequest,
+                                  HttpChunk => NHttpChunk,
+                                  HttpResponse=>NHttpResponse,
+                                  HttpMessage => NHttpMessage}
 import org.jboss.netty.channel._
 
 import io.{netty => ionetty}        // 4.x
@@ -15,6 +18,7 @@ import ionetty.handler.codec.http.{DefaultHttpDataFactory => IODefaultHttpDataFa
 import ionetty.handler.codec.http.{InterfaceHttpData => IOInterfaceHttpData}
 import ionetty.handler.codec.http.{Attribute => IOAttribute}
 import ionetty.handler.codec.http.{FileUpload => IOFileUpload}
+import ionetty.handler.codec.http.HttpPostRequestDecoder.{NotEnoughDataDecoderException => IONotEnoughDataDecoderException}
 
 /** A PostDecoder wraps a HttpPostRequestDecoder which is available in netty 4 onwards. 
     We implicitly convert a netty 3 HttpRequest to a netty 4 HttpRequest to enable us to use 
@@ -44,7 +48,14 @@ class PostDecoder(req: NHttpRequest, useDisk: Boolean = true) {
   def isMultipart: Boolean = decoder.map(_.isMultipart).getOrElse(false)
 
   /** Returns a collection containing all the parts of the parsed request */
-  def items: List[IOInterfaceHttpData] = decoder.map(_.getBodyHttpDatas.toList).getOrElse(List())
+  def items: List[IOInterfaceHttpData] = {
+    try
+      decoder.map(_.getBodyHttpDatas.toList).getOrElse(List())
+    catch {
+      case e: IONotEnoughDataDecoderException => 
+        error("Tried to decode a multipart request before it was fully received. Make sure there is either a HttpChunkAggregator in the handler pipeline e.g. _.chunked() or use a MultiPartDecoder plan.")
+    }
+  }
 
   /** Returns a collection of uploaded files found in the parsed request */
   def fileUploads = items collect { case file: IOFileUpload => file }
@@ -73,7 +84,8 @@ object PostDecoder{
 private [netty] case class MultiPartChannelState(
   readingChunks: Boolean = false,
   originalReq: Option[NHttpRequest] = None,
-  decoder: Option[PostDecoder] = None
+  decoder: Option[PostDecoder] = None,
+  eventBuffer: List[MessageEvent] = List()
 )
 
 /** Provides useful defaults for Passing */
@@ -127,7 +139,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
               // The request is destined for this intent, so start to handle it
               start(request, channelState, ctx, e)
             }
-          // The request is not valid for this plan so pass
+          // The request is not valid for this plan so send upstream
           case _ => pass(ctx, e)
         }
       // Should match subsequent chunks of the same request
@@ -156,15 +168,16 @@ trait AbstractMultiPartDecoder extends CleanUp {
       // Initialise the decoder
       val decoder = PostDecoder(request, useDisk)
       // Store the initial state
-      ctx.setAttachment(MultiPartChannelState(channelState.readingChunks, Some(request), decoder))
+      ctx.setAttachment(MultiPartChannelState(channelState.readingChunks, Some(request), decoder, List(e)))
+      org.clapper.avsl.Logger(getClass).debug("Set attachement %s".format(ctx getAttachment))
       if(request.isChunked) {
         // Update the state to readingChunks = true
-        ctx.setAttachment(MultiPartChannelState(true, Some(request), decoder))
+        ctx.setAttachment(MultiPartChannelState(true, Some(request), decoder, List(e)))
       } else {
         // This is not a chunked request (could be an aggregated multipart request), 
         // so we should have received it all. Behave like a regular netty plan.
         complete(ctx, e)
-        cleanUp(ctx)
+        //cleanUp(ctx)
       }
     } else {
       // Shouldn't get here
@@ -181,11 +194,13 @@ trait AbstractMultiPartDecoder extends CleanUp {
     if(channelState.readingChunks) {
       // Give the chunk to the decoder
       channelState.decoder.map(_.offer(chunk))
+      // Buffer the event in case the whole request needs to be passed upstream
+      ctx.setAttachment(channelState.copy(eventBuffer = channelState.eventBuffer :+ e))
       if(chunk.isLast) {
         // This was the last chunk so we can complete
         ctx.setAttachment(channelState.copy(readingChunks=false))
         complete(ctx, e)
-        cleanUp(ctx)
+        //cleanUp(ctx)
       }
     } else {
       // It shouldn't be possible to get here

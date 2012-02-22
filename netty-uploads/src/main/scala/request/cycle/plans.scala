@@ -16,11 +16,12 @@ import org.jboss.netty.handler.codec.http.{HttpRequest=>NHttpRequest,
 trait MultiPartDecoder extends cycle.Plan with AbstractMultiPartDecoder with TidyExceptionHandler {
 
   /** Decide if the intent could handle the request */
-  protected def handleOrPass(ctx: ChannelHandlerContext, e: MessageEvent, binding: RequestBinding)(body: => Unit) = {
+  protected def handleOrPass(ctx: ChannelHandlerContext, e: MessageEvent, binding: RequestBinding)(decode: => Unit) = {
     if(intent.isDefinedAt(binding))
-      body
+      decode
     else
       pass(ctx, e)
+
   }
 
   /** Called when the chunked request has been fully received. Executes the intent */
@@ -30,7 +31,8 @@ trait MultiPartDecoder extends cycle.Plan with AbstractMultiPartDecoder with Tid
         executeIntent { 
           guardedIntent {
             state.originalReq match {
-              case Some(req) => new MultiPartBinding(state.decoder, ReceivedMessage(req, ctx, e))
+              case Some(req) => 
+                new MultiPartBinding(state.decoder, ReceivedMessage(req, ctx, e))
               case _ => error("Original request missing from channel state %s".format(ctx))
             }
           }
@@ -41,8 +43,17 @@ trait MultiPartDecoder extends cycle.Plan with AbstractMultiPartDecoder with Tid
   }
 
   private lazy val guardedIntent = intent.fold(
-    (req: HttpRequest[ReceivedMessage]) =>
-      req.underlying.context.sendUpstream(req.underlying.event),
+    (req: HttpRequest[ReceivedMessage]) => {
+      val ctx = req.underlying.context
+      ctx getAttachment match {
+        case state: MultiPartChannelState => 
+         org.clapper.avsl.Logger(getClass).debug("Sending all upstream %s".format(state))
+         state.eventBuffer.foreach(ctx.sendUpstream)
+        case _ => 
+          org.clapper.avsl.Logger(getClass).debug("Sending event upstream %s".format(req.underlying.event))
+          ctx.sendUpstream(req.underlying.event) 
+      }
+    },
     (req: HttpRequest[ReceivedMessage],
      rf: ResponseFunction[NHttpResponse]) =>
       executeResponse {
@@ -56,6 +67,12 @@ trait MultiPartDecoder extends cycle.Plan with AbstractMultiPartDecoder with Tid
   
   override def channelClosed(ctx: ChannelHandlerContext, e: ChannelStateEvent) = cleanFiles(ctx)
 }
+
+/*
+object MultipartPlan extends MultipartPlan {
+  type Intent = PartialFunction[RequestBinding, MultiPartIntent]
+  type MultiPartIntent = unfiltered.Cycle.Intent[ReceivedMessage,NHttpResponse]
+}*/
 
 class MultiPartPlanifier(val intent: cycle.Plan.Intent, val pass: MultipartPlan.PassHandler)
 extends MultiPartDecoder with ThreadPool with ServerErrorResponse
