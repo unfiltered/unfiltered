@@ -285,7 +285,13 @@ object Unfiltered extends Build {
         unmanagedClasspath in (local("netty-uploads"), Test) <++=
           (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion(v =>
-          Seq("io.netty" % "netty" % "4.0.0.Alpha1-SNAPSHOT")
+          Seq("io.netty" % "netty" % "4.0.0.Alpha1-SNAPSHOT",
+              v.split('.').toList match {
+                case "2" :: "8" :: "2" :: _ =>
+                  "org.clapper" % "avsl_2.8.1" % "0.3.6"
+                case _ =>
+                  "org.clapper" %% "avsl" % "0.3.6"
+            })
             ++ integrationTestDeps(v)
         ), resolvers ++= Seq(
             "cloudbees" at "http://repository-netty.forge.cloudbees.com/snapshot",
