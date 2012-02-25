@@ -176,8 +176,8 @@ object Unfiltered extends Build {
 
   lazy val util = module("util")(
     settings = Seq(
-      // https://github.com/harrah/xsbt/issues/76
-      publishArtifact in packageDoc := false
+      // https://github.com/harrah/xsbt/issues/85#issuecomment-1687483
+      unmanagedClasspath in Compile += Attributed.blank(new java.io.File("doesnotexist"))
     ))
 
   lazy val jetty =
