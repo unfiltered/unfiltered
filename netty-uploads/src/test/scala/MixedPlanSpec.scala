@@ -111,7 +111,7 @@ object MixedPlanSpec extends Specification
       val out = new JFile("netty-upload-test-out.txt")
       if(out.exists) out.delete
     }
-/*    "pass GET request upstream" in {
+    "pass GET request upstream" in {
       http(host as_str) must_== html.toString
     }
     "respond with 404 when posting to a non-existent url" in {
@@ -125,13 +125,11 @@ object MixedPlanSpec extends Specification
         }
       } finally { http.shutdown }
     }
-*/
     "handle cycle file uploads disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       http(host / "cycle" / "disk" <<* ("f", file, "text/plain") as_str) must_=="cycle disk read file f named netty-upload-big-text-test.txt with content type text/plain and param p List()"
     }
-/*
     "handle cycle file uploads streamed" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
@@ -141,13 +139,12 @@ object MixedPlanSpec extends Specification
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       http(host / "cycle" / "mem" <<* ("f", file, "text/plain") as_str) must_=="cycle memory read file f is named netty-upload-big-text-test.txt with content type text/plain and param p List()"
-    }*/
+    }
     "handle passed cycle file uploads disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       http(host / "cycle" / "pass" <<* ("f", file, "text/plain") as_str) must_=="cycle disk read file f named netty-upload-big-text-test.txt with content type text/plain and param p List()"
     }
-    /*
     "respond with a 404 when passing in a cycle plan with no matching intent" in {
       val http = new dispatch.Http
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
@@ -158,8 +155,8 @@ object MixedPlanSpec extends Specification
             code must_== 404
         }
       } finally { http.shutdown }
-    }*/
- /*   "handle async file uploads to disk" in {
+    }
+    "handle async file uploads to disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       http(host / "async" / "disk" <<* ("f", file, "text/plain") as_str) must_=="async disk read file f named netty-upload-big-text-test.txt with content type text/plain and param p"
@@ -174,15 +171,11 @@ object MixedPlanSpec extends Specification
       file.exists must_==true
       http(host / "async" / "mem" <<* ("f", file, "text/plain") as_str) must_=="async memory read file f is named netty-upload-big-text-test.txt with content type text/plain and param p List()"
     }
-    */
-    /*
     "handle passed async file uploads to disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       http(host / "async" / "pass" <<* ("f", file, "text/plain") as_str) must_=="async disk read file f named netty-upload-big-text-test.txt with content type text/plain and param p"
     }
-    */
-    /*
     "respond with a 404 when passing in an async plan with no matching intent" in {
       val http = new dispatch.Http
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
@@ -193,6 +186,6 @@ object MixedPlanSpec extends Specification
             code must_== 404
         }
       } finally { http.shutdown }
-    }*/
+    }
   }
 }
