@@ -234,13 +234,8 @@ object Unfiltered extends Build {
            fullClasspath in (local("filter"), Compile)) map { (s, f) =>
              s ++ f
           },
-        libraryDependencies <++= scalaVersion(v => Seq(
-          v.split('.').toList match {
-            case "2" :: "8" :: "2" :: _ =>
-              "net.liftweb" % "lift-json_2.8.1" % "2.4-M4"
-            case _ =>
-              "net.liftweb" %% "lift-json" % "2.4-M4"
-          }) ++ integrationTestDeps(v))
+        libraryDependencies <++= scalaVersion(
+          Seq("net.liftweb" %% "lift-json" % "2.4") ++ integrationTestDeps(_))
       )) dependsOn(library)
 
   lazy val websockets =
