@@ -19,7 +19,7 @@ object FromCookiesSpec extends Specification {
       val cookie  = cookies(0)
       cookie.value must_== "myValue"
       cookie.domain must beSome(".adomainsomewhere")
-      cookie.maxAge must beSome(50)
+      cookie.maxAge must beSome(49) or beSome(50) or beSome(51)
       cookie.path must beSome("/apathsomewhere")
       cookie.secure must beSome(true)
       cookie.version must_== 0
