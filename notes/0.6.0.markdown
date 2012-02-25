@@ -55,6 +55,8 @@ contributed by [bblfish][bblfish].
 
 [bblfish]: https://github.com/bblfish
 
-#### json module
+#### Dependencies Updates
 
-* updated lift-json dependecy from `2.4-M4` to `2.4` final
+* Netty 3.3.1
+* Jetty 7.6.0.v20120127
+* lift-json `2.4` final

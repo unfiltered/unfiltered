@@ -5,7 +5,7 @@ import ls.Plugin.LsKeys
 object Shared {
 
   val servletApiDep = "javax.servlet" % "servlet-api" % "2.3" % "provided"
-  val jettyVersion = "7.5.4.v20111024"
+  val jettyVersion = "7.6.0.v20120127"
   val continuation = "org.eclipse.jetty" % "jetty-continuation" % jettyVersion % "compile"
 
   def specsDep(sv: String) =
@@ -38,7 +38,7 @@ object Unfiltered extends Build {
     ls.Plugin.lsSettings ++
     Seq(
     organization := "net.databinder",
-    version := "0.5.4",
+    version := "0.6.0",
     crossScalaVersions := Seq("2.8.0", "2.8.1", "2.8.2",
                               "2.9.0", "2.9.0-1", "2.9.1"),
     scalaVersion := "2.8.2",
@@ -219,7 +219,7 @@ object Unfiltered extends Build {
         unmanagedClasspath in (local("netty"), Test) <++=
           (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion(v =>
-          ("org.jboss.netty" % "netty" % "3.2.7.Final" withSources()) +:
+          ("io.netty" % "netty" % "3.3.1.Final" withSources()) +:
           integrationTestDeps(v)
         )
       )) dependsOn(library)
