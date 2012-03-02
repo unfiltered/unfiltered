@@ -2,7 +2,7 @@
 package unfiltered.netty
 
 import unfiltered.{JIteratorIterator,Async}
-import unfiltered.response.{ResponseFunction, HttpResponse}
+import unfiltered.response.{ResponseFunction, HttpResponse, Pass}
 import unfiltered.request.{HttpRequest,POST,RequestContentType,Charset}
 import java.net.URLDecoder
 import org.jboss.netty.handler.codec.http._
@@ -95,27 +95,30 @@ case class ReceivedMessage(
   /** @return a new Netty DefaultHttpResponse bound to an Unfiltered HttpResponse */
   val defaultResponse = response(new DefaultHttpResponse(HTTP_1_1, OK))_
   /** Applies rf to a new `defaultResponse` and writes it out */
-  def respond(rf: ResponseFunction[NHttpResponse]) = {
-    val keepAlive = HttpHeaders.isKeepAlive(request)
-    val closer = new unfiltered.response.Responder[NHttpResponse] {
-      def respond(res: HttpResponse[NHttpResponse]) {
-        res.outputStream.close()
-        (
-          if (keepAlive)
-            unfiltered.response.Connection("Keep-Alive") ~>
-            unfiltered.response.ContentLength(
-              res.underlying.getContent().readableBytes().toString)
-          else unfiltered.response.Connection("close")
-        )(res)
+  def respond: (ResponseFunction[NHttpResponse] => Unit) = {
+    case Pass => context.sendUpstream(event)
+    case rf =>
+      val keepAlive = HttpHeaders.isKeepAlive(request)
+      val closer = new unfiltered.response.Responder[NHttpResponse] {
+        def respond(res: HttpResponse[NHttpResponse]) {
+          res.outputStream.close()
+          (
+            if (keepAlive)
+              unfiltered.response.Connection("Keep-Alive") ~>
+              unfiltered.response.ContentLength(
+                res.underlying.getContent().readableBytes().toString)
+            else unfiltered.response.Connection("close")
+          )(res)
+        }
       }
-    }
-    val future = event.getChannel.write(
-      defaultResponse(
-        unfiltered.response.Server("Scala Netty Unfiltered Server") ~> rf ~> closer
+      val future = event.getChannel.write(
+        defaultResponse(
+          unfiltered.response.Server("Scala Netty Unfiltered Server") ~> 
+            rf ~> closer
+        )
       )
-    )
-    if (!keepAlive)
-      future.addListener(ChannelFutureListener.CLOSE)
+      if (!keepAlive)
+        future.addListener(ChannelFutureListener.CLOSE)
   }
 }
 
