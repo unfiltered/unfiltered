@@ -24,11 +24,13 @@ object AsyncSpec extends unfiltered.spec.netty.Served {
 
   object ACPlan extends async.Plan with ServerErrorResponse {
     import unfiltered.kit.AsyncCycle
-    def intent = AsyncCycle {
+    def intent = AsyncCycle.rethrow {
       case GET(req) & UFPath("/pass") =>
-        Some(Pass)
+        Some(Right(Pass))
       case req@GET(UFPath("/asynccycle")) =>
-        Some(ResponseString("ac") ~> Ok)
+        Some(Right(ResponseString("ac") ~> Ok))
+      case GET(UFPath("/error")) =>
+        Some(Left(new RuntimeException("Intententional error")))
     }
   }
 
@@ -64,6 +66,14 @@ object AsyncSpec extends unfiltered.spec.netty.Served {
     }
     "pass upstream on undefined, respond in last handler" in {
       http(host / "foo" as_str) must_=="default"
+    }
+    "return 500 error on exception" in {
+      val resp = try {
+        http(host / "error" as_str)
+      } catch {
+        case StatusCode(n, _) => n
+      }
+      resp must_== 500
     }
   }
 }
