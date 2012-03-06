@@ -38,9 +38,9 @@ object Unfiltered extends Build {
     ls.Plugin.lsSettings ++
     Seq(
     organization := "net.databinder",
-    version := "0.6.1",
+    version := "0.6.2-SNAPSHOT",
     crossScalaVersions := Seq("2.8.0", "2.8.1", "2.8.2",
-                              "2.9.0", "2.9.0-1", "2.9.1"),
+                              "2.9.0", "2.9.0-1", "2.9.1", "2.9.1-1"),
     scalaVersion := "2.8.2",
     publishTo := Some("Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"),
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),

@@ -20,11 +20,16 @@ trait RoutesSpec extends unfiltered.spec.Hosted {
   import dispatch._
 
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = Routes.specify(
+    "/widgets" -> contrivedPass,
     "/widgets" -> widgets,
     "/widgets/:widget_id" -> getWidget,
     "/widgets/:widget_id/sprockets" -> sprockets,
     "/widgets/:widget_id/sprockets/:sprocket_id" -> assembly
   )
+
+  def contrivedPass[A](req: HttpRequest[A], params: Map[String, String]) = {
+    Pass
+  }
 
   def widgets[A](req: HttpRequest[A], params: Map[String, String]) = {
     ResponseString("allTheWidgets")
