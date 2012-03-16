@@ -1,0 +1,62 @@
+#### Cookies changes
+
+We've added support for the
+[HttpOnly](http://en.wikipedia.org/wiki/HTTP_cookie#HttpOnly_cookie)
+and Version, properties of cookies. This change affects the source of
+extraction of Cookies. Rather than delegating to `HttpRequest`,
+Cookies are now extracted directly from the headers of an HTTP request
+on demand. Since this change added two new properties to the Cookie
+case class, this affects any cookie extraction you may be doing.
+
+We have removed the deprecated methods on `Cookie`: `domain`, `path`,
+`maxAge`, and `secure` in favor of using built-in support for named
+arguements provided by Scala case classes.
+
+`ResponseCookies` has been deprecated in favor of `SetCookies` which
+is more in line with the `Set-Cookie` header it wraps.
+
+The `SetCookies` response function also provides a convenience method
+to discard client cookies
+
+    SetCookies.discarding(name0, ..., nameN)
+
+The method `cookies` on `unfiltered.request.HttpRequest` has been
+deprecated along with the `cookies` method implementations defined on
+`unfiltered.filter.RequestBinding` and
+`unfiltered.netty.RequestBinding`
+
+### Routes
+
+Unfiltered now includes additional options for requests routing in
+[unfiltered.kit.Routes][routes]. Applications that dispatch requests
+based on many different paths can use the provided kits to centralize
+and isolate their path routing.
+
+Three different kinds of routing are provided, with examples in the
+test specifications. `Routes.specify` ([specs][specify]) uses
+Rails-style route definitions, `Routes.regex` ([specs][regex]) uses
+regular expressions, and `Routes.startsWith` ([specs][starts]) performs
+a simple match against the beginning of the path.
+
+[specify]: https://github.com/unfiltered/unfiltered/blob/master/library/src/test/scala/RoutesSpec.scala#L22
+
+[regex]: https://github.com/unfiltered/unfiltered/blob/master/library/src/test/scala/RoutesRegexSpec.scala#L24
+
+[starts]: https://github.com/unfiltered/unfiltered/blob/master/library/src/test/scala/RoutesStartsWithSpec.scala#L22
+
+[routes]: https://github.com/unfiltered/unfiltered/blob/master/library/src/main/scala/kit/routes.scala#L9
+
+#### unfiltered-library
+
+[Html5][html5] ResponseFunction to prefix output with `<!DOCTYPE html>`,
+contributed by [bblfish][bblfish].
+
+[html5]: https://github.com/unfiltered/unfiltered/blob/master/library/src/main/scala/response/writers.scala#L27
+
+[bblfish]: https://github.com/bblfish
+
+#### Dependencies Updates
+
+* Netty 3.3.1
+* Jetty 7.6.0.v20120127
+* lift-json `2.4` final
