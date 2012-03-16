@@ -231,7 +231,7 @@ object Unfiltered extends Build {
         unmanagedClasspath in (local("netty"), Test) <++=
           (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion(v =>
-          ("io.netty" % "netty" % "3.3.1.Final" withSources()) +:
+          ("org.jboss.netty" % "netty" % "3.2.7.Final" withSources()) +:
           integrationTestDeps(v)
         )
       )) dependsOn(library)
@@ -316,5 +316,5 @@ object Unfiltered extends Build {
             "cloudbees" at "http://repository-netty.forge.cloudbees.com/snapshot",
             "java m2" at "http://download.java.net/maven/2"),
         scalacOptions ++= Seq("-deprecation", "-unchecked")
-      )) dependsOn(nettyServer, uploads)
+      )) dependsOn(netty, nettyServer, uploads)
 }
