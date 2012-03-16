@@ -93,10 +93,11 @@ the project as a submodule.
 For a new project the easiest the easiest option to apply a
 [giter8][g8] template for the Unfiltered backend of your choice.
 
-* **softprops/unfiltered.g8** for embedded Jetty
-* **n8han/unfiltered-war.g8** for a servlet container
-* **n8han/unfiltered-netty.g8** for Netty
-* **softprops/unfiltered-gae.g8** for Google App Engine
+* **unfiltered/unfiltered.g8** for embedded Jetty
+* **unfiltered/unfiltered-scalate.g8** for Scalate template evaluation
+* **unfiltered/unfiltered-war.g8** for a servlet container
+* **unfiltered/unfiltered-netty.g8** for Netty
+* **unfiltered/unfiltered-gae.g8** for Google App Engine
 
 So for example:
 
