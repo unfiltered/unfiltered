@@ -57,7 +57,7 @@ trait DeferredResponse { self: Deferral =>
 }
 
 /** Uses an ExecutorService to perform deferred tasks. */
-trait DeferralExecutor extends Deferral { //self: Plan =>
+trait DeferralExecutor extends Deferral {
   def underlying: ExecutorService
   def shutdown() { underlying.shutdown() }
   def defer(f: => Unit) {
