@@ -68,7 +68,7 @@ import unfiltered.netty.request._
 object App {
   def main(a: Array[String]) {
     Http(8080).handler(cycle.MultiPartDecoder({
-      case POST(Path("/cycle/disk")) & MultiPart(req) => {
+      case POST(Path("/cycle/disk") & MultiPart(req)) => {
         case Decode(binding) =>
           val disk = MultiPartParams.Disk(binding)
           (disk.files("f"), disk.params("p")) match {
