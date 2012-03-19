@@ -17,10 +17,10 @@ import unfiltered.request.{
 import org.jboss.{netty => jnetty}  // 3.x
 import jnetty.handler.codec.http.{HttpRequest => NHttpRequest}
 
-import io.{netty => ionetty}        // 4.x
-import ionetty.handler.codec.http.{InterfaceHttpData => IOInterfaceHttpData}
-import ionetty.handler.codec.http.{Attribute => IOAttribute}
-import ionetty.handler.codec.http.{FileUpload => IOFileUpload}
+//import io.{netty => ionetty}        // 4.x
+import jnetty.handler.codec.http.{InterfaceHttpData => IOInterfaceHttpData}
+import jnetty.handler.codec.http.{Attribute => IOAttribute}
+import jnetty.handler.codec.http.{FileUpload => IOFileUpload}
 
 import java.io.{File => JFile}
 

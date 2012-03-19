@@ -35,7 +35,7 @@ import unfiltered.netty.request._
 object App {
   def main(a: Array[String]) {
     Http(8080).chunked().handler(cycle.Planify{
-      case POST(Path("/cycle/disk")) & MultiPart(req) =>
+      case POST(Path("/cycle/disk") & MultiPart(req)) =>
         val disk = MultiPartParams.Disk(req)
         (disk.files("f"), disk.params("p")) match {
           case (Seq(f, _*), p) =>
@@ -74,16 +74,18 @@ import unfiltered.netty.request._
 
 object App {
   def main(a: Array[String]) {
-    Http(8080).handler(async.MultiPartDecoder({
-      case POST(Path("/cycle/disk")) & MultiPart(req) =>
-        val disk = MultiPartParams.Disk(req)
-        (disk.files("f"), disk.params("p")) match {
-          case (Seq(f, _*), p) =>
-            ResponseString(
-              "cycle disk read file f named %s with content type %s and param p %s" format(
-                f.name, f.contentType, p))
-          case _ =>  ResponseString("what's f?")
-        }
+    Http(8080).handler(cycle.MultiPartDecoder({
+      case POST(Path("/cycle/disk") & MultiPart(req)) => {
+        case Decode(binding) =>
+          val disk = MultiPartParams.Disk(binding)
+          (disk.files("f"), disk.params("p")) match {
+            case (Seq(f, _*), p) =>
+              ResponseString(
+                "cycle disk read file f named %s with content type %s and param p %s" format(
+                  f.name, f.contentType, p))
+            case _ => ResponseString("what's f?")
+          }
+      }
     })).run
   }
 }

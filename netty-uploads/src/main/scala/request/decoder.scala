@@ -11,8 +11,16 @@ import jnetty.handler.codec.http.{HttpRequest => NHttpRequest,
                                   HttpChunk => NHttpChunk,
                                   HttpResponse=>NHttpResponse,
                                   HttpMessage => NHttpMessage}
-import org.jboss.netty.channel._
 
+import jnetty.handler.codec.http.{HttpPostRequestDecoder => IOHttpPostRequestDecoder}
+import jnetty.handler.codec.http.{DefaultHttpDataFactory => IODefaultHttpDataFactory}
+import jnetty.handler.codec.http.{InterfaceHttpData => IOInterfaceHttpData}
+import jnetty.handler.codec.http.{Attribute => IOAttribute}
+import jnetty.handler.codec.http.{FileUpload => IOFileUpload}
+import jnetty.handler.codec.http.HttpPostRequestDecoder.{NotEnoughDataDecoderException => IONotEnoughDataDecoderException}
+
+import jnetty.channel._
+/*
 import io.{netty => ionetty}        // 4.x
 import ionetty.handler.codec.http.{HttpPostRequestDecoder => IOHttpPostRequestDecoder}
 import ionetty.handler.codec.http.{DefaultHttpDataFactory => IODefaultHttpDataFactory}
@@ -20,7 +28,7 @@ import ionetty.handler.codec.http.{InterfaceHttpData => IOInterfaceHttpData}
 import ionetty.handler.codec.http.{Attribute => IOAttribute}
 import ionetty.handler.codec.http.{FileUpload => IOFileUpload}
 import ionetty.handler.codec.http.HttpPostRequestDecoder.{NotEnoughDataDecoderException => IONotEnoughDataDecoderException}
-
+*/
 /** A PostDecoder wraps a HttpPostRequestDecoder which is available in netty 4 onwards. 
     We implicitly convert a netty 3 HttpRequest to a netty 4 HttpRequest to enable us to use 
     the new multi-part decoding features (until such time as netty 4 is officially released 
@@ -30,7 +38,7 @@ import ionetty.handler.codec.http.HttpPostRequestDecoder.{NotEnoughDataDecoderEx
 class PostDecoder(req: NHttpRequest, useDisk: Boolean = true) {
 
   /** Enable implicit conversion between netty 3.x and 4.x. One day this won't be needed any more :) */
-  import Implicits._
+  //import Implicits._
 
   import scala.collection.JavaConversions._
 
