@@ -76,7 +76,7 @@ trait Ssl extends Security {
     keyManFact.getKeyManagers
   }
 
-  def createSslContext = {
+  lazy val createSslContext = {
     val context = SSLContext.getInstance("TLS")
     initSslContext(context)
     context
