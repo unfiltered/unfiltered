@@ -24,6 +24,9 @@ import ionetty.handler.codec.http.{FileUpload => IOFileUpload}
 
 import java.io.{File => JFile}
 
+trait MultiPartCallback
+case class Decode(binding: MultiPartBinding) extends MultiPartCallback
+
 class MultiPartBinding(val decoder: Option[PostDecoder], msg: ReceivedMessage) extends RequestBinding(msg)
 
 /** Matches requests that have multipart content */

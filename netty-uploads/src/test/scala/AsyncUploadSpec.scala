@@ -18,72 +18,88 @@ object AsyncUploadSpec extends Specification
 
   def setup = {
     val plan = async.MultiPartDecoder({
-      case r@POST(UFPath("/disk-upload") & MultiPart(req)) => 
-        MultiPartParams.Disk(req).files("f") match {
-        case Seq(f, _*) => r.respond(ResponseString(
-          "disk read file f named %s with content type %s" format(
-            f.name, f.contentType)))
-        case f =>  r.respond(ResponseString("what's f?"))
-      }
-      case r@POST(UFPath("/disk-upload/write") & MultiPart(req)) => MultiPartParams.Disk(req).files("f") match {
-        case Seq(f, _*) =>
-          f.write(new JFile("upload-test-out.txt")) match {
-            case Some(outFile) =>
-              if(IOU.toString(new FIS(outFile)) == new String(f.bytes)) r.respond(ResponseString(
-                "wrote disk read file f named %s with content type %s with correct contents" format(
-                  f.name, f.contentType))
-              )
-              else r.respond(ResponseString(
-                "wrote disk read file f named %s with content type %s, with differing contents" format(
-                  f.name, f.contentType)))
-            case None => r.respond(ResponseString(
-              "did not write disk read file f named %s with content type %s" format(
-                f.name, f.contentType)))
-        }
-        case _ =>  r.respond(ResponseString("what's f?"))
-      }
-      case r@POST(UFPath("/stream-upload") & MultiPart(req)) => MultiPartParams.Streamed(req).files("f") match {
-        case Seq(f, _*) => r.respond(ResponseString(
-          "stream read file f is named %s with content type %s" format(
-            f.name, f.contentType)))
-        case _ =>  r.respond(ResponseString("what's f?"))
-      }
-      case r@POST(UFPath("/stream-upload/write") & MultiPart(req)) =>
-        MultiPartParams.Streamed(req).files("f") match {
-         case Seq(f, _*) =>
-            val src = IOU.toString(getClass.getResourceAsStream("/netty-upload-big-text-test.txt"))
-            f.write(new JFile("upload-test-out.txt")) match {
-              case Some(outFile) =>
-                if(IOU.toString(new FIS(outFile)) == src) r.respond(ResponseString(
-                  "wrote stream read file f named %s with content type %s with correct contents" format(
-                    f.name, f.contentType))
-                )
-                else r.respond(ResponseString(
-                  "wrote stream read file f named %s with content type %s, with differing contents" format(
-                    f.name, f.contentType)))
-              case None => r.respond(ResponseString(
-                "did not write stream read file f named %s with content type %s" format(
-                  f.name, f.contentType)))
-            }
-          case _ =>  r.respond(ResponseString("what's f?"))
-        }
-        case r@POST(UFPath("/mem-upload") & MultiPart(req)) => MultiPartParams.Memory(req).files("f") match {
-          case Seq(f, _*) => r.respond(ResponseString(
-            "memory read file f is named %s with content type %s" format(
+      case r@POST(UFPath("/disk-upload") & MultiPart(req)) => {
+        case Decode(binding) =>
+          MultiPartParams.Disk(binding).files("f") match {
+          case Seq(f, _*) => binding.respond(ResponseString(
+            "disk read file f named %s with content type %s" format(
               f.name, f.contentType)))
-          case _ =>  r.respond(ResponseString("what's f?"))
+          case f =>  binding.respond(ResponseString("what's f?"))
         }
-        case r@POST(UFPath("/mem-upload/write") & MultiPart(req)) => MultiPartParams.Memory(req).files("f") match {
+      }
+      case r@POST(UFPath("/disk-upload/write") & MultiPart(req)) => {
+        case Decode(binding) =>
+          MultiPartParams.Disk(req).files("f") match {
           case Seq(f, _*) =>
             f.write(new JFile("upload-test-out.txt")) match {
-              case Some(outFile) => r.respond(ResponseString(
-                "wrote memory read file f is named %s with content type %s" format(
+              case Some(outFile) =>
+                if(IOU.toString(new FIS(outFile)) == new String(f.bytes)) binding.respond(ResponseString(
+                  "wrote disk read file f named %s with content type %s with correct contents" format(
+                    f.name, f.contentType))
+                )
+                else binding.respond(ResponseString(
+                  "wrote disk read file f named %s with content type %s, with differing contents" format(
+                    f.name, f.contentType)))
+              case None => binding.respond(ResponseString(
+                "did not write disk read file f named %s with content type %s" format(
                   f.name, f.contentType)))
-              case None =>  r.respond(ResponseString(
-                "did not write memory read file f is named %s with content type %s" format(
-                  f.name, f.contentType)))
-            }
-          case _ =>  r.respond(ResponseString("what's f?"))
+          }
+          case _ =>  binding.respond(ResponseString("what's f?"))
+        }
+      }
+      case r@POST(UFPath("/stream-upload") & MultiPart(req)) => {
+        case Decode(binding) =>
+          MultiPartParams.Streamed(binding).files("f") match {
+          case Seq(f, _*) => binding.respond(ResponseString(
+            "stream read file f is named %s with content type %s" format(
+              f.name, f.contentType)))
+          case _ =>  binding.respond(ResponseString("what's f?"))
+        }
+      }
+      case r@POST(UFPath("/stream-upload/write") & MultiPart(req)) => {
+        case Decode(binding) =>
+          MultiPartParams.Streamed(binding).files("f") match {
+           case Seq(f, _*) =>
+              val src = IOU.toString(getClass.getResourceAsStream("/netty-upload-big-text-test.txt"))
+              f.write(new JFile("upload-test-out.txt")) match {
+                case Some(outFile) =>
+                  if(IOU.toString(new FIS(outFile)) == src) binding.respond(ResponseString(
+                    "wrote stream read file f named %s with content type %s with correct contents" format(
+                      f.name, f.contentType))
+                  )
+                  else binding.respond(ResponseString(
+                    "wrote stream read file f named %s with content type %s, with differing contents" format(
+                      f.name, f.contentType)))
+                case None => binding.respond(ResponseString(
+                  "did not write stream read file f named %s with content type %s" format(
+                    f.name, f.contentType)))
+              }
+            case _ => binding.respond(ResponseString("what's f?"))
+          }
+        }
+        case r@POST(UFPath("/mem-upload") & MultiPart(req)) => {
+          case Decode(binding) =>
+            MultiPartParams.Memory(binding).files("f") match {
+            case Seq(f, _*) => binding.respond(ResponseString(
+              "memory read file f is named %s with content type %s" format(
+                f.name, f.contentType)))
+            case _ => binding.respond(ResponseString("what's f?"))
+          }
+        }
+        case r@POST(UFPath("/mem-upload/write") & MultiPart(req)) => {
+          case Decode(binding) =>
+            MultiPartParams.Memory(binding).files("f") match {
+            case Seq(f, _*) =>
+              f.write(new JFile("upload-test-out.txt")) match {
+                case Some(outFile) => binding.respond(ResponseString(
+                  "wrote memory read file f is named %s with content type %s" format(
+                    f.name, f.contentType)))
+                case None =>  binding.respond(ResponseString(
+                  "did not write memory read file f is named %s with content type %s" format(
+                    f.name, f.contentType)))
+              }
+            case _ => binding.respond(ResponseString("what's f?"))
+          }
         }
     })
     _.handler(plan).handler(planify {
@@ -91,7 +107,7 @@ object AsyncUploadSpec extends Specification
     })
   }
 
-  "Netty async.MultiPartParams" should {
+  "Netty async.MultiPartDecoder" should {
     shareVariables()
     doBefore {
       val out = new JFile("netty-upload-test-out.txt")
