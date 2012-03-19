@@ -44,8 +44,6 @@ object App {
 }
 ```
 
-A more complete example can be [found over here](https://gist.github.com/1695399).
-
 If you try to use the multipart extractors in a regular netty plan without the chunk aggregator then you'll get errors.
 
 By default the `maxContentLength` used by the chunk aggregator is `1048576` (1MB). You can pass an `Int` value to change this. For example, if you wanted to allow file uploads up to 5MB in size, you could specify:
