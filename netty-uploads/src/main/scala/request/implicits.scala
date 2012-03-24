@@ -1,4 +1,4 @@
-package unfiltered.netty.request
+/*package unfiltered.netty.request
 
 import unfiltered.netty.ReceivedMessage
 
@@ -35,3 +35,4 @@ object Implicits {
     v4Chunk
   }
 }
+*/

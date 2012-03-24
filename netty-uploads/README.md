@@ -2,21 +2,16 @@
 
 Provides extractors for working with multipart file uploads in your netty async and cycle plans.
 
-*Note: This feature should be considered experimental as it currently relies on the [Netty v4](https://github.com/netty/netty) alpha snapshot codebase.*
+*Note: This feature should be considered experimental as it currently relies on the [Netty v4](https://github.com/netty/netty) codebase.*
 
 ## Usage
 
 Add netty-uploads to your project, for example:
 
 ```scala
-libraryDependencies += "net.databinder" %% "unfiltered-netty-uploads" % "0.5.4-SNAPSHOT"
+libraryDependencies += "net.databinder" %% "unfiltered-netty-uploads" % "0.6.1-SNAPSHOT"
 ```
 
-Until there is a stable release of Netty v4 we must also add a resolver for the netty snapshots repository:
-
-```scala
-resolvers += "netty-snapshots" at "http://repository-netty.forge.cloudbees.com/snapshot"
-```
 There are a couple of different ways you can use the multipart extractors depending on your plan structure.
 
 ### For netty async or cycle plans with a chunk aggregator
@@ -35,7 +30,7 @@ import unfiltered.netty.request._
 object App {
   def main(a: Array[String]) {
     Http(8080).chunked().handler(cycle.Planify{
-      case POST(Path("/cycle/disk")) & MultiPart(req) =>
+      case POST(Path("/cycle/disk") & MultiPart(req)) =>
         val disk = MultiPartParams.Disk(req)
         (disk.files("f"), disk.params("p")) match {
           case (Seq(f, _*), p) =>
@@ -48,8 +43,6 @@ object App {
   }
 }
 ```
-
-A more complete example can be [found over here](https://gist.github.com/1695399).
 
 If you try to use the multipart extractors in a regular netty plan without the chunk aggregator then you'll get errors.
 
@@ -74,16 +67,18 @@ import unfiltered.netty.request._
 
 object App {
   def main(a: Array[String]) {
-    Http(8080).handler(async.MultiPartDecoder({
-      case POST(Path("/cycle/disk")) & MultiPart(req) =>
-        val disk = MultiPartParams.Disk(req)
-        (disk.files("f"), disk.params("p")) match {
-          case (Seq(f, _*), p) =>
-            ResponseString(
-              "cycle disk read file f named %s with content type %s and param p %s" format(
-                f.name, f.contentType, p))
-          case _ =>  ResponseString("what's f?")
-        }
+    Http(8080).handler(cycle.MultiPartDecoder({
+      case POST(Path("/cycle/disk") & MultiPart(req)) => {
+        case Decode(binding) =>
+          val disk = MultiPartParams.Disk(binding)
+          (disk.files("f"), disk.params("p")) match {
+            case (Seq(f, _*), p) =>
+              ResponseString(
+                "cycle disk read file f named %s with content type %s and param p %s" format(
+                  f.name, f.contentType, p))
+            case _ => ResponseString("what's f?")
+          }
+      }
     })).run
   }
 }
@@ -100,7 +95,7 @@ case POST(Path("/some/path")) ...
 And that it contains some multipart encoded data:
 
 ```scala
-... & MultiPart(req) => ...
+... & MultiPart(req) => { ...
 ```
 
 There are three extractors to choose from depending on the environment your app is running in and what you want to do with the uploaded files.
@@ -110,10 +105,11 @@ There are three extractors to choose from depending on the environment your app 
 Extracts uploaded files to `DiskFileWrapper`s which can be written to disk. For example:
 
 ```scala
-MultiPartParams.Disk(req).files("f") match {
-  case Seq(f, _*) => f.write(new java.io.File("/tmp/" + f.name))
-  ... 
-}
+Decode(binding) =>
+  MultiPartParams.Disk(binding).files("f") match {
+    case Seq(f, _*) => f.write(new java.io.File("/tmp/" + f.name))
+    ... 
+  }
 ```
 
 You can also get the content as an `Array[Byte]` with `f.bytes`. The file name with `f.name`, size with `f.size` and content type with `f.contentType`.

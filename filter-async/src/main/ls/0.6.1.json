@@ -1,0 +1,23 @@
+
+{
+ "organization":"net.databinder",
+ "name":"unfiltered-filter-async",
+ "version":"0.6.1",
+ "description":"Server binding for Java Servlet 3.0 async filters",
+ "site":"http://unfiltered.databinder.net/",
+ "tags":[],
+ "docs":"",
+ "licenses": [],
+ "resolvers": ["http://scala-tools.org/repo-releases"],
+ "dependencies": [{
+   "organization":"javax.servlet",
+   "name": "servlet-api",
+   "version": "2.3"
+  },{
+   "organization":"org.eclipse.jetty",
+   "name": "jetty-continuation",
+   "version": "7.6.0.v20120127"
+  }],
+ "scalas": ["2.8.0","2.8.1","2.8.2","2.9.0","2.9.0-1","2.9.1"],
+ "sbt": false
+}

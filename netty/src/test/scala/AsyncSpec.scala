@@ -1,5 +1,8 @@
 package unfiltered.netty
 
+import org.jboss.netty.handler.codec.http.{HttpResponse=>NHttpResponse,
+                                           HttpRequest=>NHttpRequest}
+
 object AsyncSpec extends unfiltered.spec.netty.Served {
   import unfiltered.response._
   import unfiltered.request._
@@ -19,8 +22,21 @@ object AsyncSpec extends unfiltered.spec.netty.Served {
       }
   }
 
-  def setup = _.chunked().handler(APlan).handler(planify {
+  object ACPlan extends async.Plan with ServerErrorResponse {
+    import unfiltered.kit.AsyncCycle
+    def intent = AsyncCycle.rethrow {
+      case GET(req) & UFPath("/pass") =>
+        Some(Right(Pass))
+      case req@GET(UFPath("/asynccycle")) =>
+        Some(Right(ResponseString("ac") ~> Ok))
+      case GET(UFPath("/error")) =>
+        Some(Left(new RuntimeException("Intententional error")))
+    }
+  }
+
+  def setup = _.chunked().handler(APlan).handler(ACPlan).handler(planify {
     case GET(UFPath("/pass")) => ResponseString("pass") ~> Ok
+    case _ => ResponseString("default") ~> Ok
   })
 
   "A Server" should {
@@ -33,6 +49,10 @@ object AsyncSpec extends unfiltered.spec.netty.Served {
       str must_=="test"
       enc must_== Seq("gzip")
     }
+    "respond from AsyncCycle" in {
+      val str = http(host.gzip / "asynccycle" as_str)
+      str must_=="ac"
+    }
     "respond to POST" in {
       val value = List.tabulate(1024){ _ => "unfiltered"}.mkString("!")
       val (enc, str) = http(host << Map("key" -> value) >:+ { (heads, req) =>
@@ -43,6 +63,17 @@ object AsyncSpec extends unfiltered.spec.netty.Served {
     }
     "pass upstream on Pass, respond in last handler" in {
       http(host / "pass" as_str) must_=="pass"
+    }
+    "pass upstream on undefined, respond in last handler" in {
+      http(host / "foo" as_str) must_=="default"
+    }
+    "return 500 error on exception" in {
+      val resp = try {
+        http(host / "error" as_str)
+      } catch {
+        case StatusCode(n, _) => n
+      }
+      resp must_== 500
     }
   }
 }
