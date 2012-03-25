@@ -42,9 +42,13 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
     e.getMessage() match {
       case req:NHttpRequest =>
         catching(ctx) {
-          executeIntent { guardedIntent(
-            new RequestBinding(ReceivedMessage(req, ctx, e))
-          ) }
+          executeIntent {
+            catching(ctx) {
+              guardedIntent(
+                new RequestBinding(ReceivedMessage(req, ctx, e))
+              )
+            }
+          }
         }
       case chunk:NHttpChunk => ctx.sendUpstream(e)
       case msg => error("Unexpected message type from upstream: %s"
