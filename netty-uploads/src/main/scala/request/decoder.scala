@@ -6,7 +6,7 @@ import unfiltered.netty.ExceptionHandler
 import unfiltered.request.{POST, HttpRequest}
 import unfiltered.response.{ResponseFunction, Pass => UPass}
 
-import org.jboss.{netty => jnetty}  // 3.x
+import org.jboss.{netty => jnetty}
 import jnetty.handler.codec.http.{HttpRequest => NHttpRequest,
                                   HttpChunk => NHttpChunk,
                                   HttpResponse=>NHttpResponse,
@@ -20,25 +20,9 @@ import jnetty.handler.codec.http.{FileUpload => IOFileUpload}
 import jnetty.handler.codec.http.HttpPostRequestDecoder.{NotEnoughDataDecoderException => IONotEnoughDataDecoderException}
 
 import jnetty.channel._
-/*
-import io.{netty => ionetty}        // 4.x
-import ionetty.handler.codec.http.{HttpPostRequestDecoder => IOHttpPostRequestDecoder}
-import ionetty.handler.codec.http.{DefaultHttpDataFactory => IODefaultHttpDataFactory}
-import ionetty.handler.codec.http.{InterfaceHttpData => IOInterfaceHttpData}
-import ionetty.handler.codec.http.{Attribute => IOAttribute}
-import ionetty.handler.codec.http.{FileUpload => IOFileUpload}
-import ionetty.handler.codec.http.HttpPostRequestDecoder.{NotEnoughDataDecoderException => IONotEnoughDataDecoderException}
-*/
-/** A PostDecoder wraps a HttpPostRequestDecoder which is available in netty 4 onwards. 
-    We implicitly convert a netty 3 HttpRequest to a netty 4 HttpRequest to enable us to use 
-    the new multi-part decoding features (until such time as netty 4 is officially released 
-    and unfiltered uses it by default). Decoding chunked messages, while supported by netty 4 
-    is not implemented here, so use of a HttpChunkAggregator in the handler pipeline is 
-    mandatory for now. */
-class PostDecoder(req: NHttpRequest, useDisk: Boolean = true) {
 
-  /** Enable implicit conversion between netty 3.x and 4.x. One day this won't be needed any more :) */
-  //import Implicits._
+/** A PostDecoder wraps a HttpPostRequestDecoder. */
+class PostDecoder(req: NHttpRequest, useDisk: Boolean = true) {
 
   import scala.collection.JavaConversions._
 

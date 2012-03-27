@@ -14,10 +14,8 @@ import unfiltered.request.{
   AbstractStreamedFile, StreamedExtractor, AbstractDiskExtractor,
   DiskExtractor }
 
-import org.jboss.{netty => jnetty}  // 3.x
+import org.jboss.{netty => jnetty}
 import jnetty.handler.codec.http.{HttpRequest => NHttpRequest}
-
-//import io.{netty => ionetty}        // 4.x
 import jnetty.handler.codec.http.{InterfaceHttpData => IOInterfaceHttpData}
 import jnetty.handler.codec.http.{Attribute => IOAttribute}
 import jnetty.handler.codec.http.{FileUpload => IOFileUpload}
