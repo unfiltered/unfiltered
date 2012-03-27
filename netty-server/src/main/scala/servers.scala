@@ -157,8 +157,8 @@ class NotFoundHandler extends SimpleChannelUpstreamHandler {
 
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     val version = e.getMessage() match {
-      case chunk: HttpChunk => HttpVersion.HTTP_1_1 
       case req: DefaultHttpRequest => req.getProtocolVersion
+      case msg => error("Unexpected message type from upstream: %s".format(msg))
     }
     val response = new DefaultHttpResponse(version, HttpResponseStatus.NOT_FOUND)
     val future = e.getChannel.write(response)

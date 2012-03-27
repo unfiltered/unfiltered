@@ -40,15 +40,14 @@ object NoChunkAggregatorSpec extends Specification
       if(out.exists) out.delete
     }
     
-    /** TODO: 500 status would make more sense here */
-    "respond with a 404 when no chunk aggregator is used in a cycle plan" in {
+    "respond with a 500 when no chunk aggregator is used in a cycle plan" in {
       val http = new dispatch.Http
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       try {
         http x (host / "cycle" / "upload" <<* ("f", file, "text/plain") >| ) {
           case (code,_,_,_) =>
-            code must_== 404
+            code must_== 500
         }
       } finally { http.shutdown }
     }
