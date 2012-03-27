@@ -15,6 +15,12 @@ object NoChunkAggregatorSpec extends Specification
 
   def setup = {
     _.handler(netty.async.Planify({
+      case POST(UFPath("/async/upload")) => Pass
+    }))
+    .handler(netty.cycle.Planify({
+      case POST(UFPath("/cycle/upload")) => Pass
+    }))
+    .handler(netty.async.Planify({
       case r@POST(UFPath("/async/upload") & MultiPart(req)) => 
         MultiPartParams.Disk(req).files("f") match {
         case Seq(f, _*) => r.respond(ResponseString(
@@ -22,7 +28,16 @@ object NoChunkAggregatorSpec extends Specification
             f.name, f.contentType)))
         case f =>  r.respond(ResponseString("what's f?"))
       }
-    })).handler(netty.cycle.Planify({
+    }))
+    /** This plan is not used in the tests, it's just to check requests skip over it */
+    .handler(netty.cycle.MultiPartDecoder({
+      case POST(UFPath("/cycle/skip") & MultiPart(req)) => netty.cycle.MultipartPlan.Pass
+    }))
+    /** This plan is not used in the tests, it's just to check requests skip over it */
+    .handler(netty.async.MultiPartDecoder({
+      case POST(UFPath("/async/skip") & MultiPart(req)) => netty.async.MultipartPlan.Pass
+    }))
+    .handler(netty.cycle.Planify({
       case POST(UFPath("/cycle/upload") & MultiPart(req)) => 
         MultiPartParams.Disk(req).files("f") match {
         case Seq(f, _*) => ResponseString(
@@ -62,6 +77,14 @@ object NoChunkAggregatorSpec extends Specification
             code must_== 500
         }
       } finally { http.shutdown }
+    }
+
+    "handle multipart uploads which are not chunked" in {
+      /** This assumes Dispatch doesn't build a chunked request because the data is small */
+      val file = new JFile(getClass.getResource("/netty-upload-test.txt").toURI)
+      file.exists must_==true
+      http(host / "async" / "upload" <<* ("f", file, "text/plain") as_str) must_=="disk read file f named netty-upload-test.txt with content type text/plain"
+      http(host / "cycle" / "upload" <<* ("f", file, "text/plain") as_str) must_=="disk read file f named netty-upload-test.txt with content type text/plain"
     }
   }
 }

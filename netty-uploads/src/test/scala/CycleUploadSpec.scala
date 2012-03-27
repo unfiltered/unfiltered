@@ -143,5 +143,16 @@ object CycleUploadSpec extends Specification
       http(host / "mem-upload" / "write" <<* ("f", file, "text/plain") as_str) must_=="did not write memory read file f is named netty-upload-big-text-test.txt with content type text/plain"
       http(host / "a" as_str) must_==("http response a")
     }
+    "respond with a 404" in {
+      val http = new dispatch.Http
+      val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
+      file.exists must_==true
+      try {
+        http x (host / "notfound" <<* ("f", file, "text/plain") >| ) {
+          case (code,_,_,_) =>
+            code must_== 404
+        }
+      } finally { http.shutdown }
+    }
   }
 }
