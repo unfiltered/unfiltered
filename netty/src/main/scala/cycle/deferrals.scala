@@ -36,16 +36,6 @@ trait DeferredIntent { self: Plan with Deferral =>
   def executeResponse(thunk: => Unit) { thunk }
 }
 
-/** Defers evaluation of the given block until the response function
- * is applied. Useful with a DeferredResponse plan, not needed
- * for a DeferredIntent plan. */
-object Defer {
-  import unfiltered.response.{HttpResponse,ResponseFunction,Responder}
-  def apply[A](rf: => ResponseFunction[A]) = new Responder[A] {
-    def respond(res: HttpResponse[A]) { rf(res) }
-  }
-}
-
 /** Defers application of the intent's response function
  * to a Deferral mechanism. This allows the intent to inspect
  * the request and potentially return Pass on the worker thread,
