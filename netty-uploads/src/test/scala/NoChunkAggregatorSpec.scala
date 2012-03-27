@@ -20,6 +20,12 @@ object NoChunkAggregatorSpec extends Specification
     .handler(netty.cycle.Planify({
       case POST(UFPath("/cycle/upload")) => Pass
     }))
+    .handler(netty.cycle.MultiPartDecoder({
+      case POST(UFPath("/cycle/upload") & MultiPart(req)) => netty.cycle.MultipartPlan.Pass
+    }))
+    .handler(netty.async.MultiPartDecoder({
+      case POST(UFPath("/async/upload") & MultiPart(req)) => netty.async.MultipartPlan.Pass
+    }))
     .handler(netty.async.Planify({
       case r@POST(UFPath("/async/upload") & MultiPart(req)) => 
         MultiPartParams.Disk(req).files("f") match {
@@ -28,14 +34,6 @@ object NoChunkAggregatorSpec extends Specification
             f.name, f.contentType)))
         case f =>  r.respond(ResponseString("what's f?"))
       }
-    }))
-    /** This plan is not used in the tests, it's just to check requests skip over it */
-    .handler(netty.cycle.MultiPartDecoder({
-      case POST(UFPath("/cycle/skip") & MultiPart(req)) => netty.cycle.MultipartPlan.Pass
-    }))
-    /** This plan is not used in the tests, it's just to check requests skip over it */
-    .handler(netty.async.MultiPartDecoder({
-      case POST(UFPath("/async/skip") & MultiPart(req)) => netty.async.MultipartPlan.Pass
     }))
     .handler(netty.cycle.Planify({
       case POST(UFPath("/cycle/upload") & MultiPart(req)) => 
