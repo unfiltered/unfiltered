@@ -5,18 +5,17 @@ import unfiltered.response.HttpResponse
 import unfiltered.request.HttpRequest
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import unfiltered.Cookie
-import unfiltered.util.Optional
 
 class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   def inputStream = req.getInputStream
   def reader = req.getReader
   def protocol = req.getProtocol
   def method = req.getMethod.toUpperCase
-  def uri = req.getRequestURI :: Nil ++ Optional(req.getQueryString).map("?%s".format(_)) mkString("")
+  def uri = req.getRequestURI :: Nil ++ Option(req.getQueryString).map("?%s".format(_)) mkString("")
   def parameterNames = new JEnumerationIterator(
     req.getParameterNames.asInstanceOf[java.util.Enumeration[String]]
   )
-  def parameterValues(param: String) = Optional[Seq[String]](req.getParameterValues(param)).getOrElse(Nil)
+  def parameterValues(param: String) = Option[Seq[String]](req.getParameterValues(param)).getOrElse(Nil)
   def headers(name: String) = new JEnumerationIterator(
     req.getHeaders(name).asInstanceOf[java.util.Enumeration[String]]
   )
@@ -24,7 +23,7 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
     case null => Nil
     case jcookies =>
       (List[Cookie]() /: jcookies)((l, c) =>
-        Cookie(c.getName, c.getValue, Optional(c.getDomain), Optional(c.getPath), Optional(c.getMaxAge), Optional(c.getSecure)) :: l)
+        Cookie(c.getName, c.getValue, Option(c.getDomain), Option(c.getPath), Option(c.getMaxAge), Option(c.getSecure)) :: l)
   }
 
   def isSecure = req.isSecure

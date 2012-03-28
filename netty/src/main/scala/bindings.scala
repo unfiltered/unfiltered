@@ -16,7 +16,6 @@ import org.jboss.netty.handler.codec.http.{HttpResponse=>NHttpResponse,
                                            HttpRequest=>NHttpRequest}
 import java.nio.charset.{Charset => JNIOCharset}
 import unfiltered.Cookie
-import unfiltered.util.Optional
 
 object HttpConfig {
    val DEFAULT_CHARSET = "UTF-8"
@@ -67,7 +66,7 @@ extends HttpRequest(msg) with Async.Responder[NHttpResponse] {
       val cookieDecoder = new CookieDecoder
       val decCookies = Set(cookieDecoder.decode(cookieString).toArray(new Array[NCookie](0)): _*)
       (List[Cookie]() /: decCookies)((l, c) =>
-        Cookie(c.getName, c.getValue, Optional(c.getDomain), Optional(c.getPath), Optional(c.getMaxAge), Optional(c.isSecure)) :: l)
+        Cookie(c.getName, c.getValue, Option(c.getDomain), Option(c.getPath), Option(c.getMaxAge), Option(c.isSecure)) :: l)
     } else {
       Nil
     }
