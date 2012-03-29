@@ -1,0 +1,8 @@
+Updates `unfiltered-spec` to depend on [dispatch 0.8.8][088], fixing
+a dependency resolution problem for Maven users.
+
+Adds the [AsyncCycle][ac] kit to structure asyncronous request cycles
+around the common `foreach` interface to futures and promises.
+
+[088]: http://implicit.ly/dispatch-088
+[ac]: https://github.com/unfiltered/unfiltered/blob/master/library/src/main/scala/kit/AsyncCycle.scala

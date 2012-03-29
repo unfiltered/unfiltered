@@ -1,0 +1,27 @@
+
+{
+ "organization":"net.databinder",
+ "name":"unfiltered-scalatest",
+ "version":"0.6.1",
+ "description":"Facilitates testing Unfiltered servers with ScalaTest",
+ "site":"http://unfiltered.databinder.net/",
+ "tags":[],
+ "docs":"",
+ "licenses": [],
+ "resolvers": ["http://scala-tools.org/repo-releases"],
+ "dependencies": [{
+   "organization":"org.scalatest",
+   "name": "scalatest_2.8.2",
+   "version": "1.5.1"
+  },{
+   "organization":"net.databinder",
+   "name": "dispatch-mime",
+   "version": "0.8.8"
+  },{
+   "organization":"net.databinder",
+   "name": "dispatch-http",
+   "version": "0.8.8"
+  }],
+ "scalas": ["2.8.0","2.8.1","2.8.2","2.9.0","2.9.0-1","2.9.1"],
+ "sbt": false
+}

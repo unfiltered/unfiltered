@@ -43,5 +43,50 @@ interface, we can pass it directly to a servlet container.
 ```scala
 unfiltered.jetty.Http.anylocal.filter(Echo).run()
 ```
-If a plan does not handle a request, the server may chain to the next
-plan if there is one, or produce its own error response.
+
+### Passing on That
+
+Since an intent is a partial function, it may be undefined for a
+request. In this case the request may be handled by some other intent
+or it could produce a 404 error from the server.
+
+Unfiltered also supports an explicit mechanism to specify that a
+matched request should not be handled by an intent: the `Pass` object.
+
+```scala
+  
+object Public extends unfiltered.filter.Plan {
+  def intent = {
+    case Path(Seg("admin" :: _)) => Pass
+    case Path(Seg(path :: Nil)) => myRenderer(path)
+  }
+}
+```
+
+This intent avoids handling anything under `/admin` by matching that
+condition and passing on it. There are other ways to achieve the same
+ends, but an explicit `Pass` is often the most straightforward.
+
+Keep in mind that Scala's partial functions are unaware of
+Unfiltered's `Pass` mechanism, so the intent above is in fact
+*defined* for the excluded paths. But when attached to a plan,
+requests that evaluate to `Pass` are treated the same as those that
+are undefined.
+
+### Chaining Intents
+
+When you want to combine intents within a single plan, use `onPass`:
+
+```scala
+object MyPlan extends unfiltered.filter.Plan {
+  def intent = public.onPass(private)
+
+  val public = unfiltered.filter.Intent { ... }
+  val private = unfiltered.filter.Intent { ... }
+}
+```
+
+The `onPass` method is defined implicitly for `PartialFunction` with
+the import of the `unfiltered.response._` package. It works like
+`orElse` but is aware of the `Pass` object and it's optimized to avoid
+unnecessary reevaluation of pattern guards.

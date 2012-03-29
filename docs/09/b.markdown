@@ -78,4 +78,4 @@ stdout and serves a very terse error response. Normally an application
 will hook into its own logger and serve a custom error page or
 redirect.
 
-[onexc]: https://github.com/n8han/Unfiltered/blob/master/netty/src/main/scala/exceptions.scala#L15
+[onexc]: https://github.com/unfiltered/Unfiltered/blob/master/netty/src/main/scala/exceptions.scala#L15

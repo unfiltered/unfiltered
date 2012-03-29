@@ -64,7 +64,7 @@ trait Ssl extends Security {
   lazy val keyStore = requiredProperty("netty.ssl.keyStore")
   lazy val keyStorePassword = requiredProperty("netty.ssl.keyStorePassword")
 
-  def keyManagers = {
+  lazy val keyManagers = {
     val keys = KeyStore.getInstance(System.getProperty(
       "netty.ssl.keyStoreType", KeyStore.getDefaultType))
     IO.use(new FileInputStream(keyStore)) { in =>
@@ -76,7 +76,7 @@ trait Ssl extends Security {
     keyManFact.getKeyManagers
   }
 
-  def createSslContext = {
+  lazy val createSslContext = {
     val context = SSLContext.getInstance("TLS")
     initSslContext(context)
     context

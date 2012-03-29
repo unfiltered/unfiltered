@@ -27,7 +27,7 @@ but these instructions will not assume it is.
 That installs a `g8`. Now you have a script to run giter8. The next
 step creates a sbt 0.10 project under the current working directory.
 
-    ~/bin/g8 softprops/unfiltered --name=justplayin
+    ~/bin/g8 unfiltered/unfiltered --name=justplayin
 
 Okay, finally we can use this project with sbt to get a console for
 Unfiltered. You do have [sbt setup][sbt], don't you?

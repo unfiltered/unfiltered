@@ -1,5 +1,7 @@
 package unfiltered.util
 
+import scala.util.control.Exception.allCatch
+
 object Port {
   /** Finds any available port and returns it */
   def any = {
@@ -23,8 +25,24 @@ object Browser {
     } catch { case e => Some(e) }
 }
 
-/** Shim for what scala 2.8 Option#apply does so 2.7 can play too */
-object Optional {
+/** Extractors that match on strings that can be converted to types */
+object Of {
+  object Int {
+    def unapply(str: String) = allCatch.opt { str.toInt }
+  }
+  object Long {
+    def unapply(str: String) = allCatch.opt { str.toLong }
+  }
+  object Float {
+    def unapply(str: String) = allCatch.opt { str.toFloat }
+  }
+  object Double {
+    def unapply(str: String) = allCatch.opt { str.toDouble }
+  }
+}
+
+/** not supporting Scala 2.7 any more */
+@deprecated("use Option.apply") object Optional {
   def apply[T](x: T) = if(x == null) None else Some(x)
   def unapply[T](x: T) = apply(x)
 }
