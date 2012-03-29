@@ -166,7 +166,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
         // This is not a chunked request (could be an aggregated multipart request), 
         // so we should have received it all. Behave like a regular netty plan.
         complete(ctx, e)
-        //cleanUp(ctx)
+        cleanUp(ctx)
       }
     } else {
       // Shouldn't get here
@@ -187,7 +187,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
         // This was the last chunk so we can complete
         ctx.setAttachment(channelState.copy(readingChunks=false))
         complete(ctx, e)
-        //cleanUp(ctx)
+        cleanUp(ctx)
       }
     } else {
       // It shouldn't be possible to get here
