@@ -5,9 +5,9 @@ import unfiltered.response._
 
 /** Self-contained basic auth */
 object Auth {
-  val DefaultFail = Unauthorized ~> WWWAuthenticate("Digest")
-  def basic[A,B](is: (String, String) => Boolean)(
-    intent: unfiltered.Cycle.Intent[A,B], onFail: ResponseFunction[B] = DefaultFail) = {
+  def defaultFail(realm: String) = Unauthorized ~> WWWAuthenticate("""Basic realm="%s"""" format realm)
+  def basic[A,B](is: (String, String) => Boolean, realm: String = "secret")(
+    intent: unfiltered.Cycle.Intent[A,B], onFail: ResponseFunction[B] = defaultFail(realm)) = {
     intent.fold(
       { _ => Pass },
       {
