@@ -10,13 +10,12 @@ object Secure {
       { _ => Pass },
       {
         case (HTTPS(req), rf) => rf
-        case (req @ Host(host), rf) =>
-          val h = host.split(':')(0)
+        case (req @ HostPort(host, _), rf) =>
           Redirect(
             if (port > -1)
-              "https://%s:%d%s".format(h, port, req.uri)
+              "https://%s:%d%s".format(host, port, req.uri)
             else
-              "https://%s%s".format(h, req.uri)
+              "https://%s%s".format(host, req.uri)
           )
       }
     )

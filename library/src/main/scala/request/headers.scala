@@ -145,14 +145,16 @@ object Charset {
     }.headOption
 }
 
-/** Extracts the port number from the Host header, if present */
+/** Extracts hostname and port separately from the Host header, setting
+ * a default port of 80 or 443 when none is specified */
 object HostPort {
-  val Port = """^\S+[:](\d{4})$""".r
+  import unfiltered.util.Of
   def unapply[T](req: HttpRequest[T]): Option[(String, Int)] =
     req match {
-      case Host(hostname) => hostname match {
-        case Port(port) => Some(hostname, port.toInt)
+      case Host(hostname) => hostname.split(':') match {
+        case Array(host, Of.Int(port)) => Some(host, port)
         case _ => Some(hostname, if(req.isSecure) 443 else 80)
       }
+      case _ => None
     }
 }
