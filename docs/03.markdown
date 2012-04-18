@@ -57,7 +57,7 @@ server libraries.
 #### unfiltered-jetty
 
 Includes builders for Jetty servers that implement the HTTP and HTTPS
-protocols. With this server it is particularly easy serve a web
+protocols. With this server it is particularly easy to serve a web
 browser interface for a local process. Unfiltered even gives you a
 shortcut to open a browser window, if the user is on a 1.6+ JVM that
 supports it.
