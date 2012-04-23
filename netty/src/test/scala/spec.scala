@@ -36,6 +36,14 @@ class RequestSpec extends Specification {
     "return url parameters" in {
       req.parameterValues("param1")(0) must_== "value 1"
     }
+    "return empty seq for missing parameter with other parameters present" in {
+      req.parameterValues("param42") must_== Seq.empty
+    }
+    "return empty seq for missing parameter when no parameters are present at all" in {
+      val nreq = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/")
+      val req = new RequestBinding(ReceivedMessage(nreq, null, null))
+      req.parameterValues("param42") must_== Seq.empty
+    }
     "return a working reader" in {
       // Also tests inputstream
       req.reader.readLine must_== payload
