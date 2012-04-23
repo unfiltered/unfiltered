@@ -2,6 +2,7 @@ package unfiltered.request
 
 import unfiltered.response.ResponseFunction
 import scala.util.control.Exception.allCatch
+import java.net.URLDecoder
 
 /** Basic parameter acess, and a pattern matching extractor in Extract. */
 object Params {
@@ -58,6 +59,31 @@ object Params {
 
   def trimmed(s: Option[String]) = s map { _.trim }
   val nonempty = pred { !(_:String).isEmpty }
+}
+
+/** Basic query parameter acess. */
+object QueryParams {
+  
+  /**
+   * Given a req, extract the request query params into a (Map[String, Seq[String]], request).
+   * The Map is assigned a default value of Nil, so param("p") would return Nil if there
+   * is no such parameter, or (as normal for servlets) a single empty string if the
+   * parameter was supplied without a value. */
+  def unapply[T](req: HttpRequest[T]) = Some(urldecode(req.uri))
+  
+  def urldecode(enc: String) : Map[String, Seq[String]] = {
+    def decode(raw: String) = URLDecoder.decode(raw, "UTF-8")
+    val params = enc.dropWhile('?'!=).dropWhile('?'==)
+    val pairs: Seq[(String,String)] = params.split('&').flatMap {
+      _.split('=') match {
+        case Array(key, value) => List((decode(key), decode(value)))
+        case Array(key) if key != "" => List((decode(key), ""))
+        case _ => Nil
+      }
+    }
+    pairs.groupBy(_._1).map(t => (t._1, t._2.map(_._2))).toMap.withDefault { _ => Nil }
+  }
+  
 }
 
 /** Fined-grained error reporting for arbitrarily many failing parameters.
