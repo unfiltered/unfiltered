@@ -11,6 +11,7 @@ object JsonpSpec extends Specification  with unfiltered.spec.jetty.Served {
 
   class TestPlan extends unfiltered.filter.Planify({
     case GET(UFPath("/jsonp") & Jsonp(callback)) => ResponseString(callback.wrap("[42]"))
+    case GET(UFPath("/jsonp.json") & Jsonp(callback)) => ResponseString(callback.wrap("[42]"))
     case GET(UFPath("/jsonp/optional") & Jsonp.Optional(callback)) => ResponseString(callback.wrap("[42]"))
     case GET(UFPath("/jsonp/lift-json") & Jsonp(callback)) => callback respond {
       import net.liftweb.json.JsonAST._
@@ -31,6 +32,10 @@ object JsonpSpec extends Specification  with unfiltered.spec.jetty.Served {
   "Jsonp should" should {
     "match an text/javascript accepts request with callback, wrapping response body in callback" in {
       val resp = http(host / "jsonp" <:< Map("Accept" -> "text/javascript") <<? Map("callback" -> "onResp") as_str)
+      resp must_=="onResp([42])"
+    }
+    "match an */* accepts request with path extension and callback, wrapping response body in callback" in {
+      val resp = http(host / "jsonp.json" <:< Map("Accept" -> "*/*") <<? Map("callback" -> "onResp") as_str)
       resp must_=="onResp([42])"
     }
    "not match an text/javascript accepts request without a callback" in {
