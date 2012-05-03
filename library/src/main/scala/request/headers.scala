@@ -92,6 +92,36 @@ private [request] object SeqValueParser extends (Iterator[String] => List[String
    }
 }
 
+private [request]  case class Conneg(value: String, qualifier: Double = 1.0)
+
+private [request]  object Conneg {
+  val EqualsMatcher = """(\w*)="?([a-zA-Z\.0-9]*)"?""".r
+
+  def apply(input: String): Conneg = {
+    val split = input.trim().split(";").toList
+    val params = split.tail.foldLeft(Map[String, Option[String]]()) {
+      case (map, s) => {
+        val item = s.trim match {
+          case EqualsMatcher(a, b) => (a.trim, Some(b.trim))
+          case _ => (s, None)
+        }
+        map + item
+      }
+    }.collect{case (a, Some(b)) => (a, b)}
+
+    new Conneg(split.head, params.get("q").map(_.toDouble).getOrElse(1.0))
+  }
+}
+
+private [request] object ConnegValueParser extends (Iterator[String] => List[String]) {
+  def apply(values: Iterator[String]) = {
+    def parse: (String) => scala.List[Conneg] = {
+      raw => raw.split(",").map(Conneg(_)).toList
+    }
+    values.toList.flatMap(parse).sortBy(_.qualifier)(Ordering.Double.reverse).map(_.value)
+  }
+}
+
 /** Header whose value should be a date and time. Parsing is attempted
  * for formats defined in the DateFormatting object, in this order:
  * RFC1123, RFC1036,  ANSICTime. */
@@ -106,13 +136,15 @@ class UriHeader(name: String) extends RequestHeader(name)(UriValueParser)
 class StringHeader(name: String) extends RequestHeader(name)(StringValueParser)
 /** Header whose value should be an integer. (Is stored in an Int.) */
 class IntHeader(name: String) extends RequestHeader(name)(IntValueParser)
+/* Header where the value needs to be sorted by the qualifier attribute. */
+class ConnegHeader(name: String) extends SeqRequestHeader(name)(ConnegValueParser)
 
 // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.10
 
-object Accept extends RepeatableHeader("Accept")
-object AcceptCharset extends RepeatableHeader("Accept-Charset")
-object AcceptEncoding extends RepeatableHeader("Accept-Encoding")
-object AcceptLanguage extends RepeatableHeader("Accept-Language")
+object Accept extends ConnegHeader("Accept")
+object AcceptCharset extends ConnegHeader("Accept-Charset")
+object AcceptEncoding extends ConnegHeader("Accept-Encoding")
+object AcceptLanguage extends ConnegHeader("Accept-Language")
 object Authorization extends StringHeader("Authorization")
 object Connection extends StringHeader("Connection")
 // may want opt added parser i.e for charset
@@ -137,12 +169,15 @@ object XForwardedFor extends RepeatableHeader("X-Forwarded-For")
 
 /** Extracts the charset value from the Content-Type header, if present */
 object Charset {
-  val Setting = """.*;.*\bcharset=(\S+).*""".r
-  def unapply[T](req: HttpRequest[T]) =
-    req.headers(RequestContentType.name).toList.flatMap {
-      case Setting(cs) => (cs, req) :: Nil
-      case _ => Nil
-    }.headOption
+  import unfiltered.util.MIMEType
+
+  def unapply[T](req: HttpRequest[T]) = {
+    req.headers(RequestContentType.name).toList.flatMap(
+	  ct => MIMEType(ct) match {
+		  case Some(MIMEType(major, minor, params)) if (params.contains("charset")) => (params("charset"), req) :: Nil
+		  case _ => Nil 
+    }).headOption
+  }
 }
 
 /** Extracts hostname and port separately from the Host header, setting
