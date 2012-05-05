@@ -30,29 +30,22 @@ object DateFormatting {
 
 /** A header with values mapped to keys in a Map. */
 private [request] class MappedRequestHeader[A, B](val name: String)(parser: Iterator[String] => Map[A, B]) {
-  def unapply[T](req: HttpRequest[T]) = parser(req.headers(name)) match {
-    case hs => Some(hs)
-  }
+  def unapply[T](req: HttpRequest[T]) = Some(parser(req.headers(name)))
   def apply[T](req: HttpRequest[T]) = parser(req.headers(name))
 }
 
 /** A header with comma delimited values. Implementations of this extractor
  * will not match requests for which the header `name` is not present.*/
 private [request] class SeqRequestHeader[T](val name: String)(parser: Iterator[String] => List[T]) {
-  def unapply[T](req: HttpRequest[T]) = parser(req.headers(name)) match {
-    case Nil => None
-    case hs => Some(hs)
-  }
+  def unapply[A](req: HttpRequest[A]) =
+    Some(parser(req.headers(name))).filter { !_.isEmpty }
   def apply[T](req: HttpRequest[T]) = parser(req.headers(name))
 }
 
 /** A header with a single value. Implementations of this extractor
  * will not match requests for which the header `name` is not present.*/
 private [request] class RequestHeader[A](val name: String)(parser: Iterator[String] => List[A]) {
-   def unapply[T](req: HttpRequest[T]) =  parser(req.headers(name)) match {
-     case head :: _ => Some(head)
-     case _ => None
-   }
+   def unapply[T](req: HttpRequest[T]) = parser(req.headers(name)).headOption
    def apply[T](req: HttpRequest[T]) = parser(req.headers(name)).headOption
 }
 
