@@ -9,7 +9,7 @@ object Accepts {
     val ext: String
 
     def unapply[T](r: HttpRequest[T]) = {
-      val pathSuffix = r.uri.split("[.]").lastOption
+      val pathSuffix = Path(r).split("[.]").lastOption
       r match {
         case Accept(values) =>
           if(values.exists { _.equalsIgnoreCase(contentType) })
