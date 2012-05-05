@@ -35,9 +35,8 @@ extends HttpRequest(msg) with Async.Responder[NHttpResponse] {
     case _ => Map.empty[String,Seq[String]]
   }
 
-  private def charset = this match {
-    case Charset(cs, _) => cs
-    case _ => HttpConfig.DEFAULT_CHARSET
+  private def charset = Charset(this).getOrElse {
+    HttpConfig.DEFAULT_CHARSET
   }
   lazy val inputStream = new ChannelBufferInputStream(req.getContent)
   lazy val reader = {

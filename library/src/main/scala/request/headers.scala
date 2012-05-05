@@ -49,7 +49,7 @@ private [request] class SeqRequestHeader[T](val name: String)(parser: Iterator[S
 /** A header with a single value. Implementations of this extractor
  * will not match requests for which the header `name` is not present.*/
 private [request] class RequestHeader[A](val name: String)(parser: Iterator[String] => List[A]) {
-   def unapply[T](req: HttpRequest[T]) =  parser(req.headers(name)) match {
+   def unapply[T](req: HttpRequest[T]) = parser(req.headers(name)) match {
      case head :: _ => Some(head)
      case _ => None
    }
@@ -147,7 +147,6 @@ object AcceptEncoding extends ConnegHeader("Accept-Encoding")
 object AcceptLanguage extends ConnegHeader("Accept-Language")
 object Authorization extends StringHeader("Authorization")
 object Connection extends StringHeader("Connection")
-// may want opt added parser i.e for charset
 object RequestContentType extends StringHeader("Content-Type")
 object Expect extends StringHeader("Expect")
 object From extends StringHeader("From")
@@ -170,14 +169,13 @@ object XForwardedFor extends RepeatableHeader("X-Forwarded-For")
 /** Extracts the charset value from the Content-Type header, if present */
 object Charset {
   import unfiltered.util.MIMEType
-
   def unapply[T](req: HttpRequest[T]) = {
-    req.headers(RequestContentType.name).toList.flatMap(
-	  ct => MIMEType(ct) match {
-		  case Some(MIMEType(major, minor, params)) if (params.contains("charset")) => (params("charset"), req) :: Nil
-		  case _ => Nil 
-    }).headOption
+    for {
+      MIMEType(mimeType) <- RequestContentType(req)
+      charset <- mimeType.params.get("charset")
+    } yield charset
   }
+  def apply[T](req: HttpRequest[T]) = unapply(req)
 }
 
 /** Extracts hostname and port separately from the Host header, setting

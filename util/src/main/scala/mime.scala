@@ -1,32 +1,35 @@
 package unfiltered.util
 
-case class MIMEType(major: String, minor: String, params: Map[String, String] = Map.empty) {
+class MIMEType(val major: String,
+               val minor: String,
+               val params: Map[String, String]) {
   def includes(mt: MIMEType) = {
-     this match {
-	   case MIMEType.All => true
-	   case MIMEType(maj, "*", _) => mt.major == maj
-	   case MIMEType(maj, min, _) => mt.major == maj && mt.minor == min
-     }	
+     (major, minor) match {
+       case ("*", "*") => true
+       case (maj, "*") => mt.major == maj
+       case (maj, min) => mt.major == maj && mt.minor == min
+     }
   }
-  override def toString = "%s/%s".format(major, minor) + params.map{case (a, b) => "; %s=%s".format(a, b)}.mkString("")
+  override def toString =
+    "%s/%s%s".format(major,
+                     minor,
+                     params.map {
+                       case (a, b) => "; %s=%s".format(a, b)
+                     }.mkString(""))
 }
 
 object MIMEType {
-  val All = MIMEType("*", "*")
-
-  def apply(mt: String): Option[MIMEType] = {
+  def unapply(mt: String): Option[MIMEType] = {
     import javax.activation.MimeType
     import scala.collection.JavaConverters._
-    try {
+    util.control.Exception.allCatch.opt {
       val mimeType = new MimeType(mt)
-      val names = mimeType.getParameters.getNames.asInstanceOf[java.util.Enumeration[String]].asScala
-      val params = names.foldLeft(Map[String, String]())((acc, p) => acc + (p -> mimeType.getParameter(p)))
-      Some(new MIMEType(mimeType.getPrimaryType, mimeType.getSubType, params))
-    }
-    catch {
-      case _ => None
+      val names = mimeType.getParameters.getNames.asScala
+      val params = names.foldLeft(Map.empty[String, String]) {
+        case (acc, p: String) =>
+          acc + (p -> mimeType.getParameter(p.asInstanceOf))
+      }
+      new MIMEType(mimeType.getPrimaryType, mimeType.getSubType, params)
     }
   }
-
-  def string2MIMEType(input: String) = apply(input).getOrElse(throw new IllegalArgumentException("Not a valid MIMEType"))
 }
