@@ -1,0 +1,19 @@
+
+{
+ "organization":"net.databinder",
+ "name":"unfiltered-json",
+ "version":"0.6.2",
+ "description":"Json requset matchers and response functions",
+ "site":"http://unfiltered.databinder.net/",
+ "tags":[],
+ "docs":"",
+ "licenses": [],
+ "resolvers": ["http://scala-tools.org/repo-releases"],
+ "dependencies": [{
+   "organization":"net.liftweb",
+   "name": "lift-json",
+   "version": "2.4"
+  }],
+ "scalas": ["2.8.0","2.8.1","2.8.2","2.9.0","2.9.0-1","2.9.1","2.9.1-1","2.9.2"],
+ "sbt": false
+}
