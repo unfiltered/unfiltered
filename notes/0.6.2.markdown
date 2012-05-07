@@ -1,0 +1,59 @@
+## New Features
+
+### Multipart POST support for Netty 
+
+This substantial [contribution by g-eorge][up] handles file of uploads
+of arbitrary size, as previously supported only for filter plans. See
+the [netty-uploads readme][read] for details.
+
+[up]: https://github.com/unfiltered/unfiltered/issues/44
+[read]: https://github.com/unfiltered/unfiltered/blob/master/netty-uploads/README.md
+
+### Kits
+
+* [unfiltered.kit.Secure][secure] redirects HTTP requests to HTTPS.
+* [unfiltered.kit.Auth][auth] requires basic auth for matching requests.
+* unfiltered.kit.AsyncCycle — removed this promise/future-aware kit for
+  the time being
+
+[secure]: https://github.com/unfiltered/unfiltered/blob/master/library/src/main/scala/kit/secure.scala
+[auth]: https://github.com/unfiltered/unfiltered/blob/master/library/src/main/scala/kit/auth.scala
+
+### Extractors
+
+* [unfiltered.request.QueryParams][queryparams] allows access to
+  query-string parameters exclusively, doesn't read in the request
+  body for POST params
+* [unfiltered.request.Charset][charset] The existing extractor yielded
+  both the charset string as well as an `HttpRequest` object in the
+  older fashion of Unfiltered. This is altered to now only yield the
+  charset, which is a **breaking change**. If you see a compilation
+  error for a Charset matcher, simply remove the trailing prameter
+  in its parameter list.
+* [unfiltered.request.{Accept,AcceptCharset,AcceptEncoding,AcceptLanguage}][accept] all behave more correctly thanks to hamnis's 
+[content negotiation fixes][conneg].
+
+[queryparams]: https://github.com/unfiltered/unfiltered/blob/master/library/src/main/scala/request/params.scala#L65
+[charset]: https://github.com/unfiltered/unfiltered/blob/master/library/src/main/scala/request/headers.scala#L163
+[accept]: https://github.com/unfiltered/unfiltered/blob/master/library/src/main/scala/request/headers.scala#L137-140
+[conneg]: https://github.com/unfiltered/unfiltered/pull/122
+
+### Response Functions
+
+* [Support for rfc6585][status], additional status codes
+
+[status]: https://github.com/unfiltered/unfiltered/issues/124
+
+## Fixes
+
+* [Issue 110][110] Keymanagers loaded redundantly for Netty bindings
+* [Issue 111][111] TLS contexts created redudantly for Netty bindings
+* [Issue 119][119] NoSuchElementException for parameterValues
+* [Issue 123][123] Find path suffix only from path part of uri
+* [Issue 126][126] Tiny fix in url generation for Jetty Https Server
+
+[110]: https://github.com/unfiltered/unfiltered/issues/110
+[111]: https://github.com/unfiltered/unfiltered/issues/111
+[119]: https://github.com/unfiltered/unfiltered/pull/119
+[123]: https://github.com/unfiltered/unfiltered/pull/123
+[126]: https://github.com/unfiltered/unfiltered/pull/126
