@@ -97,9 +97,10 @@ object Unfiltered extends Build {
               name := "Unfiltered",
               LsKeys.skipWrite := true
             )) aggregate(
-            library, filters, filtersAsync , uploads, util, jetty,
+            library, filters, filtersAsync , uploads, filterUploads,
+            nettyUploads, util, jetty,
             jettyAjpProject, netty, nettyServer, json, specHelpers,
-            scalaTestHelpers, websockets, oauth, agents, nettyUploads)
+            scalaTestHelpers, websockets, oauth, agents)
 
   lazy val library: Project =
     module("unfiltered")(
