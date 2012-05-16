@@ -42,11 +42,11 @@ class Draft14WebSocketFrameEncoder extends OneToOneEncoder {
           encoded.writeByte(0x81.asInstanceOf[Byte])
 
           // write len
-          if(rbytes < 126) encoded.writeByte(rbytes)
-          else if (rbytes == 126) {
+          if(rbytes < 126) {
+            encoded.writeByte(rbytes)
+          } else if (rbytes < 65536) {
             encoded.writeByte(126)
-            encoded.writeByte(126 >> 8)
-            encoded.writeByte(126 & 0xFF)
+            encoded.writeShort(rbytes)
           } else {
             encoded.writeByte(127)
             encoded.writeLong(rbytes)
