@@ -30,7 +30,7 @@ class Draft14WebSocketFrameEncoder extends OneToOneEncoder {
           val rbytes = data.readableBytes
           val blen = {
             if(rbytes < 126) rbytes + 2       // 1 header byte + 1 len byte
-            else if(rbytes == 126) rbytes + 4 // 1 header byte + 3 len bytes (1 + 2 extra)
+            else if(rbytes < 65536) rbytes + 4 // 1 header byte + 3 len bytes (1 + 2 extra)
             else rbytes + 10                  // 1 header byte + 9 len bytes (1 + 8 extra)
           }
 
