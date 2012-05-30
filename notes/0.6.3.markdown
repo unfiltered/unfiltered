@@ -1,0 +1,5 @@
+## Fixes
+
+* [Issue 128][128] Websocket encoder should follow specification with regards to payload length
+
+[128]: https://github.com/unfiltered/unfiltered/pull/128
