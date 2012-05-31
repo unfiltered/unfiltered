@@ -33,46 +33,6 @@ object Unfiltered extends Build {
 
   def local(name: String) = LocalProject(id(name))
 
-  val buildSettings = Defaults.defaultSettings ++
-    ls.Plugin.lsSettings ++
-    Seq(
-    organization := "net.databinder",
-    version := "0.6.3",
-    crossScalaVersions := Seq("2.8.1", "2.8.2",
-                              "2.9.0-1", "2.9.1", "2.9.1-1", "2.9.2"),
-    scalaVersion := "2.8.2",
-    publishTo := Some("Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"),
-    credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
-    scalacOptions ++= Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked"),
-    parallelExecution in Test := false, // :( test servers collide on same port
-    homepage :=
-      Some(new java.net.URL("http://unfiltered.databinder.net/")),
-    publishMavenStyle := true,
-    publishTo :=
-      Some("releases" at
-           "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
-    publishArtifact in Test := false,
-    licenses := Seq("MIT" -> url("http://www.opensource.org/licenses/MIT")),
-    pomExtra := (
-      <scm>
-        <url>git@github.com:unfiltered/unfiltered.git</url>
-        <connection>scm:git:git@github.com:unfiltered/unfiltered.git</connection>
-      </scm>
-      <developers>
-        <developer>
-          <id>n8han</id>
-          <name>Nathan Hamblen</name>
-          <url>http://twitter.com/n8han</url>
-        </developer>
-        <developer>
-          <id>softprops</id>
-          <name>Doug Tangren</name>
-          <url>http://twitter.com/softprops</url>
-        </developer>
-      </developers>)
-
-  )
-
   def srcPathSetting(projectId: String, rootPkg: String) = {
     mappings in (LocalProject(projectId), Compile, packageSrc) ~= {
       defaults: Seq[(File,String)] =>
@@ -88,15 +48,21 @@ object Unfiltered extends Build {
     dirName: String = moduleName,
     srcPath: String = "unfiltered/" + moduleName.replace("-","/")
   ) = Project(projectId, file(dirName),
-              settings = (buildSettings :+
-                          srcPathSetting(projectId, srcPath)) ++ settings)
+              settings = (Defaults.defaultSettings ++
+                          settings ++
+                          ls.Plugin.lsSettings :+
+                          srcPathSetting(projectId, srcPath))
+            ).delegateTo(setup)
+
+  /** Defines common settings for all projects */
+  lazy val setup = Project("setup", file("setup"))
 
   lazy val unfiltered =
     Project("unfiltered-all", file("."),
-            settings = buildSettings ++ Seq(
+            settings = Defaults.defaultSettings ++ Seq(
               name := "Unfiltered",
-              LsKeys.skipWrite := true
-            )) aggregate(
+              ls.Plugin.LsKeys.skipWrite := true
+            )).delegateTo(setup).aggregate(
             library, filters, filtersAsync , uploads, filterUploads,
             nettyUploads, util, jetty,
             jettyAjpProject, netty, nettyServer, json, specHelpers,
