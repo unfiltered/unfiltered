@@ -38,8 +38,8 @@ object Unfiltered extends Build {
     Seq(
     organization := "net.databinder",
     version := "0.6.2",
-    crossScalaVersions := Seq("2.8.0", "2.8.1", "2.8.2",
-                              "2.9.0", "2.9.0-1", "2.9.1", "2.9.1-1", "2.9.2"),
+    crossScalaVersions := Seq("2.8.1", "2.8.2",
+                              "2.9.0-1", "2.9.1", "2.9.1-1", "2.9.2"),
     scalaVersion := "2.8.2",
     publishTo := Some("Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"),
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
