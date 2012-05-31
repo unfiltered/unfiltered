@@ -6,7 +6,6 @@ object Shared {
 
   val servletApiDep = "javax.servlet" % "servlet-api" % "2.3" % "provided"
   val jettyVersion = "7.6.0.v20120127"
-  val continuation = "org.eclipse.jetty" % "jetty-continuation" % jettyVersion % "compile"
 
   def specsDep(sv: String) =
     sv.split("[.-]").toList match {
@@ -43,7 +42,7 @@ object Unfiltered extends Build {
   }
 
   private def module(moduleName: String)(
-    settings: Seq[Setting[_]],
+    settings: Seq[Setting[_]] = Seq.empty,
     projectId: String = "unfiltered-" + moduleName,
     dirName: String = moduleName,
     srcPath: String = "unfiltered/" + moduleName.replace("-","/")
@@ -51,8 +50,8 @@ object Unfiltered extends Build {
               settings = (Defaults.defaultSettings ++
                           settings ++
                           ls.Plugin.lsSettings :+
-                          srcPathSetting(projectId, srcPath))
-            ).delegateTo(setup)
+                          srcPathSetting(projectId, srcPath)
+            )).delegateTo(setup)
 
   /** Defines common settings for all projects */
   lazy val setup = Project("setup", file("setup"))
@@ -71,44 +70,14 @@ object Unfiltered extends Build {
   lazy val library: Project =
     module("unfiltered")(
       dirName = "library",
-      projectId = "unfiltered",
-      settings = Seq(
-        description :=
-          "Core library for describing requests and responses",
-        unmanagedClasspath in (LocalProject("unfiltered"), Test) <++=
-          (fullClasspath in (local("spec"), Compile),
-           fullClasspath in (local("filter"), Compile)) map { (s, f) =>
-            s ++ f
-        },
-        libraryDependencies <++= scalaVersion(v => Seq(
-          "commons-codec" % "commons-codec" % "1.4",
-          Shared.specsDep(v) % "test"
-        ) ++ integrationTestDeps(v))
-      )
-   ) dependsOn(util)
+      projectId = "unfiltered"
+   ).dependsOn(util)
 
   lazy val filters =
-    module("filter")(
-      settings = Seq(
-        description :=
-          "Server binding for Java Servlet filters",
-        unmanagedClasspath in (local("filter"), Test) <++=
-          (fullClasspath in (local("spec"), Compile)),
-        libraryDependencies <++= scalaVersion(v => Seq(servletApiDep) ++
-          integrationTestDeps(v))
-      )) dependsOn(library)
+    module("filter")().dependsOn(library)
 
   lazy val filtersAsync =
-    module("filter-async")(
-      settings = Seq(
-        description :=
-          "Server binding for Java Servlet 3.0 async filters",
-        unmanagedClasspath in (local("filter-async"), Test) <++=
-          (fullClasspath in (local("spec"), Compile)),
-        libraryDependencies <++= scalaVersion {
-          v => Seq(servletApiDep,continuation) ++ integrationTestDeps(v)
-        }
-      )) dependsOn(filters)
+    module("filter-async")() dependsOn(filters)
 
   lazy val agents =
     module("agents")(
