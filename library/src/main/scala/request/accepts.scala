@@ -4,12 +4,12 @@ package unfiltered.request
 object Accepts {
 
   trait Accepting {
-    val contentType: String
+    def contentType: String
 
-    val ext: String
+    def ext: String
 
     def unapply[T](r: HttpRequest[T]) = {
-      val pathSuffix = r.uri.split("[.]").lastOption
+      val pathSuffix = Path(r).split("[.]").lastOption
       r match {
         case Accept(values) =>
           if(values.exists { _.equalsIgnoreCase(contentType) })

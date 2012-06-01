@@ -96,8 +96,9 @@ trait TokenStore {
    * see also http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.2
    * @return an access token for an implicit client
    */
-  def generateImplicitAccessToken(responseTypes: Seq[String], owner: ResourceOwner, client: Client,
-                                  scope: Seq[String], redirectUri: String): Token
+  def generateImplicitAccessToken(responseTypes: Seq[String], owner: ResourceOwner,
+                                  client: Client,  scope: Seq[String],
+                                  redirectUri: String): Token
 
   /**
    *

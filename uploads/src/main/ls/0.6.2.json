@@ -1,0 +1,19 @@
+
+{
+ "organization":"net.databinder",
+ "name":"unfiltered-uploads",
+ "version":"0.6.2",
+ "description":"Generic support for multi-part uploads",
+ "site":"http://unfiltered.databinder.net/",
+ "tags":[],
+ "docs":"",
+ "licenses": [],
+ "resolvers": ["http://scala-tools.org/repo-releases"],
+ "dependencies": [{
+   "organization":"commons-io",
+   "name": "commons-io",
+   "version": "1.4"
+  }],
+ "scalas": ["2.8.0","2.8.1","2.8.2","2.9.0","2.9.0-1","2.9.1","2.9.1-1","2.9.2"],
+ "sbt": false
+}

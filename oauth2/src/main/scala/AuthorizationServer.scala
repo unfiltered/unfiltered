@@ -32,35 +32,46 @@ trait AuthorizationServer {
 
   def apply(r: AuthorizationRequest): AuthorizationResponse = r match {
 
-    case AuthorizationCodeRequest(req, responseTypes, clientId, redirectUri, scope, state) =>
+    case AuthorizationCodeRequest(req, responseTypes, clientId,
+                                  redirectUri, scope, state) =>
       client(clientId, None) match {
         case Some(client) =>
           if(!validRedirectUri(redirectUri, client)) ServiceResponse(
             invalidRedirectUri(Some(redirectUri), Some(client))
           ) else if(!validScopes(scope)) {
-            ErrorResponse(InvalidScope, "invalid scope", errorUri(InvalidScope), state)
+            ErrorResponse(InvalidScope, "invalid scope",
+                          errorUri(InvalidScope), state)
           } else {
             resourceOwner(req) match {
               case Some(owner) =>
                  if(denied(req)) ErrorResponse(
-                   AccessDenied, "user denied request", errorUri(AccessDenied), state)
+                   AccessDenied, "user denied request",
+                   errorUri(AccessDenied), state)
                  else if(accepted(req)) {
                     AuthorizationCodeResponse(
-                      generateAuthorizationCode(responseTypes, owner, client, scope, redirectUri),
+                      generateAuthorizationCode(responseTypes,
+                                                owner,
+                                                client,
+                                                scope,
+                                                redirectUri),
                       state)
                  }
                  else ServiceResponse(requestAuthorization(
-                   RequestBundle(req, responseTypes, client, Some(owner), redirectUri, scope, state)
+                   RequestBundle(req, responseTypes, client,
+                                 Some(owner), redirectUri, scope, state)
                  ))
               case _ => ServiceResponse(
-                login(RequestBundle(req, responseTypes, client, None, redirectUri, scope, state)))
+                login(RequestBundle(req, responseTypes,
+                                    client, None, redirectUri,
+                                    scope, state)))
             }
 
           }
         case _ => ServiceResponse(invalidClient)
       }
 
-    case ImplicitAuthorizationRequest(req, responseTypes, clientId, redirectUri, scope, state) =>
+    case ImplicitAuthorizationRequest(req, responseTypes, clientId,
+                                      redirectUri, scope, state) =>
       client(clientId, None) match {
         case Some(c) =>
           if(!validRedirectUri(redirectUri, c)) ServiceResponse(
@@ -69,18 +80,23 @@ trait AuthorizationServer {
           else {
             resourceOwner(req) match {
               case Some(owner) =>
-                if(denied(req)) ErrorResponse(AccessDenied, "user denied request", None, state)
+                if(denied(req)) ErrorResponse(AccessDenied,
+                                              "user denied request",
+                                              state = state)
                 else if(accepted(req)) {
-                  val t = generateImplicitAccessToken(responseTypes, owner, c, scope, redirectUri)
+                  val t = generateImplicitAccessToken(responseTypes, owner,
+                                                      c, scope, redirectUri)
                   ImplicitAccessTokenResponse(
                     t.value, t.tokenType, t.expiresIn, scope, state, t.extras
                   )
                 }
                 else ServiceResponse(requestAuthorization(
-                  RequestBundle(req, responseTypes, c, Some(owner), redirectUri, scope, state)
+                  RequestBundle(req, responseTypes, c, Some(owner),
+                                redirectUri, scope, state)
                 ))
              case _ => ServiceResponse(login(
-               RequestBundle(req, responseTypes, c, None, redirectUri, scope, state)
+               RequestBundle(req, responseTypes, c, None,
+                             redirectUri, scope, state)
              ))
             }
           }

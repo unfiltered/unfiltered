@@ -21,7 +21,10 @@ Netty provides a simple solution for cases like this: its
 caveat is that the full message is necessarily loaded into memory, and
 it could be arbitrarily large. The interface therefore requires you to
 chose a limit for the aggregated message size; any chunked request
-that exceeds this limit will raise a TooLongFrameException.
+that exceeds this limit will raise a TooLongFrameException. (For
+general file upload support, see the [netty-uploads module][uploads].)
+
+[uploads]: https://github.com/unfiltered/unfiltered/blob/master/netty-uploads/README.md
 
 Unfiltered's Netty server-builder provides a convenient `chunked`
 interface for adding aggregating handlers to your pipeline:

@@ -1,14 +1,14 @@
 ## OAuth2
 
-An [OAuth 2][oauth2] server implementation based on draft [version 22][version22]
+An [OAuth 2][oauth2] server implementation based on draft [this draft][draft]
 
 ## Usage
 
 OAuth 2 splits [OAuth 1][oauth1]'s Provider model into two key abstractions: an `AuthorizationServer` and a `ResourceServer`.
 
-The **AuthorizationServer** is responsible for responding to client requests to obtain an access grant.
+The **AuthorizationServer** is responsible for responding to client requests to obtain an `access grant`.
 
-The **ResourceServer** is responsible for responding to authorized client requests to access protected resources.
+The **ResourceServer** is responsible for responding to "authorized" client requests to access protected resources.
 
 At a high level, your application configuration may looks something like the following
 
@@ -179,5 +179,5 @@ valided against one registered by a client. This implementation implements a sim
 Try spliting plan cases into named Intent objects
 
 [oauth2]: http://oauth.net/2/
-[version22]: http://tools.ietf.org/html/draft-ietf-oauth-v2-22
+[draft]: http://tools.ietf.org/html/draft-ietf-oauth-v2-22
 [oauth1]: http://tools.ietf.org/html/rfc5849

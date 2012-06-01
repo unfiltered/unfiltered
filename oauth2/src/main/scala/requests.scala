@@ -9,11 +9,6 @@ import unfiltered.request.{HttpRequest => Req}
 sealed trait AuthorizationRequest
 
 /**
- * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.3
- */
-sealed trait AccessRequest
-
-/**
  * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.1
  * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-2.3
  * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-3.1.2
@@ -41,6 +36,7 @@ case class ImplicitAuthorizationRequest[T](
   state: Option[String]
 ) extends AuthorizationRequest
 
+/** A type of request where response type is ambiguous */
 case class IndeterminateAuthorizationRequest[T](
   req: Req[T],
   responseTypes: Seq[String],
@@ -49,6 +45,11 @@ case class IndeterminateAuthorizationRequest[T](
   scope: Seq[String],
   state: Option[String]
 ) extends AuthorizationRequest
+
+/**
+ * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.3
+ */
+sealed trait AccessRequest
 
 /**
  * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.3

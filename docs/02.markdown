@@ -79,10 +79,10 @@ When you want to combine intents within a single plan, use `onPass`:
 
 ```scala
 object MyPlan extends unfiltered.filter.Plan {
-  def intent = public.onPass(private)
+  def intent = publicIntent.onPass(privateIntent)
 
-  val public = unfiltered.filter.Intent { ... }
-  val private = unfiltered.filter.Intent { ... }
+  val publicIntent = unfiltered.filter.Intent { ... }
+  val privateIntent = unfiltered.filter.Intent { ... }
 }
 ```
 

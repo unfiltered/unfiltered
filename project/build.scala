@@ -9,10 +9,9 @@ object Shared {
   val continuation = "org.eclipse.jetty" % "jetty-continuation" % jettyVersion % "compile"
 
   def specsDep(sv: String) =
-    sv.split('.').toList match {
+    sv.split("[.-]").toList match {
       case "2" :: "8" :: _ => "org.scala-tools.testing" % "specs_2.8.1" % "1.6.8"
-      case "2" :: "9" :: "1" :: _ => "org.scala-tools.testing" % "specs_2.9.1" % "1.6.9"
-      case "2" :: "9" :: _ => "org.scala-tools.testing" %% "specs" % "1.6.8"
+      case "2" :: "9" :: _ => "org.scala-tools.testing" % "specs_2.9.1" % "1.6.9"
       case _ => sys.error("specs not supported for scala version %s" format sv)
     }
 
@@ -38,9 +37,9 @@ object Unfiltered extends Build {
     ls.Plugin.lsSettings ++
     Seq(
     organization := "net.databinder",
-    version := "0.6.2-SNAPSHOT",
+    version := "0.6.2",
     crossScalaVersions := Seq("2.8.0", "2.8.1", "2.8.2",
-                              "2.9.0", "2.9.0-1", "2.9.1", "2.9.1-1"),
+                              "2.9.0", "2.9.0-1", "2.9.1", "2.9.1-1", "2.9.2"),
     scalaVersion := "2.8.2",
     publishTo := Some("Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"),
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
@@ -98,7 +97,8 @@ object Unfiltered extends Build {
               name := "Unfiltered",
               LsKeys.skipWrite := true
             )) aggregate(
-            library, filters, filtersAsync , uploads, util, jetty,
+            library, filters, filtersAsync , uploads, filterUploads,
+            nettyUploads, util, jetty,
             jettyAjpProject, netty, nettyServer, json, specHelpers,
             scalaTestHelpers, websockets, oauth,  mac,
             oauth2, agents)
@@ -165,15 +165,27 @@ object Unfiltered extends Build {
       srcPath = "unfiltered/request",
       settings = Seq(
         description :=
-          "Support for multi-part uploads for servlet filters",
+          "Generic support for multi-part uploads",
         unmanagedClasspath in (local("uploads"), Test) <++=
           (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion(v => Seq(
+          "commons-io" % "commons-io" % "1.4"
+        ) ++ integrationTestDeps(v))
+       )) dependsOn(library)
+
+  lazy val filterUploads =
+    module("filter-uploads")(
+      srcPath = "unfiltered/request",
+      settings = Seq(
+        description :=
+          "Support for multi-part uploads for servlet filters",
+        unmanagedClasspath in (local("filter-uploads"), Test) <++=
+          (fullClasspath in (local("spec"), Compile)),
+        libraryDependencies <++= scalaVersion(v => Seq(
           servletApiDep,
-          "commons-io" % "commons-io" % "1.4",
           "commons-fileupload" % "commons-fileupload" % "1.2.1"
         ) ++ integrationTestDeps(v))
-       )) dependsOn(filters)
+      )) dependsOn(uploads, filters)
 
   lazy val util = module("util")(
     settings = Seq(
@@ -220,7 +232,7 @@ object Unfiltered extends Build {
         unmanagedClasspath in (local("netty"), Test) <++=
           (fullClasspath in (local("spec"), Compile)),
         libraryDependencies <++= scalaVersion(v =>
-          ("io.netty" % "netty" % "3.3.1.Final" withSources()) +:
+          ("io.netty" % "netty" % "3.4.4.Final" withSources()) +:
           integrationTestDeps(v)
         )
       )) dependsOn(library)
@@ -259,8 +271,12 @@ object Unfiltered extends Build {
            fullClasspath in (local("filter"), Compile)) map { (s, f) =>
              s ++ f
           },
-        libraryDependencies <++= scalaVersion(
-          Seq("net.liftweb" %% "lift-json" % "2.4") ++ integrationTestDeps(_))
+        libraryDependencies <++= scalaVersion( sv =>
+          Seq(sv.split("[.-]").toList match {
+            case "2" :: "9" :: _ =>
+              "net.liftweb" % "lift-json_2.9.1" % "2.4"
+            case _ => "net.liftweb" %% "lift-json" % "2.4"
+          }) ++ integrationTestDeps(sv))
       )) dependsOn(library)
 
   lazy val websockets =
@@ -310,4 +326,17 @@ object Unfiltered extends Build {
         libraryDependencies <++= scalaVersion(v =>
           Seq(dispatchOAuthDep) ++ integrationTestDeps(v))
       )) dependsOn(jetty, filters, mac)
+      
+  lazy val nettyUploads =
+    module("netty-uploads")(
+      settings = Seq(
+        description :=
+          "Uploads plan support using Netty",
+        unmanagedClasspath in (local("netty-uploads"), Test) <++=
+          (fullClasspath in (local("spec"), Compile)),
+        libraryDependencies <++= scalaVersion(v =>
+          integrationTestDeps(v)
+        ),
+        scalacOptions ++= Seq("-deprecation", "-unchecked")
+      )) dependsOn(nettyServer, uploads)
 }

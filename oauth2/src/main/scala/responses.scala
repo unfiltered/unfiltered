@@ -94,16 +94,20 @@ case class ServiceResponse[T](
 case class ErrorResponse(
   error: String,
   desc: String,
-  uri: Option[String],
-  state: Option[String]
+  uri: Option[String] = None,
+  state: Option[String] = None
 ) extends AuthorizationResponse with AccessResponse
 
 
 trait Formatting {
   import java.net.URLEncoder
-  def qstr(kvs: Iterable[(String, String)]) =
-    kvs map { _ match { case (k, v) => URLEncoder.encode(k, "utf-8") + "=" + URLEncoder.encode(v, "utf-8") } } mkString("&")
 
+  private def enc(s: String) = URLEncoder.encode(s, "utf-8")
+
+  def qstr(kvs: Iterable[(String, String)]) =
+    kvs map { _ match { case (k, v) => "%s=%s" format(enc(k), enc(v)) } } mkString("&")
+
+  // todo: use an actual json encoder
   def Json(kvs: Iterable[(String, String)]) =
     unfiltered.response.ResponseString(kvs map { _ match { case (k, v) => "\"%s\":\"%s\"".format(k,v) } } mkString(
       "{",",","}"

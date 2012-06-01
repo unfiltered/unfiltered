@@ -152,11 +152,14 @@ class HouseKeepingChannelHandler(channels: ChannelGroup) extends SimpleChannelUp
 class NotFoundHandler extends SimpleChannelUpstreamHandler {
   import org.jboss.netty.channel.ChannelFutureListener
   import org.jboss.netty.handler.codec.http.{
-    DefaultHttpRequest, DefaultHttpResponse, HttpResponseStatus
+    DefaultHttpRequest, DefaultHttpResponse, HttpResponseStatus, HttpChunk, HttpVersion
   }
 
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
-    val version = e.getMessage().asInstanceOf[DefaultHttpRequest].getProtocolVersion
+    val version = e.getMessage() match {
+      case req: DefaultHttpRequest => req.getProtocolVersion
+      case msg => error("Unexpected message type from upstream: %s".format(msg))
+    }
     val response = new DefaultHttpResponse(version, HttpResponseStatus.NOT_FOUND)
     val future = e.getChannel.write(response)
 

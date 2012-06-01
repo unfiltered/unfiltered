@@ -35,9 +35,8 @@ extends HttpRequest(msg) with Async.Responder[NHttpResponse] {
     case _ => Map.empty[String,Seq[String]]
   }
 
-  private def charset = this match {
-    case Charset(cs, _) => cs
-    case _ => HttpConfig.DEFAULT_CHARSET
+  private def charset = Charset(this).getOrElse {
+    HttpConfig.DEFAULT_CHARSET
   }
   lazy val inputStream = new ChannelBufferInputStream(req.getContent)
   lazy val reader = {
@@ -54,7 +53,7 @@ extends HttpRequest(msg) with Async.Responder[NHttpResponse] {
   def uri = req.getUri
 
   def parameterNames = params.keySet.iterator
-  def parameterValues(param: String) = params(param)
+  def parameterValues(param: String) = params.getOrElse(param, Seq.empty)
   def headers(name: String) = new JIteratorIterator(req.getHeaders(name).iterator)
 
   @deprecated("use the header extractor request.Cookies instead")
@@ -112,7 +111,7 @@ case class ReceivedMessage(
       }
       val future = event.getChannel.write(
         defaultResponse(
-          unfiltered.response.Server("Scala Netty Unfiltered Server") ~> 
+          unfiltered.response.Server("Scala Netty Unfiltered Server") ~>
             rf ~> closer
         )
       )

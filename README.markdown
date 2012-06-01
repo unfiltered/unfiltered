@@ -28,6 +28,10 @@ An embedded server that adheres to the ajp protocol.
 
 Binds the core library to a Netty channel handler and provides an embedded server.
 
+### netty-uploads
+
+Provides extractors for multipart posts using netty.
+
 ### spec
 
 Provides helpers for testing Intents with [specs](http://code.google.com/p/specs/).

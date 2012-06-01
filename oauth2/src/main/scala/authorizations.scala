@@ -11,10 +11,8 @@ object OAuthorization {
   val RedirectURI = "redirect_uri"
   val ClientId = "client_id"
   val ClientSecret = "client_secret"
-
   val Scope = "scope"
   val State = "state"
-
   val GrantType = "grant_type"
   val AuthorizationCode = "authorization_code"
   val PasswordType = "password"
@@ -27,6 +25,8 @@ object OAuthorization {
   val ResponseType = "response_type"
   val Code = "code"
   val TokenKey = "token"
+
+  // errors
 
   /**
    * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.2.1
@@ -79,6 +79,13 @@ trait DefaultValidationMessages extends ValidationMessages {
 /** Configured Authorization server module */
 case class OAuthorization(val auth: AuthorizationServer) extends Authorized
      with DefaultAuthorizationPaths with DefaultValidationMessages
+
+trait Spaces {
+  protected def spaceDecoder(raw: String) = raw.replace("""\s+"""," ").split(" ").toSeq
+
+  protected def spaceEncoder(scopes: Seq[String]) = scopes.mkString("+")
+
+}
 
 
 /** A composition of components which respond to authorization requests.

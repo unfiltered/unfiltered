@@ -19,3 +19,9 @@ project/plugins/project/
 .idea_modules/
 # OS X
 .DS_Store
+.ensime
+.classpath
+.project
+.settings
+.cache
+upload-test-out.txt

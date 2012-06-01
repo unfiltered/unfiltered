@@ -1,7 +1,8 @@
 package unfiltered.netty.async
 
 import org.jboss.netty.handler.codec.http.{HttpRequest=>NHttpRequest,
-                                           HttpResponse=>NHttpResponse}
+                                           HttpResponse=>NHttpResponse,
+                                           HttpChunk=>NHttpChunk}
 import org.jboss.netty.channel._
 import unfiltered.netty._
 import unfiltered.response._
@@ -28,14 +29,14 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
         req.underlying.context.sendUpstream(req.underlying.event) }
     )
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
-    val request = e.getMessage() match {
-      case req:NHttpRequest => req
+    e.getMessage() match {
+      case req:NHttpRequest => guardedIntent {
+        new RequestBinding(ReceivedMessage(req, ctx, e))
+      }
+      case chunk:NHttpChunk => ctx.sendUpstream(e)
       case msg => error("Unexpected message type from upstream: %s"
                         .format(msg))
     }
-    guardedIntent(
-      new RequestBinding(ReceivedMessage(request, ctx, e))
-    )
   }
 }
 
