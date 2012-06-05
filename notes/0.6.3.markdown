@@ -3,3 +3,9 @@
 * [Issue 128][128] Websocket encoder should follow specification with regards to payload length
 
 [128]: https://github.com/unfiltered/unfiltered/pull/128
+
+## Dependencies
+
+Updated Netty dependency to [3.4.6.Final][346]
+
+[346]: https://github.com/netty/netty/issues?milestone=17&state=closed
