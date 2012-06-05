@@ -1,0 +1,22 @@
+
+{
+ "organization":"net.databinder",
+ "name":"unfiltered-oauth",
+ "version":"0.6.3",
+ "description":"OAuth plans for servlet filters",
+ "site":"http://unfiltered.databinder.net/",
+ "tags":[],
+ "docs":"",
+ "licenses": [{
+   "name": "MIT",
+   "url": "http://www.opensource.org/licenses/MIT"
+  }],
+ "resolvers": ["https://oss.sonatype.org/content/repositories/releases"],
+ "dependencies": [{
+   "organization":"net.databinder",
+   "name": "dispatch-oauth",
+   "version": "0.8.8"
+  }],
+ "scalas": ["2.8.1","2.8.2","2.9.0-1","2.9.1","2.9.1-1","2.9.2"],
+ "sbt": false
+}

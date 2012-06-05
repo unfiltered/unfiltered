@@ -1,0 +1,26 @@
+
+{
+ "organization":"net.databinder",
+ "name":"unfiltered-filter-uploads",
+ "version":"0.6.3",
+ "description":"Support for multi-part uploads for servlet filters",
+ "site":"http://unfiltered.databinder.net/",
+ "tags":[],
+ "docs":"",
+ "licenses": [{
+   "name": "MIT",
+   "url": "http://www.opensource.org/licenses/MIT"
+  }],
+ "resolvers": ["https://oss.sonatype.org/content/repositories/releases"],
+ "dependencies": [{
+   "organization":"javax.servlet",
+   "name": "servlet-api",
+   "version": "2.3"
+  },{
+   "organization":"commons-fileupload",
+   "name": "commons-fileupload",
+   "version": "1.2.1"
+  }],
+ "scalas": ["2.8.1","2.8.2","2.9.0-1","2.9.1","2.9.1-1","2.9.2"],
+ "sbt": false
+}

@@ -1,0 +1,22 @@
+
+{
+ "organization":"net.databinder",
+ "name":"unfiltered-netty",
+ "version":"0.6.3",
+ "description":"Netty server binding module",
+ "site":"http://unfiltered.databinder.net/",
+ "tags":[],
+ "docs":"",
+ "licenses": [{
+   "name": "MIT",
+   "url": "http://www.opensource.org/licenses/MIT"
+  }],
+ "resolvers": ["https://oss.sonatype.org/content/repositories/releases"],
+ "dependencies": [{
+   "organization":"io.netty",
+   "name": "netty",
+   "version": "3.4.6.Final"
+  }],
+ "scalas": ["2.8.1","2.8.2","2.9.0-1","2.9.1","2.9.1-1","2.9.2"],
+ "sbt": false
+}

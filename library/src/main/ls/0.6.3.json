@@ -1,0 +1,22 @@
+
+{
+ "organization":"net.databinder",
+ "name":"unfiltered",
+ "version":"0.6.3",
+ "description":"Core library for describing requests and responses",
+ "site":"http://unfiltered.databinder.net/",
+ "tags":[],
+ "docs":"",
+ "licenses": [{
+   "name": "MIT",
+   "url": "http://www.opensource.org/licenses/MIT"
+  }],
+ "resolvers": ["https://oss.sonatype.org/content/repositories/releases"],
+ "dependencies": [{
+   "organization":"commons-codec",
+   "name": "commons-codec",
+   "version": "1.4"
+  }],
+ "scalas": ["2.8.1","2.8.2","2.9.0-1","2.9.1","2.9.1-1","2.9.2"],
+ "sbt": false
+}
