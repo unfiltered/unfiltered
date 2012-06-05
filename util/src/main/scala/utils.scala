@@ -40,9 +40,3 @@ object Of {
     def unapply(str: String) = allCatch.opt { str.toDouble }
   }
 }
-
-/** not supporting Scala 2.7 any more */
-@deprecated("use Option.apply") object Optional {
-  def apply[T](x: T) = if(x == null) None else Some(x)
-  def unapply[T](x: T) = apply(x)
-}
