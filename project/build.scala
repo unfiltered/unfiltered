@@ -14,6 +14,13 @@ object Shared {
       case _ => sys.error("specs not supported for scala version %s" format sv)
     }
 
+  def specs2Dep(sv: String) =
+    sv.split("[.-]").toList match {
+      case "2" :: "8" :: _ => "org.specs2" % "specs2_2.8.2" % "1.5"      
+      case "2" :: "9" :: _ => "org.specs2" % "specs_2.9.1" % "1.11"
+      case _ => sys.error("specs2 not supported for scala version %s" format sv)
+    }
+
   val dispatchVersion = "0.8.8"
   def dispatchDeps =
     "net.databinder" %% "dispatch-mime" % dispatchVersion ::
@@ -58,7 +65,7 @@ object Unfiltered extends Build {
     Project("unfiltered-all", file(".")).delegateTo(setup).aggregate(
             library, filters, filtersAsync , uploads, filterUploads,
             nettyUploads, util, jetty,
-            jettyAjpProject, netty, nettyServer, json, specHelpers,
+            jettyAjpProject, netty, nettyServer, json, specHelpers, specs2Helpers,  
             scalaTestHelpers, websockets, oauth, agents)
 
   lazy val library: Project =
@@ -101,6 +108,9 @@ object Unfiltered extends Build {
 
   lazy val specHelpers =
     module("spec")().dependsOn(filters, jetty, nettyServer)
+
+  lazy val specs2Helpers =
+    module("specs2")().dependsOn(filters, jetty, nettyServer)
 
   lazy val scalaTestHelpers =
     module("scalatest")().dependsOn(jetty, nettyServer)
