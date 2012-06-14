@@ -160,9 +160,9 @@ extends AbstractDiskExtractor[RequestBinding] with TupleGenerator {
 class StreamedFileWrapper(item: IOFileUpload)
 extends AbstractStreamedFile
   with unfiltered.request.io.FileIO {
-  import java.io.{ByteArrayInputStream => JByteArrayInputStream}
+  import java.io.{FileInputStream => JFileInputStream}
 
-  val bstm = new JByteArrayInputStream(item.get)
+  val bstm = new JFileInputStream(item.getFile)
 
   def write(out: JFile): Option[JFile] = allCatch.opt {
     stream { stm =>
