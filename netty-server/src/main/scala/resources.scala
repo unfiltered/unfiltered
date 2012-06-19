@@ -90,7 +90,7 @@ case class Resources(base: java.net.URL,
                 Date(Dates.format(new GregorianCalendar().getTime))
             )).addListener(ChannelFutureListener.CLOSE)
           case _ =>
-            if(file.isHidden || !file.exists) notFound(req)
+            if(!file.exists || file.isHidden) notFound(req)
             else if(!file.isFile) forbid(req)
             else try {
               val raf = new RandomAccessFile(file, "r")
