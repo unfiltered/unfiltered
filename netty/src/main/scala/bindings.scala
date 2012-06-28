@@ -1,4 +1,3 @@
-
 package unfiltered.netty
 
 import unfiltered.{JIteratorIterator,Async}
@@ -110,10 +109,7 @@ case class ReceivedMessage(
         }
       }
       val future = event.getChannel.write(
-        defaultResponse(
-          unfiltered.response.Server("Scala Netty Unfiltered Server") ~>
-            rf ~> closer
-        )
+        defaultResponse(rf ~> closer)
       )
       if (!keepAlive)
         future.addListener(ChannelFutureListener.CLOSE)
