@@ -73,9 +73,9 @@ case class Resources(base: java.net.URL,
 
   def intent = {
     case Retrieval(Path(path)) & req => safe(path.drop(1)) match {
-      case Some(file) =>
+      case Some(rsrc) =>
         IfModifiedSince(req) match {
-          case Some(since) if (since.getTime == file.lastModified) =>
+          case Some(since) if (since.getTime == rsrc.lastModified) =>
             // close immediately and do not include content-length header
             // http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
             req.underlying.event.getChannel.write(
@@ -84,17 +84,17 @@ case class Resources(base: java.net.URL,
                 Date(Dates.format(new GregorianCalendar().getTime))
             )).addListener(ChannelFutureListener.CLOSE)
           case _ =>
-            if (!file.exists || file.hidden) notFound(req)
-            else if (file.directory) forbid(req)
+            if (!rsrc.exists || rsrc.hidden) notFound(req)
+            else if (rsrc.directory) forbid(req)
             else try {
-              val len = file.length
+              val len = rsrc.size
               val cal = new GregorianCalendar()
               var heads = Ok ~> ContentLength(len.toString) ~>
                 // note: bin/text/charset not included
-                ContentType(Mimes(file.path)) ~>
+                ContentType(Mimes(rsrc.path)) ~>
                 Date(Dates.format(cal.getTime)) ~>
                 CacheControl("private, max-age=%d" format cacheSeconds) ~>
-                LastModified(Dates.format(file.lastModified))
+                LastModified(Dates.format(rsrc.lastModified))
 
               cal.add(Calendar.SECOND, cacheSeconds)
 
@@ -109,9 +109,9 @@ case class Resources(base: java.net.URL,
                 }
 
               if(GET.unapply(req).isDefined && chan.isOpen) {
-                file match {
+                rsrc match {
                   case FileSystemResource(_) =>
-                    val raf = new RandomAccessFile(file.path, "r")
+                    val raf = new RandomAccessFile(rsrc.path, "r")
                   if(req.isSecure)
                     chan.write(new ChunkedFile(
                       raf, 0, len, 8192/*ChunkedStream.DEFAULT_CHUNK_SIZE*/))
@@ -126,8 +126,8 @@ case class Resources(base: java.net.URL,
                     })
                     lastly(writeFile)
                   }
-                  case JarResource(_) =>
-                    chan.write(new ChunkedStream(file.in))
+                  case other =>
+                    chan.write(new ChunkedStream(other.in))
                 }
               } else lastly(writeHeaders)
             } catch {
@@ -139,7 +139,7 @@ case class Resources(base: java.net.URL,
     case req => badRequest(req)
   }
 
-  /** Converts a raw uri to a safe system file. Attempts to prevent
+  /** Converts a raw uri to a safe resource path. Attempts to prevent
    *  security holes where resources are accessed with .. paths
    *  potentially outside of the root of the web app
    */

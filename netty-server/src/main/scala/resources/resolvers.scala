@@ -27,7 +27,7 @@ trait Resource {
   def directory: Boolean
   def hidden: Boolean
   def path: String
-  def length: Long
+  def size: Long
   def exists: Boolean
   def in: InputStream
 }
@@ -38,7 +38,7 @@ case class FileSystemResource(f: File) extends Resource {
   def hidden = f.isHidden
   def exists = f.exists
   def path = f.getCanonicalPath
-  def length = f.length
+  def size = f.length
   def in = new FileInputStream(f)
 }
 
@@ -69,7 +69,7 @@ case class JarResource(url: URL) extends Resource {
                      .getOrElse(-1L)
   }
   
-  lazy val length =
+  lazy val size =
     if (exists && !directory) entry.get.getSize
     else -1
 
