@@ -1,0 +1,5 @@
+## Fixes
+
+[Issue 131][131] Netty resource handler should now serve files from jars
+
+[131]: https://github.com/unfiltered/unfiltered/pull/128
