@@ -2,17 +2,17 @@
 
 ### Netty server
 
-[Issue 131][131] Netty resource handler should now serve files from jars
+- [Issue 131][131] Netty resource handler should now serve files from jars
 
 ### Netty websockets
 
-[Issue 45][45] Better way to handle exceptions in websocket plans
-[Issue 133][133] Updated netty websocket impl
-[Issue 109][109] Websocket unit tests
+- [Issue 45][45] Better way to handle exceptions in websocket plans
+- [Issue 133][133] Updated netty websocket impl
+- [Issue 109][109] Websocket unit tests
 
 ## Deprecations
 
-Prefer the usage of `unfiltered.netty.websockets` package object to `unfiltered.netty.websockets.Plan` companion object
+- Prefer the usage of `unfiltered.netty.websockets` package object to `unfiltered.netty.websockets.Plan` companion object
 
 ## Dependency changes
 
