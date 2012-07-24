@@ -22,7 +22,7 @@ case class Https(port: Int, host: String) extends Server with Ssl {
   * For added trust store support, mix in the Trusted trait */
 trait Ssl { self: Server =>
   import org.eclipse.jetty.server.ssl.SslSocketConnector
-  import org.eclipse.jetty.http.ssl.SslContextFactory
+  import org.eclipse.jetty.util.ssl.SslContextFactory
 
   def tryProperty(name: String) = System.getProperty(name) match {
     case null => error("required system property not set %s" format name)
