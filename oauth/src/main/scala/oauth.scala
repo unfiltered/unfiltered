@@ -157,7 +157,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
       } yield {
         authorize(token.get, request) match {
           case Failure(code, msg) => fail(code, msg)
-          case HostResponse(resp) => Ok ~> resp
+          case HostResponse(resp) => Ok ~> (resp.asInstanceOf[ResponseFunction[Any]])
           case AuthorizeResponse(callback, token, verifier) => callback match {
             case OAuth.Oob => users.oobResponse(verifier)
             case _ => Redirect("%s%soauth_token=%s&oauth_verifier=%s" format(
