@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.jboss.netty.util.internal.CaseIgnoringComparator;
 
 /**
  * Provides the constants for the standard HTTP header names and values and

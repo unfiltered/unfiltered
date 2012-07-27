@@ -28,7 +28,7 @@ import org.jboss.netty.buffer.ChannelBuffers;
 public class MemoryAttribute extends AbstractMemoryHttpData implements Attribute {
 
     public MemoryAttribute(String name) {
-        super(name, HttpCodecUtil.DEFAULT_CHARSET, 0);
+        super(name, HttpConstants.DEFAULT_CHARSET, 0);
     }
     /**
      *
@@ -39,7 +39,7 @@ public class MemoryAttribute extends AbstractMemoryHttpData implements Attribute
      * @throws IOException
      */
     public MemoryAttribute(String name, String value) throws IOException {
-        super(name, HttpCodecUtil.DEFAULT_CHARSET, 0); // Attribute have no default size
+        super(name, HttpConstants.DEFAULT_CHARSET, 0); // Attribute have no default size
         setValue(value);
     }
 

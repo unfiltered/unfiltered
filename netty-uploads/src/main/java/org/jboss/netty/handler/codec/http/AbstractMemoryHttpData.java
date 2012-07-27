@@ -147,7 +147,7 @@ public abstract class AbstractMemoryHttpData extends AbstractHttpData {
 
     @Override
     public String getString() {
-        return getString(HttpCodecUtil.DEFAULT_CHARSET);
+        return getString(HttpConstants.DEFAULT_CHARSET);
     }
 
     @Override
@@ -156,7 +156,7 @@ public abstract class AbstractMemoryHttpData extends AbstractHttpData {
             return "";
         }
         if (encoding == null) {
-            return getString(HttpCodecUtil.DEFAULT_CHARSET);
+            return getString(HttpConstants.DEFAULT_CHARSET);
         }
         return channelBuffer.toString(encoding);
     }
