@@ -27,7 +27,7 @@ public abstract class AbstractHttpData implements HttpData {
     protected final String name;
     protected long definedSize;
     protected long size;
-    protected Charset charset = HttpCodecUtil.DEFAULT_CHARSET;
+    protected Charset charset = HttpConstants.DEFAULT_CHARSET;
     protected boolean completed;
 
     public AbstractHttpData(String name, Charset charset, long size) {

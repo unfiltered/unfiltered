@@ -1,5 +1,24 @@
 ## Fixes
 
-[Issue 131][131] Netty resource handler should now serve files from jars
+### Netty server
 
+- [Issue 131][131] Netty resource handler should now serve files from jars
+
+### Netty websockets
+
+- [Issue 45][45] Better way to handle exceptions in websocket plans
+- [Issue 133][133] Updated netty websocket impl
+- [Issue 109][109] Websocket unit tests
+
+## Deprecations
+
+- Prefer the usage of `unfiltered.netty.websockets` package object to `unfiltered.netty.websockets.Plan` companion object
+
+## Dependency changes
+
+Updaing netty from `3.4.6.Final` to `3.5.2.Final`
+
+[45]: https://github.com/unfiltered/unfiltered/issues/45
 [131]: https://github.com/unfiltered/unfiltered/pull/128
+[133]: https://github.com/unfiltered/unfiltered/issues/133
+[109]: https://github.com/unfiltered/unfiltered/issues/109

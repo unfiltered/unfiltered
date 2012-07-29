@@ -269,7 +269,7 @@ public abstract class AbstractDiskHttpData extends AbstractHttpData {
 
     @Override
     public String getString() throws IOException {
-        return getString(HttpCodecUtil.DEFAULT_CHARSET);
+        return getString(HttpConstants.DEFAULT_CHARSET);
     }
 
     @Override
@@ -279,7 +279,7 @@ public abstract class AbstractDiskHttpData extends AbstractHttpData {
         }
         if (encoding == null) {
             byte[] array = readFrom(file);
-            return new String(array, HttpCodecUtil.DEFAULT_CHARSET);
+            return new String(array, HttpConstants.DEFAULT_CHARSET);
         }
         byte[] array = readFrom(file);
         return new String(array, encoding);
