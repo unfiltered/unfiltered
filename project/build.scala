@@ -28,27 +28,36 @@ object Shared {
 
 object Unfiltered extends Build {
   import Shared._
+  import java.lang.{ Boolean => JBoolean }
 
   def id(name: String) = "unfiltered-%s" format name
 
   def local(name: String) = LocalProject(id(name))
 
-  def srcPathSetting(projectId: String, rootPkg: String) = {
+  def srcPathSetting(projectId: String, rootPkg: String) =
     mappings in (LocalProject(projectId), Compile, packageSrc) ~= {
       defaults: Seq[(File,String)] =>
         defaults.map { case(file, path) =>
           (file, rootPkg + "/" + path)
         }
     }
-  }
 
+  private def ciSettings: Seq[Project.Setting[_]] = {
+    if (JBoolean.parseBoolean(
+      sys.env.getOrElse("TRAVIS", "false"))) Seq(
+      logLevel in Global := Level.Warn,
+      logLevel in Compile := Level.Warn,
+      logLevel in Test := Level.Info
+    ) else Seq.empty[Project.Setting[_]]
+  }
   private def module(moduleName: String)(
     projectId: String = "unfiltered-" + moduleName,
     dirName: String = moduleName,
     srcPath: String = "unfiltered/" + moduleName.replace("-","/")
   ) = Project(projectId, file(dirName),
               settings = (Defaults.defaultSettings ++
-                          ls.Plugin.lsSettings :+
+                          ls.Plugin.lsSettings ++
+                          ciSettings ++
                           srcPathSetting(projectId, srcPath)
             )).delegateTo(setup)
 
