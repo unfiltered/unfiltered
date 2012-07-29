@@ -11,7 +11,6 @@ trait Planned extends Served {
 
 trait Served extends unfiltered.spec.Hosted {
   shareVariables()
-
   import unfiltered.jetty._
   def setup: (Server => Server)
   lazy val server = setup(Http(port))

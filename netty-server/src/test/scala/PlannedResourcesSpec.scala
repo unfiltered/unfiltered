@@ -5,11 +5,11 @@ import org.specs._
 /** Tests a netty server configured with both a plan and a resource handler */
 object PlannedResourcesSpec extends unfiltered.spec.netty.Served {
    import dispatch._
-   import unfiltered.netty.{Http => NHttp}
 
-   def setup = _.resources(getClass().getResource("/files/")).handler(unfiltered.netty.cycle.Planify {
-     case _ => unfiltered.response.ResponseString("planned")
-   })
+   def setup = _.resources(getClass().getResource("/files/")).handler(
+     unfiltered.netty.cycle.Planify {
+       case _ => unfiltered.response.ResponseString("planned")
+     })
 
    "A server with resources and plans" should {
      "respond to a resources path" in {

@@ -136,7 +136,7 @@ object MixedPlanSpec extends Specification
     /** Cycle */
 
     "respond with 404 when posting to a non-existent url" in {
-      val http = new dispatch.Http
+      val http = new dispatch.Http with NoLogging
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       try {
@@ -170,7 +170,7 @@ object MixedPlanSpec extends Specification
     }
     
     "respond with a 404 when passing in a cycle plan with no matching intent" in {
-      val http = new dispatch.Http
+      val http = new dispatch.Http with NoLogging
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       try {
@@ -208,7 +208,7 @@ object MixedPlanSpec extends Specification
     }
 
     "respond with a 404 when passing in an async plan with no matching intent" in {
-      val http = new dispatch.Http
+      val http = new dispatch.Http with NoLogging
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       try {
