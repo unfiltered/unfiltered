@@ -54,7 +54,7 @@ object NoChunkAggregatorSpec extends Specification
     }
     
     "respond with a 500 when no chunk aggregator is used in a cycle plan" in {
-      val http = new dispatch.Http
+      val http = new dispatch.Http with NoLogging
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       try {
@@ -66,7 +66,7 @@ object NoChunkAggregatorSpec extends Specification
     }
 
     "respond with a 500 when no chunk aggregator is used in an async plan" in {
-      val http = new dispatch.Http
+      val http = new dispatch.Http with NoLogging
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       try {
