@@ -10,6 +10,10 @@
 - [Issue 133][133] Updated netty websocket impl
 - [Issue 109][109] Websocket unit tests
 
+### Netty / Netty uploads
+
+Prevent exception from being thrown in the netty NotFoundHandler when a MultiPartDecoder plan's initial request intent is not defined.
+
 ## Deprecations
 
 - Prefer the usage of `unfiltered.netty.websockets` package object to `unfiltered.netty.websockets.Plan` companion object
