@@ -8,15 +8,38 @@ object NoChunkAggregatorSpec extends Specification
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath, _}
   import unfiltered.netty
-  import unfiltered.netty.{Http => NHttp}
+  import unfiltered.netty.{Http => NHttp, ExceptionHandler}
+  import unfiltered.netty.cycle.ThreadPool
   import dispatch._
   import dispatch.mime.Mime._
   import java.io.{File => JFile}
 
+  trait ExpectedServerErrorResponse { self: ExceptionHandler =>
+    import org.jboss.netty.channel.{ChannelFutureListener, ChannelHandlerContext, ExceptionEvent}
+    import org.jboss.netty.handler.codec.http._
+    import org.jboss.netty.buffer.ChannelBuffers
+    def onException(ctx: ChannelHandlerContext, t: Throwable) {
+      println("here!")
+      val ch = ctx.getChannel
+      if (ch.isOpen) try {
+        println("expected exception occured: '%s'" format t.getMessage())
+        val res = new DefaultHttpResponse(
+          HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR)
+        res.setContent(ChannelBuffers.copiedBuffer(
+          "Internal Server Error".getBytes("utf-8")))
+        ch.write(res).addListener(ChannelFutureListener.CLOSE)
+      } catch {
+        case _ => ch.close()
+      }
+    }
+  }
+
   def setup = {
-    _.handler(netty.async.Planify({
-      case POST(UFPath("/async/upload")) => Pass
-    }))
+    _.handler(new netty.async.Plan with ExpectedServerErrorResponse {
+      def intent = {
+        case POST(UFPath("/async/upload")) => Pass
+      }
+    })
     .handler(netty.cycle.Planify({
       case POST(UFPath("/cycle/upload")) => Pass
     }))
@@ -26,24 +49,26 @@ object NoChunkAggregatorSpec extends Specification
     .handler(netty.async.MultiPartDecoder({
       case POST(UFPath("/async/upload") & MultiPart(req)) => netty.async.MultipartPlan.Pass
     }))
-    .handler(netty.async.Planify({
+    .handler(netty.async.Planify {
       case r@POST(UFPath("/async/upload") & MultiPart(req)) => 
         MultiPartParams.Disk(req).files("f") match {
-        case Seq(f, _*) => r.respond(ResponseString(
-          "disk read file f named %s with content type %s" format(
-            f.name, f.contentType)))
-        case f =>  r.respond(ResponseString("what's f?"))
+          case Seq(f, _*) => r.respond(ResponseString(
+            "disk read file f named %s with content type %s" format(
+              f.name, f.contentType)))
+          case f =>  r.respond(ResponseString("what's f?"))
+        }
+    })
+    .handler(new netty.cycle.Plan with ThreadPool with ExpectedServerErrorResponse {
+      def intent = {
+        case POST(UFPath("/cycle/upload") & MultiPart(req)) =>
+          MultiPartParams.Disk(req).files("f") match {
+            case Seq(f, _*) => ResponseString(
+              "disk read file f named %s with content type %s" format(
+                f.name, f.contentType))
+            case f => ResponseString("what's f?")
+          }
       }
-    }))
-    .handler(netty.cycle.Planify({
-      case POST(UFPath("/cycle/upload") & MultiPart(req)) => 
-        MultiPartParams.Disk(req).files("f") match {
-        case Seq(f, _*) => ResponseString(
-          "disk read file f named %s with content type %s" format(
-            f.name, f.contentType))
-        case f => ResponseString("what's f?")
-      }
-    }))
+    })
   }
 
   "When receiving multipart requests with no chunk aggregator, regular netty plans" should {
