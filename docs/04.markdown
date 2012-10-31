@@ -11,7 +11,7 @@ not generally co-dependent, so that if you are using for example
 unfiltered-jetty, you will also need to specify unfiltered-filter.
 
 Each module is [cross-built][sbt] against several versions of Scala
-and published to the [scala-tools][st] repository with the
+and published to the [sonatype][sonatype] repository with the
 organization-id "net.databinder". The modules have the Scala version
 they are built against appended. For Scala $scala$, the full artifact
 names are as follows:
@@ -31,8 +31,8 @@ names are as follows:
 * unfiltered-json_$scala$
 * unfiltered-oauth_$scala$
 
-[st]: http://scala-tools.org/repo-releases/net/databinder/
-[sbt]: http://code.google.com/p/simple-build-tool/wiki/CrossBuild
+[sonatype]: https://oss.sonatype.org/content/repositories/releases/net/databinder/
+[sbt]: http://www.scala-sbt.org/release/docs/Detailed-Topics/Cross-Build.html
 
 ### Source Dependencies
 
