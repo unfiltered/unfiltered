@@ -6,7 +6,7 @@ import org.jboss.netty.bootstrap.ServerBootstrap
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
 import java.net.InetSocketAddress
 import org.jboss.netty.handler.codec.http.{
-  HttpRequestDecoder, HttpResponseEncoder, HttpChunkAggregator}
+  HttpRequestDecoder, HttpResponseEncoder, HttpChunkAggregator, HttpChunk=>NHttpChunk}
 import org.jboss.netty.handler.stream.ChunkedWriteHandler
 import org.jboss.netty.channel._
 import group.{ChannelGroup, DefaultChannelGroup}
@@ -156,13 +156,14 @@ class NotFoundHandler extends SimpleChannelUpstreamHandler {
   }
 
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
-    val version = e.getMessage() match {
-      case req: DefaultHttpRequest => req.getProtocolVersion
+    (e.getMessage() match {
+      case req: DefaultHttpRequest => Some(req.getProtocolVersion)
+      case chunk:NHttpChunk => None
       case msg => error("Unexpected message type from upstream: %s".format(msg))
-    }
-    val response = new DefaultHttpResponse(version, HttpResponseStatus.NOT_FOUND)
-    val future = e.getChannel.write(response)
-
-    future.addListener(ChannelFutureListener.CLOSE)
+    }).map { v =>
+      val response = new DefaultHttpResponse(v, HttpResponseStatus.NOT_FOUND)
+      val future = e.getChannel.write(response)
+      future.addListener(ChannelFutureListener.CLOSE)
+    }.getOrElse(ctx.sendUpstream(e))
   }
 }

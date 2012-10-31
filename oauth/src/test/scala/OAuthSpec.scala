@@ -59,17 +59,13 @@ object OAuthSpec extends Specification with unfiltered.spec.jetty.Served {
     "authorize a valid consumer's request using a HMAC-SHA1 signature with oob workflow" in {
       val payload = Map("identité" -> "caché", "identity" -> "hidden", "アイデンティティー" -> "秘密",
         "pita" -> "-._~*")
-      println("OAuthSpec consumer -> %s" format consumer)
       val request_token = http(host.POST / "oauth" / "requests" << payload <@(consumer, OAuth.oob) as_token)
-      println("OAuthSpec request_token -> %s" format request_token)
       val VerifierRE = """<p id="verifier">(.+)</p>""".r
       val verifier = http(host / "oauth" / "auth" with_token request_token as_str) match {
         case VerifierRE(v) => v
         case _ => "?"
       }
-      println("OAuthSpec verifier -> %s" format verifier)
       val access_token = http(host.POST / "oauth" / "access" <@ (consumer, request_token, verifier) as_token)
-      println("OAuthSpec access_token -> %s" format access_token)
       val user = http(host / "user" <@(consumer, access_token, verifier) as_str)
       user must_=="test_user"
     }

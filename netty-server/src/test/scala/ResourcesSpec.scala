@@ -5,14 +5,6 @@ import org.specs._
 /** Tests a netty server configured to handle static resources only */
 object ResourcesSpec extends unfiltered.spec.netty.Served {
    import dispatch._
-   import unfiltered.netty.{Http => NHttp}
-
-   // todo: roll this into the base spec helper
-   def xhttp[T](handler: dispatch.Handler[T]): T  = {
-     val h = new Http
-     try { h.x(handler) }
-     finally { h.shutdown() }
-   }
 
    implicit def toStatusVerb(req: dispatch.Request) = new {
      def statuscode = dispatch.Handler(req, {
@@ -23,18 +15,18 @@ object ResourcesSpec extends unfiltered.spec.netty.Served {
    def setup = _.resources(getClass().getResource("/files/"), passOnFail = false)
    "A resource server" should {
      "respond with a valid file" in {
-       http(host / "foo.css" as_str) must_==("* { margin:0; }")
+       xhttp(host / "foo.css" as_str) must_==("* { margin:0; }")
      }
      "respond with an expected Content-Type" in {
        def mustHaveType(path: String, `type`: String) =
-         http(host / path >:> { h => h }) must havePair(("Content-Type", Set(`type`)))
+         xhttp(host / path >:> { h => h }) must havePair(("Content-Type", Set(`type`)))
        mustHaveType("foo.html", "text/html")
        mustHaveType("foo.css", "text/css")
        mustHaveType("foo.txt", "text/plain")
        mustHaveType("foo.js", "application/javascript")
      }
      "respond with useful headers" in {
-       val headers = http(host / "foo.css" >:> { h => h })
+       val headers = xhttp(host / "foo.css" >:> { h => h })
        headers must haveKey("Date")
        headers must haveKey("Expires")
        headers must haveKey("Last-Modified")

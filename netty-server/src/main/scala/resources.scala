@@ -152,7 +152,7 @@ case class Resources(base: java.net.URL,
              p.startsWith(".") ||
              p.endsWith(".")) => None
         case path =>
-          Resolve(new URL(base, path))
+          Resolve(new URL(base, decoded))
       }
     }
 

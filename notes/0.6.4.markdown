@@ -3,12 +3,25 @@
 ### Netty server
 
 - [Issue 131][131] Netty resource handler should now serve files from jars
+- [Issue 132][132] Default "Server" header is set and difficult to override
+
+[132]: https://github.com/unfiltered/unfiltered/issues/132
 
 ### Netty websockets
 
 - [Issue 45][45] Better way to handle exceptions in websocket plans
 - [Issue 133][133] Updated netty websocket impl
 - [Issue 109][109] Websocket unit tests
+
+### Netty / Netty uploads
+
+- Prevent exception from being thrown in the netty NotFoundHandler
+  when a MultiPartDecoder plan's initial request intent is not
+  defined.
+
+- [Pull 130][130] Reduced memory usage when uploading a file with netty-uploads
+
+[130]: https://github.com/unfiltered/unfiltered/pull/130
 
 ## Deprecations
 

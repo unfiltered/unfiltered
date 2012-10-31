@@ -34,7 +34,7 @@ object WebSocketPlanSpec extends unfiltered.spec.netty.Served {
           m += ("rec" -> t)
           l.countDown
       }
-      l.await(2, TimeUnit.MILLISECONDS)
+      l.await(4, TimeUnit.MILLISECONDS)
       m must havePair(("rec", "open"))
     }
 
@@ -49,7 +49,7 @@ object WebSocketPlanSpec extends unfiltered.spec.netty.Served {
           m += ("rec" -> t)
           l.countDown
       }
-      l.await(2, TimeUnit.MILLISECONDS)
+      l.await(4, TimeUnit.MILLISECONDS)
       m must havePair(("rec", "from client"))
     }
   }
