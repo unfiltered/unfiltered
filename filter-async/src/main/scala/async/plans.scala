@@ -9,6 +9,7 @@ import unfiltered.request.HttpRequest
 import javax.servlet.{Filter, FilterConfig, FilterChain, ServletRequest, ServletResponse}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import unfiltered.Async
+import Planify._
 
 object Plan {
  
@@ -31,6 +32,8 @@ trait Plan extends unfiltered.filter.InittedFilter {
   
   def intent: Plan.Intent
 
+  def asyncRequestTimeoutMillis: Long = DEFAULT_ASYNC_REQUEST_TIMEOUT_MILLIS
+
   def doFilter(request: ServletRequest,
                         response: ServletResponse,
                         chain: FilterChain) {
@@ -39,6 +42,7 @@ trait Plan extends unfiltered.filter.InittedFilter {
        response.asInstanceOf[HttpServletResponse].setStatus(408)
        chain.doFilter(request,response)
    } else {
+     continuation.setTimeout(asyncRequestTimeoutMillis)
      continuation.suspend()
      (request, response) match {
        case (hreq: HttpServletRequest, hres: HttpServletResponse) =>
@@ -58,8 +62,12 @@ trait Plan extends unfiltered.filter.InittedFilter {
  }
 }
 
-class Planify(val intent: Plan.Intent) extends Plan
+class Planify(val intent: Plan.Intent, 
+  override val asyncRequestTimeoutMillis: Long = DEFAULT_ASYNC_REQUEST_TIMEOUT_MILLIS) extends Plan
 
 object Planify {
-  def apply(intent: Plan.Intent) = new Planify(intent)
+  val DEFAULT_ASYNC_REQUEST_TIMEOUT_MILLIS = 30000L
+  def apply(intent: Plan.Intent): Planify = new Planify(intent)
+  def apply(intent: Plan.Intent, asyncRequestTimeoutMillis: Long): Planify = 
+    new Planify(intent, asyncRequestTimeoutMillis)
 }
