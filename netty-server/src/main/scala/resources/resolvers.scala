@@ -13,7 +13,7 @@ object Resolve {
   }
   val FsResolver: Resolver = {
     case fs if (fs.startsWith("file:")) =>
-      { u => Some(FileSystemResource(new File(u.getFile))) }
+      { u => Some(FileSystemResource(new File(u.toURI))) }
   }
   val DefaultResolver = FsResolver orElse JarResolver orElse ({
     case _ => { u => None }
