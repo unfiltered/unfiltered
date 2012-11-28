@@ -22,6 +22,7 @@ trait BasicAuthSpec extends unfiltered.spec.Hosted {
       case ("test", "secret") => ResponseString("pass")
       case _ => ResponseString("fail")
     }
+    case _ => ResponseString("not found")
   }
 
   "Basic Auth" should {
@@ -33,6 +34,10 @@ trait BasicAuthSpec extends unfiltered.spec.Hosted {
     "not authenticate an invalid user" in {
       val resp = http(host / "secret" as_!("joe", "shmo") as_str)
       resp must_=="fail"
+    }
+    "not authenticate an empty Authorization header" in {
+      val resp = http(host / "secret" <:< Map("Authorization" -> "") as_str)
+      resp must_=="not found"
     }
   }
 }
