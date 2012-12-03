@@ -1,6 +1,6 @@
 # Unfiltered OAuth
 
-A implementation of an [OAuth](http://oauth.net/) [final 1.0 version][oauth_1_0] Provider for [Unfiltered](http://github.com/n8han/unfiltered#readme) servers.
+A implementation of an [OAuth](http://oauth.net/) [final 1.0 version][oauth_1_0] Provider for [Unfiltered](http://github.com/unfiltered/unfiltered#readme) servers.
 
 ## Usage
 
