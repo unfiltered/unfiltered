@@ -1,5 +1,7 @@
 package unfiltered.oauth2
 
+import unfiltered.request.HttpRequest
+
 trait AuthorizationProvider { val auth: AuthorizationServer }
 
 object AuthorizationServer {
@@ -15,7 +17,7 @@ trait AuthorizationServer {
   import OAuthorization._
   import AuthorizationServer._
 
-  def mismatchedRedirectUri = invalidRedirectUri(None, None)
+  def mismatchedRedirectUri[T](req: HttpRequest[T]) = invalidRedirectUri(req, None, None)
 
   /** todo: rectify this design */
   def errUri(error: String) = errorUri(error)
@@ -37,7 +39,7 @@ trait AuthorizationServer {
       client(clientId, None) match {
         case Some(client) =>
           if(!validRedirectUri(redirectUri, client)) ServiceResponse(
-            invalidRedirectUri(Some(redirectUri), Some(client))
+            invalidRedirectUri(req, Some(redirectUri), Some(client))
           ) else if(!validScopes(scope)) {
             ErrorResponse(InvalidScope, "invalid scope",
                           errorUri(InvalidScope), state)
@@ -67,7 +69,7 @@ trait AuthorizationServer {
             }
 
           }
-        case _ => ServiceResponse(invalidClient)
+        case _ => ServiceResponse(invalidClient(req))
       }
 
     case ImplicitAuthorizationRequest(req, responseTypes, clientId,
@@ -75,7 +77,7 @@ trait AuthorizationServer {
       client(clientId, None) match {
         case Some(c) =>
           if(!validRedirectUri(redirectUri, c)) ServiceResponse(
-            invalidRedirectUri(Some(redirectUri), Some(c))
+            invalidRedirectUri(req, Some(redirectUri), Some(c))
           )
           else {
             resourceOwner(req) match {
@@ -100,7 +102,7 @@ trait AuthorizationServer {
              ))
             }
           }
-        case _ => ServiceResponse(invalidClient)
+        case _ => ServiceResponse(invalidClient(req))
       }
 
     case IndeterminateAuthorizationRequest(
@@ -108,12 +110,12 @@ trait AuthorizationServer {
         client(clientId, None) match {
           case Some(c) =>
             if(!validRedirectUri(redirectUri, c)) ServiceResponse(
-              invalidRedirectUri(Some(redirectUri), Some(c))
+              invalidRedirectUri(req, Some(redirectUri), Some(c))
             )
             else ErrorResponse(
               UnsupportedResponseType, "unsupported response type(s) %s" format responseTypes,
               errorUri(UnsupportedResponseType), state)
-          case _ => ServiceResponse(invalidClient)
+          case _ => ServiceResponse(invalidClient(req))
         }
   }
 

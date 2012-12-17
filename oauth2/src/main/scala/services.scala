@@ -31,12 +31,12 @@ trait ServiceResponses {
 
   /** @return a function that provides a user notification that a provided redirect
    *          uri was invalid or not present */
-  def invalidRedirectUri(uri: Option[String], client: Option[Client]): ResponseFunction[Any]
+  def invalidRedirectUri[T](req: Req[T], uri: Option[String], client: Option[Client]): ResponseFunction[Any]
 
 
 
   /** @return a function that provides a user notification that a request was made with an invalid client */
-  def invalidClient: ResponseFunction[Any]
+  def invalidClient[T](req: Req[T]): ResponseFunction[Any]
 }
 
 trait Service extends ServiceResponses {

@@ -73,11 +73,11 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
       Ok
     }
 
-    def invalidRedirectUri(uri: Option[String], client: Option[Client]) = {
+    def invalidRedirectUri[T](req: HttpRequest[T], uri: Option[String], client: Option[Client]) = {
       ResponseString("missing or invalid redirect_uri")
     }
 
-    def invalidClient = ResponseString("invalid client")
+    def invalidClient[T](req: HttpRequest[T]) = ResponseString("invalid client")
 
     def resourceOwner[T](r: Req[T]): Option[ResourceOwner] = {
       // would normally look for a resource owners session here

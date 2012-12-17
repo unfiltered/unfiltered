@@ -289,7 +289,7 @@ trait Authorized extends AuthorizationProvider
                  ))
               case _ => Redirect(uri ? qs)
             }
-          case _ => auth.mismatchedRedirectUri
+          case _ => auth.mismatchedRedirectUri(req)
         }
       }
 
