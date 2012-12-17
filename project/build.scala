@@ -158,5 +158,5 @@ object Unfiltered extends Build {
       )) dependsOn(jetty, filters, mac)
 */
 
-    module("netty-uploads")().dependsOn(nettyServer, uploads)
+    lazy val nettyUploads = module("netty-uploads")().dependsOn(nettyServer, uploads)
 }
