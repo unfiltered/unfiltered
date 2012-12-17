@@ -67,8 +67,7 @@ object Unfiltered extends Build {
   lazy val unfiltered =
     Project("unfiltered-all", file(".")).delegateTo(setup).aggregate(
             library, filters, filtersAsync , uploads, filterUploads,
-            //nettyUploads, 
-	    util, jetty,
+            nettyUploads, util, jetty,
             jettyAjpProject, netty, nettyServer, json, specHelpers,
             scalaTestHelpers, websockets, oauth,  mac,
             oauth2, agents)
