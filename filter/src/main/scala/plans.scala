@@ -42,8 +42,11 @@ trait Plan extends InittedFilter {
           (_: HttpRequest[HttpServletRequest]) =>
             chain.doFilter(request.underlying, response.underlying),
           (_: HttpRequest[HttpServletRequest], 
-           rf: ResponseFunction[HttpServletResponse]) =>
-            rf(response)
+           rf: ResponseFunction[HttpServletResponse]) => {
+            val res = rf(response)
+            res.outputStream.close()
+            res
+          }
         )(request)
      }
   }
