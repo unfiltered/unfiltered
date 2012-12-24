@@ -7,5 +7,5 @@ unmanagedClasspath in (local("agents"), Test) <++=
    }
 
 libraryDependencies <++= scalaVersion { v =>
-  Seq(Shared.servletApiDep) ++ Shared.integrationTestDeps(v)
+  Seq(Common.servletApiDep) ++ Common.integrationTestDeps(v)
 }

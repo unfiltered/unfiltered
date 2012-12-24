@@ -5,4 +5,4 @@ libraryDependencies <++= scalaVersion(v => Seq(v.split('.').toList match {
   case "2" :: "9" :: "1" :: _ => "org.scalatest" % "scalatest_2.9.1" % "1.6.1"
   case "2" :: "9" :: _ => "org.scalatest" % "scalatest_2.9.0-1" % "1.6.1"
   case _ => sys.error("ScalaTest not supported for scala version %s" format v)
-}) ++ Shared.dispatchDeps)
+}) ++ Common.dispatchDeps)

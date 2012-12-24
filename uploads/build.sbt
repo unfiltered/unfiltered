@@ -5,4 +5,4 @@ unmanagedClasspath in (local("uploads"), Test) <++=
 
 libraryDependencies <++= scalaVersion(v => Seq(
   "commons-io" % "commons-io" % "1.4"
-) ++ Shared.integrationTestDeps(v))
+) ++ Common.integrationTestDeps(v))

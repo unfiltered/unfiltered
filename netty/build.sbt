@@ -5,5 +5,5 @@ unmanagedClasspath in (local("netty"), Test) <++=
 
 libraryDependencies <++= scalaVersion(v =>
   ("io.netty" % "netty" % "3.5.3.Final" withSources()) +:
-  Shared.integrationTestDeps(v)
+  Common.integrationTestDeps(v)
 )

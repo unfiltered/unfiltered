@@ -4,7 +4,7 @@ unmanagedClasspath in (local("filter-async"), Test) <++=
   (fullClasspath in (local("spec"), Compile))
 
 libraryDependencies <++= scalaVersion { v => Seq(
-  Shared.servletApiDep,
-  "org.eclipse.jetty" % "jetty-continuation" % Shared.jettyVersion % "compile")
+  Common.servletApiDep,
+  "org.eclipse.jetty" % "jetty-continuation" % Common.jettyVersion % "compile")
 }
 

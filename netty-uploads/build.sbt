@@ -4,5 +4,5 @@ unmanagedClasspath in (local("netty-uploads"), Test) <++=
   (fullClasspath in (local("spec"), Compile))
 
 libraryDependencies <++= scalaVersion(v =>
-  Shared.integrationTestDeps(v)
+  Common.integrationTestDeps(v)
 )
