@@ -21,6 +21,7 @@ trait GZipSpec extends spec.Hosted {
   val message = "message"
 
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = unfiltered.kit.GZip {
+    case UFPath(Seg("empty" :: Nil)) => Ok
     case _ => ResponseString(message)
   }
 
@@ -30,6 +31,13 @@ trait GZipSpec extends spec.Hosted {
         (req as_str, req >:> { _("Content-Encoding") })
       })
       resp must_== message
+      enc must_== Set("gzip")
+    }
+    "gzip-encode an empty response when accepts header is present" in {
+      val (resp, enc) = http((host / "empty").gzip  >+ { req =>
+        (req as_str, req >:> { _("Content-Encoding") })
+      })
+      resp must_== ""
       enc must_== Set("gzip")
     }
     "serve unencoded response when accepts header is not present" in {
