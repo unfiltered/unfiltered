@@ -20,4 +20,5 @@ object BasicAuth {
     }
     case _ => None
   }
+  def apply[T](r: Req[T]) = unapply(r)
 }
