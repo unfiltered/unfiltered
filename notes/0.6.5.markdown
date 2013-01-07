@@ -1,10 +1,9 @@
-This release includes an oauth2 server module. See its
-[readme][oauth2] for more information.
+This release is built for Scala versions 2.8.1 through 2.10.0, and is
+the last release planned to support 2.8.x.
 
-[oauth2]: https://github.com/unfiltered/unfiltered/tree/master/oauth2
+#### Improvements
 
-#### Other Improvements
-
+* The [oauth2 server module][oauth2]!
 * Support for PATCH, LINK, UNLINK methods, [pull #138][138]
 * Fix for serving static files on Windows in netty-server module, [pull #140][140]
 * Allow overriding the default Jetty async request timeout, [pull #143][143]
@@ -12,6 +11,7 @@ This release includes an oauth2 server module. See its
 * If sent an empty auth header, basic auth extractor shouldn't blow up, [pull #147][147]
 * Fix for bad responses when gzip-encoding and response body is empty
 
+[oauth2]: https://github.com/unfiltered/unfiltered/tree/master/oauth2
 [138]: https://github.com/unfiltered/unfiltered/pull/138
 [140]: https://github.com/unfiltered/unfiltered/pull/140
 [143]: https://github.com/unfiltered/unfiltered/pull/143
