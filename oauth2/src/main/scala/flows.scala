@@ -12,8 +12,8 @@ trait Flows extends AuthCodeFlow
   with Refreshing
 
 trait AuthCodeFlow {
-  def onAuthCode[T](
-    req: HttpRequest[T],
+  def onAuthCode(
+    req: HttpRequest[Any],
     responseType: Seq[String],
     clientId: String,
     redirectUri: String, scope: Seq[String],
@@ -25,7 +25,7 @@ trait AuthCodeFlow {
 }
 
 trait NoAuthCodes extends AuthCodeFlow { self: AuthCodeFlow =>
-  override def onAuthCode[T](req: HttpRequest[T],
+  override def onAuthCode(req: HttpRequest[Any],
     responseType: Seq[String],
     clientId: String,
     redirectUri: String, scope: Seq[String],
@@ -35,16 +35,16 @@ trait NoAuthCodes extends AuthCodeFlow { self: AuthCodeFlow =>
 }
 
 trait TokenFlow {
-  def onToken[T](
-    req: HttpRequest[T], responseType: Seq[String],
+  def onToken(
+    req: HttpRequest[Any], responseType: Seq[String],
     clientId: String,
     redirectUri: String, scope: Seq[String],
     state: Option[String]): ResponseFunction[Any]
 }
 
 trait NoTokens extends TokenFlow { self: TokenFlow => 
-  def onToken[T](
-    req: HttpRequest[T], responseType: Seq[String],
+  def onToken(
+    req: HttpRequest[Any], responseType: Seq[String],
     clientId: String,
     redirectUri: String, scope: Seq[String],
     state: Option[String]) = BadRequest 

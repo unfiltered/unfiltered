@@ -137,8 +137,8 @@ trait Authorized extends AuthorizationProvider
 
   protected def spaceEncoder(scopes: Seq[String]) = scopes.mkString("+")
 
-  def onAuthCode[T](
-    req: HttpRequest[T], responseType: Seq[String], clientId: String,
+  def onAuthCode(
+    req: HttpRequest[Any], responseType: Seq[String], clientId: String,
     redirectUri: String, scope: Seq[String], state: Option[String]) =
       auth(AuthorizationCodeRequest(
         req, responseType, clientId, redirectUri, scope, state)) match {
@@ -160,8 +160,8 @@ trait Authorized extends AuthorizationProvider
           case _ => BadRequest
         }
 
-  def onToken[T](
-    req: HttpRequest[T], 
+  def onToken(
+    req: HttpRequest[Any], 
     responseType: Seq[String],
     clientId: String,
     redirectUri: String, scope: Seq[String],
@@ -191,8 +191,8 @@ trait Authorized extends AuthorizationProvider
         case _ => BadRequest
       }
 
-  protected def onUnsupportedAuth[T](
-    req: HttpRequest[T], responseType: Seq[String], clientId: String,
+  protected def onUnsupportedAuth(
+    req: HttpRequest[Any], responseType: Seq[String], clientId: String,
     redirectUri: String, scope: Seq[String], state: Option[String]) =
     auth(IndeterminateAuthorizationRequest(
       req, responseType, clientId, redirectUri, scope, state)) match {

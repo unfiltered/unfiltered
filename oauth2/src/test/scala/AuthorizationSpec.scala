@@ -319,7 +319,7 @@ object AuthorizationSpec
        uri.getQuery match {
          case ErrorQueryString(err, desc) =>
             err must_==("invalid_request")
-            URLDecoder.decode(desc, "utf-8") must_=="response_type is required"
+            URLDecoder.decode(desc, "utf-8") must_== "response_type is required"
          case _ => fail("invalid redirect %s" format uri)
        }
     }
@@ -333,7 +333,7 @@ object AuthorizationSpec
        uri.getQuery match {
         case ErrorQueryString(err, desc) =>
           err must_==("invalid_request")
-          URLDecoder.decode(desc, "utf-8") must_=="client_id is required"
+          URLDecoder.decode(desc, "utf-8") must_== "client_id is required"
         case _ => fail("invalid redirect %s" format uri)
       }
     }
