@@ -10,8 +10,8 @@ object NoChunkAggregatorSpec extends Specification
   import unfiltered.netty
   import unfiltered.netty.{Http => NHttp, ExceptionHandler}
   import unfiltered.netty.cycle.ThreadPool
-  import dispatch._
-  import dispatch.mime.Mime._
+  import dispatch.classic._
+  import dispatch.classic.mime.Mime._
   import java.io.{File => JFile}
 
   trait ExpectedServerErrorResponse { self: ExceptionHandler =>
@@ -79,7 +79,7 @@ object NoChunkAggregatorSpec extends Specification
     }
     
     "respond with a 500 when no chunk aggregator is used in a cycle plan" in {
-      val http = new dispatch.Http with NoLogging
+      val http = new dispatch.classic.Http with NoLogging
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       try {
@@ -91,7 +91,7 @@ object NoChunkAggregatorSpec extends Specification
     }
 
     "respond with a 500 when no chunk aggregator is used in an async plan" in {
-      val http = new dispatch.Http with NoLogging
+      val http = new dispatch.classic.Http with NoLogging
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       try {

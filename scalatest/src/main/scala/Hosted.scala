@@ -1,6 +1,6 @@
 package unfiltered.scalatest
 
-import dispatch._
+import dispatch.classic._
 
 trait Hosted {
   val port = unfiltered.util.Port.any

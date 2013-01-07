@@ -19,7 +19,7 @@ trait CookiesSpec extends unfiltered.spec.Hosted {
   import unfiltered.Cycle.Intent
   import QParams._
 
-  import dispatch._
+  import dispatch.classic._
 
   import org.apache.http.client.CookieStore
   import org.apache.http.impl.client.{ AbstractHttpClient, BasicCookieStore }

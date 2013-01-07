@@ -6,7 +6,7 @@ object MacSpec extends Specification with unfiltered.spec.jetty.Served {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
-  import dispatch._
+  import dispatch.classic._
 
   System.setProperty("file.encoding", "UTF-8")
 

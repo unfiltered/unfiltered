@@ -15,7 +15,7 @@ with spec.SecureClient {
 
   import unfiltered.netty.Https
   import org.apache.http.client.ClientProtocolException
-  import dispatch._
+  import dispatch.classic._
 
   // generated keystore for localhost
   // keytool -keystore keystore -alias unfiltered -genkey -keyalg RSA

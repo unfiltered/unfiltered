@@ -7,7 +7,7 @@ object JsonSpec extends Specification  with unfiltered.spec.jetty.Served {
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
 
-  import dispatch._
+  import dispatch.classic._
   import net.liftweb.json.JsonDSL._
   import net.liftweb.json.JsonParser._
 

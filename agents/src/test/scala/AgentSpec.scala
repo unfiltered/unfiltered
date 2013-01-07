@@ -16,7 +16,7 @@ trait AgentSpec extends unfiltered.spec.Hosted {
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
 
-  import dispatch._
+  import dispatch.classic._
 
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = {
     case GET(_) & AgentIs.Chrome(_) => ResponseString("chromium")

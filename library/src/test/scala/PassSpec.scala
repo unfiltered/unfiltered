@@ -15,7 +15,7 @@ trait PassSpec extends unfiltered.spec.Hosted {
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
 
-  import dispatch._
+  import dispatch.classic._
 
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] =
     Pass.onPass(intent1, intent2)

@@ -13,7 +13,7 @@ object SslServerSpec extends Specification with unfiltered.spec.Hosted with spec
   import unfiltered.util.Port
   import org.apache.http.client.ClientProtocolException
 
-  import dispatch._
+  import dispatch.classic._
 
   // generated keystore for localhost
   // keytool -keystore keystore -alias unfiltered -genkey -keyalg RSA

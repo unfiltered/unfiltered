@@ -11,7 +11,7 @@ object MixedServerSpec extends Specification with spec.jetty.Served with spec.Se
   import unfiltered.util.Port
   import org.apache.http.client.ClientProtocolException
 
-  import dispatch._
+  import dispatch.classic._
 
   // generated keystore for localhost
   // keytool -keystore keystore -alias unfiltered -genkey -keyalg RSA

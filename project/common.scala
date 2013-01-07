@@ -14,7 +14,7 @@ object Common {
       case _ => "org.scala-tools.testing" %% "specs" % "1.6.9"
     }
 
-  val dispatchVersion = "0.8.8"
+  val dispatchVersion = "0.8.9"
   def dispatchDeps =
     "net.databinder" %% "dispatch-mime" % dispatchVersion ::
     "net.databinder" %% "dispatch-http" % dispatchVersion :: Nil

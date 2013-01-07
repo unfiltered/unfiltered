@@ -8,8 +8,8 @@ object UploadsSpec extends Specification with unfiltered.spec.jetty.Served {
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath, _}
 
-  import dispatch._
-  import dispatch.mime.Mime._
+  import dispatch.classic._
+  import dispatch.classic.mime.Mime._
   import scala.io.Source
   import java.io.{File => JFile}
 

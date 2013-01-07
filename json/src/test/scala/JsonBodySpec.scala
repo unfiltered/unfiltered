@@ -9,7 +9,7 @@ with unfiltered.spec.jetty.Served {
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
 
-  import dispatch._
+  import dispatch.classic._
 
   class TestPlan extends unfiltered.filter.Planify({
     case r @ POST(UFPath("/")) => ResponseString(JsonBody(r) match {

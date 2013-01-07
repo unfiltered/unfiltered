@@ -9,8 +9,8 @@ object PlanSpec extends Specification with unfiltered.spec.jetty.Served {
   import unfiltered.filter._
   import request.ContextPath
 
-  import dispatch._
-  import dispatch.Http._
+  import dispatch.classic._
+  import dispatch.classic.Http._
 
   def setup = {
     _.filter(Planify {

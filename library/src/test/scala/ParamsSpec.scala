@@ -16,7 +16,7 @@ trait ParamsSpec extends unfiltered.spec.Hosted {
   import unfiltered.request.{Path => UFPath}
   import QParams._
 
-  import dispatch._
+  import dispatch.classic._
 
   /** Used for extract test */
   object Number extends Params.Extract("number", Params.first ~> Params.int)

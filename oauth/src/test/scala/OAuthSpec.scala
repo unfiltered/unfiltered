@@ -7,12 +7,12 @@ object OAuthSpec extends Specification with unfiltered.spec.jetty.Served {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
-  import dispatch._
-  import dispatch.oauth._
-  import dispatch.oauth.OAuth._
+  import dispatch.classic._
+  import dispatch.classic.oauth._
+  import OAuth._
 
   System.setProperty("file.encoding", "UTF-8")
-  val consumer = dispatch.oauth.Consumer("key", "secret")
+  val consumer = Consumer("key", "secret")
 
   def setup = { server =>
 

@@ -15,7 +15,7 @@ trait BasicAuthKitSpec extends unfiltered.spec.Hosted {
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
 
-  import dispatch._
+  import dispatch.classic._
 
   def valid(u: String, p: String) = (u,p) match { case ("test", "secret") => true case _ => false }
 

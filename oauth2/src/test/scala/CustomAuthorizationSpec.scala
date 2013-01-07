@@ -9,7 +9,7 @@ object CustomAuthorizationSpec
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
 
-  import dispatch._
+  import dispatch.classic._
 
   val client = MockClient(
     "mockclient", "mockserver",

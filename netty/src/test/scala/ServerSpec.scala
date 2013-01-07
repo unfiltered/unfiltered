@@ -6,7 +6,7 @@ object ServerSpec extends unfiltered.spec.netty.Served {
   import unfiltered.request.{Path => UFPath}
   import unfiltered.netty.{Http => NHttp}
 
-  import dispatch._
+  import dispatch.classic._
 
   def setup = _.handler(planify({
     case GET(UFPath("/pass")) => Pass

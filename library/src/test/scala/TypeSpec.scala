@@ -11,7 +11,7 @@ trait TypeSpec extends spec.Hosted {
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
 
-  import dispatch._
+  import dispatch.classic._
 
   val message = "élo"
 

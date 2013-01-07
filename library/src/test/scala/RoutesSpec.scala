@@ -17,7 +17,7 @@ trait RoutesSpec extends unfiltered.spec.Hosted {
   import unfiltered.request.{Path => UFPath}
   import unfiltered.Cookie
 
-  import dispatch._
+  import dispatch.classic._
 
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = Routes.specify(
     "/widgets" -> contrivedPass,

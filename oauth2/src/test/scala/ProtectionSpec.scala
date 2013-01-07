@@ -5,7 +5,7 @@ import org.specs._
 object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
   import unfiltered.response._
   import unfiltered.request._
-  import dispatch._
+  import dispatch.classic._
 
   class User(val id: String) extends ResourceOwner {
     override val password = None
@@ -58,7 +58,7 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
       try {
         Http.x(host / "user" <<? oauth_token as_str) must_== "test_user"
       } catch {
-        case dispatch.StatusCode(code, _) =>
+        case dispatch.classic.StatusCode(code, _) =>
           fail("got unexpected status code %s" format code)
       }
     }
@@ -68,7 +68,7 @@ object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
       try {
         Http.x(host / "user" <:< bearer_header as_str) must_== "test_user"
       } catch {
-        case dispatch.StatusCode(code, _) =>
+        case dispatch.classic.StatusCode(code, _) =>
           fail("got unexpected status code %s" format code)
       }
     }

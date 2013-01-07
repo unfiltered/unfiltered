@@ -11,8 +11,8 @@ object AsyncUploadSpec extends Specification
   import unfiltered.netty._
   import unfiltered.netty.{Http => NHttp}
 
-  import dispatch._
-  import dispatch.mime.Mime._
+  import dispatch.classic._
+  import dispatch.classic.mime.Mime._
   import java.io.{File => JFile,FileInputStream => FIS}
   import org.apache.commons.io.{IOUtils => IOU}
 
@@ -139,7 +139,7 @@ object AsyncUploadSpec extends Specification
       http(host / "mem-upload" / "write" <<* ("f", file, "text/plain") as_str) must_=="did not write memory read file f is named netty-upload-big-text-test.txt with content type text/plain"
     }
     "respond with a 404" in {
-      val http = new dispatch.Http with NoLogging
+      val http = new dispatch.classic.Http with NoLogging
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       try {

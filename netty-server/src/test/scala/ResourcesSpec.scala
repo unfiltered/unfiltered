@@ -4,10 +4,10 @@ import org.specs._
 
 /** Tests a netty server configured to handle static resources only */
 object ResourcesSpec extends unfiltered.spec.netty.Served {
-   import dispatch._
+   import dispatch.classic._
 
-   implicit def toStatusVerb(req: dispatch.Request) = new {
-     def statuscode = dispatch.Handler(req, {
+   implicit def toStatusVerb(req: dispatch.classic.Request) = new {
+     def statuscode = dispatch.classic.Handler(req, {
        case (code, _, _) => code
      }, scala.util.control.Exception.nothingCatcher)
    }

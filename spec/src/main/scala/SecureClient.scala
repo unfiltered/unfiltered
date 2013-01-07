@@ -1,7 +1,7 @@
 package unfiltered.spec
 
 import org.specs._
-import dispatch._
+import dispatch.classic._
 import org.apache.http.client.HttpClient
 
 import java.security.KeyStore

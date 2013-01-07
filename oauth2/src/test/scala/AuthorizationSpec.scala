@@ -9,7 +9,7 @@ object AuthorizationSpec
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
 
-  import dispatch._
+  import dispatch.classic._
 
   import scala.util.parsing.json.JSON
   import java.net.{URI, URLDecoder}
