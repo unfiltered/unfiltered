@@ -40,7 +40,7 @@ trait MultiPartDecoder extends async.Plan with AbstractMultiPartDecoder with Tid
   protected def complete(ctx: ChannelHandlerContext, e: MessageEvent) = {
     val channelState = Helpers.channelState(ctx)
     channelState.originalReq match {
-      case Some(req) => 
+      case Some(req) =>
         val msg = ReceivedMessage(req, ctx, e)
         val multiBinding = new MultiPartBinding(channelState.decoder, msg)
         val binding = new RequestBinding(msg)
@@ -49,7 +49,7 @@ trait MultiPartDecoder extends async.Plan with AbstractMultiPartDecoder with Tid
           case MultipartPlan.Pass => MultipartPlan.Pass
           case multipartIntent => multipartIntent(Decode(multiBinding))
         }
-      case _ => error("Original request missing from channel state %s".format(ctx))
+      case _ => sys.error("Original request missing from channel state %s".format(ctx))
     }
   }
 
