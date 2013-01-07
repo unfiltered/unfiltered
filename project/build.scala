@@ -107,33 +107,5 @@ object Unfiltered extends Build {
 
   lazy val oauth2 = module("oauth2")().dependsOn(jetty, filters, mac)
 
-/*
-  lazy val mac =
-    module("mac")(
-      settings = Seq(
-        name := "Unfiltered MAC",
-        unmanagedClasspath in (local("mac"), Test) <++=
-          (fullClasspath in (local("spec"), Compile),
-          fullClasspath in (local("filter"), Compile)) map { (s, f) =>
-            s ++ f
-          },
-        libraryDependencies <++= scalaVersion(v =>
-          Seq(dispatchOAuthDep) ++ integrationTestDeps(v))
-      )) dependsOn(library)
-
-  lazy val oauth2 =
-    module("oauth2")(
-      settings = Seq(
-        name := "Unfiltered OAuth2",
-        unmanagedClasspath in (local("oauth2"), Test) <++=
-          (fullClasspath in (local("spec"), Compile),
-          fullClasspath in (local("filter"), Compile)) map { (s, f) =>
-            s ++ f
-          },
-        libraryDependencies <++= scalaVersion(v =>
-          Seq(dispatchOAuthDep) ++ integrationTestDeps(v))
-      )) dependsOn(jetty, filters, mac)
-*/
-
-    lazy val nettyUploads = module("netty-uploads")().dependsOn(nettyServer, uploads)
+  lazy val nettyUploads = module("netty-uploads")().dependsOn(nettyServer, uploads)
 }
