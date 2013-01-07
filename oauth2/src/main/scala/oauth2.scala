@@ -24,7 +24,7 @@ object OAuthIdentity {
         case null => None
         case clientId: String => r.underlying.getAttribute(XAuthorizedScopes) match {
           case null => Some((id, clientId, Nil))
-          case scopes: Seq[String] => Some((id, clientId, scopes))
+          case scopes => Some((id, clientId, scopes.asInstanceOf[Seq[String]]))
         }
       }
     }

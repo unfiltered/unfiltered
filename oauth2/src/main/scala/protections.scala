@@ -191,7 +191,8 @@ trait MacAuth extends AuthScheme {
              errorResponse(Unauthorized, "invalid token", req)
          }
       } catch {
-        case _ => errorResponse(Unauthorized, "invalid MAC header.", req)
+        case _: Exception =>
+          errorResponse(Unauthorized, "invalid MAC header.", req)
       }
   }
 
