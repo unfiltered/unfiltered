@@ -45,7 +45,8 @@ object Unfiltered extends Build {
     ).aggregate(
             library, filters, filtersAsync , uploads, filterUploads,
             nettyUploads, util, jetty,
-            jettyAjpProject, netty, nettyServer, json, specHelpers,
+            // json module is in purgatory until lift-json has a scala 2.10 artifact
+            jettyAjpProject, netty, nettyServer, /* json, */ specHelpers,
             scalaTestHelpers, websockets, oauth,  mac,
             oauth2, agents)
 
