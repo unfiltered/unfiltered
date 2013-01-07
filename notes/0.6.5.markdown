@@ -1,0 +1,19 @@
+This release includes an oauth2 server module. See its
+[readme][oauth2] for more information.
+
+[oauth2]: https://github.com/unfiltered/unfiltered/tree/master/oauth2
+
+#### Other Improvements
+
+* Support for PATCH, LINK, UNLINK methods, [pull #138][138]
+* Fix for serving static files on Windows in netty-server module, [pull #140][140]
+* Allow overriding the default Jetty async request timeout, [pull #143][143]
+* Fix for FsResolver URL decoding of paths, [pull #146][146]
+* If sent an empty auth header, basic auth extractor shouldn't blow up, [pull #147][147]
+* Fix for bad gzip responses when response body is empty
+
+[138]: https://github.com/unfiltered/unfiltered/pull/138
+[140]: https://github.com/unfiltered/unfiltered/pull/140
+[143]: https://github.com/unfiltered/unfiltered/pull/143
+[146]: https://github.com/unfiltered/unfiltered/pull/146
+[147]: https://github.com/unfiltered/unfiltered/pull/147
