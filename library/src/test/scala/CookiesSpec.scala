@@ -109,7 +109,7 @@ trait CookiesSpec extends unfiltered.spec.Hosted {
     finally { jar.clear }
   }
 
-  def httpWithCookies(jar: CookieStore) = 
+  def httpWithCookies(jar: CookieStore) =
      new Http {
         override def make_client =
           super.make_client match {
@@ -117,7 +117,7 @@ trait CookiesSpec extends unfiltered.spec.Hosted {
               //c.getParams.setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.RFC_2965)
               c.setCookieStore(jar)
               c
-            case hc => /*sys.*/error("expected abstract http client but found %s" format hc.getClass)
+            case hc => sys.error("expected abstract http client but found %s" format hc.getClass)
           }
       }
 }

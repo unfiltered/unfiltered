@@ -159,7 +159,7 @@ class NotFoundHandler extends SimpleChannelUpstreamHandler {
     (e.getMessage() match {
       case req: DefaultHttpRequest => Some(req.getProtocolVersion)
       case chunk:NHttpChunk => None
-      case msg => error("Unexpected message type from upstream: %s".format(msg))
+      case msg => sys.error("Unexpected message type from upstream: %s".format(msg))
     }).map { v =>
       val response = new DefaultHttpResponse(v, HttpResponseStatus.NOT_FOUND)
       val future = e.getChannel.write(response)

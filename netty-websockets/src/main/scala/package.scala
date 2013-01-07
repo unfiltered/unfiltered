@@ -40,7 +40,7 @@ package object websockets {
             HttpHeaders.setContentLength(res, res.getContent.readableBytes)
             ctx.getChannel.write(res).addListener(ChannelFutureListener.CLOSE)
           case msg =>
-            error("Invalid type of event message (%s) for Plan pass handling".format(
+            sys.error("Invalid type of event message (%s) for Plan pass handling".format(
               msg.getClass.getName))
         }
       case _ => () // we really only care about MessageEvents but need to support the more generic ChannelEvent
