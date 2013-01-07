@@ -45,8 +45,8 @@ class PostDecoder(req: NHttpRequest, useDisk: Boolean = true) {
     try
       decoder.map(_.getBodyHttpDatas.toList).getOrElse(List())
     catch {
-      case e: IONotEnoughDataDecoderException => 
-        error("Tried to decode a multipart request before it was fully received. Make sure there is either a HttpChunkAggregator in the handler pipeline e.g. _.chunked() or use a MultiPartDecoder plan.")
+      case e: IONotEnoughDataDecoderException =>
+        sys.error("Tried to decode a multipart request before it was fully received. Make sure there is either a HttpChunkAggregator in the handler pipeline e.g. _.chunked() or use a MultiPartDecoder plan.")
     }
   }
 
@@ -108,7 +108,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
   /** Determine whether the intent could handle the request (without executing it). If so execute @param body, otherwise pass */
   protected def handleOrPass(ctx: ChannelHandlerContext, e: MessageEvent, binding: RequestBinding)(body: => Unit)
 
-  /** Provides multipart request handling common to both cycle and async plans. 
+  /** Provides multipart request handling common to both cycle and async plans.
       Should be called by onMessageReceived. */
   protected def upgrade(ctx: ChannelHandlerContext, e: MessageEvent) = {
 
@@ -136,7 +136,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
       case chunk: NHttpChunk =>
         channelState.originalReq match {
           // Ensure that multipart handling was started for the request
-          case Some(request) => 
+          case Some(request) =>
             val msg = ReceivedMessage(request, ctx, e)
             val binding = new RequestBinding(msg)
             // Determine whether the chunk is destined for this plan's intent and if not, pass
@@ -150,9 +150,9 @@ trait AbstractMultiPartDecoder extends CleanUp {
   }
 
   /** Sets up for handling a multipart request */
-  protected def start(request: NHttpRequest, 
+  protected def start(request: NHttpRequest,
                     channelState: MultiPartChannelState,
-                    ctx: ChannelHandlerContext, 
+                    ctx: ChannelHandlerContext,
                     e: MessageEvent) = {
     if(!channelState.readingChunks) {
       // Initialise the decoder
@@ -163,21 +163,21 @@ trait AbstractMultiPartDecoder extends CleanUp {
         // Update the state to readingChunks = true
         ctx.setAttachment(MultiPartChannelState(true, Some(request), decoder))
       } else {
-        // This is not a chunked request (could be an aggregated multipart request), 
+        // This is not a chunked request (could be an aggregated multipart request),
         // so we should have received it all. Behave like a regular netty plan.
         complete(ctx, e)
         cleanUp(ctx)
       }
     } else {
       // Shouldn't get here
-      error("HttpRequest received while reading chunks: %s".format(request))
+      sys.error("HttpRequest received while reading chunks: %s".format(request))
     }
   }
 
   /** Handles incoming chunks belonging to the original request */
   protected def continue(chunk: NHttpChunk,
                        channelState: MultiPartChannelState,
-                       ctx: ChannelHandlerContext, 
+                       ctx: ChannelHandlerContext,
                        e: MessageEvent) = {
     // Should be reading chunks here
     if(channelState.readingChunks) {
@@ -191,7 +191,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
       }
     } else {
       // It shouldn't be possible to get here
-      error("HttpChunk received when not expected.")
+      sys.error("HttpChunk received when not expected.")
     }
   }
 }

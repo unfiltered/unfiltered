@@ -51,7 +51,7 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
           }
         }
       case chunk:NHttpChunk => ctx.sendUpstream(e)
-      case msg => error("Unexpected message type from upstream: %s"
+      case msg => sys.error("Unexpected message type from upstream: %s"
                         .format(msg))
     }
   }

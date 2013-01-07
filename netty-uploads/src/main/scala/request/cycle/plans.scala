@@ -31,7 +31,7 @@ trait MultiPartDecoder extends SimpleChannelUpstreamHandler with AbstractMultiPa
       case e => onException(ctx, e)
     }
   }
-  
+
   /** Decide if the intent could handle the request */
   protected def handleOrPass(ctx: ChannelHandlerContext, e: MessageEvent, binding: RequestBinding)(thunk: => Unit) = {
     intent.orElse({ case _ => MultipartPlan.Pass }: MultipartPlan.Intent)(binding) match {
@@ -44,7 +44,7 @@ trait MultiPartDecoder extends SimpleChannelUpstreamHandler with AbstractMultiPa
   protected def complete(ctx: ChannelHandlerContext, e: MessageEvent) = {
     val channelState = Helpers.channelState(ctx)
     channelState.originalReq match {
-      case Some(req) => 
+      case Some(req) =>
         val msg = ReceivedMessage(req, ctx, e)
         val multiBinding = new MultiPartBinding(channelState.decoder, msg)
         val binding = new RequestBinding(msg)
@@ -59,7 +59,7 @@ trait MultiPartDecoder extends SimpleChannelUpstreamHandler with AbstractMultiPa
             }
           }
         }
-      case _ => error("Original request missing from channel state %s".format(ctx))
+      case _ => sys.error("Original request missing from channel state %s".format(ctx))
     }
   }
 
@@ -67,7 +67,7 @@ trait MultiPartDecoder extends SimpleChannelUpstreamHandler with AbstractMultiPa
   def executeResponse(thunk: => Unit)
   def shutdown()
 
-  override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) = upgrade(ctx, e) 
+  override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) = upgrade(ctx, e)
   override def channelClosed(ctx: ChannelHandlerContext, e: ChannelStateEvent) = cleanFiles(ctx)
 }
 

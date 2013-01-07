@@ -135,7 +135,7 @@ object MultiPartParams extends TupleGenerator {
       override def isInMemory = true
       override def setFieldName(value: String) { fieldName = value }
       override def setFormField(state: Boolean) { formField = state }
-      override def write(file: JFile) { error("File writing is not permitted") }
+      override def write(file: JFile) { sys.error("File writing is not permitted") }
     }
 
     class ByteArrayFileItemFactory extends fu.FileItemFactory {
@@ -154,7 +154,7 @@ object MultiPartParams extends TupleGenerator {
     import fu.{FileItemFactory, FileItem => ACFileItem}
     import java.util.{Iterator => JIterator}
     import fu.disk.{DiskFileItemFactory}
-    
+
      /** @return a configured FileItemFactory to parse a request */
     def factory(writeAfter: Int, writeDir: JFile): FileItemFactory =
       new DiskFileItemFactory(writeAfter, writeDir)
