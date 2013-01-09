@@ -1,7 +1,7 @@
 package unfiltered.request
 
 object RemoteAddr {
-  /** @see http://en.wikipedia.org/wiki/Private_network#Private_IPv4_address_spaces 
+  /** @see [[http://en.wikipedia.org/wiki/Private_network#Private_IPv4_address_spaces]]
     * includes private trusted addresses
     * 127.0.0.1 (localhost)
     * private IP 10.x.x.x

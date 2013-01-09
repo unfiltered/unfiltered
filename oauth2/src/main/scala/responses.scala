@@ -1,7 +1,7 @@
 package unfiltered.oauth2
 
 /**
- * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.2
+ * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.2]]
  * For example, the authorization server redirects the user-agent by
  *  sending the following HTTP response:
  *
@@ -14,7 +14,7 @@ sealed trait AuthorizationResponse extends OAuthResponse
 sealed trait AccessResponse extends OAuthResponse
 
 /**
- * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.2
+ * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.2]]
  */
 case class AuthorizationCodeResponse(
   code: String,
@@ -22,9 +22,9 @@ case class AuthorizationCodeResponse(
 ) extends AuthorizationResponse
 
 /**
- * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.4
- * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.2.2
- * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-5.1
+ * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.4]]
+ * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.2.2]]
+ * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-5.1]]
  *
  * For example:
  *
@@ -51,7 +51,7 @@ case class AccessTokenResponse(
 ) extends AccessResponse with AuthorizationResponse
 
 /**
- * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.2.2
+ * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.2.2]]
  */
 case class ImplicitAccessTokenResponse(
   accessToken: String,
@@ -72,7 +72,7 @@ case class ServiceResponse(
 ) extends AuthorizationResponse
 
 /**
- * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.2.1
+ * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.2.1]]
  *
  * For example, the authorization server redirects the user-agent by
  * sending the following HTTP response:

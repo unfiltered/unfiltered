@@ -1,6 +1,6 @@
 package unfiltered.request
 
-/** http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.3 */
+/** [[http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.3]] */
 object Decodes {
   
   trait Decoding {
@@ -20,7 +20,7 @@ object Decodes {
   def decoding(enc: String) =
     new Decoding { val encoding = enc }
   
-  /* IANA encodings. See http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6. */
+  /* IANA encodings. See [[http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6]]. */
   val Chunked   = decoding("chunked")
   val Identity  = decoding("identity")
   val GZip      = decoding("gzip")
