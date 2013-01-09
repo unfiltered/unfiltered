@@ -56,7 +56,7 @@ object MultiPart extends MultiPartMatcher[RequestBinding] {
     val size = sb.length
     val aStart = findFirstNonWhitespace(sb)
     var aEnd = findFirstWhitespace(sb, aStart)
-    if(aEnd >= size)
+    if(aEnd == -1 || aEnd >= size)
       return (Some(sb), None)
     if(sb.endsWith(";"))
       aEnd = aEnd - 1
