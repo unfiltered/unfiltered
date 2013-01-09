@@ -29,8 +29,8 @@ object OAuthorization {
   // errors
 
   /**
-   * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.2.1
-   * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.2.2.1
+   * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.2.1]]
+   * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.2.2.1]]
    */
   val Error = "error"
   val InvalidClient = "invalid_client"
@@ -56,13 +56,13 @@ trait AuthorizationEndpoints {
 
 trait DefaultAuthorizationPaths extends AuthorizationEndpoints {
   /**
-   * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-3
+   * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-3]]
    */
   val AuthorizePath = "/authorize"
 
   /**
-   * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-3
-   * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-3.2
+   * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-3]]
+   * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-3.2]]
    */
   val TokenPath = "/token"
 }

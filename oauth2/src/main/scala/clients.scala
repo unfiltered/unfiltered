@@ -14,21 +14,21 @@ package unfiltered.oauth2
  *   server (e.g. application name, website, description, logo image,
  *   the acceptance of legal terms).
  * 
- * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-25#section-2
+ * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-25#section-2]]
  */
 trait Client {
   /**
-   * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-25#section-2.2
+   * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-25#section-2.2]]
    */
   def id: String
   
   /**
-   * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-25#section-2.3.1
+   * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-25#section-2.3.1]]
    */
   def secret: String
   
   /**
-   * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-2.2
+   * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-2.2]]
    */
   def redirectUri: String
 }

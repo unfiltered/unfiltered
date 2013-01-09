@@ -14,7 +14,7 @@ abstract class HttpRequest[+T](val underlying: T) {
   def protocol: String
   /** HTTP verb in all caps */
   def method: String
-  /** full HTTP request uri including raw query string http://tools.ietf.org/html/rfc2616#section-5.1.2 */
+  /** full HTTP request uri including raw query string [[http://tools.ietf.org/html/rfc2616#section-5.1.2]] */
   def uri: String
   /** GET and POST parameter names */
   def parameterNames: Iterator[String]
