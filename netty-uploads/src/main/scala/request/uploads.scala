@@ -43,34 +43,19 @@ object MultiPart extends MultiPartMatcher[RequestBinding] {
     // Check if the Post is using "multipart/form-data; boundary=--89421926422648"
     splitContentTypeHeader(contentType) match {
       case (Some(a), Some(b)) if a.toLowerCase.startsWith(Multipart) && b.toLowerCase.startsWith(Boundary) =>
-        if(b.split("=").length == 2)
-          true
-        else 
-          false
+        b.split("=").length == 2
       case _ => false
     }
   }
 
   /** Split the Content-Type header value into two strings */
   private def splitContentTypeHeader(sb: String): Tuple2[Option[String],Option[String]] = {
-    val size = sb.length
-    val aStart = findFirstNonWhitespace(sb)
-    var aEnd = findFirstWhitespace(sb, aStart)
-    if(aEnd == -1 || aEnd >= size)
-      return (Some(sb), None)
-    if(sb.endsWith(";"))
-      aEnd = aEnd - 1
-    val bStart = findFirstNonWhitespace(sb, aEnd)
-    val bEnd = findEndOfString(sb)
-    (Some(sb.substring(aStart, aEnd)), Some(sb.substring(bStart, bEnd)))
-  }
+    def nonEmpty(s: String) = if (s.isEmpty) None else Some(s)
 
-  /** Find the first whitespace index */
-  private def findFirstWhitespace(s: String, startAt: Int = 0) = s.indexWhere(_.isWhitespace, startAt)
-  /** Find the first non-whitespace index */
-  private def findFirstNonWhitespace(s: String, startAt: Int = 0) = s.indexWhere(!_.isWhitespace, startAt)
-  /** Find the last non-whitespace index */
-  private def findEndOfString(s: String) = s.lastIndexWhere(!_.isWhitespace)
+    val (contentType, params) = sb.trim.span(!_.isWhitespace)
+    val ct = if (contentType.endsWith(";")) contentType.dropRight(1) else contentType
+    (nonEmpty(ct), nonEmpty(params.trim))
+  }
 }
 
 object MultiPartParams {
