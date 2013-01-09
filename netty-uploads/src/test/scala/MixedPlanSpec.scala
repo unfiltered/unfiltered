@@ -133,6 +133,18 @@ object MixedPlanSpec extends Specification
       http(host as_str) must_== html.toString
     }
 
+    /** General */
+
+    "respond with a 404 when passing non-parameterised content type value" in {
+      val http = new dispatch.classic.Http with NoLogging
+      try {
+        http x (host / "ignored" << ("f", "v") <:< Map("Content-Type" -> "application/x-www-form-urlencoded") >|) {
+          case (code,_,_,_) =>
+            code must_== 404
+        }
+      } finally { http.shutdown }
+    }
+
     /** Cycle */
 
     "respond with 404 when posting to a non-existent url" in {
