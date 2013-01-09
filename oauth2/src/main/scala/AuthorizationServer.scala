@@ -10,7 +10,7 @@ object AuthorizationServer {
 }
 
 /**
- * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-1.1
+ * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-1.1]]
  */
 trait AuthorizationServer {
   self: ClientStore with TokenStore with Service =>
@@ -27,7 +27,7 @@ trait AuthorizationServer {
    *  of the registered redirect_uri. The spec recommends using the `state`
    *  param for per-request customization.
    * @return true if valid, false otherwise
-   * see http://tools.ietf.org/html/draft-ietf-oauth-v2-22#section-3.1.2.2
+   * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-22#section-3.1.2.2]]
    */
   def validRedirectUri(provided: String, client: Client): Boolean =
     !provided.contains("#") && provided.startsWith(client.redirectUri)

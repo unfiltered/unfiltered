@@ -17,7 +17,7 @@ package unfiltered.oauth2
  * A hook for providing extention properties is provided as the `extras`
  * method which defaults to an empty map
  *
- * @see http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-1.3
+ * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-1.3]]
  */
 trait Token {
   def value: String
@@ -42,7 +42,7 @@ trait TokenStore {
    *
    * @see AuthorizationServer
    * @see RefreshTokenRequest
-   * see also http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-6
+   * see also [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-6]]
    * @return Gives a refreshed or new token given a valid access token
    */
   def refresh(other: Token): Token
@@ -52,7 +52,7 @@ trait TokenStore {
    * query for Token by client
    * @see AuthorizationServer
    * @see RefreshTokenRequest
-   * see also http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-6
+   * see also [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-6]]
    * @return Given the a refresh token gives a new access token
    */
   def refreshToken(refreshToken: String): Option[Token]
@@ -61,7 +61,7 @@ trait TokenStore {
    *
    * @see AuthorizationServer
    * @see AccessTokenRequest
-   * see also http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.3
+   * see also [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.3]]
    * @return Given a "code" return a resource access token
    */
   def token(code: String): Option[Token]
@@ -70,7 +70,7 @@ trait TokenStore {
    *
    * @see AuthorizationServer
    * @see AccessTokenRequest
-   * see also http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.3
+   * see also [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1.3]]
    * @return Create an access token given a code token
    */
   def exchangeAuthorizationCode(codeToken: Token): Token
@@ -80,7 +80,7 @@ trait TokenStore {
    * be expected to contain one element
    * @see AuthorizationServer
    * @see AuthorizationCodeRequest
-   * see also http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1
+   * see also [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.1]]
    * @return a short lived authorization code bound to a client
    * and redirect uri for a given resource owner.
    */
@@ -93,7 +93,7 @@ trait TokenStore {
    * be expected to contain one element
    * @see AuthorizationServer
    * @see ImplicitAuthorizationRequest
-   * see also http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.2
+   * see also [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.2]]
    * @return an access token for an implicit client
    */
   def generateImplicitAccessToken(responseTypes: Seq[String], owner: ResourceOwner,
@@ -104,7 +104,7 @@ trait TokenStore {
    *
    * @see AuthorizationServer
    * @see ClientCredentialsRequest
-   * see also http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.4
+   * see also [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-4.4]]
    * @return an access token for a given client, not tied to
    * a given resource owner
    */
@@ -113,7 +113,7 @@ trait TokenStore {
   /**
    * @see AuthorizationServer
    * @see PasswordRequest
-   * see also http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-4.3.3
+   * see also [[http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-4.3.3]]
    * @return an access token for a client, given the resource owner's credentials
    */
   def generatePasswordToken(owner: ResourceOwner, client: Client, scope: Seq[String]): Token

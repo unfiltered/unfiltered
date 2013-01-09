@@ -118,7 +118,7 @@ trait AccessToken
 case class BearerToken(value: String) extends AccessToken
 
 /** Represents Bearer auth encoded in a header.
- *  see also http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-14 */
+ *  see also [[http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-14]] */
 trait BearerAuth extends AuthScheme {
   val challenge = "Bearer"
   val defaultBearerHeader = """Bearer ([\w\d!#$%&'\(\)\*+\-\.\/:<=>?@\[\]^_`{|}~\\,;]+)""".r
@@ -143,7 +143,7 @@ trait BearerAuth extends AuthScheme {
 object BearerAuth extends BearerAuth {}
 
 /** Represents Bearer auth encoded in query params.
- *  ses also http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-14 */
+ *  ses also [[http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-14]] */
 trait QParamBearerAuth extends AuthScheme {
   val challenge = "Bearer"
   val defaultQueryParam = "access_token"
@@ -200,7 +200,7 @@ trait MacAuth extends AuthScheme {
    * Whereas the Bearer token is supposed to return an error code in the error attribute and a human-readable
    * error description in the error_description attribute of the WWW-Authenticate header, for the MAC
    * authentication scheme, a human-readable error message may be supplied in the error attribute
-   * (see http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-00#section-4.1)
+   * (see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-00#section-4.1]] )
    */
   override val failedAuthenticationResponse: (String => ResponseFunction[Any]) = { msg =>
     Unauthorized ~> WWWAuthenticate(errorHeader(Some(msg))) ~> ResponseString("""error="%s"""".format(msg))
