@@ -1,12 +1,10 @@
 package unfiltered.request
 
-import scala.util.control.Exception.allCatch
-
-/** Parser for json request bodies. Produces output from net.liftweb.json.JsonParser. */
+/** Parser for json request bodies. Produces output from org.json4s.native.JsonParser. */
 object JsonBody {
-  import net.liftweb.json.JsonParser._
-  implicit val formats = net.liftweb.json.DefaultFormats
-  
+  import org.json4s.native.JsonParser._
+  import scala.util.control.Exception.allCatch
+
   /** @return Some(JsValue) if request contains a valid json body. */
   def apply[T](r: HttpRequest[T]) =
     allCatch.opt(parse(Body.string(r)))
@@ -14,8 +12,7 @@ object JsonBody {
 
 /** jsonp extractor(s). Useful for extracting a callback out of a request */
 object Jsonp {
-  import net.liftweb.json.JsonAST._
-  import net.liftweb.json.JsonDSL._
+  import org.json4s._
 
   object Callback extends Params.Extract("callback", Params.first)
 

@@ -14,13 +14,13 @@ object JsonpSpec extends Specification  with unfiltered.spec.jetty.Served {
     case GET(UFPath("/jsonp.json") & Jsonp(callback)) => ResponseString(callback.wrap("[42]"))
     case GET(UFPath("/jsonp/optional") & Jsonp.Optional(callback)) => ResponseString(callback.wrap("[42]"))
     case GET(UFPath("/jsonp/lift-json") & Jsonp(callback)) => callback respond {
-      import net.liftweb.json.JsonAST._
+      import org.json4s._
       JArray(JInt(42) :: Nil)
     }
 
     case GET(UFPath("/jsonp/lift-json/optional") & Jsonp.Optional(callback)) => callback respond {
-      import net.liftweb.json.JsonAST._
-      import net.liftweb.json.JsonDSL._
+      import org.json4s
+      import org.json4s.JsonDSL._
       "answer" -> Seq(42)
     }
 

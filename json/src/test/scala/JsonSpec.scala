@@ -8,8 +8,8 @@ object JsonSpec extends Specification  with unfiltered.spec.jetty.Served {
   import unfiltered.request.{Path => UFPath}
 
   import dispatch.classic._
-  import net.liftweb.json.JsonDSL._
-  import net.liftweb.json.JsonParser._
+  import org.json4s.JsonDSL._
+  import org.json4s.native.JsonParser._
 
   class TestPlan extends unfiltered.filter.Planify({
     case UFPath("/") =>

@@ -7,9 +7,5 @@ unmanagedClasspath in (local("json"), Test) <++=
    }
 
 libraryDependencies <++= scalaVersion( sv =>
-  Seq(sv.split("[.-]").toList match {
-    case "2" :: "9" :: _ =>
-      "net.liftweb" % "lift-json_2.9.1" % "2.4"
-    case _ => "net.liftweb" %% "lift-json" % "2.5-M4" exclude("org.specs2","specs2_2.10")
-  }) ++ Common.integrationTestDeps(sv)
+  Seq("org.json4s" %% "json4s-native" % "3.2.3") ++ Common.integrationTestDeps(sv)
 )
