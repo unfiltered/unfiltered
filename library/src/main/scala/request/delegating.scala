@@ -9,6 +9,7 @@ extends HttpRequest(delegate.underlying) {
   def uri = delegate.uri
   def parameterNames = delegate.parameterNames
   def parameterValues(param: String) = delegate.parameterValues(param)
+  def headerNames = delegate.headerNames
   def headers(name: String) = delegate.headers(name)
   @deprecated("use the unfiltered.request.Cookies request extractor instead")
   def cookies = delegate.cookies
