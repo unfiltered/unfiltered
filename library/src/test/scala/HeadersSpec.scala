@@ -40,9 +40,11 @@ trait HeadersSpec extends unfiltered.spec.Hosted {
     case P("/ua") & UserAgent(v) => ResponseString("pass")
     case P("/v") & Via(v) => seqResp(v)
     case P("/xff") & XForwardedFor(v) => seqResp(v)
+    // Note: `Connection` header sent by default
+    case P("/names") & req if req.headerNames.toSet.map((n:String) => n.toLowerCase) == Set("expect", "from", "host", "connection") => ResponseString("pass")
   }
-  def get(path: String, header: (String, String)) = {
-     val hmap =  Map(header :: Nil:_*)
+  def get(path: String, headers: (String, String)*) = {
+     val hmap =  Map(headers:_*)
      http(host / path <:< hmap as_str)
   }
   "Headers" should {
@@ -102,6 +104,9 @@ trait HeadersSpec extends unfiltered.spec.Hosted {
     }
     "parse X-Forwared-For" in { //  http://en.wikipedia.org/wiki/X-Forwarded-For#Format
       get("xff", ("X-Forwarded-For","client1, proxy1, proxy2")) must_=="pass"
+    }
+    "parse header names" in {
+      get("names", ("Expect","100-continue"), ("From","webmaster@w3.org"), ("Host","www.w3.org")) must_=="pass"
     }
   }
 }

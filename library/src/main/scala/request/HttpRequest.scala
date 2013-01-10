@@ -20,6 +20,8 @@ abstract class HttpRequest[+T](val underlying: T) {
   def parameterNames: Iterator[String]
   /** Sequence of values associated with a parameter. Nil if none */
   def parameterValues(param: String) : Seq[String]
+  /** Iterator of request header names */
+  def headerNames: Iterator[String]
   /** Iterator of request headers */
   def headers(name: String) : Iterator[String]
   /** parsed cookie string cookies */

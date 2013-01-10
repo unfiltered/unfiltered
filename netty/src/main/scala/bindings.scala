@@ -53,6 +53,7 @@ extends HttpRequest(msg) with Async.Responder[NHttpResponse] {
 
   def parameterNames = params.keySet.iterator
   def parameterValues(param: String) = params.getOrElse(param, Seq.empty)
+  def headerNames = new JIteratorIterator(req.getHeaderNames.iterator)
   def headers(name: String) = new JIteratorIterator(req.getHeaders(name).iterator)
 
   @deprecated("use the header extractor request.Cookies instead")
