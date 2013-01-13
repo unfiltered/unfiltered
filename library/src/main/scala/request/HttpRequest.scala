@@ -14,12 +14,14 @@ abstract class HttpRequest[+T](val underlying: T) {
   def protocol: String
   /** HTTP verb in all caps */
   def method: String
-  /** full HTTP request uri including raw query string http://tools.ietf.org/html/rfc2616#section-5.1.2 */
+  /** full HTTP request uri including raw query string [[http://tools.ietf.org/html/rfc2616#section-5.1.2]] */
   def uri: String
   /** GET and POST parameter names */
   def parameterNames: Iterator[String]
   /** Sequence of values associated with a parameter. Nil if none */
   def parameterValues(param: String) : Seq[String]
+  /** Iterator of request header names */
+  def headerNames: Iterator[String]
   /** Iterator of request headers */
   def headers(name: String) : Iterator[String]
   /** parsed cookie string cookies */

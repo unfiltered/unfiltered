@@ -188,13 +188,13 @@ object QParams {
     watch({_ filter p}, err)
 
   /** Convert f into an error reporter that never reports errors */
-  def ignore[E,A](f: Option[A] => Option[A]): Reporter[E,A,A] =
+  def ignore[E,A,B](f: Option[A] => Option[B]): Reporter[E,A,B] =
     opt => Right(f(opt))
 
   def int[E](e: String => E) = watch(Params.int, e)
   def long[E](e: String => E) = watch(Params.long, e)
   def even[E](e: Int => E) = watch(Params.even, e)
   def odd[E](e: Int => E) = watch(Params.odd, e)
-  def trimmed[E] = ignore[E,String](Params.trimmed)
+  def trimmed[E] = ignore[E,String,String](Params.trimmed)
   def nonempty[E](e: E) = watch(Params.nonempty, (s: String) => e)
 }

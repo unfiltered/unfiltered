@@ -14,6 +14,14 @@ object Common {
       case _ => "org.scala-tools.testing" %% "specs" % "1.6.9"
     }
 
+  def specs2Dep(sv: String) =
+    sv.split("[.-]").toList match {
+      case "2" :: "9" :: _ => "org.specs2" %% "specs2" % "1.12.3"
+      case "2" :: "10" :: _ => "org.specs2" %% "specs2" % "1.13"
+      case _ => sys.error("Unsupported scala version")
+    }
+
+
   val dispatchVersion = "0.8.9"
   def dispatchDeps =
     "net.databinder" %% "dispatch-mime" % dispatchVersion ::

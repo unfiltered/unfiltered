@@ -21,7 +21,7 @@ import jnetty.util.CharsetUtil
 object Plan {
   import jnetty.handler.codec.http.HttpVersion.HTTP_1_1
   import jnetty.handler.codec.http.HttpResponseStatus.FORBIDDEN
-  
+
   /** The trasition from an http request handling to websocket request handling.
    *  Note: This can not be an Async.Intent because RequestBinding is a Responder for HttpResponses */
   @deprecated("use unfiltered.netty.websocket.Intent")
@@ -57,7 +57,7 @@ object Plan {
             HttpHeaders.setContentLength(res, res.getContent.readableBytes)
             ctx.getChannel.write(res).addListener(ChannelFutureListener.CLOSE)
           case msg =>
-            error("Invalid type of event message (%s) for Plan pass handling".format(
+            sys.error("Invalid type of event message (%s) for Plan pass handling".format(
               msg.getClass.getName))
         }
       case _ => () // we really only care about MessageEvents but need to support the more generic ChannelEvent
@@ -123,7 +123,7 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
                 factory.sendUnsupportedWebSocketVersionResponse(ctx.getChannel())
               case shaker =>
                 // handle handshake exceptions for the use case
-                // of mounting an http plan on the same path 
+                // of mounting an http plan on the same path
                 // as a websocket handler
                 catching(classOf[WebSocketHandshakeException]).either {
                   shaker.handshake(ctx.getChannel, request).addListener(new ChannelFutureListener {
@@ -139,7 +139,7 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
                         Plan.this, ctx.getName,
                         SocketPlan(socketIntent, pass, shaker, Plan.this))
                     }
-                  })                  
+                  })
                 }.fold({ _ => pass(ctx, event) }, identity)
             }
         }
@@ -182,7 +182,7 @@ case class SocketPlan(intent: SocketIntent,
         attempt(Message(WebSocket(ctx.getChannel), Text(t.getText)))
       case f: WebSocketFrame =>
         // only text frames are supported
-        pass(ctx, event)        
+        pass(ctx, event)
     }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, event: ExceptionEvent) {

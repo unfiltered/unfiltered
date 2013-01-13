@@ -57,7 +57,7 @@ trait Ssl extends Security {
   import javax.net.ssl.{KeyManager, KeyManagerFactory, SSLContext}
 
   def requiredProperty(name: String) = System.getProperty(name) match {
-    case null => error("required system property not set %s" format name)
+    case null => sys.error("required system property not set %s" format name)
     case prop => prop
   }
 

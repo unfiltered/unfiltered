@@ -1,7 +1,7 @@
 package unfiltered
 
 /** Module defining Cookie-related constants
- *  See also http://tools.ietf.org/html/rfc2965#page-5 */
+ *  See also [[http://tools.ietf.org/html/rfc2965#page-5]] */
 object CookieKeys {
   val Path = "Path"
   val Expires = "Expires"

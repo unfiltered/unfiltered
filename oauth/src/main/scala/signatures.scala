@@ -17,7 +17,7 @@ object Signatures {
         rc + (encode(decode(e._1)) -> (e._2 map { str: String => encode(decode(str)) }) )
       )
 
-    /** http://tools.ietf.org/html/rfc5849#section-3.4.1.3 */
+    /** [[http://tools.ietf.org/html/rfc5849#section-3.4.1.3]] */
     def normalizedParams(p: Params) =
       (new collection.immutable.TreeMap[String, Seq[String]] ++ recode(p)) map {
         case (k, v) => v.toList sortWith(_<_) map {

@@ -18,7 +18,7 @@ private [request] object CookieValueParser extends (Iterator[String] => Map[Stri
 object Cookies extends MappedRequestHeader[String, Option[Cookie]]("Cookie")(CookieValueParser)
 
 /** Module for Cookie deserialization.
- * Some optional cookie properties defined in http://tools.ietf.org/html/rfc2965 are not included in this implementation's 
+ * Some optional cookie properties defined in http://tools.ietf.org/html/rfc2965 are not included in this implementation's
  * deserialized cookie representation. This list includes `Comment`, `CommentURL`, `Discard`, and `Port` */
 object FromCookies {
   import unfiltered.CookieKeys._
@@ -58,7 +58,7 @@ object FromCookies {
         case (ns, vs, Some((n, v, _))) =>
           if(n == null) (ns.reverse, vs.reverse)
           else ((n :: ns).reverse, (v :: vs).reverse)
-        case _ => /*sys.*/error("Error parsing cookie string %s" format cstr)
+        case _ => sys.error("Error parsing cookie string %s" format cstr)
       }
 
     if(names.isEmpty) { Seq.empty[Cookie] }
@@ -73,7 +73,7 @@ object FromCookies {
       else {
         // baking the cookies.
         // Given a seq of names and a seq of values
-        // iterate by one value, i, which creates a base cookie using a name, value combo 
+        // iterate by one value, i, which creates a base cookie using a name, value combo
         // then fold over the rest of the names & values building up the cookie
         // along with a flag that indicates of the a cookie has been build.
         // On each application of the fold, move the top level iterator's cursor
@@ -91,7 +91,7 @@ object FromCookies {
               case (LCDiscard,    _) => iter.next; (false, cookie) // don't support
               case (LCSecure,     v) => iter.next; (false, cookie.copy(secure = Option(true)))
               case (LCHTTPOnly,   v) => iter.next; (false, cookie.copy(httpOnly = true))
-              case (LCComment,    _) => iter.next; (false, cookie) // don't support 
+              case (LCComment,    _) => iter.next; (false, cookie) // don't support
               case (LCCommentURL, _) => iter.next; (false, cookie) // don't support
               case (LCDomain,     v) => iter.next; (false, cookie.copy(domain = Option(v)))
               case (LCPath,       v) => iter.next; (false, cookie.copy(path = Option(v)))
