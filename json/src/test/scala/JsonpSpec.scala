@@ -32,23 +32,23 @@ object JsonpSpec extends Specification  with unfiltered.spec.jetty.Served {
   "Jsonp should" should {
     "match an text/javascript accepts request with callback, wrapping response body in callback" in {
       val resp = http(host / "jsonp" <:< Map("Accept" -> "text/javascript") <<? Map("callback" -> "onResp") as_str)
-      resp must_=="onResp([42])"
+      resp must_== "onResp([42])"
     }
     "match an */* accepts request with path extension and callback, wrapping response body in callback" in {
       val resp = http(host / "jsonp.json" <:< Map("Accept" -> "*/*") <<? Map("callback" -> "onResp") as_str)
-      resp must_=="onResp([42])"
+      resp must_== "onResp([42])"
     }
    "not match an text/javascript accepts request without a callback" in {
       val resp = http(host / "jsonp" <:< Map("Accept" -> "text/javascript") as_str)
-      resp must_=="bad req"
+      resp must_== "bad req"
     }
     "optionally match an text/javascript accepts request with callback, wrapping response body in callback" in {
       val resp = http(host / "jsonp" / "optional" <:< Map("Accept" -> "text/javascript") <<? Map("callback" -> "onResp") as_str)
-      resp must_=="onResp([42])"
+      resp must_== "onResp([42])"
     }
     "optionaly match an application/json accepts request without a callback, return unwrapped response body" in {
       val resp = http(host / "jsonp" / "optional" <:< Map("Accept" -> "application/json") as_str)
-      resp must_=="[42]"
+      resp must_== "[42]"
     }
     "produce a jsonp response, wrapping response body in callback" in {
       val (body, contentType) = http(host / "jsonp" / "lift-json"
@@ -56,7 +56,7 @@ object JsonpSpec extends Specification  with unfiltered.spec.jetty.Served {
         (r as_str, r >:> { _.filterKeys { _ == "Content-Type" } })
       })
 
-      body must_=="""onResp([42])"""
+      body must_== """onResp([42])"""
       contentType must haveValue(Set("text/javascript; charset=utf-8"))
     }
     "optionally produce a json response when callback is missing" in {
@@ -65,7 +65,7 @@ object JsonpSpec extends Specification  with unfiltered.spec.jetty.Served {
         (r as_str, r >:> { _.filterKeys { _ == "Content-Type" } })
       })
 
-      body must_=="""{"answer":[42]}"""
+      body must_== """{"answer":[42]}"""
       contentType must haveValue(Set("application/json; charset=utf-8"))
     }
   }

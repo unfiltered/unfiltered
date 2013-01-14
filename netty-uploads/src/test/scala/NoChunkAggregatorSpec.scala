@@ -50,7 +50,7 @@ object NoChunkAggregatorSpec extends Specification
       case POST(UFPath("/async/upload") & MultiPart(req)) => netty.async.MultipartPlan.Pass
     }))
     .handler(netty.async.Planify {
-      case r@POST(UFPath("/async/upload") & MultiPart(req)) => 
+      case r@POST(UFPath("/async/upload") & MultiPart(req)) =>
         MultiPartParams.Disk(req).files("f") match {
           case Seq(f, _*) => r.respond(ResponseString(
             "disk read file f named %s with content type %s" format(
@@ -77,7 +77,7 @@ object NoChunkAggregatorSpec extends Specification
       val out = new JFile("netty-upload-test-out.txt")
       if(out.exists) out.delete
     }
-    
+
     "respond with a 500 when no chunk aggregator is used in a cycle plan" in {
       val http = new dispatch.classic.Http with NoLogging
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
@@ -106,8 +106,8 @@ object NoChunkAggregatorSpec extends Specification
       /** This assumes Dispatch doesn't build a chunked request because the data is small */
       val file = new JFile(getClass.getResource("/netty-upload-test.txt").toURI)
       file.exists must_==true
-      http(host / "async" / "upload" <<* ("f", file, "text/plain") as_str) must_=="disk read file f named netty-upload-test.txt with content type text/plain"
-      http(host / "cycle" / "upload" <<* ("f", file, "text/plain") as_str) must_=="disk read file f named netty-upload-test.txt with content type text/plain"
+      http(host / "async" / "upload" <<* ("f", file, "text/plain") as_str) must_== "disk read file f named netty-upload-test.txt with content type text/plain"
+      http(host / "cycle" / "upload" <<* ("f", file, "text/plain") as_str) must_== "disk read file f named netty-upload-test.txt with content type text/plain"
     }
   }
 }

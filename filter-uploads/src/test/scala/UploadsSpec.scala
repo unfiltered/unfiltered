@@ -91,32 +91,32 @@ object UploadsSpec extends Specification with unfiltered.spec.jetty.Served {
     "handle file uploads written to disk" in {
       val file = new JFile(getClass.getResource("/upload-test.txt").toURI)
       file.exists must_==true
-      http(host / "disk-upload" <<* ("f", file, "text/plain") as_str) must_=="disk read file f named upload-test.txt with content type text/plain"
+      http(host / "disk-upload" <<* ("f", file, "text/plain") as_str) must_== "disk read file f named upload-test.txt with content type text/plain"
     }
     "handle writing file uploads written to disk" in {
       val file = new JFile(getClass.getResource("/upload-test.txt").toURI)
       file.exists must_==true
-      http(host / "disk-upload" / "write" <<* ("f", file, "text/plain") as_str) must_=="wrote disk read file f named upload-test.txt with content type text/plain with correct contents"
+      http(host / "disk-upload" / "write" <<* ("f", file, "text/plain") as_str) must_== "wrote disk read file f named upload-test.txt with content type text/plain with correct contents"
     }
     "handle file uploads streamed" in {
       val file = new JFile(getClass.getResource("/upload-test.txt").toURI)
       file.exists must_==true
-      http(host / "stream-upload" <<* ("f", file, "text/plain") as_str) must_=="stream read file f is named upload-test.txt with content type text/plain"
+      http(host / "stream-upload" <<* ("f", file, "text/plain") as_str) must_== "stream read file f is named upload-test.txt with content type text/plain"
     }
     "handle writing file uploads streamed" in {
       val file = new JFile(getClass.getResource("/upload-test.txt").toURI)
       file.exists must_==true
-      http(host / "stream-upload" / "write" <<* ("f", file, "text/plain") as_str) must_=="wrote stream read file f named upload-test.txt with content type text/plain with correct contents"
+      http(host / "stream-upload" / "write" <<* ("f", file, "text/plain") as_str) must_== "wrote stream read file f named upload-test.txt with content type text/plain with correct contents"
     }
     "handle file uploads all in memory" in {
       val file = new JFile(getClass.getResource("/upload-test.txt").toURI)
       file.exists must_==true
-      http(host / "mem-upload" <<* ("f", file, "text/plain") as_str) must_=="memory read file f is named upload-test.txt with content type text/plain"
+      http(host / "mem-upload" <<* ("f", file, "text/plain") as_str) must_== "memory read file f is named upload-test.txt with content type text/plain"
     }
     "not write memory read files" in {
       val file = new JFile(getClass.getResource("/upload-test.txt").toURI)
       file.exists must_==true
-      http(host / "mem-upload" / "write" <<* ("f", file, "text/plain") as_str) must_=="did not write memory read file f is named upload-test.txt with content type text/plain"
+      http(host / "mem-upload" / "write" <<* ("f", file, "text/plain") as_str) must_== "did not write memory read file f is named upload-test.txt with content type text/plain"
     }
   }
 }

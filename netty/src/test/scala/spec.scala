@@ -57,7 +57,7 @@ class RequestSpec extends Specification {
     }
     "extract QueryString correctly" in {
       val unfiltered.request.QueryString(qs) = req
-      qs must_=="param1=value%201&param2=value%202&param2=value%202%20again"
+      qs must_== "param1=value%201&param2=value%202&param2=value%202%20again"
     }
   }
 }
