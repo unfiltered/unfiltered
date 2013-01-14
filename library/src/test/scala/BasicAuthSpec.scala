@@ -29,15 +29,15 @@ trait BasicAuthSpec extends unfiltered.spec.Hosted {
     shareVariables()
     "authenticate a valid user" in {
       val resp = http(host / "secret" as_!("test", "secret") as_str)
-      resp must_=="pass"
+      resp must_== "pass"
     }
     "not authenticate an invalid user" in {
       val resp = http(host / "secret" as_!("joe", "shmo") as_str)
-      resp must_=="fail"
+      resp must_== "fail"
     }
     "not authenticate an empty Authorization header" in {
       val resp = http(host / "secret" <:< Map("Authorization" -> "") as_str)
-      resp must_=="not found"
+      resp must_== "not found"
     }
   }
 }

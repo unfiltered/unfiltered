@@ -57,10 +57,10 @@ trait CookiesSpec extends unfiltered.spec.Hosted {
 
   "Cookies" should {
     "start with nothing" in {
-      http(host as_str) must_=="foo who?"
+      http(host as_str) must_== "foo who?"
     }
     "then add a cookie" in {
-      http(host.POST / "save" << Map("foo" -> "bar") as_str) must_=="foo bar!"
+      http(host.POST / "save" << Map("foo" -> "bar") as_str) must_== "foo bar!"
     }
 
     // http://hc.apache.org/httpcomponents-client-ga/tutorial/html/statemgmt.html#d5e746
@@ -69,11 +69,11 @@ trait CookiesSpec extends unfiltered.spec.Hosted {
       withCookieJar { jar =>
         val h = httpWithCookies(jar)
         try {
-          h(host.POST / "save" << Map("foo" -> "bar") as_str) must_=="foo bar!"
+          h(host.POST / "save" << Map("foo" -> "bar") as_str) must_== "foo bar!"
           val someCookies = jar.getCookies
           someCookies.size must_== 1
           someCookies.find(_.getName == "foo") must beSomething
-          h(host / "clear" as_str) must_=="foo who?"
+          h(host / "clear" as_str) must_== "foo who?"
           val noCookies = jar.getCookies
           noCookies.size must_== 0
           noCookies.find(_.getName == "foo") mustNot beSomething

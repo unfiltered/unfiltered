@@ -23,7 +23,7 @@ object JsonSpec extends Specification  with unfiltered.spec.jetty.Served {
       val (body, contentType) = http(host <:< Map("Accept" -> "application/json") >+ { r =>
         (r as_str, r >:> { _.filterKeys { _ == "Content-Type" } })
       })
-      body must_=="""{"foo":"bar","baz":"boom"}"""
+      body must_== """{"foo":"bar","baz":"boom"}"""
       contentType must haveValue(Set("application/json; charset=utf-8"))
     }
   }
