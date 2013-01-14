@@ -27,7 +27,7 @@ trait BasicAuthKitSpec extends unfiltered.spec.Hosted {
     shareVariables()
     "authenticate a valid user" in {
       val resp = http(host / "secret" as_!("test", "secret") as_str)
-      resp must_=="we're in"
+      resp must_== "we're in"
     }
     "not authenticate an invalid user and return a www-authenticate header" in {
       val hdrs = Http.when(_ == 401)((host / "secret" as_!("joe", "shmo")) >:> { h => h })

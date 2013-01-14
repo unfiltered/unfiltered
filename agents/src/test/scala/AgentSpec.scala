@@ -29,23 +29,23 @@ trait AgentSpec extends unfiltered.spec.Hosted {
   "AgentIs should" should {
     "match chrome" in {
       val resp = http(host / "test" <:< Map("User-Agent" -> AgentStrings.chrome.head) as_str)
-      resp must_=="chromium"
+      resp must_== "chromium"
     }
     "match safari" in {
       val resp = http(host / "test" <:< Map("User-Agent" -> AgentStrings.safari.head) as_str)
-      resp must_=="safari"
+      resp must_== "safari"
     }
     "match mobile safari" in {
       val resp = http(host / "test" <:< Map("User-Agent" -> "Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_1 like Mac OS X; en-us) AppleWebKit/532.9 (KHTML, like Gecko) Version/4.0.5 Mobile/8B5097d Safari/6531.22.7") as_str)
-      resp must_=="safari mobile"
+      resp must_== "safari mobile"
     }
     "match firefox" in {
       val resp = http(host / "test" <:< Map("User-Agent" -> AgentStrings.firefox.head)  as_str)
-      resp must_=="firefox"
+      resp must_== "firefox"
     }
     "match ie" in {
       val resp = http(host / "test" <:< Map("User-Agent" -> AgentStrings.ie.head)  as_str)
-      resp must_=="ie"
+      resp must_== "ie"
     }
   }
 }

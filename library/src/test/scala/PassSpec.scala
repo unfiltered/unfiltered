@@ -31,11 +31,11 @@ trait PassSpec extends unfiltered.spec.Hosted {
     shareVariables()
     "match in the first intent" in {
       val resp = http(host / "intent1" as_str)
-      resp must_=="intent1"
+      resp must_== "intent1"
     }
     "match in the second intent" in {
       val resp = http(host / "whatever" as_str)
-      resp must_=="intent2"
+      resp must_== "intent2"
     }
     "not match with POST" in {
       val resp = try {

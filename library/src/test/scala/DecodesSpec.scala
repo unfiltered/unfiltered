@@ -28,43 +28,43 @@ trait DecodesSpec extends unfiltered.spec.Hosted {
   "Decodes should" should {
     "match a chunked accepts encoding request as chunked" in {
       val resp = http(host / "test" <:< Map("Accept-Encoding" -> "chunked")  as_str)
-      resp must_=="chunked"
+      resp must_== "chunked"
     }
     "match a mixed chunked accepts encoding request as chunked" in {
       val resp = http(host / "test" <:< Map("Accept-Encoding" -> "chunked;q=1.0, gzip; q=0.5")  as_str)
-      resp must_=="chunked"
+      resp must_== "chunked"
     }
     "match an identity accepts encoding request as identity" in {
       val resp = http(host / "test" <:< Map("Accept-Encoding" -> "identity")  as_str)
-      resp must_=="identity"
+      resp must_== "identity"
     }
     "match a mixed identity accepts encoding request as identity" in {
       val resp = http(host / "test" <:< Map("Accept-Encoding" -> "gzip;q=1.0, identity; q=0.5")  as_str)
-      resp must_=="identity"
+      resp must_== "identity"
     }
     "match a gzip accepts encoding request as gzip" in {
       val resp = http(host / "test" <:< Map("Accept-Encoding" -> "gzip")  as_str)
-      resp must_=="gzip"
+      resp must_== "gzip"
     }
     "match a mixed gzip accepts encoding request as gzip" in {
       val resp = http(host / "test" <:< Map("Accept-Encoding" -> "Compress;q=1.0, gzip; q=0.5")  as_str)
-      resp must_=="gzip"
+      resp must_== "gzip"
     }
     "match a compress accepts encoding request as compress" in {
       val resp = http(host / "test" <:< Map("Accept-Encoding" -> "compress")  as_str)
-      resp must_=="compress"
+      resp must_== "compress"
     }
     "match a mixed compress accepts encoding request as compress" in {
       val resp = http(host / "test" <:< Map("Accept-Encoding" -> "deflate;q=1.0, compress; q=0.5")  as_str)
-      resp must_=="compress"
+      resp must_== "compress"
     }
     "match a deflate accepts encoding request as deflate" in {
       val resp = http(host / "test" <:< Map("Accept-Encoding" -> "deflate")  as_str)
-      resp must_=="deflate"
+      resp must_== "deflate"
     }
     "match a mixed deflate accepts encoding request as deflate" in {
       val resp = http(host / "test" <:< Map("Accept-Encoding" -> "deflate;q=1.0, invalid; q=0.5")  as_str)
-      resp must_=="deflate"
+      resp must_== "deflate"
     }
   }
 }

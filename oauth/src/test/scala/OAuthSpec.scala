@@ -67,7 +67,7 @@ object OAuthSpec extends Specification with unfiltered.spec.jetty.Served {
       }
       val access_token = http(host.POST / "oauth" / "access" <@ (consumer, request_token, verifier) as_token)
       val user = http(host / "user" <@(consumer, access_token, verifier) as_str)
-      user must_=="test_user"
+      user must_== "test_user"
     }
   }
 }
