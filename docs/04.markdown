@@ -54,7 +54,7 @@ compatible set of artifacts.
 
 When using sbt with **binary dependencies** it's best to have the
 Scala version [automatically appended][sbt] so it will always match
-your project's. In an sbt 0.11.x project:
+your project's. In an sbt 0.12.x project:
 
 ```scala
 libraryDependencies += "net.databinder" %% "unfiltered-filter" % "$version$"
