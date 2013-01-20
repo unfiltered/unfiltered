@@ -8,7 +8,6 @@ object Common {
 
   def specsDep(sv: String) =
     sv.split("[.-]").toList match {
-      case "2" :: "8" :: _ => "org.scala-tools.testing" % "specs_2.8.1" % "1.6.8"
       case "2" :: "9" :: "0" :: _ :: _ => "org.scala-tools.testing" %% "specs" % "1.6.8"
       case "2" :: "9" :: _ => "org.scala-tools.testing" % "specs_2.9.1" % "1.6.9"
       case _ => "org.scala-tools.testing" %% "specs" % "1.6.9"
