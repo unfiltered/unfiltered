@@ -56,7 +56,7 @@ object Signatures {
       sig <- signatures.get(p(SignatureMethod)(0))
     } yield {
       val expected = sig.sign(method.toUpperCase, url, p, consumerSec, tokenSec)
-      val actual = Encoding.decode(p(Sig)(0))
+      val actual = p(Sig)(0)
       expected == actual
     }) getOrElse(false)
 }
