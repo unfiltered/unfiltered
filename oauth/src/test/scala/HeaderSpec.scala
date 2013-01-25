@@ -14,7 +14,7 @@ object HeaderSpec extends Specification {
         "oauth_signature_method=\"HMAC-SHA1\"" ::
         "oauth_signature=\"wOJIO9A2W5mFwDgiDvZbTSMK%2FPY%3D\"" ::
         "oauth_timestamp=\"137131200\"" ::
-        "oauth_nonce=\"4572616e48616d6d65724c61686176\"" ::
+        "oauth_nonce=\"45%2B72616e48616d6d65724c61686176\"" ::
         "oauth_callback=\"oob\"" ::
         "oauth_verifier=\"asdfasdfasd\"" ::
         "oauth_version=\"1.0\"" ::
@@ -32,7 +32,7 @@ object HeaderSpec extends Specification {
         SignatureMethod -> "HMAC-SHA1",
         Sig -> "wOJIO9A2W5mFwDgiDvZbTSMK/PY=",
         Timestamp -> "137131200",
-        Nonce -> "4572616e48616d6d65724c61686176",
+        Nonce -> "45+72616e48616d6d65724c61686176",
         Callback -> "oob",
         Verifier -> "asdfasdfasd",
         Version -> "1.0"
