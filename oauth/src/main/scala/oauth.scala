@@ -23,13 +23,14 @@ object OAuth {
 
   /** Authorization: OAuth header extractor */
   object Header {
+    import Encoding._
     val KeyVal = """(\w+)="([\w|:|\/|.|%|-]+)" """.trim.r
     val keys = Set.empty + "realm" + ConsumerKey + TokenKey + SignatureMethod +
       Sig + Timestamp + Nonce + Callback + Verifier + Version
 
     def apply(hvals: Seq[String]) =
       Map((hvals map { _.replace("OAuth ", "") } flatMap {
-        case KeyVal(k, v) if(keys.contains(k)) => Seq((k -> Seq(v)))
+        case KeyVal(k, v) if(keys.contains(k)) => Seq((k -> Seq(decode(v))))
         case b => Nil
       }): _*)
 

@@ -23,7 +23,7 @@ object SignaturesSpec extends Specification with Encoding {
         "http://photos.example.net/photos",
         params
           + ("oauth_signature_method" -> Seq("HMAC-SHA1"))
-          + ("oauth_signature" -> Seq("Lg3Zbxn7JBCc8FavDkihFCYDWtk%3D")),
+          + ("oauth_signature" -> Seq("Lg3Zbxn7JBCc8FavDkihFCYDWtk=")),
         consumerSecret,
         "") must beTrue
     }

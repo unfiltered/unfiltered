@@ -30,7 +30,7 @@ object HeaderSpec extends Specification {
         ConsumerKey -> "0685bd9184jfhq22",
         TokenKey -> "ad180jjd733klru7",
         SignatureMethod -> "HMAC-SHA1",
-        Sig -> "wOJIO9A2W5mFwDgiDvZbTSMK%2FPY%3D",
+        Sig -> "wOJIO9A2W5mFwDgiDvZbTSMK/PY=",
         Timestamp -> "137131200",
         Nonce -> "4572616e48616d6d65724c61686176",
         Callback -> "oob",
