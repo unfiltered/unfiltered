@@ -1,0 +1,12 @@
+Improvements
+
+* Add `headerNames` iterator to HttpRequest, [issue 116][116]
+
+Fixes
+
+* Netty MultiPart.splitContentTypeHeader fails for non-parameterised content type values, [issue 154][154]
+* Some valid oauth1 signatures rejected, [fixed][oauth]
+
+[116]: https://github.com/unfiltered/unfiltered/issues/116
+[154]: https://github.com/unfiltered/unfiltered/issues/154
+[oauth]: https://github.com/unfiltered/unfiltered/commit/dd345c173803c4ef8baf9e9a7a9e7be02c794eb8
