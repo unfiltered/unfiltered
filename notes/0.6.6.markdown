@@ -7,7 +7,9 @@ Fixes
 * Netty MultiPart.splitContentTypeHeader fails for non-parameterised content type values, [issue 154][154]
 * In the unfiltered-oauth module, some valid OAuth1 signatures were
   rejected when using query-string or POST parameters rather than
-  OAuth headers
+  OAuth headers. The `OAuth.Header` extractor now performs its own
+  percent-decoding, and the `Sinatures.verify` assumes the given
+  `params` map has already been decoded.
 
 [116]: https://github.com/unfiltered/unfiltered/issues/116
 [154]: https://github.com/unfiltered/unfiltered/issues/154
