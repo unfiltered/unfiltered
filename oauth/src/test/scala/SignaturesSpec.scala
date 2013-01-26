@@ -8,7 +8,7 @@ object SignaturesSpec extends Specification with Encoding {
     val consumerSecret = "kd94hf93k423kf44"
     val params =  Map(
       "realm" -> Seq("Photos"),
-      "oauth_callback" -> Seq("http%3A%2F%2Fprinter.example.com%2Fready"),
+      "oauth_callback" -> Seq("http://printer.example.com/ready"),
       "oauth_consumer_key" -> Seq(consumerKey),
       "oauth_nonce" -> Seq("1234"),
       "oauth_timestamp" -> Seq("1294511237"),
