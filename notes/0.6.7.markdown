@@ -1,0 +1,2 @@
+Fixes a few more issues in the `unfiltered-oauth` module's OAuth1
+signature validation.
