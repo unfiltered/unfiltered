@@ -11,15 +11,15 @@ object Signatures {
   implicit val encoding = "UTF-8"
 
   trait ParamNormalizing { self: Encoding =>
-    /** decode then re-encode */
-    private def recode(p: Params) =
+    /** encode the keys and the value sequences */
+    private def encodeParams(p: Params) =
       (Map.empty[String, Seq[String]].withDefaultValue(Nil) /: p)((rc,e) =>
-        rc + (encode(decode(e._1)) -> (e._2 map { str: String => encode(decode(str)) }) )
+        rc + (encode(e._1) -> (e._2 map { str: String => encode(str) }) )
       )
 
     /** [[http://tools.ietf.org/html/rfc5849#section-3.4.1.3]] */
     def normalizedParams(p: Params) =
-      (new collection.immutable.TreeMap[String, Seq[String]] ++ recode(p)) map {
+      (new collection.immutable.TreeMap[String, Seq[String]] ++ encodeParams(p)) map {
         case (k, v) => v.toList sortWith(_<_) map {
           case e => k + "=" + e
         } mkString "&"
