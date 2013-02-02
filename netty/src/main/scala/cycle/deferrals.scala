@@ -16,7 +16,7 @@ object ThreadPool {
 }
 
 /** Evaluates the intent and its response function on
- * an I/O worker thread. This is only appopriate if the
+ * an I/O worker thread. This is only appropriate if the
  * intent is fully CPU-bound. If any thread-blocking
  * I/O is required, use deferred execution.*/
 trait SynchronousExecution {

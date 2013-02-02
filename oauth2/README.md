@@ -116,7 +116,7 @@ If authorization validation fails, the client will recieve an error indicated in
 If authroization validation passes, the client will recieve a json encoded response string with the `access_token` and optional properties `refresh_token` and `expires_in`
 
 
-#### [Grant type extentions](http://tools.ietf.org/html/draft-ietf-oauth-v2-16#section-4.5)
+#### [Grant type extensions](http://tools.ietf.org/html/draft-ietf-oauth-v2-16#section-4.5)
 
 Not supported
 

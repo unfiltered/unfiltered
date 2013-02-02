@@ -176,7 +176,7 @@ object Mime {
   
   private val Ext = """([.]\w+)$""".r
   
-  /** given a file name, extract the extention and match its content type */
+  /** given a file name, extract the extension and match its content type */
   def unapply(name: String) = Ext.findFirstMatchIn(name) match {
     case Some(ext) => types.get(ext.subgroups(0))
     case _ => None

@@ -49,7 +49,7 @@ trait HttpServer extends Server with PlanServer[ChannelHandler] {
   def handlers: List[() => ChannelHandler]
   /** Convenience method for adding a HttpChunkAggregator to the
    *  pipeline. Supports chunked request bodies up to the specified
-   *  maximum bytes. Without this aggregater, chunked requests will
+   *  maximum bytes. Without this aggregator, chunked requests will
    *  not not be handled. */
   def chunked(maxContentLength: Int = 1048576) =
     makePlan(new HttpChunkAggregator(maxContentLength))

@@ -4,7 +4,7 @@ import unfiltered.response.ResponseFunction
 import scala.util.control.Exception.allCatch
 import java.net.URLDecoder
 
-/** Basic parameter acess, and a pattern matching extractor in Extract. */
+/** Basic parameter access, and a pattern matching extractor in Extract. */
 object Params {
   type Map = scala.collection.Map[String, Seq[String]]
   /**
@@ -154,7 +154,7 @@ object QParams {
     def apply(params: Params.Map) = exec(params, None, Nil)._3
   }
 
-  /** Create a validion token from a named value from the input Params.Map */
+  /** Create a validation token from a named value from the input Params.Map */
   def lookup[E](key: String): QueryM[E,Option[String]] =
     QueryM {
       (params, _, log0) =>

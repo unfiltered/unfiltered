@@ -1,7 +1,7 @@
 package unfiltered.response
 
 /** Defers evaluation of the given block until the response function
- * is applied. Applications may defer expensive compution, state changes,
+ * is applied. Applications may defer expensive computation, state changes,
  * blocking I/O, and other undesirable activity that would occur upon the
  * eager application of an intent. A Pass can not be deferred*/
 object Defer {

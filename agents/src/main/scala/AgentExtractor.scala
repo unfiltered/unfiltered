@@ -2,7 +2,7 @@ package unfiltered.request
 
 /**
  * AgentExtractor instances provide predicate (HttpRequest[_] => Boolean)
- * for ad-hoc tests, a standard Unfiltered reqeust extractor, and a means
+ * for ad-hoc tests, a standard Unfiltered request extractor, and a means
  * for composing simple extractors into more complex ones.
  */
 trait AgentExtractor extends (HttpRequest[_] => Boolean) {
