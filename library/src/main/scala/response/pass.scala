@@ -1,6 +1,6 @@
 package unfiltered.response
 
-/** Tells the binding implentation to treat the request as non-matching */
+/** Tells the binding implementation to treat the request as non-matching */
 object Pass extends ResponseFunction[Any] {
   type RF = ResponseFunction[Any]
   def apply[T](res: HttpResponse[T]) = res

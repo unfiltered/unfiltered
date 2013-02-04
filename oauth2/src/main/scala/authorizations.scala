@@ -344,7 +344,7 @@ trait Authorized extends AuthorizationProvider
                 )
             }
           case unsupported =>
-            // note the oauth2 spec does allow for extention grant types,
+            // note the oauth2 spec does allow for extension grant types,
             // this implementation currently does not
             errorResponder(
               UnsupportedGrantType, "%s is unsupported" format unsupported,

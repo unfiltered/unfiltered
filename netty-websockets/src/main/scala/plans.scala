@@ -22,7 +22,7 @@ object Plan {
   import jnetty.handler.codec.http.HttpVersion.HTTP_1_1
   import jnetty.handler.codec.http.HttpResponseStatus.FORBIDDEN
 
-  /** The trasition from an http request handling to websocket request handling.
+  /** The transition from an http request handling to websocket request handling.
    *  Note: This can not be an Async.Intent because RequestBinding is a Responder for HttpResponses */
   @deprecated("use unfiltered.netty.websocket.Intent")
   type Intent = PartialFunction[RequestBinding, SocketIntent]
@@ -79,7 +79,7 @@ private [websockets] object WSLocation {
   def apply[T](r: HttpRequest[T]) = "%s://%s%s" format(if(r.isSecure) "wss" else "ws", Host(r).get, r.uri)
 }
 
-/** Provides an extention point for netty ChannelHandlers that wish to
+/** Provides an extension point for netty ChannelHandlers that wish to
  *  support the WebSocket protocol */
 trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
   import jnetty.channel.ExceptionEvent
@@ -191,7 +191,7 @@ case class SocketPlan(intent: SocketIntent,
   }
 }
 
-/** A Plan configued to handle Throwables by printing them before closing the channel */
+/** A Plan configured to handle Throwables by printing them before closing the channel */
 class Planify(val intent: Intent, val pass: PassHandler)
 extends Plan with CloseOnException
 
