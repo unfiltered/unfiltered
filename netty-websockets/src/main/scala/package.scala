@@ -11,7 +11,7 @@ package object websockets {
   import jnetty.handler.codec.http.HttpResponseStatus.FORBIDDEN
   import jnetty.handler.codec.http.HttpVersion.HTTP_1_1
   import jnetty.util.CharsetUtil
-  /** The trasition from an http request handling to websocket request handling.
+  /** The transition from an http request handling to websocket request handling.
    *  Note: This can not be an Async.Intent because RequestBinding is a Responder for HttpResponses */
   type Intent = PartialFunction[RequestBinding, SocketIntent]
 

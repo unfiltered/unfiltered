@@ -14,7 +14,7 @@ package unfiltered.oauth2
  * methods used to access protected resources are beyond the scope of
  * this specification and are defined by companion specifications.
  *
- * A hook for providing extention properties is provided as the `extras`
+ * A hook for providing extension properties is provided as the `extras`
  * method which defaults to an empty map
  *
  * @see [[http://tools.ietf.org/html/draft-ietf-oauth-v2-20#section-1.3]]
@@ -76,7 +76,7 @@ trait TokenStore {
   def exchangeAuthorizationCode(codeToken: Token): Token
 
   /**
-   * Not responseTypes is a seq to enable oauth extentions but for most cases, it can
+   * Not responseTypes is a seq to enable oauth extensions but for most cases, it can
    * be expected to contain one element
    * @see AuthorizationServer
    * @see AuthorizationCodeRequest
@@ -89,7 +89,7 @@ trait TokenStore {
         scope: Seq[String], redirectUri: String): String
 
   /**
-   * Note responseTypes is a seq to enable oauth extentions but for most cases, it can
+   * Note responseTypes is a seq to enable oauth extensions but for most cases, it can
    * be expected to contain one element
    * @see AuthorizationServer
    * @see ImplicitAuthorizationRequest

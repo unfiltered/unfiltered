@@ -112,7 +112,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
       Should be called by onMessageReceived. */
   protected def upgrade(ctx: ChannelHandlerContext, e: MessageEvent) = {
 
-    /** Maintain state as exlained here:
+    /** Maintain state as explained here:
     http://docs.jboss.org/netty/3.2/api/org/jboss/netty/channel/ChannelHandlerContext.html */
     val channelState = Helpers.channelState(ctx)
 
