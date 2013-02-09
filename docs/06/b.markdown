@@ -72,8 +72,8 @@ parameter of the given name and discard the rest. Subsequent functions
 may require a `nonempty` value as above, or produce a `trimmed`
 string, or an `int` value from the string.
 
-When a parameter transformation function fails, `None` is produced an
-the extractor dose not match for the request. Knowing this, you can
+When a parameter transformation function fails, `None` is produced and
+the extractor does not match for the request. Knowing this, you can
 write your own transformation functions using `map` and `filter`.
 
 ```scala
