@@ -22,7 +22,7 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
   def intent: Plan.Intent
   def catching(ctx: ChannelHandlerContext)(thunk: => Unit) {
     try { thunk } catch {
-      case e => onException(ctx, e)
+      case e: Throwable => onException(ctx, e)
     }
   }
 

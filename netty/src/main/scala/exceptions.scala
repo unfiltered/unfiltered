@@ -24,7 +24,7 @@ trait ServerErrorResponse { self: ExceptionHandler =>
         "Internal Server Error".getBytes("utf-8")))
         ch.write(res).addListener(ChannelFutureListener.CLOSE)
     } catch {
-      case _ => ch.close()
+      case _: Throwable => ch.close()
     }
   }
 }

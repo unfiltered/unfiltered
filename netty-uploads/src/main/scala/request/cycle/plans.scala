@@ -28,7 +28,7 @@ trait MultiPartDecoder extends SimpleChannelUpstreamHandler with AbstractMultiPa
 
   def catching(ctx: ChannelHandlerContext)(thunk: => Unit) {
     try { thunk } catch {
-      case e => onException(ctx, e)
+      case e: Throwable => onException(ctx, e)
     }
   }
 

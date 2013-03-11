@@ -66,7 +66,7 @@ object FromCookies {
       // version may appear before name-value
       val (version, startAt) =
         if(names(0).equalsIgnoreCase(Version))
-          try { (Integer.parseInt(values(0)), 1) } catch { case _ => (0, 1) }
+          try { (Integer.parseInt(values(0)), 1) } catch { case _: NumberFormatException => (0, 1) }
         else (0, 0)
 
       if(names.isEmpty) Seq.empty[Cookie]

@@ -31,7 +31,7 @@ class DiskFileWrapper(item: fu.FileItem) extends AbstractDiskFile {
     item.write(out)
     Some(out)
   } catch {
-    case _ => None
+    case _: Throwable => None
   }
 
   def inMemory = item.isInMemory

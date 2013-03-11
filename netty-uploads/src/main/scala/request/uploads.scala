@@ -168,7 +168,7 @@ extends AbstractDiskFile {
     item.renameTo(out)
     Some(out)
   } catch {
-    case _ => None
+    case _: Throwable => None
   }
 
   def inMemory = item.isInMemory
