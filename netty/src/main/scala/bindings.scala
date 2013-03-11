@@ -1,11 +1,11 @@
 package unfiltered.netty
 
-import unfiltered.{JIteratorIterator,Async}
+import unfiltered.{Async}
 import unfiltered.response.{ResponseFunction, HttpResponse, Pass}
 import unfiltered.request.{HttpRequest,POST,RequestContentType,Charset}
 import java.net.URLDecoder
 import org.jboss.netty.handler.codec.http._
-import java.io._
+import java.io.{BufferedReader, ByteArrayOutputStream, InputStreamReader}
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBufferOutputStream,
   ChannelBufferInputStream}
 import org.jboss.netty.channel._
@@ -15,6 +15,7 @@ import org.jboss.netty.handler.codec.http.{HttpResponse=>NHttpResponse,
                                            HttpRequest=>NHttpRequest}
 import java.nio.charset.{Charset => JNIOCharset}
 import unfiltered.Cookie
+import scala.collection.JavaConverters._
 
 object HttpConfig {
    val DEFAULT_CHARSET = "UTF-8"
@@ -53,8 +54,8 @@ extends HttpRequest(msg) with Async.Responder[NHttpResponse] {
 
   def parameterNames = params.keySet.iterator
   def parameterValues(param: String) = params.getOrElse(param, Seq.empty)
-  def headerNames = new JIteratorIterator(req.getHeaderNames.iterator)
-  def headers(name: String) = new JIteratorIterator(req.getHeaders(name).iterator)
+  def headerNames = req.getHeaderNames.iterator.asScala
+  def headers(name: String) = req.getHeaders(name).iterator.asScala
 
   @deprecated("use the header extractor request.Cookies instead")
   lazy val cookies = {

@@ -1,10 +1,10 @@
 package unfiltered.filter
 
-import unfiltered.JEnumerationIterator
 import unfiltered.response.HttpResponse
 import unfiltered.request.HttpRequest
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import unfiltered.Cookie
+import scala.collection.JavaConverters._
 
 class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   def inputStream = req.getInputStream
@@ -12,16 +12,13 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   def protocol = req.getProtocol
   def method = req.getMethod.toUpperCase
   def uri = req.getRequestURI :: Nil ++ Option(req.getQueryString).map("?%s".format(_)) mkString("")
-  def parameterNames = new JEnumerationIterator(
-    req.getParameterNames.asInstanceOf[java.util.Enumeration[String]]
-  )
+  def parameterNames =
+    req.getParameterNames.asInstanceOf[java.util.Enumeration[String]].asScala
   def parameterValues(param: String) = Option[Seq[String]](req.getParameterValues(param)).getOrElse(Nil)
-  def headerNames = new JEnumerationIterator(
-    req.getHeaderNames.asInstanceOf[java.util.Enumeration[String]]
-  )
-  def headers(name: String) = new JEnumerationIterator(
-    req.getHeaders(name).asInstanceOf[java.util.Enumeration[String]]
-  )
+  def headerNames =
+    req.getHeaderNames.asInstanceOf[java.util.Enumeration[String]].asScala
+  def headers(name: String) =
+    req.getHeaders(name).asInstanceOf[java.util.Enumeration[String]].asScala
   lazy val cookies = req.getCookies match {
     case null => Nil
     case jcookies =>
