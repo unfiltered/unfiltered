@@ -13,6 +13,7 @@ import unfiltered.request.{
   MultiPartMatcher,MultipartData, AbstractDiskFile, TupleGenerator,
   AbstractStreamedFile, StreamedExtractor, AbstractDiskExtractor,
   DiskExtractor }
+import unfiltered.util.control.NonFatal
 
 import org.jboss.{netty => jnetty}
 import jnetty.handler.codec.http.{HttpRequest => NHttpRequest}
@@ -168,7 +169,7 @@ extends AbstractDiskFile {
     item.renameTo(out)
     Some(out)
   } catch {
-    case _: Throwable => None
+    case NonFatal(_) => None
   }
 
   def inMemory = item.isInMemory

@@ -1,6 +1,7 @@
 package unfiltered.util
 
 import scala.util.control.Exception.allCatch
+import unfiltered.util.control.NonFatal
 
 object Port {
   /** Finds any available port and returns it */
@@ -22,10 +23,10 @@ object Browser {
         dsk.getMethod("getDesktop").invoke(null), new URI(loc)
       )
       None
-    } catch { case e: Throwable => Some(e) }
+    } catch { case NonFatal(e) => Some(e) }
 }
 
-/** Extractors that match on strings that can be converted to types */
+/** Extractors that match on strings that can be converted to types. */
 object Of {
   object Int {
     def unapply(str: String) = allCatch.opt { str.toInt }

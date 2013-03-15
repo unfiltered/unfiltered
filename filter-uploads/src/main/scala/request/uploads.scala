@@ -7,6 +7,7 @@ import unfiltered.request.{
   AbstractDiskExtractor, DiskExtractor }
 
 import unfiltered.filter.util.IteratorConversions
+import unfiltered.util.control.NonFatal
 import scala.util.control.Exception.allCatch
 
 import javax.servlet.http.HttpServletRequest
@@ -31,7 +32,7 @@ class DiskFileWrapper(item: fu.FileItem) extends AbstractDiskFile {
     item.write(out)
     Some(out)
   } catch {
-    case _: Throwable => None
+    case NonFatal(_) => None
   }
 
   def inMemory = item.isInMemory

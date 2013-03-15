@@ -6,6 +6,7 @@ import unfiltered.netty.request._
 import unfiltered.response._
 import unfiltered.response.{ResponseFunction, Pass => UPass}
 import unfiltered.request.{HttpRequest, POST}
+import unfiltered.util.control.NonFatal
 import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.http.{HttpRequest=>NHttpRequest,
                                            HttpResponse=>NHttpResponse,
@@ -28,7 +29,7 @@ trait MultiPartDecoder extends SimpleChannelUpstreamHandler with AbstractMultiPa
 
   def catching(ctx: ChannelHandlerContext)(thunk: => Unit) {
     try { thunk } catch {
-      case e: Throwable => onException(ctx, e)
+      case NonFatal(e) => onException(ctx, e)
     }
   }
 

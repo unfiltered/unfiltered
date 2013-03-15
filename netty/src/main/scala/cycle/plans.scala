@@ -8,6 +8,7 @@ import org.jboss.netty.handler.codec.http.HttpVersion._
 import unfiltered.netty._
 import unfiltered.response.{ResponseFunction, Pass}
 import unfiltered.request.HttpRequest
+import unfiltered.util.control.NonFatal
 
 object Plan {
   type Intent = unfiltered.Cycle.Intent[ReceivedMessage,NHttpResponse]
@@ -22,7 +23,7 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
   def intent: Plan.Intent
   def catching(ctx: ChannelHandlerContext)(thunk: => Unit) {
     try { thunk } catch {
-      case e: Throwable => onException(ctx, e)
+      case NonFatal(e) => onException(ctx, e)
     }
   }
 

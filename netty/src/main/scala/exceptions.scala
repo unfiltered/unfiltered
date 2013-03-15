@@ -4,6 +4,8 @@ import org.jboss.netty.channel._
 import org.jboss.netty.handler.codec.http._
 import org.jboss.netty.buffer.ChannelBuffers
 
+import unfiltered.util.control.NonFatal
+
 trait ExceptionHandler { self: SimpleChannelUpstreamHandler =>
   def onException(ctx: ChannelHandlerContext, t: Throwable)
   override def exceptionCaught(ctx: ChannelHandlerContext,
@@ -24,7 +26,7 @@ trait ServerErrorResponse { self: ExceptionHandler =>
         "Internal Server Error".getBytes("utf-8")))
         ch.write(res).addListener(ChannelFutureListener.CLOSE)
     } catch {
-      case _: Throwable => ch.close()
+      case NonFatal(_) => ch.close()
     }
   }
 }
