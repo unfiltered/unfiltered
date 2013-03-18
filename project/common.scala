@@ -15,7 +15,7 @@ object Common {
 
   def specs2Dep(sv: String) =
     sv.split("[.-]").toList match {
-      case "2" :: "9" :: _ => "org.specs2" %% "specs2" % "1.12.3"
+      case "2" :: "9" :: _ => "org.specs2" %% "specs2" % "1.12.4.1"
       case "2" :: "10" :: _ => "org.specs2" %% "specs2" % "1.13"
       case _ => sys.error("Unsupported scala version")
     }
