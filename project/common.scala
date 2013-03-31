@@ -15,6 +15,8 @@ object Common {
 
   def specs2Dep(sv: String) =
     sv.split("[.-]").toList match {
+      case "2" :: "9" :: "1" :: "1" :: _ =>
+        "org.specs2" %% "specs2" % "1.12.4"
       case "2" :: "9" :: _ => "org.specs2" %% "specs2" % "1.12.4.1"
       case "2" :: "10" :: _ => "org.specs2" %% "specs2" % "1.13"
       case _ => sys.error("Unsupported scala version")
@@ -37,9 +39,7 @@ object Common {
 
     version := "0.6.7",
 
-    crossScalaVersions := Seq("2.9.1-1", "2.9.2", "2.10.0"),
-
-    scalaVersion := "2.9.2",
+    crossScalaVersions := Seq("2.9.1-1", "2.9.2", "2.9.3", "2.10.1"),
 
     scalacOptions <++= scalaVersion.map(sv=>
       Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked")
