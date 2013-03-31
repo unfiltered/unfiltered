@@ -55,6 +55,9 @@ object Unfiltered extends Build {
       projectId = "unfiltered"
    ).dependsOn(util)
 
+  lazy val directives =
+    module("directives")().dependsOn(library)
+
   lazy val filters = module("filter")().dependsOn(library)
 
   lazy val filtersAsync = module("filter-async")().dependsOn(filters)
