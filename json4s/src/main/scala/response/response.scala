@@ -1,8 +1,7 @@
 package unfiltered.response
 
-import net.liftweb.json.JsonAST._
-import net.liftweb.json.JsonDSL._
-import net.liftweb.json.Printer.compact
+import org.json4s._
+import native.JsonMethods._
 
 object Json {
   def jsonToString(json: JValue) = compact(render(json))
