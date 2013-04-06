@@ -192,6 +192,7 @@ case class SocketPlan(intent: SocketIntent,
 }
 
 /** A Plan configured to handle Throwables by printing them before closing the channel */
+@deprecated("Use Planify.apply or extend Plan", "0.6.8")
 class Planify(val intent: Intent, val pass: PassHandler)
 extends Plan with CloseOnException
 

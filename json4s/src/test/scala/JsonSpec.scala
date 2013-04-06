@@ -11,10 +11,12 @@ object JsonSpec extends Specification  with unfiltered.spec.jetty.Served {
   import org.json4s.JsonDSL._
   import org.json4s.native.JsonParser._
 
-  class TestPlan extends unfiltered.filter.Planify({
-    case UFPath("/") =>
-      Json(("foo" -> "bar") ~ ("baz" -> "boom"))
-  })
+  class TestPlan extends unfiltered.filter.Plan {
+    def intent = {
+      case UFPath("/") =>
+        Json(("foo" -> "bar") ~ ("baz" -> "boom"))
+    }
+  }
 
   def setup = { _.filter(new TestPlan) }
 

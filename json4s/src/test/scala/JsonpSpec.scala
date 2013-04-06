@@ -9,23 +9,25 @@ object JsonpSpec extends Specification  with unfiltered.spec.jetty.Served {
 
   import dispatch.classic._
 
-  class TestPlan extends unfiltered.filter.Planify({
-    case GET(UFPath("/jsonp") & Jsonp(callback)) => ResponseString(callback.wrap("[42]"))
-    case GET(UFPath("/jsonp.json") & Jsonp(callback)) => ResponseString(callback.wrap("[42]"))
-    case GET(UFPath("/jsonp/optional") & Jsonp.Optional(callback)) => ResponseString(callback.wrap("[42]"))
-    case GET(UFPath("/jsonp/lift-json") & Jsonp(callback)) => callback respond {
-      import org.json4s._
-      JArray(JInt(42) :: Nil)
-    }
+  class TestPlan extends unfiltered.filter.Plan {
+    def intent = {
+      case GET(UFPath("/jsonp") & Jsonp(callback)) => ResponseString(callback.wrap("[42]"))
+      case GET(UFPath("/jsonp.json") & Jsonp(callback)) => ResponseString(callback.wrap("[42]"))
+      case GET(UFPath("/jsonp/optional") & Jsonp.Optional(callback)) => ResponseString(callback.wrap("[42]"))
+      case GET(UFPath("/jsonp/lift-json") & Jsonp(callback)) => callback respond {
+        import org.json4s._
+        JArray(JInt(42) :: Nil)
+      }
 
-    case GET(UFPath("/jsonp/lift-json/optional") & Jsonp.Optional(callback)) => callback respond {
-      import org.json4s
-      import org.json4s.JsonDSL._
-      "answer" -> Seq(42)
-    }
+      case GET(UFPath("/jsonp/lift-json/optional") & Jsonp.Optional(callback)) => callback respond {
+        import org.json4s
+        import org.json4s.JsonDSL._
+        "answer" -> Seq(42)
+      }
 
-    case _ => ResponseString("bad req")
-  })
+      case _ => ResponseString("bad req")
+    }
+  }
 
   def setup = { _.filter(new TestPlan) }
 

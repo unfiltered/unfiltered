@@ -22,3 +22,10 @@ Check out the examples in the [Directives README][read].
 * `unfiltered-netty` depends on Netty 3.6.4
 * `unfiltered-jetty` depends on Jetty 7.6.0
 * `unfiltered-json` is now `unfiltered-json4s` and depends on json4s 3.2.3.
+
+### API deprecations
+
+All variants of the `Planify` base class are deprecated; they are
+meant to accept an inline partial function that runs afoul of an
+implementation restriction in Scala 2.10. Use `Planify.apply` or
+extend `Plan` instead.

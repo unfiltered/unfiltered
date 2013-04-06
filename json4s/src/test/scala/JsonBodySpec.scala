@@ -11,12 +11,14 @@ with unfiltered.spec.jetty.Served {
 
   import dispatch.classic._
 
-  class TestPlan extends unfiltered.filter.Planify({
-    case r @ POST(UFPath("/")) => ResponseString(JsonBody(r) match {
-      case Some(org.json4s.JArray(a :: b :: Nil)) => "array of 2"
-      case _ => "expected json array of 2"
-    })
-  })
+  class TestPlan extends unfiltered.filter.Plan {
+    def intent = {
+      case r @ POST(UFPath("/")) => ResponseString(JsonBody(r) match {
+        case Some(org.json4s.JArray(a :: b :: Nil)) => "array of 2"
+        case _ => "expected json array of 2"
+      })
+    }
+  }
 
   def setup = { _.filter(new TestPlan) }
 
