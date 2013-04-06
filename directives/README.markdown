@@ -5,9 +5,10 @@ A monadic api for [Unfiltered](http://github.com/unfiltered/unfiltered) demonstr
 
 Download / Use
 ========
-Unfiltered-Directives is published to maven central for scala versions "2.9.1-1", "2.9.2" and "2.10.0"
 
-    libraryDependencies += "com.jteigen" %% "unfiltered-directives" % "0.1"
+Directives is a standard Unfiltered module published to Maven central.
+
+    libraryDependencies += "net.databinder" %% "unfiltered-directives" % "0.6.8"
 
 Why ?
 =====
