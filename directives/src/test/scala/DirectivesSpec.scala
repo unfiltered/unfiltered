@@ -53,6 +53,7 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
     }
     "respond with unsupported media if content-type wrong" in {
       val resp = Http(localhost / "accept_json" / "123"
+        <:< Map("Accept" -> "application/json")
         <:< Map("Content-Type" -> "text/plain")
         << someJson)
       resp().getStatusCode must_== 415
