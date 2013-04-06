@@ -1,0 +1,24 @@
+### Directives
+
+This release includes [teigen][tg]'s **Directives** library as a
+standard Unfiltered module. With this module it's much easier to
+respond appropriately to requests that do not meet a service's
+acceptance criteria.
+
+For example, when a particular header is required to handle a request,
+a simple Unfiltered application might require it through
+pattern-matching. When that header is not present, the relevant case
+doesn't match and the service would respond with a 404 status. It's
+much better to respond with a specific error status, and Directives
+makes this easy.
+
+Check out the examples in the [Directives README][read].
+
+[tg]: https://github.com/teigen
+[read]: https://github.com/unfiltered/unfiltered/tree/master/directives#readme
+
+### Dependency Updates
+
+* `unfiltered-netty` depends on Netty 3.6.4
+* `unfiltered-jetty` depends on Jetty 7.6.0
+* `unfiltered-json` is now `unfiltered-json4s` and depends on json4s 3.2.3.
