@@ -14,7 +14,7 @@ Why ?
 =====
 Writing well behaved http applications is hard. You are often left with the choice between readable code and a well behaved application.
 Unfiltered-Directives is an attempt at making it simpler to write readable and well behaved applications.
-Its design is influenced by [parser-combinators][https://github.com/scala/scala/blob/master/src/library/scala/util/parsing/combinator/Parsers.scala],
+Its design is influenced by [parser-combinators](https://github.com/scala/scala/blob/master/src/library/scala/util/parsing/combinator/Parsers.scala),
 but unlike the parser combinators, it avoids the heavy use of operators.
 
 1 - Good code, Bad HTTP
