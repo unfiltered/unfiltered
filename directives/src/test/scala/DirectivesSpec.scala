@@ -17,6 +17,8 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
   import unfiltered.response._
   import unfiltered.directives._, Directives._
 
+  import dispatch._
+
   // it's simple to define your own directives
   def contentType(tpe:String) =
     when{ case RequestContentType(`tpe`) => } orElse UnsupportedMediaType
@@ -33,13 +35,15 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
 
   val someJson = """{"a": 1}"""
 
+  val localhost = dispatch.host("127.0.0.1", port)
+
   "Directives" should {
     "respond with json if accepted" in {
-      val resp = http(host / "accept_json" / "123"
+      val resp = Http(localhost / "accept_json" / "123"
         <:< Map("Accept" -> "application/json")
         <:< Map("Content-Type" -> "application/json")
-        << someJson as_str)
-      resp must_== someJson
+        << someJson OK as.String)
+      resp() must_== someJson
     }
   }
 }
