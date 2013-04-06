@@ -23,6 +23,12 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
   def contentType(tpe:String) =
     when{ case RequestContentType(`tpe`) => } orElse UnsupportedMediaType
 
+  // enables `===` in awesome_json case
+  implicit val contentTypeAwesome =
+    Directive.Eq { (R:RequestContentType.type, value:String) =>
+      when { case R(`value`) => value } orElse UnsupportedMediaType
+    }
+
   def intent[A,B] = Directive.Intent(unfiltered.request.Path[A]) {
     case Seg(List("accept_json", id)) =>
       for {
@@ -31,6 +37,13 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
         _ <- Accepts.Json
         r <- request[Any]
       } yield Ok ~> JsonContent ~> ResponseBytes(Body.bytes(r))
+    case Seg(List("awesome_json", id)) =>
+      for {
+        _ <- POST
+        _ <- RequestContentType === "application/json" // <-- awesome syntax
+        _ <- Accepts.Json
+        r <- request[Any]
+      } yield Ok ~> JsonContent ~> ResponseBytes(Body bytes r)
   }
 
   val someJson = """{"a": 1}"""
@@ -55,6 +68,28 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
       val resp = Http(localhost / "accept_json" / "123"
         <:< Map("Accept" -> "application/json")
         <:< Map("Content-Type" -> "text/plain")
+        << someJson)
+      resp().getStatusCode must_== 415
+    }
+  }
+  "Directives decorated" should {
+    "respond with json if accepted" in {
+      val resp = Http(localhost / "awesome_json" / "123"
+        <:< Map("Accept" -> "application/json")
+        <:< Map("Content-Type" -> "application/json")
+        << someJson OK as.String)
+      resp() must_== someJson
+    }
+    "respond with unsupported media if content-type wrong" in {
+      val resp = Http(localhost / "awesome_json" / "123"
+        <:< Map("Accept" -> "application/json")
+        <:< Map("Content-Type" -> "text/plain")
+        << someJson)
+      resp().getStatusCode must_== 415
+    }
+    "respond with unsupported media if content-type missing" in {
+      val resp = Http(localhost / "awesome_json" / "123"
+        <:< Map("Accept" -> "application/json")
         << someJson)
       resp().getStatusCode must_== 415
     }
