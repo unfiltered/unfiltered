@@ -45,5 +45,17 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
         << someJson OK as.String)
       resp() must_== someJson
     }
+    "respond with not acceptable accepts header missing" in {
+      val resp = Http(localhost / "accept_json" / "123"
+        <:< Map("Content-Type" -> "application/json")
+        << someJson)
+      resp().getStatusCode must_== 406
+    }
+    "respond with unsupported media if content-type wrong" in {
+      val resp = Http(localhost / "accept_json" / "123"
+        <:< Map("Content-Type" -> "text/plain")
+        << someJson)
+      resp().getStatusCode must_== 415
+    }
   }
 }
