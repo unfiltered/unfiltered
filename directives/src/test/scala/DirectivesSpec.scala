@@ -35,7 +35,7 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
 
   val someJson = """{"a": 1}"""
 
-  val localhost = dispatch.host("127.0.0.1", port)
+  def localhost = dispatch.host("127.0.0.1", port)
 
   "Directives" should {
     "respond with json if accepted" in {
