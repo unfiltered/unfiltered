@@ -62,7 +62,7 @@ Join the [Unfiltered mailing list on Google Groups](http://groups.google.com/gro
 
 There's an in-progress example app using Unfiltered made by [klaeufer](https://github.com/klaeufer), [unfiltered-example-bookmarks](https://github.com/webservices-cs-luc-edu/unfiltered-example-bookmarks). Also, most [giter8](https://github.com/n8han/giter8) templates for Unfiltered contain a bit of example code.
 
-- [unfiltered-netty.g8](https://github.com/n8han/unfiltered-netty.g8) g8 template for netty webservers
+- [unfiltered-netty.g8](https://github.com/unfiltered/unfiltered-netty.g8) g8 template for netty webservers
 - [unfiltered-war.g8](https://github.com/n8han/unfiltered-war.g8) g8 template configured with sbt war plugin
 - [unfiltered-websockets.g8](https://github.com/softprops/unfiltered-websockets.g8) g8 template for websocket based chat app
 - [unfiltered.g8](https://github.com/softprops/unfiltered.g8) g8 template example specs tests `QParams` validators and `org.clapper.avsl.Logger` logging configuration
