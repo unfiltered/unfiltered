@@ -1,7 +1,7 @@
 package unfiltered.request
 
 /**
- * AgentExtractor instances provide predicate (HttpRequest[_] => Boolean)
+ * AgentExtractor instances provide a predicate (HttpRequest[_] => Boolean)
  * for ad-hoc tests, a standard Unfiltered request extractor, and a means
  * for composing simple extractors into more complex ones.
  */
@@ -13,7 +13,7 @@ trait AgentExtractor extends (HttpRequest[_] => Boolean) {
     val test = (ua: String) => AgentExtractor.this.test(ua) && e.test(ua)
   }
   def apply(req: HttpRequest[_]) =
-    UserAgent.unapply(req).map(test).getOrElse(false)
+    UserAgent.unapply(req).exists(test)
   def unapply[A](req: HttpRequest[A]) =
-    UserAgent.unapply(req).flatMap(ua => if(test(ua)) Some(req) else None)
+    UserAgent.unapply(req).collect { case ua if test(ua) => Some(req) }
 }
