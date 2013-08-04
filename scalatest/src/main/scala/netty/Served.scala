@@ -1,21 +1,22 @@
 package unfiltered.scalatest.netty
 
-import _root_.unfiltered.scalatest.Hosted
-import org.scalatest.fixture.FixtureFeatureSpec
+import unfiltered.scalatest.Hosted
+import org.scalatest.fixture.FeatureSpec
 
+trait Served extends FeatureSpec with Hosted {
 
-trait Served extends FixtureFeatureSpec with Hosted {
   import unfiltered.netty._
   def setup: (Int => Server)
-  lazy val server = setup(port)
+  def getServer = setup(port)
 
   override protected def withFixture(test: NoArgTest) {
-    server.start();
+    val server = getServer
+    server.start()
     try {
       test() // Invoke the test function
     } finally {
-      server.stop();
-      server.destroy();
+      server.stop()
+      server.destroy()
     }
   }
 }
