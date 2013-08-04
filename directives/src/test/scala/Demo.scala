@@ -58,7 +58,7 @@ class DemoPlan2 extends Plan {
   def contentType(tpe:String) =
     when{ case RequestContentType(`tpe`) => } orElse UnsupportedMediaType
 
-  def intent = Path.Intent {
+  def intent = Directive.Intent.Path {
     case Seg(List("example", id)) =>
       for {
         _ <- POST
@@ -81,7 +81,7 @@ class DemoPlan2_1 extends Plan {
     when{ case R(`value`) => value } orElse UnsupportedMediaType
   }
 
-  def intent = Path.Intent {
+  def intent = Directive.Intent.Path {
     case Seg(List("example", id)) =>
       for {
         _ <- POST

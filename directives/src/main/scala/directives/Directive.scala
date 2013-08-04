@@ -33,6 +33,7 @@ object Directive {
         case Error(response)   => response
       }
     }
+    /** Directive intent constructor for a partial function on path strings  */
     def Path[T] = Mapping(unfiltered.request.Path[T])
 
     case class Mapping[T, X](from: HttpRequest[T] => X) {

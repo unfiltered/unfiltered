@@ -29,7 +29,7 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
       when { case R(`value`) => value } orElse UnsupportedMediaType
     }
 
-  def intent[A,B] = unfiltered.request.Path.Intent {
+  def intent[A,B] = Directive.Intent.Path {
     case Seg(List("accept_json", id)) =>
       for {
         _ <- POST
