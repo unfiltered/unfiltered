@@ -43,6 +43,7 @@ trait Syntax extends Directives {
   implicit def defPathIntent(p:Path.type) = PathIntentions
 
   object PathIntentions {
-    def Intent = Directive.Intent(Path[Any])
+    def Intent[T] = Directive.Intent.Mapping(Path[T])
   }
+
 }

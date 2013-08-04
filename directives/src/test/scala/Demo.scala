@@ -102,7 +102,9 @@ class DemoPlan3 extends Plan {
   import unfiltered.directives._, Directives._
   import javax.servlet.http.HttpServletRequest
 
-  val Intent = Directive.Intent[HttpServletRequest, String]{ case ContextPath(_, path) => path }
+  val Intent = Directive.Intent.Mapping[HttpServletRequest, String] {
+    case ContextPath(_, path) => path
+  }
 
   case class User(name:String)
 

@@ -16,13 +16,32 @@ object Directive {
     def ~> [RR <: R](and:ResponseFunction[RR]) = map(_ ~> and)
   }
 
-  case class Intent[-T, +X](from:HttpRequest[T] => X){
-    def apply[TT <: T, R](intent:PartialFunction[X, HttpRequest[TT] => Result[R, ResponseFunction[R]]]):Cycle.Intent[TT, R] = {
-      case req if intent.isDefinedAt(from(req)) => intent(from(req))(req) match {
+  /** A directive function defines a result for a request, is the supertype of Directive */
+  type DFunction[A,B] = (HttpRequest[A] => Result[B, ResponseFunction[B]])
+
+  /** A directive intent is a partial function from a request to directive function */
+  type Intent[A,B] = PartialFunction[HttpRequest[A], DFunction[A, B]]
+
+  object Intent {
+    def apply[A,B](
+    intent: PartialFunction[HttpRequest[A],
+                            (HttpRequest[A] => Result[B, ResponseFunction[B]])]
+    ): unfiltered.Cycle.Intent[A,B] = {
+      case req if intent.isDefinedAt(req) => intent(req)(req) match {
         case Success(response) => response
         case Failure(response) => response
         case Error(response)   => response
       }
+    }
+    def Path[T] = Mapping(unfiltered.request.Path[T])
+
+    case class Mapping[T, X](from: HttpRequest[T] => X) {
+      def apply[TT <: T, R](
+        intent: PartialFunction[X, HttpRequest[TT] => Result[R, ResponseFunction[R]]]
+      ): Cycle.Intent[TT, R] =
+        Intent {
+          case req if intent.isDefinedAt(from(req)) => intent(from(req))
+        }
     }
   }
 

@@ -29,7 +29,7 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
       when { case R(`value`) => value } orElse UnsupportedMediaType
     }
 
-  def intent[A,B] = Directive.Intent(unfiltered.request.Path[A]) {
+  def intent[A,B] = unfiltered.request.Path.Intent {
     case Seg(List("accept_json", id)) =>
       for {
         _ <- POST
@@ -70,6 +70,11 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
         <:< Map("Content-Type" -> "text/plain")
         << someJson)
       resp().getStatusCode must_== 415
+    }
+    "respond with 404 if not matching" in {
+      val resp = Http(localhost / "accept_other" / "123"
+        << someJson)
+      resp().getStatusCode must_== 404
     }
   }
   "Directives decorated" should {
