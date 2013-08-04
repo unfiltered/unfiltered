@@ -5,4 +5,4 @@ unmanagedClasspath in (local("directives"), Test) <++=
 
 
 libraryDependencies +=
-  "net.databinder.dispatch" %% "dispatch-core" % "0.9.5" % "test"
+  "net.databinder.dispatch" %% "dispatch-core" % "0.11.0" % "test"
