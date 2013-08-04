@@ -17,7 +17,7 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
   import unfiltered.response._
   import unfiltered.directives._, Directives._
 
-  import dispatch._, Defaults._
+  import dispatch._
 
   // it's simple to define your own directives
   def contentType(tpe:String) =
