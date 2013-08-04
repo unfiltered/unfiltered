@@ -16,12 +16,6 @@ object Directive {
     def ~> [RR <: R](and:ResponseFunction[RR]) = map(_ ~> and)
   }
 
-  /** A directive function defines a result for a request, is the supertype of Directive */
-  type DFunction[A,B] = (HttpRequest[A] => Result[B, ResponseFunction[B]])
-
-  /** A directive intent is a partial function from a request to directive function */
-  type Intent[A,B] = PartialFunction[HttpRequest[A], DFunction[A, B]]
-
   object Intent {
     def apply[A,B](
     intent: PartialFunction[HttpRequest[A],
