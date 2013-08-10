@@ -44,7 +44,36 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
         _ <- Accepts.Json
         r <- request[Any]
       } yield Ok ~> JsonContent ~> ResponseBytes(Body bytes r)
+    case Seg(List("valid_parameters")) =>
+      for {
+        intString <- param("int")(Params.first).flatMap {
+          case Some(i) => result(Result.Success(i))
+          case None => result(Result.Failure(BadRequest))
+        }.fail ~> ResponseString("int is required")
+      } yield Ok ~> ResponseString(intString)
   }
+
+  implicit val asInt: data.Interpreter[Seq[String],Option[Int],String] =
+    data.as.String ~> data.as.Int.fail("not an int ->" + _)
+
+  val asEven = data.Predicate[Int]( _ % 2 == 0 )
+
+  val d /*: Directive[Option[Int],String,Nothing] */ =
+    data.Of[Option[Int]] named "something"
+
+  val okay = for (oi <- data.Of[Option[Int]] named "hi") yield 3
+
+  val okay2 = for (oi <- asEven named "hi") yield 3
+
+  val okay3 = for (oi <- data.as.Float.fail("not a float ->" + _) named "float") yield 3
+
+//  implicit def require[T]: As[Option[T],T, String] = As.require(v => s"$v is required")
+
+  val to: data.Interpreter[Seq[String], Option[Int], String] =
+    asInt ~> asEven.fail(i => s"$i isn't even") ~> asEven
+
+  val to2 : data.Interpreter[Seq[String], Option[Int], String] =
+    asInt ~> asEven
 
   val someJson = """{"a": 1}"""
 

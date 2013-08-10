@@ -47,4 +47,6 @@ trait Syntax extends Directives {
     def Intent[T] = Directive.Intent.Path[T]
   }
 
+  implicit def defInterpreterIdentity[T] = data.Interpreter.identity[T]
+  implicit def defInterpreterString[T] = data.as.String
 }

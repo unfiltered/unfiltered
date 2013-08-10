@@ -61,4 +61,7 @@ trait Directives {
   def remoteAddr = request[Any] map { _.remoteAddr }
 
   def queryParams = request[Any].map{ case QueryParams(params) => params }
+
+  def param[A,B](name: String)(f: Seq[String] => Option[B]) =
+    parameterValues(name).map(f)
 }

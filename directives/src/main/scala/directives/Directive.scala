@@ -17,6 +17,7 @@ object Directive {
   }
 
   object Intent {
+    /** General directive intent constructor, for a partial function of requests */
     def apply[A,B](
     intent: PartialFunction[HttpRequest[A],
                             (HttpRequest[A] => Result[B, ResponseFunction[B]])]
@@ -27,7 +28,7 @@ object Directive {
         case Error(response)   => response
       }
     }
-    /** Directive intent constructor for a partial function on path strings  */
+    /** Directive intent constructor for a partial function of path strings  */
     def Path[T] = Mapping(unfiltered.request.Path[T])
 
     case class Mapping[T, X](from: HttpRequest[T] => X) {
