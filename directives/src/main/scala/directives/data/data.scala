@@ -30,25 +30,22 @@ extends Interpreter[Option[A], Option[B], Any] {
   def fail[E](handle: A => ResponseFunction[E]) = new Strict(cf, handle)
 }
 
-case class Strict[A,B,E](cf: A => Option[B], handle: A => ResponseFunction[E])
+class Strict[A,B,E](cf: A => Option[B], handle: A => ResponseFunction[E])
 extends Interpreter[Option[A], Option[B], E] {
-  def interpret(option: Option[A]): Either[ResponseFunction[E], Option[B]] = option.map { a =>
-    cf(a).map(Some(_)).toRight(handle(a))
-  }.getOrElse(Right(None))
+  def interpret(option: Option[A]): Either[ResponseFunction[E], Option[B]] =
+    option.map { a =>
+      cf(a).map(Some(_)).toRight(handle(a))
+    }.getOrElse(Right(None))
 }
-
 object Predicate {
   def apply[A](f: A => Boolean) = Optional[A,A]( a => Some(a).filter(f))
 }
 
-
-/** Bridge class for finding an implicit As of a parameter type T */
-object Of {
-  def apply[T] = new Of[T]
+object Required {
+  def apply[A,E](handle: => ResponseFunction[E]) = new Required[A,E](handle)
 }
-class Of[T] {
-  import unfiltered.directives.Directives._
-  def named[E](name: String)(implicit to: Interpreter[Seq[String],T,E])
-      : Directive[Any,E,T] =
-    to named name
+class Required[A,E](handle: => ResponseFunction[E])
+extends Interpreter[Option[A], A, E] {
+  def interpret(option: Option[A]): Either[ResponseFunction[E], A] =
+    option.toRight(handle)
 }

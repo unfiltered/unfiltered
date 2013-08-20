@@ -58,24 +58,29 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
   implicit val asInt: data.Interpreter[Seq[String],Option[Int],Any] =
     data.as.String ~> data.as.Int.fail(i => badParam("not an int ->" + i))
 
+  implicit def required[T,E] = data.Required[T,E](badParam("is required"))
+
   val asEven = data.Predicate[Int]( _ % 2 == 0 )
 
   val d /*: Directive[Option[Int],String,Nothing] */ =
-    data.Of[Option[Int]] named "something"
+    data.as.Option[Int] named "something"
 
-  val okay = for (oi <- data.Of[Option[Int]] named "hi") yield 3
+  val okay = for (oi <- data.as.Option[Int] named "hi") yield 3
 
   val okay2 = for (oi <- asEven named "hi") yield 3
 
   val okay3 = for (oi <- data.as.Float.fail(i => badParam("not a float ->" + i)) named "float") yield 3
 
-//  implicit def require[T]: As[Option[T],T, String] = As.require(v => s"$v is required")
+  val okay4 = for (oi <- data.as.Required[Int] named "hi") yield 3
 
   val to: data.Interpreter[Seq[String], Option[Int], Any] =
-    asInt ~> asEven.fail(i => badParam(s"$i isn't even")) ~> asEven
+    asInt ~> asEven.fail(i => badParam("this isn't even: " + i)) ~> asEven
 
   val to2 : data.Interpreter[Seq[String], Option[Int], Any] =
     asInt ~> asEven
+
+  val to3 : data.Interpreter[Seq[String], Int, Any] =
+    asInt ~> asEven ~> required
 
   val someJson = """{"a": 1}"""
 
