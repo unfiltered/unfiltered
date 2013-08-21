@@ -29,14 +29,16 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
       when { case R(`value`) => value } orElse UnsupportedMediaType
     }
 
-  def badParam(msg: String) = BadRequest ~> ResponseString(msg)
+  def badParam(msg: String): ResponseFunction[Any] = BadRequest ~> ResponseString(msg)
 
   implicit val asInt: data.Interpreter[Seq[String],Option[Int],Any] =
-    data.as.String ~> data.as.Int.fail(i => badParam("not an int: " + i))
+    data.as.String ~> data.as.Int.fail((i, name) => badParam(name + " is not an int: " + i))
 
-  implicit def required[T] = data.Required[T,Any](badParam("is missing"))
+  implicit def require[T] = data.Require[T].fail(name => badParam(name + " is missing"))
 
-  val asEven = data.Predicate[Int]( _ % 2 == 0 ).fail(i => badParam("is not even: " + i))
+  val asEven = data.Predicate[Int]( _ % 2 == 0 ).fail(
+    (i, name) => badParam(name + " is not even: " + i)
+  )
 
   def intent[A,B] = Directive.Intent.Path {
     case Seg(List("accept_json", id)) =>
@@ -56,8 +58,8 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
     case Seg(List("valid_parameters")) =>
       for {
         optInt <- data.as.Option[Int] named "option_int"
-        reqInt <- data.as.Required[Int] named "required_int"
-        evenInt <- (asEven ~> required) named "even_int"
+        reqInt <- data.as.Require[Int] named "require_int"
+        evenInt <- (asEven ~> require) named "even_int"
         _ <- data.as.String ~> data.as.Int named "ignored_explicit_int"
       } yield Ok ~> ResponseString((
         evenInt + optInt.getOrElse(0) + reqInt
@@ -122,7 +124,7 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
       val resp = Http(localhost / "valid_parameters"
         << Map(
           "option_int" -> 3.toString,
-          "required_int" -> 4.toString,
+          "require_int" -> 4.toString,
           "even_int" -> 8.toString
         ) OK as.String)
       resp() must_== "15"
@@ -130,7 +132,7 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
     "respond if optional parameters are missing" in {
       val resp = Http(localhost / "valid_parameters"
         << Map(
-          "required_int" -> 4.toString,
+          "require_int" -> 4.toString,
           "even_int" -> 8.toString
         ) OK as.String)
       resp() must_== "12"
@@ -138,28 +140,28 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
     "fail if even format is wrong" in {
       val resp = Http(localhost / "valid_parameters"
         << Map(
-          "required_int" -> 4.toString,
+          "require_int" -> 4.toString,
           "even_int" -> 7.toString
         ))
       resp().getStatusCode must_== 400
-      resp().getResponseBody must_== "is not even: 7"
+      resp().getResponseBody must_== "even_int is not even: 7"
     }
     "fail if int format is wrong" in {
       val resp = Http(localhost / "valid_parameters"
         << Map(
-          "required_int" -> 4.toString,
+          "require_int" -> 4.toString,
           "even_int" -> "eight"
         ))
       resp().getStatusCode must_== 400
-      resp().getResponseBody must_== "not an int: eight"
+      resp().getResponseBody must_== "even_int is not an int: eight"
     }
     "fail if required parameter is missing" in {
       val resp = Http(localhost / "valid_parameters"
         << Map(
-          "required_int" -> 4.toString
+          "require_int" -> 4.toString
         ))
       resp().getStatusCode must_== 400
-      resp().getResponseBody must_== "is missing"
+      resp().getResponseBody must_== "even_int is missing"
     }
   }
 }

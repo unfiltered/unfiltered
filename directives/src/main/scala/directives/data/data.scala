@@ -4,15 +4,20 @@ import unfiltered.response.ResponseFunction
 import unfiltered.directives._
 
 trait Interpreter[A,B,-E] { self =>
-  def interpret(a: A): Either[ResponseFunction[E], B]
+  def interpret(a: A, name: String): Either[ResponseFunction[E], B]
   def ~> [C, EE <: E](implicit next: Interpreter[B,C,EE]): Interpreter[A,C,EE] =
     new Interpreter[A,C,EE] {
-      def interpret(a: A): Either[ResponseFunction[EE],C] = self.interpret(a).right.flatMap(next.interpret)
+      def interpret(a: A, name: String): Either[ResponseFunction[EE],C] =
+        self.interpret(a, name).right.flatMap {
+          r => next.interpret(r, name)
+        }
     }
   def named[EE <: E](name: String)(implicit to: Interpreter[Seq[String],A,EE]) =
     new Directive[Any,EE,B]( { req =>
       val seq = Option(req.parameterValues(name)).getOrElse(Nil)
-      to.interpret(seq).right.flatMap(self.interpret).fold(
+      to.interpret(seq, name).right.flatMap { r =>
+        self.interpret(r, name)
+      }.fold(
         r => Result.Failure(r),
         r => Result.Success(r)
       )
@@ -20,32 +25,38 @@ trait Interpreter[A,B,-E] { self =>
 }
 object Interpreter {
   def identity[A] = new Interpreter[A, A, Any] {
-    def interpret(seq: A) = Right(seq)
+    def interpret(seq: A, name: String) = Right(seq)
   }
 }
 
 case class Optional[A,B](cf: A => Option[B])
 extends Interpreter[Option[A], Option[B], Any] {
-  def interpret(opt: Option[A]) = Right(opt.flatMap(cf))
-  def fail[E](handle: A => ResponseFunction[E]) = new Strict(cf, handle)
+  def interpret(opt: Option[A], name: String) =
+    Right(opt.flatMap(cf))
+  def fail[E](handle: (A, String) => ResponseFunction[E]) =
+    new Strict(cf, handle)
 }
 
-class Strict[A,B,E](cf: A => Option[B], handle: A => ResponseFunction[E])
+class Strict[A,B,-E](cf: A => Option[B], handle: (A, String) => ResponseFunction[E])
 extends Interpreter[Option[A], Option[B], E] {
-  def interpret(option: Option[A]): Either[ResponseFunction[E], Option[B]] =
+  def interpret(option: Option[A], name: String): Either[ResponseFunction[E], Option[B]] =
     option.map { a =>
-      cf(a).map(Some(_)).toRight(handle(a))
+      cf(a).map(Some(_)).toRight(handle(a, name))
     }.getOrElse(Right(None))
 }
 object Predicate {
   def apply[A](f: A => Boolean) = Optional[A,A]( a => Some(a).filter(f))
 }
 
-object Required {
-  def apply[A,E](handle: => ResponseFunction[E]) = new Required[A,E](handle)
+object Require {
+  def apply[A] = new RequireBuilder[A]
 }
-class Required[A,E](handle: => ResponseFunction[E])
+class Require[A,-E](handle: String => ResponseFunction[E])
 extends Interpreter[Option[A], A, E] {
-  def interpret(option: Option[A]): Either[ResponseFunction[E], A] =
-    option.toRight(handle)
+  def interpret(option: Option[A], name: String): Either[ResponseFunction[E], A] =
+    option.toRight(handle(name))
+}
+class RequireBuilder[A] {
+  def fail[E](handle: String => ResponseFunction[E]) =
+    new Require[A,E](handle)
 }

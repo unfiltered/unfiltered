@@ -9,13 +9,13 @@ object Int extends Optional[String,Int](s => allCatch.opt { s.toInt })
 object Float extends Optional[String,Float](s => allCatch.opt { s.toFloat })
 
 object String extends Interpreter[Seq[String], Option[String], Any] {
-  def interpret(seq: Seq[String]) = Right(seq.headOption)
+  def interpret(seq: Seq[String], name: String) = Right(seq.headOption)
 }
 object Option {
   def apply[T] = new OptionalImplicit[T]
 }
-object Required {
-  def apply[T] = new RequiredImplicit[T]
+object Require {
+  def apply[T] = new RequireImplicit[T]
 }
 
 /** Bridge class for finding an implicit As of a parameter type T */
@@ -26,7 +26,7 @@ class OptionalImplicit[T] {
     to named name
 }
 
-class RequiredImplicit[T] {
+class RequireImplicit[T] {
   import unfiltered.directives.Directives._
   def named[E](name: String)
     (implicit to: Interpreter[Seq[String],Option[T],E],
