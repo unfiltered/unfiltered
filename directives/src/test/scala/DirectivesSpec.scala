@@ -29,6 +29,15 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
       when { case R(`value`) => value } orElse UnsupportedMediaType
     }
 
+  def badParam(msg: String) = BadRequest ~> ResponseString(msg)
+
+  implicit val asInt: data.Interpreter[Seq[String],Option[Int],Any] =
+    data.as.String ~> data.as.Int.fail(i => badParam("not an int: " + i))
+
+  implicit def required[T] = data.Required[T,Any](badParam("is missing"))
+
+  val asEven = data.Predicate[Int]( _ % 2 == 0 ).fail(i => badParam("is not even: " + i))
+
   def intent[A,B] = Directive.Intent.Path {
     case Seg(List("accept_json", id)) =>
       for {
@@ -46,41 +55,14 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
       } yield Ok ~> JsonContent ~> ResponseBytes(Body bytes r)
     case Seg(List("valid_parameters")) =>
       for {
-        intString <- param("int")(Params.first).flatMap {
-          case Some(i) => result(Result.Success(i))
-          case None => result(Result.Failure(BadRequest))
-        }.fail ~> ResponseString("int is required")
-      } yield Ok ~> ResponseString(intString)
+        optInt <- data.as.Option[Int] named "option_int"
+        reqInt <- data.as.Required[Int] named "required_int"
+        evenInt <- (asEven ~> required) named "even_int"
+        _ <- data.as.String ~> data.as.Int named "ignored_explicit_int"
+      } yield Ok ~> ResponseString((
+        evenInt + optInt.getOrElse(0) + reqInt
+      ).toString)
   }
-
-  def badParam(msg: String) = BadRequest ~> ResponseString(msg)
-
-  implicit val asInt: data.Interpreter[Seq[String],Option[Int],Any] =
-    data.as.String ~> data.as.Int.fail(i => badParam("not an int ->" + i))
-
-  implicit def required[T,E] = data.Required[T,E](badParam("is required"))
-
-  val asEven = data.Predicate[Int]( _ % 2 == 0 )
-
-  val d /*: Directive[Option[Int],String,Nothing] */ =
-    data.as.Option[Int] named "something"
-
-  val okay = for (oi <- data.as.Option[Int] named "hi") yield 3
-
-  val okay2 = for (oi <- asEven named "hi") yield 3
-
-  val okay3 = for (oi <- data.as.Float.fail(i => badParam("not a float ->" + i)) named "float") yield 3
-
-  val okay4 = for (oi <- data.as.Required[Int] named "hi") yield 3
-
-  val to: data.Interpreter[Seq[String], Option[Int], Any] =
-    asInt ~> asEven.fail(i => badParam("this isn't even: " + i)) ~> asEven
-
-  val to2 : data.Interpreter[Seq[String], Option[Int], Any] =
-    asInt ~> asEven
-
-  val to3 : data.Interpreter[Seq[String], Int, Any] =
-    asInt ~> asEven ~> required
 
   val someJson = """{"a": 1}"""
 
@@ -133,6 +115,51 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
         <:< Map("Accept" -> "application/json")
         << someJson)
       resp().getStatusCode must_== 415
+    }
+  }
+  "Directive parameters" should {
+    "respond with parameter if accepted" in {
+      val resp = Http(localhost / "valid_parameters"
+        << Map(
+          "option_int" -> 3.toString,
+          "required_int" -> 4.toString,
+          "even_int" -> 8.toString
+        ) OK as.String)
+      resp() must_== "15"
+    }
+    "respond if optional parameters are missing" in {
+      val resp = Http(localhost / "valid_parameters"
+        << Map(
+          "required_int" -> 4.toString,
+          "even_int" -> 8.toString
+        ) OK as.String)
+      resp() must_== "12"
+    }
+    "fail if even format is wrong" in {
+      val resp = Http(localhost / "valid_parameters"
+        << Map(
+          "required_int" -> 4.toString,
+          "even_int" -> 7.toString
+        ))
+      resp().getStatusCode must_== 400
+      resp().getResponseBody must_== "is not even: 7"
+    }
+    "fail if int format is wrong" in {
+      val resp = Http(localhost / "valid_parameters"
+        << Map(
+          "required_int" -> 4.toString,
+          "even_int" -> "eight"
+        ))
+      resp().getStatusCode must_== 400
+      resp().getResponseBody must_== "not an int: eight"
+    }
+    "fail if required parameter is missing" in {
+      val resp = Http(localhost / "valid_parameters"
+        << Map(
+          "required_int" -> 4.toString
+        ))
+      resp().getStatusCode must_== 400
+      resp().getResponseBody must_== "is missing"
     }
   }
 }

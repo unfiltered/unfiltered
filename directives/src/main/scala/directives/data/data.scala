@@ -5,7 +5,7 @@ import unfiltered.directives._
 
 trait Interpreter[A,B,-E] { self =>
   def interpret(a: A): Either[ResponseFunction[E], B]
-  implicit def ~> [C, EE <: E](implicit next: Interpreter[B,C,EE]): Interpreter[A,C,EE] =
+  def ~> [C, EE <: E](implicit next: Interpreter[B,C,EE]): Interpreter[A,C,EE] =
     new Interpreter[A,C,EE] {
       def interpret(a: A): Either[ResponseFunction[EE],C] = self.interpret(a).right.flatMap(next.interpret)
     }
