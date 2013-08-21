@@ -146,6 +146,7 @@ class HouseKeepingChannelHandler(channels: ChannelGroup) extends SimpleChannelUp
   override def channelOpen(ctx: ChannelHandlerContext, e: ChannelStateEvent) = {
     // Channels are automatically removed from the group on close
     channels.add(e.getChannel)
+    ctx.sendUpstream(e)
   }
 }
 
