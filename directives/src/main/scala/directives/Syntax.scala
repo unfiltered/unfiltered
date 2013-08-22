@@ -48,5 +48,5 @@ trait Syntax extends Directives {
   }
 
   implicit def defInterpreterIdentity[T] = data.Interpreter.identity[T]
-  implicit def defInterpreterString[T] = data.as.String
+  implicit def defInterpreterString = data.as.String
 }
