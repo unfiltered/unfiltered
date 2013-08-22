@@ -31,7 +31,7 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
 
   def badParam(msg: String): ResponseFunction[Any] = BadRequest ~> ResponseString(msg)
 
-  implicit val asInt: data.Interpreter[Seq[String],Option[Int],Any] =
+  implicit val asInt: data.Interpreter[Seq[String],Option[Int],ResponseFunction[Any]] =
     data.as.String ~> data.as.Int.fail((i, name) => badParam(name + " is not an int: " + i))
 
   implicit def require[T] = data.Require[T].fail(name => badParam(name + " is missing"))

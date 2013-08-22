@@ -4,11 +4,13 @@ import scala.util.control.Exception.allCatch
 import unfiltered.directives._
 import unfiltered.directives.data._
 
+import unfiltered.response.ResponseFunction
+
 object Int extends Optional[String,Int](s => allCatch.opt { s.toInt })
 
 object Float extends Optional[String,Float](s => allCatch.opt { s.toFloat })
 
-object String extends Interpreter[Seq[String], Option[String], Any] {
+object String extends Interpreter[Seq[String], Option[String], Nothing] {
   def interpret(seq: Seq[String], name: String) = Right(seq.headOption)
 }
 object Option {
@@ -22,7 +24,8 @@ object Require {
 class OptionalImplicit[T] {
   import unfiltered.directives.Directives._
   def named[E](name: String)
-    (implicit to: Interpreter[Seq[String],Option[T],E]): Directive[Any,E,Option[T]] =
+    (implicit to: Interpreter[Seq[String],Option[T],E])
+    : Directive[Any,E,Option[T]] =
     to named name
 }
 

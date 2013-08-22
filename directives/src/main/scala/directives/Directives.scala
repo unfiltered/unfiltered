@@ -10,11 +10,11 @@ trait Directives {
 
   def result[R, A](r:Result[R, A]) = Directive[Any, R, A](_ => r)
 
-  def success[A](value:A) = result[Any, A](Success(value))
+  def success[A](value:A) = result[Nothing, A](Success(value))
 
-  def failure[R](r:ResponseFunction[R]) = result[R, Nothing](Failure(r))
+  def failure[R](r:ResponseFunction[R]) = result[ResponseFunction[R], Nothing](Failure(r))
 
-  def error[R](r:ResponseFunction[R]) = result[R, Nothing](Error(r))
+  def error[R](r:ResponseFunction[R]) = result[ResponseFunction[R], Nothing](Error(r))
 
   def commit[T, R, A](d:Directive[T, R, A]) = Directive[T, R, A]{ r => d(r) match {
     case Failure(response) => Error(response)
@@ -22,17 +22,17 @@ trait Directives {
   }}
 
   def autocommit[T, R, A](d:Directive[T, R, A]):Directive[T, R, A] = new Directive[T, R, A](d){
-    override def flatMap[TT <: T, RR <: R, B](f: (A) => Directive[TT, RR, B]) = commit(super.flatMap(f))
+    override def flatMap[TT <: T, RR >: R, B](f: (A) => Directive[TT, RR, B]) = commit(super.flatMap(f))
   }
 
   def getOrElse[R, A](opt:Option[A], orElse: => ResponseFunction[R]) = opt.map(success).getOrElse(failure(orElse))
 
   /* HttpRequest has to be of type Any because of type-inference (SLS 8.5) */
   case class when[A](f:PartialFunction[HttpRequest[Any], A]){
-    def orElse[R](fail:ResponseFunction[R]) = Directive[Any, R, A](r => if(f.isDefinedAt(r)) Success(f(r)) else Failure(fail))
+    def orElse[R](fail:ResponseFunction[R]) = Directive[Any, ResponseFunction[R], A](r => if(f.isDefinedAt(r)) Success(f(r)) else Failure(fail))
   }
 
-  def request[T] = Directive[T, Any, HttpRequest[T]](Success(_))
+  def request[T] = Directive[T, Nothing, HttpRequest[T]](Success(_))
 
   def underlying[T] = request[T] map { _.underlying }
 

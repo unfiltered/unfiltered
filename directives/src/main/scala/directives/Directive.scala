@@ -11,16 +11,19 @@ object Directive {
   def apply[T, R, A](run:HttpRequest[T] => Result[R, A]):Directive[T, R, A] =
     new Directive[T, R, A](run)
 
-  trait Fail[-T, -R, +A]{
-    def map[X](f:ResponseFunction[R] => ResponseFunction[X]):Directive[T, X, A]
-    def ~> [RR <: R](and:ResponseFunction[RR]) = map(_ ~> and)
+  trait Fail[-T, +R, +A]{
+    def map[X](f:R => X):Directive[T, X, A]
+    def ~> [RR, TT <: T, AA >: A](and: ResponseFunction[RR])
+                   (implicit ev: Fail[T,R,A] <:< Fail[TT,ResponseFunction[RR],AA])
+        : Directive[TT, ResponseFunction[RR], AA] = ev(this).map(_ ~> and)
   }
 
   object Intent {
     /** General directive intent constructor, for a partial function of requests */
     def apply[A,B](
     intent: PartialFunction[HttpRequest[A],
-                            (HttpRequest[A] => Result[B, ResponseFunction[B]])]
+                            (HttpRequest[A] => Result[ResponseFunction[B],
+                                                      ResponseFunction[B]])]
     ): unfiltered.Cycle.Intent[A,B] = {
       case req if intent.isDefinedAt(req) => intent(req)(req) match {
         case Success(response) => response
@@ -33,7 +36,8 @@ object Directive {
 
     case class Mapping[T, X](from: HttpRequest[T] => X) {
       def apply[TT <: T, R](
-        intent: PartialFunction[X, HttpRequest[TT] => Result[R, ResponseFunction[R]]]
+        intent: PartialFunction[X, HttpRequest[TT] => Result[ResponseFunction[R],
+                                                             ResponseFunction[R]]]
       ): Cycle.Intent[TT, R] =
         Intent {
           case req if intent.isDefinedAt(from(req)) => intent(from(req))
@@ -42,33 +46,33 @@ object Directive {
   }
 
   @implicitNotFound("implicit instance of Directive.Eq[${X}, ${V}, ?, ?, ?] not found")
-  case class Eq[-X, -V, -T, -R, +A](directive:(X, V) => Directive[T, R, A])
+  case class Eq[-X, -V, -T, +R, +A](directive:(X, V) => Directive[T, R, A])
 
   @implicitNotFound("implicit instance of Directive.Gt[${X}, ${V}, ?, ?, ?] not found")
-  case class Gt[-X, -V, -T, -R, +A](directive:(X, V) => Directive[T, R, A])
+  case class Gt[-X, -V, -T, +R, +A](directive:(X, V) => Directive[T, R, A])
 
   @implicitNotFound("implicit instance of Directive.Lt[${X}, ${V}, ?, ?, ?] not found")
-  case class Lt[-X, -V, -T, -R, +A](directive:(X, V) => Directive[T, R, A])
+  case class Lt[-X, -V, -T, +R, +A](directive:(X, V) => Directive[T, R, A])
 }
 
-class Directive[-T, -R, +A](run:HttpRequest[T] => Result[R, A]) extends (HttpRequest[T] => Result[R, A]){
+class Directive[-T, +R, +A](run:HttpRequest[T] => Result[R, A]) extends (HttpRequest[T] => Result[R, A]){
 
   def apply(request: HttpRequest[T]) = run(request)
 
-  def map[TT <: T, RR <: R, B](f:A => B):Directive[TT, RR, B] =
+  def map[TT <: T, RR >: R, B](f:A => B):Directive[TT, RR, B] =
     Directive(r => run(r).map(f))
 
-  def flatMap[TT <: T, RR <: R, B](f:A => Directive[TT, RR, B]):Directive[TT, RR, B] =
+  def flatMap[TT <: T, RR >: R, B](f:A => Directive[TT, RR, B]):Directive[TT, RR, B] =
     Directive(r => run(r).flatMap(a => f(a)(r)))
 
-  def orElse[TT <: T, RR <: R, B >: A](next: => Directive[TT, RR, B]):Directive[TT, RR, B] =
+  def orElse[TT <: T, RR >: R, B >: A](next: => Directive[TT, RR, B]):Directive[TT, RR, B] =
     Directive(r => run(r).orElse(next(r)))
 
-  def | [TT <: T, RR <: R, B >: A](next: => Directive[TT, RR, B]):Directive[TT, RR, B] =
+  def | [TT <: T, RR >: R, B >: A](next: => Directive[TT, RR, B]):Directive[TT, RR, B] =
     orElse(next)
 
-  def fail:Directive.Fail[T, R, A] = new Directive.Fail[T, R, A]{
-    def map[B](f: ResponseFunction[R] => ResponseFunction[B]) =
+  def fail: Directive.Fail[T, R, A] = new Directive.Fail[T, R, A] {
+    def map[B](f: R => B) =
       Directive(run(_).fail.map(f))
   }
 }
