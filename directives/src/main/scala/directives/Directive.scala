@@ -69,6 +69,9 @@ extends (HttpRequest[T] => Result[R, A]) {
   /** Doesn't filter. Scala requires something to be defined for pattern matching in for
       expressions, and we do use that. */
   def withFilter(f:A => Boolean): Directive[T, R, A] = this
+  /** Doesn't filter. Scala requires something to be defined for pattern matching in for
+      expressions, and we do use that. */
+  def filter(f:A => Boolean): Directive[T, R, A] = this
 
   def orElse[TT <: T, RR >: R, B >: A](next: => Directive[TT, RR, B]): Directive[TT, RR, B] =
     Directive(r => run(r).orElse(next(r)))
