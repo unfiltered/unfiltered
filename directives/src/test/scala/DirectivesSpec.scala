@@ -29,15 +29,17 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
       when { case R(`value`) => value } orElse UnsupportedMediaType
     }
 
-  def badParam(msg: String): ResponseFunction[Any] = BadRequest ~> ResponseString(msg)
+  case class BadParam(msg: String) extends ResponseJoiner(msg)( messages =>
+      BadRequest ~> ResponseString(messages.mkString("\n"))
+  )
 
-  implicit val asInt: data.Interpreter[Seq[String],Option[Int],ResponseFunction[Any]] =
-    data.as.String ~> data.as.Int.fail((i, name) => badParam(name + " is not an int: " + i))
+  implicit val asInt =
+    data.as.String ~> data.as.Int.fail((i, name) => BadParam(name + " is not an int: " + i))
 
-  implicit def require[T] = data.Require[T].fail(name => badParam(name + " is missing"))
+  implicit def require[T] = data.Require[T].fail(name => BadParam(name + " is missing"))
 
   val asEven = data.Predicate[Int]( _ % 2 == 0 ).fail(
-    (i, name) => badParam(name + " is not even: " + i)
+    (i, name) => BadParam(name + " is not even: " + i)
   )
 
   def intent[A,B] = Directive.Intent.Path {
@@ -63,6 +65,16 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
         _ <- data.as.String ~> data.as.Int named "ignored_explicit_int"
       } yield Ok ~> ResponseString((
         evenInt + optInt.getOrElse(0) + reqInt
+      ).toString)
+    case Seg(List("independent_parameters")) =>
+      for {
+        optInt & reqInt & evenInt & _ <-
+          (data.as.Option[Int] named "option_int") &
+          (data.as.Require[Int] named "require_int") &
+          ((asEven ~> require) named "even_int") &
+          (data.as.String ~> data.as.Int named "ignored_explicit_int")
+      } yield Ok ~> ResponseString((
+        optInt.getOrElse(0) + reqInt + evenInt
       ).toString)
   }
 
@@ -162,6 +174,28 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
         ))
       resp().getStatusCode must_== 400
       resp().getResponseBody must_== "even_int is missing"
+    }
+  }
+  "Directive independent parameters" should {
+    "respond with parameter if accepted" in {
+      val resp = Http(localhost / "independent_parameters"
+        << Map(
+          "option_int" -> 3.toString,
+          "require_int" -> 4.toString,
+          "even_int" -> 8.toString
+        ) OK as.String)
+      resp() must_== "15"
+    }
+    "respond with all errors" in {
+      val resp = Http(localhost / "independent_parameters"
+        << Map(
+          "option_int" -> "four",
+          "even_int" -> 7.toString
+        ))
+      resp().getStatusCode must_== 400
+      resp().getResponseBody must_== """option_int is not an int: four
+require_int is missing
+even_int is not even: 7"""
     }
   }
 }

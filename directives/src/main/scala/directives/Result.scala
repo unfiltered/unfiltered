@@ -9,6 +9,7 @@ object Result {
 
   trait FailResult[+R, +A]{
     def map[X](f: R => X):Result[X, A]
+    def flatMap[X, AA >: A](f: R => Result[X, AA]):Result[X, AA]
   }
 }
 
@@ -30,7 +31,28 @@ sealed trait Result[+R, +A] { result =>
     case Success(value)  => Success(value)
   }
 
+  def and[B, E, RF](other: => Result[JoiningResponseFunction[E,RF], B])
+    (implicit ev: R <:< JoiningResponseFunction[E,RF])
+    : Result[JoiningResponseFunction[E,RF], (A,B)] = {
+    (this, other) match {
+      case (Success(a), Success(b)) => Success(a, b)
+      case (Failure(fa), Failure(fb)) => Failure(fa.join(fb))
+      case (Success(a), Failure(fb)) => Failure(fb)
+      case (Failure(fa), Success(b)) => Failure(fa)
+      case (Error(fa), Error(fb)) => Error(fa.join(fb))
+      case (Success(a), Error(fb)) => Error(fb)
+      case (Error(fa), Success(b)) => Error(fa)
+      case (Failure(fa), Error(fb)) => Error(fa.join(fb))
+      case (Error(fa), Failure(fb)) => Error(fa.join(fb))
+    }
+  }
+
   def fail:FailResult[R, A] = new FailResult[R, A]{
+    def flatMap[X, AA >: A](f: R => Result[X, AA]): Result[X, AA] = result match {
+      case Success(a)     => Success(a)
+      case Failure(r)     => f(r)
+      case Error(r)       => f(r)
+    }
     def map[X](f: R => X) = result match {
       case Success(a)     => Success(a)
       case Failure(r)     => Failure(f(r))
