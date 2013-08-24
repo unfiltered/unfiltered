@@ -104,9 +104,6 @@ extends ResponseFunction[A] {
     new JoiningResponseFunction[E,A](elements ::: next.elements, toResponseFunction)
 }
 
+/** Convenience class, extend for a JoiningResponseFunction subclass */
 class ResponseJoiner[E,A](element: E)(toResponseFunction: Seq[E] => ResponseFunction[A])
 extends JoiningResponseFunction[E,A](element :: Nil, toResponseFunction)
-
-object & {
-  def unapply[A,B](tup: Tuple2[A,B]) = Some(tup)
-}
