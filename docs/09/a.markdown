@@ -1,33 +1,49 @@
-Trying Netty
-------------
+Who's Who
+---------
 
-As with the Jetty server used for earlier console hacking, for Netty
-we also need a starter project. If you don't have the `g8` command line
-tool installed, please go [back to that page until you do][jetty].
+Out of the box HTTP provides you with [basic authentication][basic],
+a simple way to specify a name and password for a request. These
+credentials are transferred as an unencrypted request header, so
+applications should secure both credentials and message bodies by
+requiring HTTPS for any protected resources.
 
-[jetty]: Try+Unfiltered.html
+[basic]: http://en.wikipedia.org/wiki/Basic_access_authentication
 
-### Enter the Console
-
-This step will fetch a number of dependencies and sometimes certain
-repositories are a little wonky, so cross your fingers.
-
-    g8 n8han/unfiltered-netty --name=nettyplayin
-    cd nettyplayin
-    sbt console
-
-Once you do get to a console, this should just work:
+Below, we define a *kit* that extracts a username and password via
+basic HTTP authentication and verifies those credentials before
+letting anyone through the gate. It presumes a `Users` service that
+would validate the user's credentials.
 
 ```scala
+trait Users {
+  def auth(u: String, p: String): Boolean
+}
+
 import unfiltered.request._
 import unfiltered.response._
-val hello = unfiltered.netty.cycle.Planify {
-   case _ => ResponseString("hello world")
+import unfiltered.Cycle
+
+case class Auth(users: Users) {
+  def apply[A,B](intent: Cycle.Intent[A,B]) =
+    Cycle.Intent[A,B] {
+      case req@BasicAuth(user, pass) if(users.auth(user, pass)) =>
+        Cycle.Intent.complete(intent)(req)
+      case _ =>
+        Unauthorized ~> WWWAuthenticate("""Basic realm="/"""")
+    }
 }
-unfiltered.netty.Http(8080).plan(hello).run()
 ```
 
-Direct a web browser to [http://127.0.0.1:8080/][local] and you'll
-be in *hello world* business.
+By applying this kit we can layer basic authentication around any
+intent in a client application.
 
-[local]: http://127.0.0.1:8080/
+```scala
+case class App(users: Users) extends
+unfiltered.filter.Plan {
+  def intent = Auth(users) {
+    case _ => ResponseString("Shhhh!")
+  }
+}
+```
+
+Also, don't give the password to any newspaper reporters.

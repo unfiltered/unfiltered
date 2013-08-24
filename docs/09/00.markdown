@@ -1,9 +1,6 @@
-Netty Plans
------------
+Identification and Cookies
+--------------------------
 
-Unfiltered's interfaces to Netty reflect the lower-level nature of
-Netty as compared to Servlet Filters. This gives greater flexibility
-and power to the application, necessarily requiring greater
-responsibility and attention to detail by the programmer. If you're
-up for the challenge or just want to play with something new, then
-give it a whirl.
+When remote users are humans interacting with web browsers,
+applications are often concerned with their identity and
+preferences. This section covers relevant interfaces defined for HTTP.
