@@ -27,6 +27,9 @@ object Interpreter {
   def identity[A] = new Interpreter[A, A, Nothing] {
     def interpret(seq: A, name: String) = Right(seq)
   }
+  def apply[A,B](f: A => B) = new Interpreter[A, B, Nothing] {
+    def interpret(a: A, name: String) = Right(f(a))
+  }
 }
 
 case class Optional[A,B](cf: A => Option[B])

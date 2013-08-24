@@ -8,14 +8,31 @@ import unfiltered.response.ResponseFunction
 
 object Int extends Optional[String,Int](s => allCatch.opt { s.toInt })
 
+object Long extends Optional[String,Long](s => allCatch.opt { s.toLong })
+
+object BigInt extends Optional[String,BigInt](s =>
+  allCatch.opt { new java.math.BigInteger(s) }
+)
+
 object Float extends Optional[String,Float](s => allCatch.opt { s.toFloat })
+
+object Double extends Optional[String,Double](s => allCatch.opt { s.toDouble })
+
+object BigDecimal extends Optional[String,BigDecimal](s =>
+  allCatch.opt { new java.math.BigDecimal(s) }
+)
 
 object String extends Interpreter[Seq[String], Option[String], Nothing] {
   def interpret(seq: Seq[String], name: String) = Right(seq.headOption)
+
+  val trimmed = Interpreter[Option[String],Option[String]]( opt => opt.map { _.trim } )
+  val nonEmpty = Predicate[String]( _.nonEmpty )
 }
+
 object Option {
   def apply[T] = new OptionalImplicit[T]
 }
+
 object Require {
   def apply[T] = new RequireImplicit[T]
 }
