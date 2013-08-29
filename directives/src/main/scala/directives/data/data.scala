@@ -36,15 +36,15 @@ case class Optional[A,B](cf: A => Option[B])
 extends Interpreter[Option[A], Option[B], Nothing] {
   def interpret(opt: Option[A], name: String) =
     Right(opt.flatMap(cf))
-  def fail[E](handle: (A, String) => E) =
+  def fail[E](handle: (String, A) => E) =
     new Strict(cf, handle)
 }
 
-class Strict[A,B,+E](cf: A => Option[B], handle: (A, String) => E)
+class Strict[A,B,+E](cf: A => Option[B], handle: (String, A) => E)
 extends Interpreter[Option[A], Option[B], E] {
   def interpret(option: Option[A], name: String): Either[E, Option[B]] =
     option.map { a =>
-      cf(a).map(Some(_)).toRight(handle(a, name))
+      cf(a).map(Some(_)).toRight(handle(name, a))
     }.getOrElse(Right(None))
 }
 object Predicate {

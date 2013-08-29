@@ -34,12 +34,12 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
   )
 
   implicit val asInt =
-    data.as.String ~> data.as.Int.fail((i, name) => BadParam(name + " is not an int: " + i))
+    data.as.String ~> data.as.Int.fail((name, i) => BadParam(name + " is not an int: " + i))
 
   implicit def require[T] = data.Require[T].fail(name => BadParam(name + " is missing"))
 
   val asEven = data.Predicate[Int]( _ % 2 == 0 ).fail(
-    (i, name) => BadParam(name + " is not even: " + i)
+    (name, i) => BadParam(name + " is not even: " + i)
   )
 
   def intent[A,B] = Directive.Intent.Path {
