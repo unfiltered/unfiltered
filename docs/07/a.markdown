@@ -7,10 +7,10 @@ function mapping from requests to a `Result`. We compose this function
 with another, which produces the standard intent function understood
 by Unfiltered.
 
-> Directives are an example of an Unfiltered [kit][kit], set of tools
-  providing a higher level of abstraction over the core library.
+> Directives are an example of an Unfiltered
+> <a href="Just+Kitting.html">kit</a>, set of tools providing a higher
+> level of abstraction over the core library.
 
-[kit]: Just+Kitting.html
 
 ### Selective enforcement
 
@@ -39,9 +39,7 @@ The 404 response page to the second request is not so great. With
 directives, we'll do better than that *by default*.
 
 ```scala
-import unfiltered.request._
-import unfiltered.response._
-import unfiltered.directives._
+import unfiltered.directives._, Directives._
 
 val Smart = unfiltered.filter.Planify { Directive.Intent {
   case Path("/") =>
@@ -68,13 +66,9 @@ see how on the next page.)
 
 You may have noticed that directives transfer (and enrich) routing
 logic from extractors. If your extractors are reduced to the task of
-matching against paths alone, you can even *extract* those.
+matching against paths alone, you can even eliminate those.
 
 ```scala
-import unfiltered.request._
-import unfiltered.response._
-import unfiltered.directives._
-
 val Sweet = unfiltered.filter.Planify { Directive.Intent.Path {
   case "/" =>
     for {
@@ -84,5 +78,5 @@ val Sweet = unfiltered.filter.Planify { Directive.Intent.Path {
 unfiltered.jetty.Http(8080).filter(Sweet).run()
 ```
 
-It looks pretty different, but remember that everything composes to a
+It looks pretty different, but remember that here still composes to a
 standard Unfiltered intent function.
