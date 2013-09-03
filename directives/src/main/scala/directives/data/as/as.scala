@@ -11,7 +11,7 @@ object Int extends Fallible[String,Int](s => allCatch.opt { s.toInt })
 object Long extends Fallible[String,Long](s => allCatch.opt { s.toLong })
 
 object BigInt extends Fallible[String,BigInt](s =>
-  allCatch.opt { new java.math.BigInteger(s) }
+  allCatch.opt { math.BigInt(s) }
 )
 
 object Float extends Fallible[String,Float](s => allCatch.opt { s.toFloat })
