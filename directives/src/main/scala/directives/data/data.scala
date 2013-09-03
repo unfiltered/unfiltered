@@ -32,7 +32,7 @@ object Interpreter {
   }
 }
 
-case class Optional[A,B](cf: A => Option[B])
+case class Fallible[A,B](cf: A => Option[B])
 extends Interpreter[Option[A], Option[B], Nothing] {
   def interpret(opt: Option[A], name: String) =
     Right(opt.flatMap(cf))
@@ -47,19 +47,19 @@ extends Interpreter[Option[A], Option[B], E] {
       cf(a).map(Some(_)).toRight(handle(name, a))
     }.getOrElse(Right(None))
 }
-object Predicate {
-  def apply[A](f: A => Boolean) = Optional[A,A]( a => Some(a).filter(f))
+object Conditional {
+  def apply[A](f: A => Boolean) = Fallible[A,A]( a => Some(a).filter(f))
 }
 
-object Require {
+object Requiring {
   def apply[A] = new RequireBuilder[A]
 }
-class Require[A,+E](handle: String => E)
+class Requiring[A,+E](handle: String => E)
 extends Interpreter[Option[A], A, E] {
   def interpret(option: Option[A], name: String): Either[E, A] =
     option.toRight(handle(name))
 }
 class RequireBuilder[A] {
   def fail[E](handle: String => E) =
-    new Require[A,E](handle)
+    new Requiring[A,E](handle)
 }

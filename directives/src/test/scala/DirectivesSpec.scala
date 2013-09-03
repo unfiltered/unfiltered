@@ -36,9 +36,9 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
   implicit val asInt =
     data.as.String ~> data.as.Int.fail((name, i) => BadParam(name + " is not an int: " + i))
 
-  implicit def require[T] = data.Require[T].fail(name => BadParam(name + " is missing"))
+  implicit def require[T] = data.Requiring[T].fail(name => BadParam(name + " is missing"))
 
-  val asEven = data.Predicate[Int]( _ % 2 == 0 ).fail(
+  val asEven = data.Conditional[Int]( _ % 2 == 0 ).fail(
     (name, i) => BadParam(name + " is not even: " + i)
   )
 
@@ -60,7 +60,7 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
     case Seg(List("valid_parameters")) =>
       for {
         optInt <- data.as.Option[Int] named "option_int"
-        reqInt <- data.as.Require[Int] named "require_int"
+        reqInt <- data.as.Required[Int] named "require_int"
         evenInt <- (asEven ~> require) named "even_int"
         _ <- data.as.String ~> data.as.Int named "ignored_explicit_int"
       } yield Ok ~> ResponseString((
@@ -70,7 +70,7 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
       for {
         optInt & reqInt & evenInt & _ <-
           (data.as.Option[Int] named "option_int") &
-          (data.as.Require[Int] named "require_int") &
+          (data.as.Required[Int] named "require_int") &
           ((asEven ~> require) named "even_int") &
           (data.as.String ~> data.as.Int named "ignored_explicit_int")
       } yield Ok ~> ResponseString((
