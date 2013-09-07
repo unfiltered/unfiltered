@@ -6,7 +6,7 @@ sequence of string to any type T and use them with
 `data.as.Option[T]`. Now we'll see how to use the same interpreters
 for required parameters.
 
-### Your 'require' Function
+### Your "required" Function
 
 The failure to supply a required parameter must produce an application
 defined error response. We'll define a very simple one.
@@ -16,16 +16,18 @@ import unfiltered.request._
 import unfiltered.response._
 import unfiltered.directives._, Directives._
 
-implicit def require[T] = data.as.Require[T].fail(name => 
+implicit def required[T] = data.Requiring[T].fail(name => 
   BadRequest ~> ResponseString(name + " is missing\n")
 )
 ```
 
 The name of the function is not important when used implicitly, but
-call it `require` is a good convention since you may also want to use
+call it `required` is a good convention since you may also want to use
 it explicitly when defining interpreters inline.
 
-With a require function in scope we can use it with any implicit
+### Using "required" Implicitly
+
+With a required function in scope we can use it with any implicit
 interpreters also in scope. The `data.as.String` interpreter is
 imported from the `Directives` object, so we can use it immediately.
 
@@ -35,7 +37,7 @@ unfiltered.jetty.Http(8080).filter(
     case Path("/") =>
       for {
         opt <- data.as.Option[String] named "opt"
-        req <- data.as.Require[String] named "req"
+        req <- data.as.Required[String] named "req"
       } yield ResponseString(
         s"opt: \$opt req: \$req"
       )
@@ -54,11 +56,11 @@ Since `req` is required to produce a success response, it's not
 wrapped in `Option` or anything else; the type of the bound value is
 whatever its interpreter produces.
 
-### Using 'require' Explicitly
+### Using "required" Explicitly
 
 Most interpreters work with an option of the data so that they can be
 chained together in support of both optional and required parameters.
-Require is itself an interpreter which unboxes from the `Option`, so
+Required is itself an interpreter which unboxes from the `Option`, so
 it generally must be the last interpreter in a chain.
 
 ```scala
@@ -66,7 +68,7 @@ unfiltered.jetty.Http(8080).filter(
   unfiltered.filter.Planify { Directive.Intent {
     case Path("/") =>
       for {
-        in <- data.as.BigInt ~> require named "in"
+        in <- data.as.BigInt ~> required named "in"
       } yield ResponseString(
         in % 10 + "\n"
       )
@@ -76,7 +78,7 @@ unfiltered.jetty.Http(8080).filter(
 
 This service returns the last digit of the required provided
 integer. Since we didn't provide a `fail` handler for
-`data.as.BigInt`, it falls to `require` to produce a failure
+`data.as.BigInt`, it falls to `required` to produce a failure
 response.
 
 ```sh
@@ -96,7 +98,7 @@ unfiltered.jetty.Http(8080).filter(
       for {
         in <- data.as.BigInt.fail((k,v) => 
           BadRequest ~> ResponseString(s"'\$v' is not a valid int for \$k\n")
-        ) ~> require named "in"
+        ) ~> required named "in"
       } yield ResponseString(
         in % 10 + "\n"
       )
@@ -104,7 +106,7 @@ unfiltered.jetty.Http(8080).filter(
 ).run()
 ```
 
-Now each failure condition produces a specific error.
+Now each failure condition produces a distinct error.
 
 ```sh
 \$ curl http://127.0.0.1:8080/ -d in=1334534a
