@@ -98,7 +98,8 @@ interpreter separate from the implementation, which is inline.
   (_, value) => BadParam(s"'\$value' is not a palindrome")
 ) ~> required named "palindrome")
 ...
-def palindrome(s: String) = s.toLowerCase.reverse == s.toLowerCase
+def palindrome(s: String) =
+  s.toLowerCase.reverse == s.toLowerCase
 ```
 
 This is just to show the variety of what's possible, it's up to you to
