@@ -4,13 +4,14 @@ as well as general housekeeping and bug fixes.
 ### unfiltered-directives
 
 This module is now fully documented and encouraged for all of your
-request validation needs. There is one significant deprecation:
-`Path.Intent` is deprecated in favor of `Directive.Intent.Path`. There
-is also a `Directive.Intent` constructor that works with any
-Unfiltered extractor, to ease migration of pattern matched routing.
+request validation needs. There are some deprecations: `Path.Intent`
+is deprecated in favor of `Directive.Intent.Path`, and `autocommit` is
+replaced by a `commit` directive ([pr 179][179]).
 
-There have also been changes to the `Result` type parameters; these
-were generalized so that multiple error responses may be joined into
+[179]: https://github.com/unfiltered/unfiltered/pull/179
+
+There are changes to the `Result` type parameters; these were
+generalized so that multiple error responses may be joined into
 one. Explicit references to these parameters will need to be updated.
 
 A major addition to directives is support for **validation of request
@@ -18,7 +19,9 @@ parameters**. It is designed to be easily extensible, precise, and
 convenient. Parameter "interpreters" and their error messages may be
 defined inline, or as reusable components of an application.
 
-Read the new directives documentation for details, and many examples.
+[Read the new directives documentation][docs] for details and many examples.
+
+[docs]: http://unfiltered.databinder.net/Directives+and+Validation.html
 
 ### Improvements
 
