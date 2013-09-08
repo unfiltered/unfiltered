@@ -14,7 +14,7 @@ with spec.netty.Started
 with spec.SecureClient {
 
   import unfiltered.netty.Https
-  import org.apache.http.client.ClientProtocolException
+  import org.apache.http.NoHttpResponseException
   import dispatch.classic._
 
   // generated keystore for localhost
@@ -54,7 +54,7 @@ with spec.SecureClient {
       https(host.secure as_str) must_== "secret"
     }
     "refuse connection to unsecure requests" in {
-      https(host as_str) must throwA[ClientProtocolException]
+      https(host as_str) must throwA[NoHttpResponseException]
     }
   }
 }
