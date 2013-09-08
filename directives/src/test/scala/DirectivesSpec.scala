@@ -14,7 +14,6 @@ with DirectivesSpec
 
 trait DirectivesSpec extends unfiltered.spec.Hosted {
   import unfiltered.response._
-  import unfiltered.response._
   import unfiltered.directives._, Directives._
 
   import dispatch._, Defaults._
@@ -43,6 +42,16 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
   )
 
   def intent[A,B] = Directive.Intent.Path {
+    case "/commit_or" =>
+      val a = for {
+        _ <- GET
+        _ <- commit
+        _ <- failure(BadRequest)
+      } yield Ok ~> ResponseString("a")
+      val b = for {
+        _ <- POST
+      } yield Ok ~> ResponseString("b")
+      a | b
     case Seg(List("accept_json", id)) =>
       for {
         _ <- POST
@@ -82,6 +91,14 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
 
   def localhost = dispatch.host("127.0.0.1", port)
 
+  "Directives commit" should {
+    "respond with expected commited error" in {
+      Http(localhost / "commit_or").apply().getStatusCode must_== 400
+    }
+    "try alternative when failing before commit" in {
+      Http((localhost / "commit_or").POST).apply().getStatusCode must_== 200
+    }
+  }
   "Directives" should {
     "respond with json if accepted" in {
       val resp = Http(localhost / "accept_json" / "123"
