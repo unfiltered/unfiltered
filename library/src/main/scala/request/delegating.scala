@@ -11,8 +11,6 @@ extends HttpRequest(delegate.underlying) {
   def parameterValues(param: String) = delegate.parameterValues(param)
   def headerNames = delegate.headerNames
   def headers(name: String) = delegate.headers(name)
-  @deprecated("use the unfiltered.request.Cookies request extractor instead")
-  def cookies = delegate.cookies
   def isSecure = delegate.isSecure
   def remoteAddr = delegate.remoteAddr
 }

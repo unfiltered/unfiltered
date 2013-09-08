@@ -57,20 +57,6 @@ extends HttpRequest(msg) with Async.Responder[NHttpResponse] {
   def headerNames = req.getHeaderNames.iterator.asScala
   def headers(name: String) = req.getHeaders(name).iterator.asScala
 
-  @deprecated("use the header extractor request.Cookies instead")
-  lazy val cookies = {
-    import org.jboss.netty.handler.codec.http.{Cookie => NCookie, CookieDecoder}
-    import unfiltered.Cookie
-    val cookieString = req.getHeader(HttpHeaders.Names.COOKIE);
-    if (cookieString != null) {
-      val cookieDecoder = new CookieDecoder
-      val decCookies = Set(cookieDecoder.decode(cookieString).toArray(new Array[NCookie](0)): _*)
-      (List[Cookie]() /: decCookies)((l, c) =>
-        Cookie(c.getName, c.getValue, Option(c.getDomain), Option(c.getPath), Option(c.getMaxAge), Option(c.isSecure)) :: l)
-    } else {
-      Nil
-    }
-  }
   def isSecure = msg.context.getPipeline.get(classOf[org.jboss.netty.handler.ssl.SslHandler]) match {
     case null => false
     case _ => true
@@ -136,23 +122,6 @@ class ResponseBinding[U <: NHttpResponse](res: U)
   }
 
   def outputStream = byteOutputStream
-
-  @deprecated("use the response combinator response.ResponseCookies(cookies) instead")
-  def cookies(resCookies: Seq[Cookie]) = {
-    import org.jboss.netty.handler.codec.http.{DefaultCookie, CookieEncoder}
-    if(!resCookies.isEmpty) {
-      val cookieEncoder = new CookieEncoder(true)
-      resCookies.foreach { c =>
-        val nc = new DefaultCookie(c.name, c.value)
-        if(c.domain.isDefined) nc.setDomain(c.domain.get)
-        if(c.path.isDefined) nc.setPath(c.path.get)
-        if(c.maxAge.isDefined) nc.setMaxAge(c.maxAge.get)
-        if(c.secure.isDefined) nc.setSecure(c.secure.get)
-        cookieEncoder.addCookie(nc)
-      }
-      res.addHeader(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode)
-    }
-  }
 }
 
 private [netty] object URLParser {

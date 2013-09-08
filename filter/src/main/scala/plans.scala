@@ -52,10 +52,10 @@ trait Plan extends InittedFilter {
   }
 }
 
-/** To define a filter class with an independent function */
-@deprecated("Use Planify.apply or extend Plan", "0.6.8")
 class Planify(val intent: Plan.Intent) extends Plan
 /** To create a filter instance with an independent function */
 object Planify {
-  def apply(intent: Plan.Intent) = new Planify(intent)
+  def apply(intentIn: Plan.Intent) = new Plan {
+    val intent = intentIn
+  }
 }

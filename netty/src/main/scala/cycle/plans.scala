@@ -61,10 +61,8 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
   def shutdown()
 }
 
-@deprecated("Use Planify.apply or extend Plan", "0.6.8")
-class Planify(val intent: Plan.Intent)
-extends Plan with ThreadPool with ServerErrorResponse
-
 object Planify {
-  def apply(intent: Plan.Intent) = new Planify(intent)
+  def apply(intentIn: Plan.Intent) = new Plan with ThreadPool with ServerErrorResponse {
+    val intent = intentIn
+  }
 }

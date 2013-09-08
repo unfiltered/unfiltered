@@ -14,56 +14,6 @@ import jnetty.handler.codec.http.{ HttpRequest => NHttpRequest, DefaultHttpRespo
 import jnetty.handler.codec.http.websocketx.WebSocketServerHandshaker
 import jnetty.util.CharsetUtil
 
-/** Module defining function types used in the WebSockets module as well as
- *  function defaults. This object is deprecated in favor of the unfiltered.netty.websockets
- *  package object */
-@deprecated("use unfiltered.netty.websocket package object instead")
-object Plan {
-  import jnetty.handler.codec.http.HttpVersion.HTTP_1_1
-  import jnetty.handler.codec.http.HttpResponseStatus.FORBIDDEN
-
-  /** The transition from an http request handling to websocket request handling.
-   *  Note: This can not be an Async.Intent because RequestBinding is a Responder for HttpResponses */
-  @deprecated("use unfiltered.netty.websocket.Intent")
-  type Intent = PartialFunction[RequestBinding, SocketIntent]
-
-
-  /** A SocketIntent is the result of a handler `lift`ing a request into
-   *  the WebSocket protocol. WebSockets may be responded to asynchronously,
-   * thus their handler will not need to return a value */
-  @deprecated("use unfiltered.netty.websocket.SocketIntent")
-  type SocketIntent = PartialFunction[SocketCallback, Unit]
-
-  /** A pass handler type represents a means to forward a request upstream for
-   *  unhandled patterns and protocol messages */
-  @deprecated("use unfiltered.netty.websocket.PassHandler")
-  type PassHandler = (ChannelHandlerContext, ChannelEvent) => Unit
-
-  /** Equivalent of an HttpResponse's Pass function,
-   *  a SocketIntent that does nothing */
-  @deprecated("use unfiltered.netty.websocket.Pass")
-  val Pass  = ({ case _ => () }: SocketIntent)
-
-  /** A default implementation of a PassHandler which returns a HTTP
-   *  forbidden response code to the channel before closing the channel */
-  @deprecated("use unfiltered.netty.websocket.DefaultPassHandler")
-  val DefaultPassHandler = ({ (ctx, event) =>
-    event match {
-      case e: MessageEvent =>
-        e.getMessage match {
-          case _: NHttpRequest =>
-            val res = new DefaultHttpResponse(HTTP_1_1, FORBIDDEN)
-            res.setContent(ChannelBuffers.copiedBuffer(res.getStatus.toString, CharsetUtil.UTF_8))
-            HttpHeaders.setContentLength(res, res.getContent.readableBytes)
-            ctx.getChannel.write(res).addListener(ChannelFutureListener.CLOSE)
-          case msg =>
-            sys.error("Invalid type of event message (%s) for Plan pass handling".format(
-              msg.getClass.getName))
-        }
-      case _ => () // we really only care about MessageEvents but need to support the more generic ChannelEvent
-    }
-   }: PassHandler)
-}
 
 /** Serves the same purpose of unfiltered.netty.ServerErrorResponse, which is to
  *  satisfy ExceptionHandler#onException, except that it is not specific to the HTTP protocol.
@@ -191,21 +141,22 @@ case class SocketPlan(intent: SocketIntent,
   }
 }
 
-/** A Plan configured to handle Throwables by printing them before closing the channel */
-@deprecated("Use Planify.apply or extend Plan", "0.6.8")
-class Planify(val intent: Intent, val pass: PassHandler)
-extends Plan with CloseOnException
-
 /** A companion module for building web socket Plans. These plans have default CloseOnException
  *  error handling baked in. To your own ExceptionHandler, Instantiate an instance of Planify
  *  yourself mixing a custom ExceptionHandler implementation */
 object Planify {
   /** Creates a WebSocket Plan with a custom PassHandler function */
-  def apply(intent: Intent, pass: PassHandler) =
-    new Planify(intent, pass)
+  def apply(intentIn: Intent, passIn: PassHandler) =
+    new Plan with CloseOnException {
+      val intent = intentIn
+      val pass = passIn
+    }
 
   /** Creates a WebSocket Plan that, when `Pass`ing, will return a forbidden
    *  response to the client */
-  def apply(intent: Intent): Plan =
-    Planify(intent, DefaultPassHandler)
+  def apply(intentIn: Intent): Plan =
+    new Plan with CloseOnException {
+      val intent = intentIn
+      val pass = DefaultPassHandler
+    }
 }

@@ -24,9 +24,6 @@ abstract class HttpRequest[+T](val underlying: T) {
   def headerNames: Iterator[String]
   /** Iterator of request headers */
   def headers(name: String) : Iterator[String]
-  /** parsed cookie string cookies */
-  @deprecated("use the unfiltered.request.Cookies request extractor instead")
-  def cookies: Seq[Cookie]
   /** true if the request is using tls, false otherwise */
   def isSecure: Boolean
   /** address associated with the source of the request */

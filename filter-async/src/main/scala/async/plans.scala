@@ -62,13 +62,16 @@ trait Plan extends unfiltered.filter.InittedFilter {
  }
 }
 
-@deprecated("Use Planify.apply or extend Plan", "0.6.8")
-class Planify(val intent: Plan.Intent, 
-  override val asyncRequestTimeoutMillis: Long = DEFAULT_ASYNC_REQUEST_TIMEOUT_MILLIS) extends Plan
-
 object Planify {
   val DEFAULT_ASYNC_REQUEST_TIMEOUT_MILLIS = 30000L
-  def apply(intent: Plan.Intent): Planify = new Planify(intent)
-  def apply(intent: Plan.Intent, asyncRequestTimeoutMillis: Long): Planify = 
-    new Planify(intent, asyncRequestTimeoutMillis)
+  def apply(intentIn: Plan.Intent) = new Plan {
+    def intent = intentIn
+    override val asyncRequestTimeoutMillis = DEFAULT_ASYNC_REQUEST_TIMEOUT_MILLIS
+  }
+  def apply(intentIn: Plan.Intent, asyncRequestTimeoutMillisIn: Long) = 
+    new Plan {
+      val intent = intentIn
+
+      override val asyncRequestTimeoutMillis = asyncRequestTimeoutMillisIn
+    }
 }
