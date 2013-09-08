@@ -8,3 +8,6 @@ scala:
   - 2.10.0
 jdk:
   - openjdk6
+
+notifications:
+  email: false
