@@ -39,5 +39,6 @@ Read the new directives documentation for details, and many examples.
 ### Cleanup
 
 * Removed methods deprecated in prior releases [cd8fa0d][cd8fa0d]
+* Published for Scala 2.9.3 and 2.10.x, older versions dropped
 
 [cd8fa0d]: https://github.com/unfiltered/unfiltered/commit/cd8fa0d58e392d07fb377152d36ad2bcaef59236
