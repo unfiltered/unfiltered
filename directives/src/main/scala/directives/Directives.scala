@@ -16,14 +16,28 @@ trait Directives {
 
   def error[R](r:ResponseFunction[R]) = result[ResponseFunction[R], Nothing](Error(r))
 
-  def commit[T, R, A](d:Directive[T, R, A]) = Directive[T, R, A]{ r => d(r) match {
-    case Failure(response) => Error(response)
-    case result            => result
-  }}
+  object commit extends Directive[Any, Nothing, Unit](_ => Success(())){
+    override def flatMap[T, R, A](f:Unit => Directive[T, R, A]):Directive[T, R, A] =
+      commit(f())
 
-  def autocommit[T, R, A](d:Directive[T, R, A]):Directive[T, R, A] = new Directive[T, R, A](d){
-    override def flatMap[TT <: T, RR >: R, B](f: (A) => Directive[TT, RR, B]) = commit(super.flatMap(f))
+    def apply[T, R, A](d:Directive[T, R, A]) = Directive[T, R, A]{ r => d(r) match {
+      case Failure(response) => Error(response)
+      case result            => result
+    }}
   }
+
+  @deprecated(
+  """Use:
+  for {
+    x <- myDirective
+    _ <- commit
+    ...
+  } instead of autocommit(myDirective)""", since="0.7.0")
+  def autocommit[T, R, A](d:Directive[T, R, A]) =
+    for {
+      x <- d
+      _ <- commit
+    } yield x
 
   def getOrElse[R, A](opt:Option[A], orElse: => ResponseFunction[R]) = opt.map(success).getOrElse(failure(orElse))
 
