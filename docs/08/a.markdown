@@ -29,10 +29,10 @@ The next step is to supply the same generic intent to different kinds
 of plans.
 
 ```scala
-object HelloFilter extends
+val helloFilter =
        unfiltered.filter.Planify(Hello.intent)
 
-object HelloHandler extends
+val helloHandler =
        unfiltered.netty.cycle.Planify(Hello.intent)
 ```
 
