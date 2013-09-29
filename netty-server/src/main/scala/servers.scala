@@ -84,21 +84,28 @@ trait Server extends RunnableServer {
   /** any channels added to this will receive broadcasted events */
   protected val channels = new DefaultChannelGroup("Netty Unfiltered Server Channel Group")
 
-  def start(): ServerBuilder = {
-    bootstrap = new ServerBootstrap(
+  def start() = start(identity) // StartableServer - default start
+
+  // Starting with callback
+  def start(preBind: ServerBootstrap => ServerBootstrap): ServerBuilder = {
+    val bt = new ServerBootstrap(
       new NioServerSocketChannelFactory(
         Executors.newCachedThreadPool(),
         Executors.newCachedThreadPool()
       )
     )
-    bootstrap.setPipelineFactory(pipelineFactory)
+    bt.setPipelineFactory(pipelineFactory)
 
-    bootstrap.setOption("child.tcpNoDelay", true)
-    bootstrap.setOption("child.keepAlive", true)
-    bootstrap.setOption("receiveBufferSize", 128 * 1024)
-    bootstrap.setOption("sendBufferSize", 128 * 1024)
-    bootstrap.setOption("reuseAddress", true)
-    bootstrap.setOption("backlog", 16384)
+    // Defaults
+    bt.setOption("child.tcpNoDelay", true)
+    bt.setOption("child.keepAlive", true)
+    bt.setOption("receiveBufferSize", 128 * 1024)
+    bt.setOption("sendBufferSize", 128 * 1024)
+    bt.setOption("reuseAddress", true)
+    bt.setOption("backlog", 16384)
+
+    bootstrap = preBind(bt)
+
     channels.add(bootstrap.bind(new InetSocketAddress(host, port)))
     this
   }
