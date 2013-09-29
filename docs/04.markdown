@@ -98,6 +98,9 @@ For a new project the easiest the easiest option to apply a
 * **unfiltered/unfiltered-war.g8** for a servlet container
 * **unfiltered/unfiltered-netty.g8** for Netty
 * **unfiltered/unfiltered-gae.g8** for Google App Engine
+* **unfiltered/unfiltered-slick.g8** using [Slick][slick] for database interaction
+
+[slick]: http://slick.typesafe.com/ 
 
 So for example:
 
