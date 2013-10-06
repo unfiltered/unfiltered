@@ -1,5 +1,6 @@
 package unfiltered.jetty
 
+import java.util.EnumSet
 import org.eclipse.jetty.server.{Server => JettyServer, Connector, Handler}
 import org.eclipse.jetty.server.handler.{
   ContextHandlerCollection, ResourceHandler}
@@ -8,7 +9,7 @@ import org.eclipse.jetty.servlet.{
 import org.eclipse.jetty.server.bio.SocketConnector
 import org.eclipse.jetty.util.resource.Resource
 import java.util.concurrent.atomic.AtomicInteger
-import javax.servlet.Filter
+import javax.servlet.{ Filter, DispatcherType }
 
 object Http {
   /** bind to the given port for any host */
@@ -34,7 +35,7 @@ trait ContextBuilder {
   def filter(filt: Filter): this.type = {
     val holder = new FilterHolder(filt)
     holder.setName("Filter %s" format counter.incrementAndGet)
-    current.addFilter(holder, "/*", FilterMapping.DEFAULT)
+    current.addFilter(holder, "/*", EnumSet.of(DispatcherType.REQUEST))
     this
   }
 
