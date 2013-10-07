@@ -29,14 +29,14 @@ trait TypeSpec extends spec.Hosted {
         (req as_str, req >:> { _("Content-Type") })
       })
       resp must_== message
-      enc must_== Set("text/plain; charset=utf-8")
+      enc.map(_.toLowerCase) mustHaveMatch "text/plain; ?charset=utf-8"
     }
     "Correctly encode response in iso-8859-1 if requested" in {
       val (resp, enc) = http((host / "latin").gzip  >+ { req =>
         (req as_str, req >:> { _("Content-Type") })
       })
       resp must_== message
-      enc must_== Set("text/plain; charset=iso-8859-1")
+      enc.map(_.toLowerCase) mustHaveMatch "text/plain; ?charset=iso-8859-1"
     }
   }
 }
