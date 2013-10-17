@@ -2,7 +2,7 @@ package unfiltered.netty
 
 import unfiltered.{Async}
 import unfiltered.response.{ResponseFunction, HttpResponse, Pass}
-import unfiltered.request.{HttpRequest,POST,RequestContentType,Charset}
+import unfiltered.request.{HttpRequest,POST,PUT,&,RequestContentType,Charset}
 import java.net.URLDecoder
 import org.jboss.netty.handler.codec.http._
 import java.io.{BufferedReader, ByteArrayOutputStream, InputStreamReader}
@@ -24,13 +24,13 @@ object HttpConfig {
 class RequestBinding(msg: ReceivedMessage)
 extends HttpRequest(msg) with Async.Responder[NHttpResponse] {
   private val req = msg.request
-  lazy val params = queryParams ++ postParams
+  lazy val params = queryParams ++ bodyParams
   def queryParams = req.getUri.split("\\?", 2) match {
     case Array(_, qs) => URLParser.urldecode(qs)
     case _ => Map.empty[String,Seq[String]]
   }
-  def postParams = this match {
-    case POST(RequestContentType(ct)) if ct.contains("application/x-www-form-urlencoded") =>
+  def bodyParams = this match {
+    case (POST(_) | PUT(_)) & RequestContentType(ct) if ct.contains("application/x-www-form-urlencoded") =>
       URLParser.urldecode(req.getContent.toString(JNIOCharset.forName(charset)))
     case _ => Map.empty[String,Seq[String]]
   }
