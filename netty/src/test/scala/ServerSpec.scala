@@ -20,6 +20,9 @@ object ServerSpec extends unfiltered.spec.netty.Served {
   })).handler(planify({
     case GET(UFPath("/planb")) => ResponseString("planb") ~> Ok
     case GET(UFPath("/pass")) => ResponseString("pass") ~> Ok
+  })).handler(planify({
+    case req @ UFPath("/params") & Params(p) & (POST(_) | PUT(_)) =>
+      Ok ~> ResponseString(req.method + ":" + p.map { case (k, vs) => vs.map(k + "=" + _).mkString("&") }.mkString("&"))
   }))
 
   "A Server" should {
@@ -43,6 +46,12 @@ object ServerSpec extends unfiltered.spec.netty.Served {
     }
     "pass upstream on Pass, respond in last handler" in {
       http(host / "pass" as_str) must_== "pass"
+    }
+    "echo POST parameters encoded in the entity body" in {
+      http(host / "params" << Map("n0" -> "v0") as_str) must_== "POST:n0=v0"
+    }
+    "ech PUT paremters encoded in the entity body" in {
+      http((host / "params" << Map("n0" -> "v0") PUT) as_str) must_== "PUT:n0=v0"
     }
   }
 }
