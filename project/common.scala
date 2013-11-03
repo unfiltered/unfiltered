@@ -37,11 +37,11 @@ object Common {
   val settings: Seq[Setting[_]] = Seq(
     organization := "net.databinder",
 
-    version := "0.7.0",
+    version := "0.7.1-beta1",
 
     scalaVersion := "2.9.3",
 
-    crossScalaVersions := Seq("2.9.3", "2.10.2"),
+    crossScalaVersions := Seq("2.9.3", "2.10.3"),
 
     scalacOptions <++= scalaVersion.map(sv=>
       Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked")
