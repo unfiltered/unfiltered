@@ -1,0 +1,10 @@
+* [PR 180][180] **Netty server prebind callback** Add callback
+  function to be able to customize server bootstrap before binding
+  socket.
+* [PR 181][181] **Update dependency to Jetty 8** Upgrade from Jetty 7
+  to 8.
+* [PR 183][183] **Form-encoded pamas for PUT methods in Netty binding**
+
+[180]: https://github.com/unfiltered/unfiltered/pull/180
+[181]: https://github.com/unfiltered/unfiltered/pull/181
+[183]: https://github.com/unfiltered/unfiltered/pull/183
