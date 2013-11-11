@@ -12,6 +12,8 @@ trait Interpreter[A,B,+E] { self =>
           r => next.interpret(r, name)
         }
     }
+
+  /** Lifts an Interpretor into a Directive that interprets a named request parameter */
   def named[EE >: E](name: String)(implicit to: Interpreter[Seq[String],A,EE]) =
     new Directive[Any,EE,B]( { req =>
       val seq = Option(req.parameterValues(name)).getOrElse(Nil)
@@ -22,6 +24,8 @@ trait Interpreter[A,B,+E] { self =>
         r => Result.Success(r)
       )
     } )
+
+  /** Lifts an Interpreter into a Directive that interprets an import value */
   def named[EE >: E](name: String, value: A) =
     new Directive[Any,EE,B]({ req =>
       self.interpret(value, name).fold(
@@ -40,14 +44,24 @@ object Interpreter {
   }
 }
 
+/** Provides a means of generating interpretors that will operate
+ *  on imported information */
 object Import {
+  /** An interpretor that will could potentially fail. Failures
+   *  may be handled by invoking the fail method with a provided
+   *  handler */
   class FallibleImport[A]
   extends data.Interpreter[Option[A], Option[A], Nothing] {
     def interpret(opt: Option[A], name: String) =
       Right(opt)
+    /** Produces a strict interpreter */
     def fail[E](handle: String => E) =
       new StrictImport[A, E](handle)
   }
+  /** An interpreter that will fail if the provided value
+   *  is None and will be handled by the provided handle function.
+   *  In argument to the handle function is a name provided by
+   *  the interpretors named method. */
   class StrictImport[A, +E](handle: String => E)
   extends data.Interpreter[Option[A], Option[A], E] {
     def interpret(opt: Option[A], name: String): Either[E, Option[A]] =
