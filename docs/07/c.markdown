@@ -48,7 +48,7 @@ using interpreters often and in different applications, naming and
 recalling names for various types could become tedious. Let's try it
 with an implicit.
 
-```
+```scala
 implicit val implyIntValue =
   data.as.String ~> data.as.Int.fail { (k,v) =>
     BadRequest ~> ResponseString(
