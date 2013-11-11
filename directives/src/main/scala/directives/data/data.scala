@@ -12,6 +12,8 @@ trait Interpreter[A,B,+E] { self =>
           r => next.interpret(r, name)
         }
     }
+
+  /** Lifts an Interpreter into a Directive that interprets a named request parameter */
   def named[EE >: E](name: String)(implicit to: Interpreter[Seq[String],A,EE]) =
     new Directive[Any,EE,B]( { req =>
       val seq = Option(req.parameterValues(name)).getOrElse(Nil)
@@ -22,7 +24,17 @@ trait Interpreter[A,B,+E] { self =>
         r => Result.Success(r)
       )
     } )
+
+  /** Lifts an Interpreter into a Directive that interprets a provided value */
+  def named[EE >: E](name: String, value: => A) =
+    new Directive[Any,EE,B]({ req =>
+      self.interpret(value, name).fold(
+        Result.Failure(_),
+        Result.Success(_)
+      )
+    })
 }
+
 object Interpreter {
   def identity[A] = new Interpreter[A, A, Nothing] {
     def interpret(seq: A, name: String) = Right(seq)
