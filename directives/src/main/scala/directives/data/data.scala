@@ -25,7 +25,7 @@ trait Interpreter[A,B,+E] { self =>
       )
     } )
 
-  /** Lifts an Interpreter into a Directive that interprets an import value */
+  /** Lifts an Interpreter into a Directive that interprets an imported value */
   def named[EE >: E](name: String, value: A) =
     new Directive[Any,EE,B]({ req =>
       self.interpret(value, name).fold(
