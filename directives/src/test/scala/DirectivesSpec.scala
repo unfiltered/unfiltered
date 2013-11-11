@@ -43,9 +43,14 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
     (name, i) => BadParam(name + " is not even: " + i)
   )
 
-  val callers = new AtomicLong()
   case class Prize(num: Long)
+  val callers = new AtomicLong()
   val MaxPrizes = 3
+
+  // limited time offers. expect a side effect!
+  val asPrize = (data.Requiring[Prize]
+                  .fail(name => BadParam("%s are out of stock".format(name)))
+                  .named("prizes", Some(callers.getAndIncrement()).filter(_ < MaxPrizes).map(Prize(_))))
 
   def intent[A,B] = Directive.Intent.Path {
     case "/commit_or" =>
@@ -72,14 +77,11 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
         _ <- Accepts.Json
         r <- request[Any]
       } yield Ok ~> JsonContent ~> ResponseBytes(Body bytes r)
-    case Seg(List("imported_parameters")) =>
-      // limited time offers. expect a side effect!
+    case Seg(List("limited_offer")) =>
       for {
-        prize <- (data.Import[Prize]
-                  .fail(name => BadParam("%s are out of stock".format(name)))
-                  .named("prizes", Some(callers.getAndIncrement()).filter(_ < MaxPrizes).map(Prize(_))))
+        prize <- asPrize
       } yield Ok ~> ResponseString(
-        "Congradulations. You won prize %d".format(prize.get.num + 1)
+        "Congratulations. You won prize %d".format(prize.num + 1)
       )
     case Seg(List("valid_parameters")) =>
       for {
@@ -115,10 +117,10 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
     }
   }
   "Directives" should {
-    "respond with expected imported response" in {
+    "respond with expected response given named value" in {
       def expect(n: Int) = {
-        val resp = Http(localhost / "imported_parameters" > as.String)
-        val expected = if (n < MaxPrizes) "Congradulations. You won prize %d".format(n + 1) else "prizes are out of stock"
+        val resp = Http(localhost / "limited_offer" > as.String)
+        val expected = if (n < MaxPrizes) "Congratulations. You won prize %d".format(n + 1) else "prizes are out of stock"
         resp() must_== expected
       }
       (0 to MaxPrizes + 10).forall(expect(_))
