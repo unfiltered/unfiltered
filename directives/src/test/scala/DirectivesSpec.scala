@@ -4,6 +4,8 @@ import org.specs._
 
 import unfiltered.request._
 
+import java.util.concurrent.atomic.AtomicLong
+
 object DirectivesSpecJetty
 extends unfiltered.spec.jetty.Planned
 with DirectivesSpec
@@ -41,6 +43,10 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
     (name, i) => BadParam(name + " is not even: " + i)
   )
 
+  val callers = new AtomicLong()
+  case class Prize(num: Long)
+  val MaxPrizes = 3
+
   def intent[A,B] = Directive.Intent.Path {
     case "/commit_or" =>
       val a = for {
@@ -66,6 +72,15 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
         _ <- Accepts.Json
         r <- request[Any]
       } yield Ok ~> JsonContent ~> ResponseBytes(Body bytes r)
+    case Seg(List("imported_parameters")) =>
+      // limited time offers. expect a side effect!
+      for {
+        prize <- (data.Import[Prize]
+                  .fail(name => BadParam("%s are out of stock".format(name)))
+                  .named("prizes", Some(callers.getAndIncrement()).filter(_ < MaxPrizes).map(Prize(_))))
+      } yield Ok ~> ResponseString(
+        "Congradulations. You won prize %d".format(prize.get.num + 1)
+      )
     case Seg(List("valid_parameters")) =>
       for {
         optInt <- data.as.Option[Int] named "option_int"
@@ -100,6 +115,14 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
     }
   }
   "Directives" should {
+    "respond with expected imported response" in {
+      def expect(n: Int) = {
+        val resp = Http(localhost / "imported_parameters" > as.String)
+        val expected = if (n < MaxPrizes) "Congradulations. You won prize %d".format(n + 1) else "prizes are out of stock"
+        resp() must_== expected
+      }
+      (0 to MaxPrizes + 10).forall(expect(_))
+    }
     "respond with json if accepted" in {
       val resp = Http(localhost / "accept_json" / "123"
         <:< Map("Accept" -> "application/json")
