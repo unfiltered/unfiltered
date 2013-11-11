@@ -8,12 +8,14 @@
 
 This allows you to mix external input into parameter interpreting directives
 
-    for {
-      a <- data.as.Required[Int] named "a"
-      b <- (data.Requiring[YourType]
-            .fail(name => s"$name was invalid")
-            .named("explicit_value", Some(YourType(a)).filter(predicate)))
-    } yield ...
+```scala
+for {
+  a <- data.as.Required[Int] named "a"
+  b <- (data.Requiring[YourType]
+        .fail(name => s"$name was invalid")
+        .named("explicit_value", Some(YourType(a)).filter(predicate)))
+} yield ...
+```
 
 * [PR 186][186] **Added new affirmed directive** useful in directive contexts that need no validation
 
