@@ -13,7 +13,7 @@ trait Interpreter[A,B,+E] { self =>
         }
     }
 
-  /** Lifts an Interpretor into a Directive that interprets a named request parameter */
+  /** Lifts an Interpreter into a Directive that interprets a named request parameter */
   def named[EE >: E](name: String)(implicit to: Interpreter[Seq[String],A,EE]) =
     new Directive[Any,EE,B]( { req =>
       val seq = Option(req.parameterValues(name)).getOrElse(Nil)
@@ -44,10 +44,10 @@ object Interpreter {
   }
 }
 
-/** Provides a means of generating interpretors that will operate
+/** Provides a means of generating interpreters that will operate
  *  on imported information */
 object Import {
-  /** An interpretor that will could potentially fail. Failures
+  /** An interpreter that will could potentially fail. Failures
    *  may be handled by invoking the fail method with a provided
    *  handler */
   class FallibleImport[A]
@@ -61,7 +61,7 @@ object Import {
   /** An interpreter that will fail if the provided value
    *  is None and will be handled by the provided handle function.
    *  In argument to the handle function is a name provided by
-   *  the interpretors named method. */
+   *  the interpreters named method. */
   class StrictImport[A, +E](handle: String => E)
   extends data.Interpreter[Option[A], Option[A], E] {
     def interpret(opt: Option[A], name: String): Either[E, Option[A]] =
