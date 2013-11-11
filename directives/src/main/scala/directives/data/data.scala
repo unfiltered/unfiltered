@@ -51,7 +51,7 @@ object Import {
    *  may be handled by invoking the fail method with a provided
    *  handler */
   class FallibleImport[A]
-  extends data.Interpreter[Option[A], Option[A], Nothing] {
+  extends Interpreter[Option[A], Option[A], Nothing] {
     def interpret(opt: Option[A], name: String) =
       Right(opt)
     /** Produces a strict interpreter */
@@ -63,7 +63,7 @@ object Import {
    *  In argument to the handle function is a name provided by
    *  the interpreters named method. */
   class StrictImport[A, +E](handle: String => E)
-  extends data.Interpreter[Option[A], Option[A], E] {
+  extends Interpreter[Option[A], Option[A], E] {
     def interpret(opt: Option[A], name: String): Either[E, Option[A]] =
       opt.map(Some(_)).toRight(handle(name))
   }
