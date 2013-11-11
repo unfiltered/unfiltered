@@ -22,7 +22,15 @@ trait Interpreter[A,B,+E] { self =>
         r => Result.Success(r)
       )
     } )
+  def named[EE >: E](name: String, value: A) =
+    new Directive[Any,EE,B]({ req =>
+      self.interpret(value, name).fold(
+        Result.Failure(_),
+        Result.Success(_)
+      )
+    })
 }
+
 object Interpreter {
   def identity[A] = new Interpreter[A, A, Nothing] {
     def interpret(seq: A, name: String) = Right(seq)
@@ -30,6 +38,22 @@ object Interpreter {
   def apply[A,B](f: A => B) = new Interpreter[A, B, Nothing] {
     def interpret(a: A, name: String) = Right(f(a))
   }
+}
+
+object Import {
+  class FallibleImport[A]
+  extends data.Interpreter[Option[A], Option[A], Nothing] {
+    def interpret(opt: Option[A], name: String) =
+      Right(opt)
+    def fail[E](handle: String => E) =
+      new StrictImport[A, E](handle)
+  }
+  class StrictImport[A, +E](handle: String => E)
+  extends data.Interpreter[Option[A], Option[A], E] {
+    def interpret(opt: Option[A], name: String): Either[E, Option[A]] =
+      opt.map(Some(_)).toRight(handle(name))
+  }
+  def apply[A] = new FallibleImport[A]
 }
 
 case class Fallible[A,B](cf: A => Option[B])
