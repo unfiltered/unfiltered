@@ -25,8 +25,8 @@ trait Interpreter[A,B,+E] { self =>
       )
     } )
 
-  /** Lifts an Interpreter into a Directive that interprets an imported value */
-  def named[EE >: E](name: String, value: A) =
+  /** Lifts an Interpreter into a Directive that interprets a provided value */
+  def named[EE >: E](name: String, value: => A) =
     new Directive[Any,EE,B]({ req =>
       self.interpret(value, name).fold(
         Result.Failure(_),
@@ -42,32 +42,6 @@ object Interpreter {
   def apply[A,B](f: A => B) = new Interpreter[A, B, Nothing] {
     def interpret(a: A, name: String) = Right(f(a))
   }
-}
-
-/** Provides a means of generating interpreters that will operate
- *  on imported information */
-object Import {
-  /** An interpreter that will could potentially fail. Failures
-   *  may be handled by invoking the fail method with a provided
-   *  handler */
-  class FallibleImport[A]
-  extends Interpreter[Option[A], Option[A], Nothing] {
-    def interpret(opt: Option[A], name: String) =
-      Right(opt)
-    /** Produces a strict interpreter */
-    def fail[E](handle: String => E) =
-      new StrictImport[A, E](handle)
-  }
-  /** An interpreter that will fail if the provided value
-   *  is None and will be handled by the provided handle function.
-   *  In argument to the handle function is a name provided by
-   *  the interpreters named method. */
-  class StrictImport[A, +E](handle: String => E)
-  extends Interpreter[Option[A], Option[A], E] {
-    def interpret(opt: Option[A], name: String): Either[E, Option[A]] =
-      opt.map(Some(_)).toRight(handle(name))
-  }
-  def apply[A] = new FallibleImport[A]
 }
 
 case class Fallible[A,B](cf: A => Option[B])
