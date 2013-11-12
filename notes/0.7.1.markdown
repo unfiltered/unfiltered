@@ -15,7 +15,8 @@ This allows you to mix external input into parameter interpreting directives
             .named("explicit_value", Some(YourType(a)).filter(predicate)))
     } yield ...
 
-* [PR 186][186] **Added new affirmed directive** useful in directive contexts that need no validation
+* [PR 186][186] **Added Directive.success**, useful in directive
+  contexts where all requests are accepted
 
 [180]: https://github.com/unfiltered/unfiltered/pull/180
 [181]: https://github.com/unfiltered/unfiltered/pull/181

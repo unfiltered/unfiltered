@@ -46,10 +46,6 @@ trait Directives {
     def orElse[R](fail:ResponseFunction[R]) = Directive[Any, ResponseFunction[R], A](r => if(f.isDefinedAt(r)) Success(f(r)) else Failure(fail))
   }
 
-  /** produces a directive that will always be a success and may be used in cases where a directive
-   *  is required to satisfy an intent's interface but no validation is needed */
-  def affirmed[A,B](result: => B) = Directive[A, Nothing, B]({ (_: HttpRequest[A]) => Success(result) })
-
   def request[T] = Directive[T, Nothing, HttpRequest[T]](Success(_))
 
   def underlying[T] = request[T] map { _.underlying }

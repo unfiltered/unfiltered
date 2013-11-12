@@ -54,7 +54,7 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
 
   def intent[A,B] = Directive.Intent.Path {
     case "/affirmation" =>
-      affirmed {
+      Directive.success {
         ResponseString("this request needs no validation")
       }
     case "/commit_or" =>
