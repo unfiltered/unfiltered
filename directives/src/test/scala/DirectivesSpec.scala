@@ -53,6 +53,10 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
                   .named("prizes", Some(callers.getAndIncrement()).filter(_ < MaxPrizes).map(Prize(_))))
 
   def intent[A,B] = Directive.Intent.Path {
+    case "/affirmation" =>
+      Directive.success {
+        ResponseString("this request needs no validation")
+      }
     case "/commit_or" =>
       val a = for {
         _ <- GET
@@ -117,6 +121,11 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
     }
   }
   "Directives" should {
+    "response with a condition that is always true" in {
+      Http(localhost / "affirmation" OK as.String).apply() must_==(
+        "this request needs no validation"
+      )
+    }
     "respond with expected response given named value" in {
       def expect(n: Int) = {
         val resp = Http(localhost / "limited_offer" > as.String)

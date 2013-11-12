@@ -4,7 +4,22 @@
 * [PR 181][181] **Update dependency to Jetty 8** Upgrade from Jetty 7
   to 8.
 * [PR 183][183] **Form-encoded pamas for PUT methods in Netty binding**
+* [PR 185][185] **Added Directive Interpreter named variant that provides an explicit value**
+
+This allows you to mix external input into parameter interpreting directives
+
+    for {
+      a <- data.as.Required[Int] named "a"
+      b <- (data.Requiring[YourType]
+            .fail(name => s"$name was invalid")
+            .named("explicit_value", Some(YourType(a)).filter(predicate)))
+    } yield ...
+
+* [PR 186][186] **Added Directive.success**, useful in directive
+  contexts where all requests are accepted
 
 [180]: https://github.com/unfiltered/unfiltered/pull/180
 [181]: https://github.com/unfiltered/unfiltered/pull/181
 [183]: https://github.com/unfiltered/unfiltered/pull/183
+[185]: https://github.com/unfiltered/unfiltered/pull/185
+[186]: https://github.com/unfiltered/unfiltered/pull/186
