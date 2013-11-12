@@ -18,13 +18,13 @@ object Unfiltered extends Build {
         }
     }
 
-  private def ciSettings: Seq[Project.Setting[_]] = {
+  private def ciSettings: Seq[Def.Setting[_]] = {
     if (JBoolean.parseBoolean(
       sys.env.getOrElse("TRAVIS", "false"))) Seq(
       logLevel in Global := Level.Warn,
       logLevel in Compile := Level.Warn,
       logLevel in Test := Level.Info
-    ) else Seq.empty[Project.Setting[_]]
+    ) else Seq.empty[Def.Setting[_]]
   }
   private def module(moduleName: String)(
     projectId: String = "unfiltered-" + moduleName,
