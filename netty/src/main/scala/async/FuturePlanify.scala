@@ -13,7 +13,7 @@ object FuturePlan {
   /**
    * Transform a Future intent into a regular async.Plan.Intent.
    */
-  def toAsyncIntent(source: Intent)(implicit executionContext: ExecutionContext) : Plan.Intent = {
+  def toAsyncIntent(source: Intent)(implicit executionContext: ExecutionContext): Plan.Intent = {
     case req if source.isDefinedAt(req) =>
       val rf : Future[ResponseFunction[NHttpResponse]] = source(req)
       rf.onComplete {
@@ -24,5 +24,6 @@ object FuturePlan {
 }
 
 object FuturePlanify {
-  def apply(intent: FuturePlan.Intent)(implicit executionContext: ExecutionContext) : Plan.Intent = FuturePlan.toAsyncIntent(intent)
+  def apply(intent: FuturePlan.Intent)(implicit executionContext: ExecutionContext): Plan.Intent =
+    FuturePlan.toAsyncIntent(intent)
 }
