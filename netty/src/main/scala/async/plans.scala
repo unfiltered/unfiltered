@@ -10,7 +10,7 @@ import unfiltered.request.HttpRequest
 import unfiltered.Async
 
 object Plan {
-  /** Note: The only return object a channel plan acts on is Pass */
+  /** Note: The only return object an async plan acts on is Pass */
   type Intent =
     Async.Intent[ReceivedMessage, NHttpResponse]
 }
@@ -20,11 +20,17 @@ object Intent {
   def apply(intent: Plan.Intent) = intent
 }
 
-/** A Netty Plan for request-only handling. */
+/** A Netty Plan async interaction, DIY responding */
 trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
   def intent: Plan.Intent
+  def requestPlan = intent
+}
+
+/** Common base for async.Plan and future.Plan */
+trait RequestPlan extends SimpleChannelUpstreamHandler with ExceptionHandler {
+  def requestIntent: Plan.Intent
   private lazy val guardedIntent =
-    intent.onPass(
+    requestIntent.onPass(
       { req: HttpRequest[ReceivedMessage] =>
         req.underlying.context.sendUpstream(req.underlying.event) }
     )
