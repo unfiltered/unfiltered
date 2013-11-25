@@ -19,7 +19,7 @@ trait ServerErrorResponse { self: ExceptionHandler =>
     val ch = ctx.getChannel
     if (ch.isOpen) try {
       System.err.println("Exception caught handling request:")
-      t.printStackTrace()
+      t.printStackTrace(System.err)
       val res = new DefaultHttpResponse(
         HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR)
       res.setContent(ChannelBuffers.copiedBuffer(
