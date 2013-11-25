@@ -27,5 +27,8 @@ trait Plan extends async.RequestPlan {
 
   implicit def executionContext: ExecutionContext
 
-  val requestIntent: async.Plan.Intent = unfiltered.kit.Futured(intent)
+  val requestIntent: async.Plan.Intent =
+    unfiltered.kit.Futured(intent) { (req, exc) =>
+      this.onException(req.underlying.context, exc)
+    }
 }
