@@ -18,7 +18,7 @@ object Futured {
       (req, rff: Future[ResponseFunction[B]]) =>
       rff.onComplete {
         case Success(r) => req.respond(r)
-        case Failure(t) => InternalServerError
+        case Failure(t) => req.respond(InternalServerError)
       }
     )
 }
