@@ -120,7 +120,7 @@ trait Server extends RunnableServer {
   val url =  "http://%s:%d/" format(host, port)
 
   /** any channels added to this will receive broadcasted events */
-  val channels = new DefaultChannelGroup(
+  protected val channels = new DefaultChannelGroup(
     "Netty Unfiltered Server Channel Group", GlobalEventExecutor.INSTANCE)
 
   /** Starts default server bootstrap */
@@ -162,7 +162,7 @@ trait Server extends RunnableServer {
 }
 
 class ServerInit(
-  val channels: ChannelGroup,
+  protected val channels: ChannelGroup,
   val handlers: List[() => ChannelHandler])
   extends ChannelInitializer[SocketChannel] with DefaultServerInit {
   def initChannel(ch: SocketChannel) = complete(ch.pipeline)  
@@ -171,7 +171,7 @@ class ServerInit(
 /**  HTTP Netty pipline builder. Uses Netty defaults: maxHeaderSize 8192 and
  *   maxChunkSize 8192 */
 trait DefaultServerInit {
-  def channels: ChannelGroup
+  protected def channels: ChannelGroup
   def handlers: List[() => ChannelHandler]
   protected def complete(line: ChannelPipeline) = {
     line.addLast("housekeeping", new HouseKeepingChannelHandler(channels))
