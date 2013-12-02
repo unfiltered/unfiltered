@@ -1,9 +1,22 @@
 package unfiltered.netty
 
-import org.jboss.netty.channel._
-import java.nio.charset.Charset
+import unfiltered.netty.resources.{ FileSystemResource, Resolve, Resource }
+import unfiltered.request._
+import unfiltered.response._
 
-import unfiltered.netty.resources.Resolve
+import io.netty.channel._
+import io.netty.handler.codec.http.{
+  LastHttpContent,
+  HttpHeaders,
+  HttpResponse => NHttpResponse }
+import io.netty.handler.stream.{ ChunkedFile, ChunkedStream }
+
+import java.io.{ File, FileNotFoundException, RandomAccessFile }
+import java.net.{ URL, URLDecoder }
+import java.nio.charset.Charset
+import java.util.{ Calendar, GregorianCalendar }
+
+import scala.util.control.Exception.allCatch
 
 object Mimes {
   import javax.activation.MimetypesFileTypeMap
@@ -45,19 +58,7 @@ case class Resources(base: java.net.URL,
                      cacheSeconds: Int = 60,
                      passOnFail: Boolean = true)
   extends unfiltered.netty.async.Plan with ServerErrorResponse {
-  import Resources._
-  import resources._
-  import unfiltered.request._
-  import unfiltered.response._
-  import java.io.{ File, FileNotFoundException, RandomAccessFile }
-  import java.net.{ URL, URLDecoder }
-  import java.util.{ Calendar, GregorianCalendar }
-  import org.jboss.netty.channel.{
-    ChannelFuture, ChannelFutureListener, DefaultFileRegion }
-  import org.jboss.netty.handler.codec.http.{
-    HttpHeaders, HttpResponse => NHttpResponse }
-  import org.jboss.netty.handler.stream.{ ChunkedFile, ChunkedStream }
-  import scala.util.control.Exception.allCatch
+  import unfiltered.netty.Resources._
 
   // Returning Pass here will send the request upstream, otherwise
   // this method handles the request itself
@@ -78,7 +79,7 @@ case class Resources(base: java.net.URL,
           case Some(since) if (since.getTime == rsrc.lastModified) =>
             // close immediately and do not include content-length header
             // http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
-            req.underlying.event.getChannel.write(
+            req.underlying.context.channel.write(
               req.underlying.defaultResponse(
                 NotModified ~>
                 Date(Dates.format(new GregorianCalendar().getTime))
@@ -97,35 +98,36 @@ case class Resources(base: java.net.URL,
                 LastModified(Dates.format(rsrc.lastModified))
 
               cal.add(Calendar.SECOND, cacheSeconds)
-
-              val chan = req.underlying.event.getChannel
-              val writeHeaders = chan.write(
+              
+              val ctx = req.underlying.context
+              val chan = ctx.channel
+              val writeHeaders = ctx.write(
                 req.underlying.defaultResponse(
                   heads ~> Expires(Dates.format(cal.getTime))))
 
               def lastly(future: ChannelFuture) =
-                if(!HttpHeaders.isKeepAlive(req.underlying.request)) {
+                if (!HttpHeaders.isKeepAlive(req.underlying.request)) {
                    future.addListener(ChannelFutureListener.CLOSE)
                 }
 
-              if(GET.unapply(req).isDefined && chan.isOpen) {
+              if (GET.unapply(req).isDefined && chan.isOpen) {
                 rsrc match {
                   case FileSystemResource(_) =>
                     val raf = new RandomAccessFile(rsrc.path, "r")
-                  if(req.isSecure)
-                    chan.write(new ChunkedFile(
-                      raf, 0, len, 8192/*ChunkedStream.DEFAULT_CHUNK_SIZE*/))
-                  else {
-                    // using zero-copy
-                    val region =
-                      new DefaultFileRegion(raf.getChannel, 0, len)
-                    val writeFile = chan.write(region)
-                    writeFile.addListener(new ChannelFutureListener {
-                      def operationComplete(f: ChannelFuture) =
-                        region.releaseExternalResources
-                    })
-                    lastly(writeFile)
-                  }
+                    val writeFile = if (req.isSecure)
+                      ctx.write(new ChunkedFile(
+                        raf, 0, len, 8192/*ChunkedStream.DEFAULT_CHUNK_SIZE*/))
+                      else {
+                        // using zero-copy
+                        val region =
+                          new DefaultFileRegion(raf.getChannel, 0, len)
+                         val future = ctx.write(region)
+                         future.addListener(new ChannelFutureListener {
+                           def operationComplete(f: ChannelFuture) =
+                             region.release()
+                         })
+                      }
+                    lastly(ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT))
                   case other =>
                     chan.write(new ChunkedStream(other.in))
                 }

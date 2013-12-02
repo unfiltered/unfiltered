@@ -1,13 +1,18 @@
+
 package unfiltered.netty.async
 
-import org.jboss.netty.handler.codec.http.{HttpRequest=>NHttpRequest,
-                                           HttpResponse=>NHttpResponse,
-                                           HttpChunk=>NHttpChunk}
-import org.jboss.netty.channel._
+import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter } // was SimpleChannelUpstreamHandler
+import io.netty.channel.ChannelHandler.Sharable
+import io.netty.handler.codec.http.{
+  HttpContent,
+  FullHttpRequest,
+  HttpRequest  => NHttpRequest,
+  HttpResponse => NHttpResponse }
+
+import unfiltered.Async
 import unfiltered.netty._
 import unfiltered.response._
 import unfiltered.request.HttpRequest
-import unfiltered.Async
 
 object Plan {
   /** Note: The only return object a channel plan acts on is Pass */
@@ -21,23 +26,35 @@ object Intent {
 }
 
 /** A Netty Plan for request-only handling. */
-trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
+@Sharable // this indicates that the handler is stateless and be called without syncronization
+trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
   def intent: Plan.Intent
   private lazy val guardedIntent =
     intent.onPass(
       { req: HttpRequest[ReceivedMessage] =>
-        req.underlying.context.sendUpstream(req.underlying.event) }
+        req.underlying.context.fireChannelRead(req.underlying.message) }
     )
-  override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
+
+  override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object): Unit =
+    msg match {
+      case req: FullHttpRequest => guardedIntent {
+        new RequestBinding(ReceivedMessage(req, ctx, msg))
+      }
+      case chunk: HttpContent => ctx.fireChannelRead(chunk)
+      case ue => sys.error("Unexpected message type from upstream: %s"
+                           .format(ue))
+    }
+
+  /*override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     e.getMessage() match {
-      case req:NHttpRequest => guardedIntent {
+      case req: NHttpRequest => guardedIntent {
         new RequestBinding(ReceivedMessage(req, ctx, e))
       }
-      case chunk:NHttpChunk => ctx.sendUpstream(e)
+      case chunk: HttpContent => ctx.sendUpstream(e)
       case msg => sys.error("Unexpected message type from upstream: %s"
                         .format(msg))
     }
-  }
+  }*/
 }
 
 object Planify {

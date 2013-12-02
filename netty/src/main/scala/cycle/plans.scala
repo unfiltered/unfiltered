@@ -1,10 +1,14 @@
 package unfiltered.netty.cycle
 
-import org.jboss.netty.handler.codec.http.{
-  HttpRequest=>NHttpRequest,HttpResponse=>NHttpResponse,HttpChunk=>NHttpChunk}
-import org.jboss.netty.channel._
-import org.jboss.netty.handler.codec.http.HttpResponseStatus._
-import org.jboss.netty.handler.codec.http.HttpVersion._
+import io.netty.handler.codec.http.{
+  FullHttpRequest,
+  HttpContent,
+  HttpRequest  => NHttpRequest,
+  HttpResponse => NHttpResponse }
+import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter } // was SimpleChannelUpstreamHandler
+import io.netty.handler.codec.http.HttpResponseStatus._
+import io.netty.handler.codec.http.HttpVersion._
+
 import unfiltered.netty._
 import unfiltered.response.{ResponseFunction, Pass}
 import unfiltered.request.HttpRequest
@@ -19,7 +23,7 @@ object Intent {
   def apply(intent: Plan.Intent) = intent
 }
 /** A Netty Plan for request cycle handling. */
-trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
+trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
   def intent: Plan.Intent
   def catching(ctx: ChannelHandlerContext)(thunk: => Unit) {
     try { thunk } catch {
@@ -29,7 +33,7 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
 
   private lazy val guardedIntent = intent.fold(
     (req: HttpRequest[ReceivedMessage]) =>
-      req.underlying.context.sendUpstream(req.underlying.event),
+      req.underlying.context.fireChannelRead(req.underlying.message),
     (req: HttpRequest[ReceivedMessage],
      rf: ResponseFunction[NHttpResponse]) =>
       executeResponse {
@@ -38,7 +42,25 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
         }
       }
   )
-  override def messageReceived(ctx: ChannelHandlerContext,
+  
+  override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object ): Unit =
+    msg match {
+      case req: FullHttpRequest =>
+        catching(ctx) {
+          executeIntent {
+            catching(ctx) {
+              guardedIntent(
+                new RequestBinding(ReceivedMessage(req, ctx, msg))
+              )
+            }
+          }
+        }
+      case chunk: HttpContent => ctx.fireChannelRead(chunk)
+      case ue => sys.error("Unexpected message type from upstream: %s"
+                           .format(ue))
+    }
+
+  /*override def messageReceived(ctx: ChannelHandlerContext,
                                e: MessageEvent) {
     e.getMessage() match {
       case req:NHttpRequest =>
@@ -51,11 +73,11 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
             }
           }
         }
-      case chunk:NHttpChunk => ctx.sendUpstream(e)
+      case chunk: HttpContent => ctx.sendUpstream(e)
       case msg => sys.error("Unexpected message type from upstream: %s"
                         .format(msg))
     }
-  }
+  }*/
   def executeIntent(thunk: => Unit)
   def executeResponse(thunk: => Unit)
   def shutdown()

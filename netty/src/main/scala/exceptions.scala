@@ -1,30 +1,29 @@
 package unfiltered.netty
 
-import org.jboss.netty.channel._
-import org.jboss.netty.handler.codec.http._
-import org.jboss.netty.buffer.ChannelBuffers
+import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext, ChannelInboundHandler }
+import io.netty.handler.codec.http._
+import io.netty.buffer.Unpooled
 
 import unfiltered.util.control.NonFatal
 
-trait ExceptionHandler { self: SimpleChannelUpstreamHandler =>
+trait ExceptionHandler { self: ChannelInboundHandler =>
   def onException(ctx: ChannelHandlerContext, t: Throwable)
   override def exceptionCaught(ctx: ChannelHandlerContext,
-                               e: ExceptionEvent) {
-    onException(ctx, e.getCause)
+                               t: Throwable) {    
+    onException(ctx, t)
   }
 }
 
-trait ServerErrorResponse { self: ExceptionHandler =>
+trait ServerErrorResponse { self: ChannelInboundHandler =>
   def onException(ctx: ChannelHandlerContext, t: Throwable) {
-    val ch = ctx.getChannel
+    val ch = ctx.channel
     if (ch.isOpen) try {
       System.err.println("Exception caught handling request:")
       t.printStackTrace()
-      val res = new DefaultHttpResponse(
-        HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR)
-      res.setContent(ChannelBuffers.copiedBuffer(
+      val res = new DefaultFullHttpResponse(
+        HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR, Unpooled.copiedBuffer(
         "Internal Server Error".getBytes("utf-8")))
-        ch.write(res).addListener(ChannelFutureListener.CLOSE)
+      ch.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE)
     } catch {
       case NonFatal(_) => ch.close()
     }

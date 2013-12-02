@@ -1,13 +1,22 @@
 package unfiltered.netty
 
-import unfiltered.util.{IO, RunnableServer}
-import java.net.InetSocketAddress
-import org.jboss.netty.handler.codec.http.{
-  HttpRequestDecoder, HttpResponseEncoder, HttpChunkAggregator}
-import org.jboss.netty.handler.stream.ChunkedWriteHandler
-import org.jboss.netty.channel._
-import group.ChannelGroup
 import unfiltered._
+import unfiltered.util.{ IO, RunnableServer }
+
+import java.net.InetSocketAddress
+
+import io.netty.handler.stream.ChunkedWriteHandler
+import io.netty.channel.{
+  ChannelHandler,
+  ChannelInitializer,
+  ChannelPipeline }
+import io.netty.channel.socket.SocketChannel
+import io.netty.channel.group.ChannelGroup
+import io.netty.handler.ssl.SslHandler
+
+import java.io.FileInputStream
+import java.security.{ KeyStore, SecureRandom }
+import javax.net.ssl.{ SSLContext, TrustManager, TrustManagerFactory }
 
 object Https {
   def apply(port: Int, host: String): Https =
@@ -22,13 +31,14 @@ object Https {
 }
 
 /** Http + Ssl implementation of the Server trait. */
-case class Https(port: Int, host: String,
-                 handlers: List[() => ChannelHandler],
-                 beforeStopBlock: () => Unit)
-extends HttpServer
-with Ssl { self =>
-  def pipelineFactory: ChannelPipelineFactory =
-    new SecureServerPipelineFactory(channels, handlers, this)
+case class Https(
+  port: Int, host: String,
+  handlers: List[() => ChannelHandler],
+  beforeStopBlock: () => Unit)
+  extends HttpServer
+  with Ssl { self =>
+  def initializer: ChannelInitializer[SocketChannel] =
+     new SecureServerInit(channels, handlers, this)
 
   type ServerBuilder = Https
 
@@ -92,9 +102,6 @@ trait Ssl extends Security {
   * "netty.ssl.trustStorePassword" respectively
   */
 trait Trusted { self: Ssl =>
-  import java.io.FileInputStream
-  import java.security.{KeyStore, SecureRandom}
-  import javax.net.ssl.{SSLContext, TrustManager, TrustManagerFactory}
 
   lazy val trustStore = requiredProperty("netty.ssl.trustStore")
   lazy val trustStorePassword = requiredProperty("netty.ssl.trustStorePassword")
@@ -116,17 +123,16 @@ trait Trusted { self: Ssl =>
 }
 
 /** ChannelPipelineFactory for secure Http connections */
-class SecureServerPipelineFactory(val channels: ChannelGroup,
-                                  val handlers: List[() =>ChannelHandler],
-                                  val security: Security)
-    extends ChannelPipelineFactory with DefaultPipelineFactory {
-  import org.jboss.netty.handler.ssl.SslHandler
-  def getPipeline(): ChannelPipeline = {
-    val line = Channels.pipeline
-
+class SecureServerInit(
+  val channels: ChannelGroup,
+  val handlers: List[() =>ChannelHandler],
+  val security: Security)
+  extends ChannelInitializer[SocketChannel] with DefaultServerInit {
+  def initChannel(ch: SocketChannel) = complete(ch.pipeline)
+  override protected def complete(line: ChannelPipeline) = {
     val engine = security.createSslContext.createSSLEngine
     engine.setUseClientMode(false)
     line.addLast("ssl", new SslHandler(engine))
-    complete(line)
+    super.complete(line)
   }
 }
