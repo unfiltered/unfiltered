@@ -75,11 +75,12 @@ case class Resources(base: java.net.URL,
   def intent = {
     case Retrieval(Path(path)) & req => safe(path.drop(1)) match {
       case Some(rsrc) =>
+        val ctx = req.underlying.context
         IfModifiedSince(req) match {
           case Some(since) if (since.getTime == rsrc.lastModified) =>
             // close immediately and do not include content-length header
             // http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
-            req.underlying.context.channel.write(
+            ctx.write(
               req.underlying.defaultResponse(
                 NotModified ~>
                 Date(Dates.format(new GregorianCalendar().getTime))
@@ -99,8 +100,6 @@ case class Resources(base: java.net.URL,
 
               cal.add(Calendar.SECOND, cacheSeconds)
               
-              val ctx = req.underlying.context
-              val chan = ctx.channel
               val writeHeaders = ctx.write(
                 req.underlying.defaultResponse(
                   heads ~> Expires(Dates.format(cal.getTime))))
@@ -110,26 +109,18 @@ case class Resources(base: java.net.URL,
                    future.addListener(ChannelFutureListener.CLOSE)
                 }
 
-              if (GET.unapply(req).isDefined && chan.isOpen) {
+              if (GET.unapply(req).isDefined && ctx.channel.isOpen) {
                 rsrc match {
                   case FileSystemResource(_) =>
                     val raf = new RandomAccessFile(rsrc.path, "r")
-                    val writeFile = if (req.isSecure)
-                      ctx.write(new ChunkedFile(
-                        raf, 0, len, 8192/*ChunkedStream.DEFAULT_CHUNK_SIZE*/))
-                      else {
-                        // using zero-copy
-                        val region =
-                          new DefaultFileRegion(raf.getChannel, 0, len)
-                         val future = ctx.write(region)
-                         future.addListener(new ChannelFutureListener {
-                           def operationComplete(f: ChannelFuture) =
-                             region.release()
-                         })
-                      }
+                    ctx.write(
+                      if (req.isSecure)
+                        new ChunkedFile(
+                          raf, 0, len, 8192/*ChunkedStream.DEFAULT_CHUNK_SIZE*/)
+                      else new DefaultFileRegion(raf.getChannel, 0, len))
                     lastly(ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT))
                   case other =>
-                    chan.write(new ChunkedStream(other.in))
+                    ctx.write(new ChunkedStream(other.in))
                 }
               } else lastly(writeHeaders)
             } catch {
