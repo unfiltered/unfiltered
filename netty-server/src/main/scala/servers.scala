@@ -200,7 +200,8 @@ class HouseKeepingChannelHandler(channels: ChannelGroup)
 
 class NotFoundHandler
   extends ChannelInboundHandlerAdapter {
-  override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object): Unit =
+  override def channelRead(
+    ctx: ChannelHandlerContext, msg: java.lang.Object): Unit =
     (msg match {
       case req: HttpMessage => Some(req.getProtocolVersion)
       case chunk: HttpContent => None
