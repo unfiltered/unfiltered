@@ -2,18 +2,22 @@ package unfiltered.netty.websockets
 
 import unfiltered.request.{ GET, Host, HttpRequest }
 import unfiltered.netty.{ ExceptionHandler, ReceivedMessage, RequestBinding }
-
-import org.jboss.{ netty => jnetty }
-import jnetty.buffer.ChannelBuffers
-import jnetty.channel.{
-  Channel, ChannelEvent, ChannelFuture, ChannelFutureListener,
-  ChannelHandlerContext, MessageEvent, SimpleChannelUpstreamHandler
+import io.netty.channel.{
+  Channel, ChannelFuture, ChannelFutureListener,
+  ChannelHandlerContext, ChannelInboundHandlerAdapter
 }
-import jnetty.handler.codec.http.HttpHeaders
-import jnetty.handler.codec.http.{ HttpRequest => NHttpRequest, DefaultHttpResponse }
-import jnetty.handler.codec.http.websocketx.WebSocketServerHandshaker
-import jnetty.util.CharsetUtil
-
+import io.netty.handler.codec.http.FullHttpRequest
+import io.netty.handler.codec.http.websocketx.{
+  CloseWebSocketFrame, PingWebSocketFrame,
+  PongWebSocketFrame, TextWebSocketFrame,
+  WebSocketFrame
+}
+import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker
+import io.netty.handler.codec.http.websocketx.{
+  WebSocketHandshakeException, WebSocketServerHandshakerFactory
+}
+import io.netty.util.CharsetUtil
+import scala.util.control.Exception.catching
 
 /** Serves the same purpose of unfiltered.netty.ServerErrorResponse, which is to
  *  satisfy ExceptionHandler#onException, except that it is not specific to the HTTP protocol.
@@ -21,31 +25,33 @@ import jnetty.util.CharsetUtil
 trait CloseOnException { self: ExceptionHandler =>
   def onException(ctx: ChannelHandlerContext, t: Throwable) {
     t.printStackTrace
-    ctx.getChannel.close
+    ctx.channel.close
   }
 }
 
 private [websockets] object WSLocation {
-  def apply[T](r: HttpRequest[T]) = "%s://%s%s" format(if(r.isSecure) "wss" else "ws", Host(r).get, r.uri)
+  def apply[T](r: HttpRequest[T]) = "%s://%s%s" format(
+    if (r.isSecure) "wss" else "ws", Host(r).get, r.uri)
 }
 
 /** Provides an extension point for netty ChannelHandlers that wish to
  *  support the WebSocket protocol */
-trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
-  import jnetty.channel.ExceptionEvent
-  import jnetty.handler.codec.http.websocketx.{
-    WebSocketHandshakeException, WebSocketServerHandshakerFactory
-  }
-  import scala.util.control.Exception.catching
+trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
 
+  /** specify PartialFunction[RequestBinding, SocketIntent] */
   def intent: Intent
 
+  /** specify PartialFunction[RequestBinding, SocketIntent] */
   def pass: PassHandler
 
-  override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) =
-    event.getMessage match {
-      case http: NHttpRequest => upgrade(ctx, http, event)
-      case _ => pass(ctx, event)
+  final override def channelReadComplete(ctx: ChannelHandlerContext) =
+    ctx.flush()
+
+  final override def channelRead(
+    ctx: ChannelHandlerContext, msg: java.lang.Object) =
+    msg match {
+      case http: FullHttpRequest => upgrade(ctx, http)
+      case unexpected => pass(ctx, unexpected)
     }
 
   /** `Lifts` an HTTP request into a WebSocket request.
@@ -56,44 +62,47 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
    *   evaluate WebSocket protocol requests
    *  If an HTTP intent filter is matched but this is not a websocket request,
    *    the `pass` method will be invoked. */
-  private def upgrade(ctx: ChannelHandlerContext,
-                      request: NHttpRequest,
-                      event: MessageEvent) =
-    new RequestBinding(ReceivedMessage(request, ctx, event)) match {
+  private def upgrade(
+    ctx: ChannelHandlerContext,
+    request: FullHttpRequest) =
+    if (!request.getDecoderResult.isSuccess()) pass(ctx, request)
+    else new RequestBinding(ReceivedMessage(request, ctx, request)) match {
       case r @ GET(_) =>
         intent.orElse({ case _ => Pass }: Intent)(r) match {
-          case Pass => pass(ctx, event)
+          case Pass => pass(ctx, request)
           case socketIntent =>
-            def attempt = socketIntent.orElse({ case _ => () }: SocketIntent)
+            def attempt = socketIntent.lift
             val factory =
               new WebSocketServerHandshakerFactory(
                 WSLocation(r), null/* subprotocols */, false/* allowExtensions */)
             factory.newHandshaker(request) match {
               case null =>
-                factory.sendUnsupportedWebSocketVersionResponse(ctx.getChannel())
+                WebSocketServerHandshakerFactory
+                  .sendUnsupportedWebSocketVersionResponse(ctx.channel)
               case shaker =>
                 // handle handshake exceptions for the use case
                 // of mounting an http plan on the same path
                 // as a websocket handler
                 catching(classOf[WebSocketHandshakeException]).either {
-                  shaker.handshake(ctx.getChannel, request).addListener(new ChannelFutureListener {
-                    def operationComplete(hf: ChannelFuture) {
-                      val chan = hf.getChannel
-                      attempt(Open(WebSocket(chan)))
-                      chan.getCloseFuture.addListener(new ChannelFutureListener {
-                        def operationComplete(cf: ChannelFuture) = {
-                          attempt(Close(WebSocket(cf.getChannel)))
-                        }
-                      })
-                      chan.getPipeline.replace(
-                        Plan.this, ctx.getName,
-                        SocketPlan(socketIntent, pass, shaker, Plan.this))
-                    }
-                  })
-                }.fold({ _ => pass(ctx, event) }, identity)
+                  shaker.handshake(ctx.channel, request)
+                    .addListener(new ChannelFutureListener {
+                      def operationComplete(hf: ChannelFuture) {
+                        val chan = hf.channel
+                        attempt(Open(WebSocket(chan)))
+                        chan.closeFuture.addListener(new ChannelFutureListener {
+                          def operationComplete(cf: ChannelFuture) = {
+                            attempt(Close(WebSocket(cf.channel)))
+                          }
+                        })
+                        chan.pipeline.replace(
+                          Plan.this, ctx.name,
+                          SocketPlan(socketIntent, pass, shaker, Plan.this))
+                      }
+                    })
+                }.fold({ _ => pass(ctx, request) }, identity)
             }
         }
-      case _ => pass(ctx, event)
+      case _ => pass(ctx, request)
     }
 
   /** By default, when a websocket handler `passes` it writes an Http Forbidden response
@@ -108,36 +117,35 @@ trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
  *  If an unexpected message is received by a SocketPlan, the request handling will automatically
  *  be delegated the PassHandler. As part of the WebSocket protocol, server errors should
  *  be reported to the websocket before closing. This is handled for you. */
-case class SocketPlan(intent: SocketIntent,
-                      pass: PassHandler,
-                      shaker: WebSocketServerHandshaker,
-                      exceptions: ExceptionHandler)
-  extends SimpleChannelUpstreamHandler {
-  import jnetty.channel.ExceptionEvent
-  import jnetty.handler.codec.http.websocketx.{
-    CloseWebSocketFrame, PingWebSocketFrame,
-    PongWebSocketFrame, TextWebSocketFrame,
-    WebSocketFrame
-  }
+case class SocketPlan(
+  intent: SocketIntent,
+  pass: PassHandler,
+  shaker: WebSocketServerHandshaker,
+  exceptions: ExceptionHandler)
+  extends ChannelInboundHandlerAdapter {
 
-  def attempt = intent.orElse({ case _ => () }: SocketIntent)
+  def attempt = intent.lift
 
-  override def messageReceived(ctx: ChannelHandlerContext, event: MessageEvent) =
-    event.getMessage match {
+  final override def channelReadComplete(ctx: ChannelHandlerContext) =
+    ctx.flush()
+
+  final override def channelRead(
+    ctx: ChannelHandlerContext, msg: java.lang.Object) =
+    msg match {
       case c: CloseWebSocketFrame =>
-        shaker.close(ctx.getChannel, c)
+        shaker.close(ctx.channel, c)
       case p: PingWebSocketFrame =>
-        ctx.getChannel.write(new PongWebSocketFrame(p.getBinaryData()))
+        ctx.channel.write(new PongWebSocketFrame(p.content))
       case t: TextWebSocketFrame =>
-        attempt(Message(WebSocket(ctx.getChannel), Text(t.getText)))
+        attempt(Message(WebSocket(ctx.channel), Text(t.text)))
       case f: WebSocketFrame =>
         // only text frames are supported
-        pass(ctx, event)
+        pass(ctx, f)
     }
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, event: ExceptionEvent) {
-    attempt(Error(WebSocket(ctx.getChannel), event.getCause))
-    exceptions.onException(ctx, event.getCause)
+  override def exceptionCaught(ctx: ChannelHandlerContext, throwable: Throwable) {
+    attempt(Error(WebSocket(ctx.channel), throwable))
+    exceptions.onException(ctx, throwable)
   }
 }
 
