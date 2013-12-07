@@ -71,7 +71,7 @@ extends HttpRequest(msg) with Async.Responder[FullHttpResponse] {
 case class ReceivedMessage(
   request: FullHttpRequest,
   context: ChannelHandlerContext,
-  message: java.lang.Object) {
+  message: java.lang.Object) { // todo: remove this. its the same as request?
 
   /** Binds a Netty HttpResponse res to Unfiltered's HttpResponse to apply any
    * response function to it. */
