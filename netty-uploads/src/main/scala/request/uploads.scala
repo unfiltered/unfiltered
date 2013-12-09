@@ -52,7 +52,7 @@ object MultiPart extends MultiPartMatcher[RequestBinding] {
   }
 
   /** Split the Content-Type header value into two strings */
-  private def splitContentTypeHeader(sb: String): Tuple2[Option[String],Option[String]] = {
+  private def splitContentTypeHeader(sb: String): (Option[String],Option[String]) = {
     def nonEmpty(s: String) = if (s.isEmpty) None else Some(s)
 
     val (contentType, params) = sb.trim.span(!_.isWhitespace)
