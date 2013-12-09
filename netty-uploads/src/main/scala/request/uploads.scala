@@ -2,26 +2,29 @@ package unfiltered.netty.request
 
 import unfiltered.netty
 import unfiltered.netty._
+import unfiltered.request.{ HttpRequest, RequestContentType }
+import unfiltered.request.{
+  AbstractDiskExtractor,
+  AbstractDiskFile,  
+  AbstractStreamedFile,  
+  DiskExtractor,
+  MultiPartMatcher,
+  MultipartData,  
+  TupleGenerator,  
+  StreamedExtractor
+}
+import unfiltered.util.control.NonFatal
+
+import io.netty.handler.codec.http.multipart.{
+  Attribute,
+  FileUpload,
+  InterfaceHttpData
+}
 
 import scala.util.control.Exception.allCatch
 
-import unfiltered.netty.RequestBinding
-import unfiltered.request.HttpRequest
-import unfiltered.request.RequestContentType
-
-import unfiltered.request.{
-  MultiPartMatcher,MultipartData, AbstractDiskFile, TupleGenerator,
-  AbstractStreamedFile, StreamedExtractor, AbstractDiskExtractor,
-  DiskExtractor }
-import unfiltered.util.control.NonFatal
-
-import org.jboss.{netty => jnetty}
-import jnetty.handler.codec.http.{HttpRequest => NHttpRequest}
-import jnetty.handler.codec.http.{InterfaceHttpData => IOInterfaceHttpData}
-import jnetty.handler.codec.http.{Attribute => IOAttribute}
-import jnetty.handler.codec.http.{FileUpload => IOFileUpload}
-
-import java.io.{File => JFile}
+import java.io.{ File => JFile, FileInputStream => JFileInputStream, InputStream }
+import java.util.{ Iterator => JIterator }
 
 trait MultiPartCallback
 case class Decode(binding: MultiPartBinding) extends MultiPartCallback
@@ -30,12 +33,11 @@ class MultiPartBinding(val decoder: Option[PostDecoder], msg: ReceivedMessage) e
 
 /** Matches requests that have multipart content */
 object MultiPart extends MultiPartMatcher[RequestBinding] {
-  def unapply(req: RequestBinding) = {
+  def unapply(req: RequestBinding) =
     RequestContentType(req) match {
       case Some(r) if isMultipart(r) => Some(req)
       case _ => None
     }
-  }
 
   /** Check the ContentType header value to determine whether the request is multipart */
   private def isMultipart(contentType: String) = {
@@ -62,16 +64,15 @@ object MultiPart extends MultiPartMatcher[RequestBinding] {
 object MultiPartParams {
 
   /** Streamed multi-part data extractor */
-  object Streamed extends StreamedExtractor[RequestBinding] {
-    import java.util.{Iterator => JIterator}
+  object Streamed extends StreamedExtractor[RequestBinding] {    
     def apply(req: RequestBinding) = {
 
       val decoder = req match {
         case r: MultiPartBinding => r.decoder
         case _ => PostDecoder(req.underlying.request)
       }
-      val params = decoder.map(_.parameters).getOrElse(List())
-      val files = decoder.map(_.fileUploads).getOrElse(List())
+      val params = decoder.map(_.parameters).getOrElse(Nil)
+      val files = decoder.map(_.fileUploads).getOrElse(Nil)
 
       /** attempt to extract the first named param from the stream */
       def extractParam(name: String): Seq[String] = {
@@ -96,15 +97,14 @@ object MultiPartParams {
       to disk is prohibited.
       */
   object Memory extends StreamedExtractor[RequestBinding] {
-    import java.util.{Iterator => JIterator}
     def apply(req: RequestBinding) = {
 
       val decoder = req match {
         case r: MultiPartBinding => r.decoder
         case _ => PostDecoder(req.underlying.request)
       }
-      val params = decoder.map(_.parameters).getOrElse(List())
-      val files = decoder.map(_.fileUploads).getOrElse(List())
+      val params = decoder.map(_.parameters).getOrElse(Nil)
+      val files = decoder.map(_.fileUploads).getOrElse(Nil)
 
       /** attempt to extract the first named param from the stream */
       def extractParam(name: String): Seq[String] = {
@@ -115,27 +115,25 @@ object MultiPartParams {
       def extractFile(name: String): Seq[StreamedFileWrapper] = {
          files.filter(_.getName == name).map(new MemoryFileWrapper(_)).toSeq
       }
-      MultipartData(extractParam _,extractFile _)
-      
+      MultipartData(extractParam _, extractFile _)      
     }
   }
 }
 
 /** Netty extractor for multi-part data destined for disk. */
 trait AbstractDisk
-extends AbstractDiskExtractor[RequestBinding] with TupleGenerator {
-  import java.util.{Iterator => JIterator}
+  extends AbstractDiskExtractor[RequestBinding]
+  with TupleGenerator {
   def apply(req: RequestBinding) = {
-
     val items = req match {
-      case r: MultiPartBinding => r.decoder.map(_.items).getOrElse(List()).toIterator
-      case _ => PostDecoder(req.underlying.request).map(_.items).getOrElse(List()).toIterator 
+      case r: MultiPartBinding => r.decoder.map(_.items).getOrElse(Nil).toIterator
+      case _ => PostDecoder(req.underlying.request).map(_.items).getOrElse(Nil).toIterator 
     }  
 
-    val (params, files) = genTuple[String, DiskFileWrapper, IOInterfaceHttpData](items) ((maps, item) => item match {
-        case file: IOFileUpload =>
+    val (params, files) = genTuple[String, DiskFileWrapper, InterfaceHttpData](items) ((maps, item) => item match {
+        case file: FileUpload =>
           (maps._1, maps._2 + (file.getName -> (new DiskFileWrapper(file) :: maps._2(file.getName))))
-        case attr: IOAttribute =>
+        case attr: Attribute =>
           (maps._1 + (attr.getName -> (attr.getValue :: maps._1(attr.getName))), maps._2)
       })
 
@@ -143,10 +141,9 @@ extends AbstractDiskExtractor[RequestBinding] with TupleGenerator {
   }
 }
 
-class StreamedFileWrapper(item: IOFileUpload)
-extends AbstractStreamedFile
+class StreamedFileWrapper(item: FileUpload)
+  extends AbstractStreamedFile
   with unfiltered.request.io.FileIO {
-  import java.io.{FileInputStream => JFileInputStream}
 
   val bstm = new JFileInputStream(item.getFile)
 
@@ -157,14 +154,14 @@ extends AbstractStreamedFile
     }
   }
 
-  def stream[T]: (java.io.InputStream => T) => T =
+  def stream[T]: (InputStream => T) => T =
     MultiPartParams.Streamed.withStreamedFile[T](bstm)_
   val name = item.getFilename
   val contentType = item.getContentType
 }
 
-class DiskFileWrapper(item: IOFileUpload)
-extends AbstractDiskFile {
+class DiskFileWrapper(item: FileUpload)
+  extends AbstractDiskFile {
   def write(out: JFile): Option[JFile] = try {
     item.renameTo(out)
     Some(out)
@@ -180,10 +177,10 @@ extends AbstractDiskFile {
 }
 
 /** Wrapper for an uploaded file with write functionality disabled. */
-class MemoryFileWrapper(item: IOFileUpload)
-extends StreamedFileWrapper(item) {
+class MemoryFileWrapper(item: FileUpload)
+  extends StreamedFileWrapper(item) {  
   override def write(out: JFile) = { 
-    //error("File writing is not permitted")
+    //error("File writing is not permitted") // todo: remove this
     None
   }
   def isInMemory = item.isInMemory

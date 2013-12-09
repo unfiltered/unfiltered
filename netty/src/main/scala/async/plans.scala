@@ -1,7 +1,7 @@
 
 package unfiltered.netty.async
 
-import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter } // was SimpleChannelUpstreamHandler
+import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter }
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{
   HttpContent,
@@ -19,6 +19,7 @@ object Plan {
   type Intent =
     Async.Intent[ReceivedMessage, NHttpResponse]
 }
+
 /** Object to facilitate Plan.Intent definitions. Type annotations
  *  are another option. */
 object Intent {
