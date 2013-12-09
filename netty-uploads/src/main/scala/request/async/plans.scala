@@ -7,10 +7,6 @@ import unfiltered.response.{ Pass => UPass, ResponseFunction }
 import unfiltered.Async
 
 import io.netty.channel.ChannelHandlerContext
-import io.netty.handler.codec.http.{
-  HttpRequest => NHttpRequest,
-  HttpObject }
-
 
 /** Provides useful defaults for Passing */
 object MultipartPlan {
