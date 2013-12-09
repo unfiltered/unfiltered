@@ -1,7 +1,6 @@
 package unfiltered.netty.request
 
-import unfiltered.netty
-import unfiltered.netty._
+import unfiltered.netty.{ ReceivedMessage, RequestBinding }
 import unfiltered.request.{ HttpRequest, RequestContentType }
 import unfiltered.request.{
   AbstractDiskExtractor,

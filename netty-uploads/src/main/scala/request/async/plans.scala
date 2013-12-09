@@ -1,10 +1,8 @@
 package unfiltered.netty.async
 
-import unfiltered.netty
-import unfiltered.netty._
-import unfiltered.netty.request._
+import unfiltered.netty.{ async, ReceivedMessage, RequestBinding, ServerErrorResponse }
+import unfiltered.netty.request.{ AbstractMultiPartDecoder, Decode, Helpers, MultiPartBinding, MultiPartCallback, MultiPartPass, TidyExceptionHandler }
 import unfiltered.request.HttpRequest
-import unfiltered.response._
 import unfiltered.response.{ Pass => UPass, ResponseFunction }
 import unfiltered.Async
 

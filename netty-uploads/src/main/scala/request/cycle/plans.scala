@@ -1,9 +1,7 @@
 package unfiltered.netty.cycle
 
-import unfiltered.netty
-import unfiltered.netty._
+import unfiltered.netty.{ ReceivedMessage, RequestBinding, ServerErrorResponse }
 import unfiltered.netty.request._
-import unfiltered.response._
 import unfiltered.response.{ResponseFunction, Pass => UPass}
 import unfiltered.request.{HttpRequest, POST}
 import unfiltered.util.control.NonFatal
