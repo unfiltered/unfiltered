@@ -5,7 +5,8 @@ import io.netty.handler.codec.http.{
   HttpContent,
   HttpRequest  => NHttpRequest,
   HttpResponse => NHttpResponse }
-import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter } // was SimpleChannelUpstreamHandler
+import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter }
+import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.HttpResponseStatus._
 import io.netty.handler.codec.http.HttpVersion._
 
@@ -17,12 +18,15 @@ import unfiltered.util.control.NonFatal
 object Plan {
   type Intent = unfiltered.Cycle.Intent[ReceivedMessage,NHttpResponse]
 }
+
 /** Object to facilitate Plan.Intent definitions. Type annotations
  *  are another option. */
 object Intent {
   def apply(intent: Plan.Intent) = intent
 }
+
 /** A Netty Plan for request cycle handling. */
+@Sharable // this indicates that the handler is stateless and be called without syncronization
 trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
   def intent: Plan.Intent
   def catching(ctx: ChannelHandlerContext)(thunk: => Unit) {
