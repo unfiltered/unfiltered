@@ -1,21 +1,17 @@
 package unfiltered.netty.cycle
 
 import unfiltered.netty.{ ReceivedMessage, RequestBinding, ServerErrorResponse }
-import unfiltered.netty.request._
-import unfiltered.response.{ResponseFunction, Pass => UPass}
-import unfiltered.request.{HttpRequest, POST}
+import unfiltered.netty.request.{ AbstractMultiPartDecoder, Decode, Helpers, MultiPartBinding, MultiPartCallback, MultiPartPass, TidyExceptionHandler }
+import unfiltered.response.{ ResponseFunction, Pass => UPass }
+import unfiltered.request.{ HttpRequest, POST }
 import unfiltered.util.control.NonFatal
-
 import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter }
-import io.netty.handler.codec.http.{
-  HttpRequest=>NHttpRequest,
-  HttpResponse=>NHttpResponse,
-  HttpObject }
+import io.netty.handler.codec.http.{ HttpObject, HttpResponse }
 
 /** Provides useful defaults for Passing */
 object MultipartPlan {
   type Intent = PartialFunction[HttpRequest[ReceivedMessage], MultiPartIntent] //unfiltered.Cycle.Intent[ReceivedMessage, MultiPartIntent]
-  type MultiPartIntent = PartialFunction[MultiPartCallback, ResponseFunction[NHttpResponse]]
+  type MultiPartIntent = PartialFunction[MultiPartCallback, ResponseFunction[HttpResponse]]
   val Pass  = ({ case _ => UPass }: MultiPartIntent)
 }
 

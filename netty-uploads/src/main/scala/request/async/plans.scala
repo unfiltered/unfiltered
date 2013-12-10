@@ -5,7 +5,6 @@ import unfiltered.netty.request.{ AbstractMultiPartDecoder, Decode, Helpers, Mul
 import unfiltered.request.HttpRequest
 import unfiltered.response.{ Pass => UPass, ResponseFunction }
 import unfiltered.Async
-
 import io.netty.channel.ChannelHandlerContext
 
 /** Provides useful defaults for Passing */
