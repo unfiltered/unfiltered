@@ -1,32 +1,35 @@
 package unfiltered.netty.request
 
+import unfiltered.response._
+import unfiltered.request.{ Path => UFPath, POST, & }
+import unfiltered.netty
+import unfiltered.netty.{ Http => NHttp, ExceptionHandler }
+import unfiltered.netty.cycle.ThreadPool
+
+import dispatch.classic._
+import dispatch.classic.mime.Mime._
+
+import java.io.{ File => JFile }
+
+import io.netty.buffer.Unpooled
+import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext }
+import io.netty.handler.codec.http._
+
 import org.specs._
 
 object NoChunkAggregatorSpec extends Specification
   with unfiltered.spec.netty.Served {
 
-  import unfiltered.response._
-  import unfiltered.request.{Path => UFPath, _}
-  import unfiltered.netty
-  import unfiltered.netty.{Http => NHttp, ExceptionHandler}
-  import unfiltered.netty.cycle.ThreadPool
-  import dispatch.classic._
-  import dispatch.classic.mime.Mime._
-  import java.io.{File => JFile}
-
   trait ExpectedServerErrorResponse { self: ExceptionHandler =>
-    import org.jboss.netty.channel.{ChannelFutureListener, ChannelHandlerContext, ExceptionEvent}
-    import org.jboss.netty.handler.codec.http._
-    import org.jboss.netty.buffer.ChannelBuffers
     def onException(ctx: ChannelHandlerContext, t: Throwable) {
       println("here!")
-      val ch = ctx.getChannel
+      val ch = ctx.channel
       if (ch.isOpen) try {
         println("expected exception occured: '%s'" format t.getMessage())
-        val res = new DefaultHttpResponse(
-          HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR)
-        res.setContent(ChannelBuffers.copiedBuffer(
-          "Internal Server Error".getBytes("utf-8")))
+        val res = new DefaultFullHttpResponse(
+          HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR,
+          Unpooled.copiedBuffer(
+            HttpResponseStatus.INTERNAL_SERVER_ERROR.toString.getBytes("utf-8")))
         ch.write(res).addListener(ChannelFutureListener.CLOSE)
       } catch {
         case _ => ch.close()

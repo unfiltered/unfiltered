@@ -1,12 +1,13 @@
 package unfiltered.netty
 
-object ServerSpec extends unfiltered.spec.netty.Served {
-  import unfiltered.response._
-  import unfiltered.request._
-  import unfiltered.request.{Path => UFPath}
-  import unfiltered.netty.{Http => NHttp}
+import unfiltered.response._
+import unfiltered.request._
+import unfiltered.request.{Path => UFPath}
+import unfiltered.netty.{Http => NHttp}
 
-  import dispatch.classic._
+import dispatch.classic._
+
+object ServerSpec extends unfiltered.spec.netty.Served {
 
   def setup = _.handler(planify({
     case GET(UFPath("/pass")) => Pass

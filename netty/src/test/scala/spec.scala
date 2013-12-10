@@ -1,18 +1,19 @@
 package unfiltered.netty
 
 import org.specs.Specification
-import org.jboss.netty.buffer.ChannelBuffers
-import org.jboss.netty.handler.codec.http._
+import io.netty.buffer.Unpooled
+import io.netty.handler.codec.http._
 
 class RequestSpec extends Specification {
 
   val payload = "This is the request payload"
-  val nettyReq = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/seg1/seg2?param1=value%201&param2=value%202&param2=value%202%20again")
-  nettyReq.setContent(ChannelBuffers.copiedBuffer(payload.getBytes("UTF-8")))
+  val nettyReq = new DefaultFullHttpRequest(
+    HttpVersion.HTTP_1_1, HttpMethod.GET, "/seg1/seg2?param1=value%201&param2=value%202&param2=value%202%20again",
+    Unpooled.copiedBuffer(payload.getBytes("UTF-8")))
   nettyReq.setMethod(HttpMethod.GET)
-  nettyReq.setHeader("Single-Header", "A")
-  nettyReq.addHeader("Multi-Header", "A")
-  nettyReq.addHeader("Multi-Header", "B")
+  nettyReq.headers.add("Single-Header", "A")
+  nettyReq.headers.add("Multi-Header", "A")
+  nettyReq.headers.add("Multi-Header", "B")
 
   val req = new RequestBinding(ReceivedMessage(nettyReq, null, null))
 
@@ -40,7 +41,7 @@ class RequestSpec extends Specification {
       req.parameterValues("param42") must_== Seq.empty
     }
     "return empty seq for missing parameter when no parameters are present at all" in {
-      val nreq = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/")
+      val nreq = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/")
       val req = new RequestBinding(ReceivedMessage(nreq, null, null))
       req.parameterValues("param42") must_== Seq.empty
     }
@@ -63,7 +64,7 @@ class RequestSpec extends Specification {
 }
 
 class ResponseSpec extends Specification {
-  val nettyResp = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)
+  val nettyResp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)
   val resp = new ResponseBinding(nettyResp)
   val payload = "This is the request payload"
 
@@ -72,7 +73,7 @@ class ResponseSpec extends Specification {
       val data = payload.getBytes("UTF-8")
       resp.outputStream.write(data)
       resp.outputStream.close
-      resp.underlying.getContent.readableBytes must_== data.length
+      resp.underlying.content.readableBytes must_== data.length
     }
   }
 

@@ -1,15 +1,14 @@
 package unfiltered.netty.websockets
 
 import org.specs._
+import unfiltered.response.ResponseString
+import unfiltered.request.{ Path => UFPath }
+import unfiltered.netty
 
 // tests for an unfiltered web sockets
 // passing msgs along to a plan that 
 // can handle them
 object PassingSpec extends unfiltered.spec.netty.Served {
-
-  import unfiltered.response.ResponseString
-  import unfiltered.request.{ Path => UFPath }
-  import unfiltered.netty
 
   def setup =
     _.handler(planify {
@@ -21,7 +20,7 @@ object PassingSpec extends unfiltered.spec.netty.Served {
         case Message(s, Text(msg)) => s.send(msg)
       }
       case UFPath("/c") => Pass
-    }).onPass(_.sendUpstream(_)))
+    }).onPass(_.fireChannelRead(_)))
     .handler(netty.cycle.Planify {
       case UFPath("/b") => ResponseString("http response b")
       case UFPath("/c") => ResponseString("http response c")

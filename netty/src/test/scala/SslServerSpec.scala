@@ -1,21 +1,23 @@
 package unfiltered.netty
 
-import org.specs._
 import unfiltered.spec
 import unfiltered.response._
 import unfiltered.request._
 import unfiltered.request.{Path => UFPath}
 import unfiltered.netty.cycle.{Plan,SynchronousExecution}
-import org.jboss.netty.channel.{ChannelHandlerContext, ExceptionEvent}
+
+import io.netty.channel.ChannelHandlerContext
+
+import org.apache.http.NoHttpResponseException
+
+import org.specs._
+
+import dispatch.classic._
 
 object SslServerSpec
-extends Specification 
-with spec.netty.Started
-with spec.SecureClient {
-
-  import unfiltered.netty.Https
-  import org.apache.http.NoHttpResponseException
-  import dispatch.classic._
+  extends Specification 
+  with spec.netty.Started
+  with spec.SecureClient {  
 
   // generated keystore for localhost
   // keytool -keystore keystore -alias unfiltered -genkey -keyalg RSA
@@ -39,11 +41,11 @@ with spec.SecureClient {
 
         def intent = { case GET(UFPath("/")) => ResponseString("secret") ~> Ok }
 
-        override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) =
-          ctx.getChannel.close
+        override def exceptionCaught(ctx: ChannelHandlerContext, thrown: Throwable) =
+          ctx.channel.close
       }
 
-      Https(port, "localhost").handler(securePlan)
+      unfiltered.netty.Https(port, "localhost").handler(securePlan)
     } catch { case e => e.printStackTrace
       throw new RuntimeException(e)
     }
