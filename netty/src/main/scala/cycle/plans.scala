@@ -64,24 +64,6 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
                            .format(ue))
     }
 
-  /*override def messageReceived(ctx: ChannelHandlerContext,
-                               e: MessageEvent) {
-    e.getMessage() match {
-      case req:NHttpRequest =>
-        catching(ctx) {
-          executeIntent {
-            catching(ctx) {
-              guardedIntent(
-                new RequestBinding(ReceivedMessage(req, ctx, e))
-              )
-            }
-          }
-        }
-      case chunk: HttpContent => ctx.sendUpstream(e)
-      case msg => sys.error("Unexpected message type from upstream: %s"
-                        .format(msg))
-    }
-  }*/
   def executeIntent(thunk: => Unit)
   def executeResponse(thunk: => Unit)
   def shutdown()
