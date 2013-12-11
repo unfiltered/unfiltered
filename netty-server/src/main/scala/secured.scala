@@ -15,8 +15,8 @@ import io.netty.channel.group.ChannelGroup
 import io.netty.handler.ssl.SslHandler
 
 import java.io.FileInputStream
+import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLContext, TrustManager, TrustManagerFactory }
 import java.security.{ KeyStore, SecureRandom }
-import javax.net.ssl.{ SSLContext, TrustManager, TrustManagerFactory }
 
 object Https {
   def apply(port: Int, host: String): Https =
@@ -37,15 +37,15 @@ case class Https(
   beforeStopBlock: () => Unit)
   extends HttpServer
   with Ssl { self =>
-  def initializer: ChannelInitializer[SocketChannel] =
-     new SecureServerInit(channels, handlers, this)
-
   type ServerBuilder = Https
 
-  def handler(h: ChannelHandler) = makePlan(h)
+  override def initializer: ChannelInitializer[SocketChannel] =
+     new SecureServerInit(channels, handlers, this)
 
-  def makePlan(h: => ChannelHandler) =
+  override def makePlan(h: => ChannelHandler) =
     Https(port, host, { () => h } :: handlers, beforeStopBlock)
+
+  def handler(h: ChannelHandler) = makePlan(h)
 
   def beforeStop(block: => Unit) =
     Https(port, host, handlers, { () => beforeStopBlock(); block })
@@ -62,9 +62,6 @@ trait Security {
   * A keyStore and keyStorePassword are required and default to using the system property values
   * "jetty.ssl.keyStore" and "jetty.ssl.keyStorePassword" respectively. */
 trait Ssl extends Security {
-  import java.io.FileInputStream
-  import java.security.{KeyStore, SecureRandom}
-  import javax.net.ssl.{KeyManager, KeyManagerFactory, SSLContext}
 
   def requiredProperty(name: String) = System.getProperty(name) match {
     case null => sys.error("required system property not set %s" format name)
@@ -128,7 +125,9 @@ class SecureServerInit(
   val handlers: List[() =>ChannelHandler],
   val security: Security)
   extends ChannelInitializer[SocketChannel] with DefaultServerInit {
-  def initChannel(ch: SocketChannel) = complete(ch.pipeline)
+
+  override def initChannel(ch: SocketChannel) = complete(ch.pipeline)
+
   override protected def complete(line: ChannelPipeline) = {
     val engine = security.createSslContext.createSSLEngine
     engine.setUseClientMode(false)
