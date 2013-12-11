@@ -20,6 +20,7 @@ import io.netty.channel.{
   ChannelOption,
   ChannelPipeline,
   EventLoopGroup }
+import io.netty.channel.ChannelHandler.Sharable
 import io.netty.channel.group.{ ChannelGroup, DefaultChannelGroup }
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.nio.{ NioEventLoop, NioEventLoopGroup }
@@ -45,7 +46,7 @@ case class Http(
   def initializer: ChannelInitializer[SocketChannel] =
     new ServerInit(channels, handlers)
 
-  def makePlan(h: => ChannelHandler) =
+  override def makePlan(h: => ChannelHandler) =
     Http(port, host, { () => h } :: handlers, beforeStopBlock)
 
   def handler(h: ChannelHandler) = makePlan(h)
@@ -106,6 +107,8 @@ trait Server extends RunnableServer {
   /** host to bind to */
   val host: String
 
+  val url =  "http://%s:%d/" format(host, port)
+
   /** ChannelInitializer that initializes the server bootstrap */
   protected def initializer: ChannelInitializer[SocketChannel]
 
@@ -116,8 +119,6 @@ trait Server extends RunnableServer {
 
   /** EventLoopGroup associated with handling client requests */
   protected val workers: EventLoopGroup = new NioEventLoopGroup()
-
-  val url =  "http://%s:%d/" format(host, port)
 
   /** any channels added to this will receive broadcasted events */
   protected val channels = new DefaultChannelGroup(
@@ -165,6 +166,7 @@ class ServerInit(
   protected val channels: ChannelGroup,
   val handlers: List[() => ChannelHandler])
   extends ChannelInitializer[SocketChannel] with DefaultServerInit {
+  /** initialize the socket channel's pipeline */
   def initChannel(ch: SocketChannel) = complete(ch.pipeline)  
 }
 
@@ -189,6 +191,7 @@ trait DefaultServerInit {
  * Channel handler that keeps track of channels in a ChannelGroup for controlled
  * shutdown.
  */
+@Sharable
 class HouseKeepingChannelHandler(channels: ChannelGroup)
   extends ChannelInboundHandlerAdapter {
   override def channelActive(ctx: ChannelHandlerContext) = {
@@ -198,6 +201,7 @@ class HouseKeepingChannelHandler(channels: ChannelGroup)
   }
 }
 
+@Sharable
 class NotFoundHandler
   extends ChannelInboundHandlerAdapter {
   override def channelRead(
