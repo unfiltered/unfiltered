@@ -16,8 +16,7 @@ import unfiltered.request.HttpRequest
 
 object Plan {
   /** Note: The only return object a channel plan acts on is Pass */
-  type Intent =
-    Async.Intent[ReceivedMessage, NHttpResponse]
+  type Intent = Async.Intent[ReceivedMessage, NHttpResponse]
 }
 
 /** Object to facilitate Plan.Intent definitions. Type annotations
