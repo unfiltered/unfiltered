@@ -2,15 +2,17 @@ package unfiltered.netty
 
 import org.specs.Specification
 import io.netty.buffer.Unpooled
-import io.netty.handler.codec.http._
+import io.netty.handler.codec.http.{ DefaultFullHttpRequest, DefaultFullHttpResponse, HttpResponseStatus, HttpMethod, HttpVersion }
 
+// todo: move to its own file
 class RequestSpec extends Specification {
 
   val payload = "This is the request payload"
   val nettyReq = new DefaultFullHttpRequest(
-    HttpVersion.HTTP_1_1, HttpMethod.GET, "/seg1/seg2?param1=value%201&param2=value%202&param2=value%202%20again",
+    HttpVersion.HTTP_1_1,
+    HttpMethod.GET,
+    "/seg1/seg2?param1=value%201&param2=value%202&param2=value%202%20again",
     Unpooled.copiedBuffer(payload.getBytes("UTF-8")))
-  nettyReq.setMethod(HttpMethod.GET)
   nettyReq.headers.add("Single-Header", "A")
   nettyReq.headers.add("Multi-Header", "A")
   nettyReq.headers.add("Multi-Header", "B")
@@ -63,6 +65,7 @@ class RequestSpec extends Specification {
   }
 }
 
+// todo: move to its own file
 class ResponseSpec extends Specification {
   val nettyResp = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)
   val resp = new ResponseBinding(nettyResp)
