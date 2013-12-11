@@ -1,33 +1,33 @@
 package unfiltered.netty
 
 import unfiltered.netty.resources.{ FileSystemResource, Resolve, Resource }
-import unfiltered.request._
-import unfiltered.response._
+import unfiltered.request.{ GET, HttpRequest, IfModifiedSince, Path, & }
+import unfiltered.response.{
+  BadRequest, CacheControl, ContentLength, ContentType, Date,
+  Expires, Forbidden, LastModified, NotFound, NotModified, Ok,
+  Pass, PlainTextContent, ResponseFunction }
 
-import io.netty.channel._
+import io.netty.channel.{ ChannelFuture, ChannelFutureListener, DefaultFileRegion }
+import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{
-  LastHttpContent,
-  HttpHeaders,
-  HttpResponse => NHttpResponse }
+  LastHttpContent, HttpHeaders, HttpResponse }
 import io.netty.handler.stream.{ ChunkedFile, ChunkedStream }
 
 import java.io.{ File, FileNotFoundException, RandomAccessFile }
 import java.net.{ URL, URLDecoder }
 import java.nio.charset.Charset
+import java.text.SimpleDateFormat
 import java.util.{ Calendar, GregorianCalendar }
-
+import javax.activation.MimetypesFileTypeMap
 import scala.util.control.Exception.allCatch
 
 object Mimes {
-  import javax.activation.MimetypesFileTypeMap
-
-  lazy val underlying =
+    lazy val underlying =
     new MimetypesFileTypeMap(getClass.getResourceAsStream("/mime.types"))
   def apply(path: String) = underlying.getContentType(path)
 }
 
 object Dates {
-  import java.text.SimpleDateFormat
   import java.util.{ Date, Locale, TimeZone }
 
   val HttpDateFormat = "EEE, dd MMM yyyy HH:mm:ss zzz"
@@ -54,15 +54,17 @@ object Resources {
 /** Serves static resources.
  *  Adapted from Netty's example HttpStaticFileServerHandler
  */
-case class Resources(base: java.net.URL,
-                     cacheSeconds: Int = 60,
-                     passOnFail: Boolean = true)
+@Sharable
+case class Resources(
+  base: java.net.URL,
+  cacheSeconds: Int = 60,
+  passOnFail: Boolean = true)
   extends unfiltered.netty.async.Plan with ServerErrorResponse {
   import unfiltered.netty.Resources._
 
   // Returning Pass here will send the request upstream, otherwise
   // this method handles the request itself
-  def passOr[T <: NHttpResponse](rf: => ResponseFunction[NHttpResponse])
+  def passOr[T <: HttpResponse](rf: => ResponseFunction[HttpResponse])
                                 (req: HttpRequest[ReceivedMessage]) =
     if (passOnFail) Pass else req.underlying.respond(rf)
 
