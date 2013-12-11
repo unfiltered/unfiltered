@@ -13,9 +13,8 @@ import java.io.{ File => JFile }
 
 import io.netty.buffer.Unpooled
 import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext }
-import io.netty.handler.codec.http._
 
-import org.specs._
+import org.specs.Specification
 
 object NoChunkAggregatorSpec extends Specification
   with unfiltered.spec.netty.Served {
