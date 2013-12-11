@@ -1,7 +1,5 @@
 package unfiltered.netty
 
-import org.specs._
-
 /** Tests a netty server configured to handle static resources only */
 object ResourcesSpec extends unfiltered.spec.netty.Served {
    import dispatch.classic._
