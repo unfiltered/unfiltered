@@ -39,15 +39,22 @@ import java.util.concurrent.atomic.AtomicInteger
 case class Http(
   port: Int, host: String,
   handlers: List[() => ChannelHandler],
-  beforeStopBlock: () => Unit)
+  beforeStopBlock: () => Unit,
+  chunkSize: Int = 1048576)
   extends HttpServer with DefaultServerInit { self =>
   type ServerBuilder = Http
 
   def initializer: ChannelInitializer[SocketChannel] =
-    new ServerInit(channels, handlers)
+    new ServerInit(channels, handlers, chunkSize)
 
   override def makePlan(h: => ChannelHandler) =
     Http(port, host, { () => h } :: handlers, beforeStopBlock)
+  /** Convenience method for adding a HttpObjectAggregator to the
+   *  pipeline. Supports chunked request bodies up to the specified
+   *  maximum bytes. Without this aggregator, chunked requests will
+   *  not not be handled. */
+  def chunked(size: Int = 1048576) =
+    copy(chunkSize = size)
 
   def handler(h: ChannelHandler) = makePlan(h)
 
@@ -72,12 +79,9 @@ object Http {
 trait HttpServer extends Server with PlanServer[ChannelHandler] {
   def beforeStopBlock: () => Unit
   def handlers: List[() => ChannelHandler]
-  /** Convenience method for adding a HttpObjectAggregator to the
-   *  pipeline. Supports chunked request bodies up to the specified
-   *  maximum bytes. Without this aggregator, chunked requests will
-   *  not not be handled. */
-  def chunked(maxContentLength: Int = 1048576) =
-    makePlan(new HttpObjectAggregator(maxContentLength))
+
+  /*def chunked(maxContentLength: Int = 1048576) =
+    makePlan(new HttpObjectAggregator(maxContentLength))*/
 
   def stop() = {
     beforeStopBlock()
@@ -91,9 +95,10 @@ trait HttpServer extends Server with PlanServer[ChannelHandler] {
     destroy()
   }
 
-  def resources(path: URL,
-                cacheSeconds: Int = 60,
-                passOnFail: Boolean = true) = {
+  def resources(
+    path: URL,
+    cacheSeconds: Int = 60,
+    passOnFail: Boolean = true) = {
     val resources = Resources(path, cacheSeconds, passOnFail)
     this.plan(resources).makePlan(new ChunkedWriteHandler)
   }
@@ -164,21 +169,24 @@ trait Server extends RunnableServer {
 
 class ServerInit(
   protected val channels: ChannelGroup,
-  val handlers: List[() => ChannelHandler])
+  protected val handlers: List[() => ChannelHandler],
+  protected val chunkSize: Int)
   extends ChannelInitializer[SocketChannel] with DefaultServerInit {
   /** initialize the socket channel's pipeline */
   def initChannel(ch: SocketChannel) = complete(ch.pipeline)  
 }
 
-/**  HTTP Netty pipline builder. Uses Netty defaults: maxHeaderSize 8192 and
+/**  HTTP Netty pipline builder. Uses Netty defaults: maxInitialLineLength 4096, maxHeaderSize 8192 and
  *   maxChunkSize 8192 */
 trait DefaultServerInit {
   protected def channels: ChannelGroup
-  def handlers: List[() => ChannelHandler]
+  protected def handlers: List[() => ChannelHandler]
+  protected def chunkSize: Int
   protected def complete(line: ChannelPipeline) = {
     line.addLast("housekeeping", new HouseKeepingChannelHandler(channels))
     line.addLast("decoder", new HttpRequestDecoder)
     line.addLast("encoder", new HttpResponseEncoder)
+    line.addLast("chunker", new HttpObjectAggregator(chunkSize))
     handlers.reverse.zipWithIndex.foreach { case (handler, idx) =>
       line.addLast("handler-%s" format idx, handler())
     }
@@ -212,7 +220,7 @@ class NotFoundHandler
       case ue => sys.error("Unexpected message type from upstream: %s".format(msg))
     }).map { v =>
       val response = new DefaultHttpResponse(v, HttpResponseStatus.NOT_FOUND)
-      val future = ctx.channel.write(response)
+      val future = ctx.channel.writeAndFlush(response)
       future.addListener(ChannelFutureListener.CLOSE)
     }.getOrElse(ctx.fireChannelRead(msg))
 }
