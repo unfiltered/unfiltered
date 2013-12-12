@@ -5,7 +5,6 @@ import unfiltered.util.{ IO, RunnableServer }
 
 import java.net.InetSocketAddress
 
-import io.netty.handler.stream.ChunkedWriteHandler
 import io.netty.channel.{
   ChannelHandler,
   ChannelInitializer,
@@ -34,18 +33,22 @@ object Https {
 case class Https(
   port: Int, host: String,
   handlers: List[() => ChannelHandler],
-  beforeStopBlock: () => Unit)
+  beforeStopBlock: () => Unit,
+  chunkSize: Int = 1048576)
   extends HttpServer
   with Ssl { self =>
   type ServerBuilder = Https
 
   override def initializer: ChannelInitializer[SocketChannel] =
-     new SecureServerInit(channels, handlers, this)
+     new SecureServerInit(channels, handlers, chunkSize, this)
 
   override def makePlan(h: => ChannelHandler) =
     Https(port, host, { () => h } :: handlers, beforeStopBlock)
 
   def handler(h: ChannelHandler) = makePlan(h)
+
+  def chunked(size: Int = 1048576) =
+    copy(chunkSize = size)
 
   def beforeStop(block: => Unit) =
     Https(port, host, handlers, { () => beforeStopBlock(); block })
@@ -123,6 +126,7 @@ trait Trusted { self: Ssl =>
 class SecureServerInit(
   val channels: ChannelGroup,
   val handlers: List[() =>ChannelHandler],
+  val chunkSize: Int,
   val security: Security)
   extends ChannelInitializer[SocketChannel] with DefaultServerInit {
 
