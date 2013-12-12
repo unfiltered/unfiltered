@@ -1,4 +1,3 @@
-
 package unfiltered.netty.async
 
 import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter }
@@ -6,17 +5,17 @@ import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{
   HttpContent,
   FullHttpRequest,
-  HttpRequest  => NHttpRequest,
-  HttpResponse => NHttpResponse }
+  HttpRequest  => NettyHttpRequest,
+  HttpResponse => NettyHttpResponse }
 
 import unfiltered.Async
-import unfiltered.netty._
-import unfiltered.response._
+import unfiltered.netty.{ ExceptionHandler, ReceivedMessage, RequestBinding, ServerErrorResponse }
 import unfiltered.request.HttpRequest
+import unfiltered.response._
 
 object Plan {
   /** Note: The only return object a channel plan acts on is Pass */
-  type Intent = Async.Intent[ReceivedMessage, NHttpResponse]
+  type Intent = Async.Intent[ReceivedMessage, NettyHttpResponse]
 }
 
 /** Object to facilitate Plan.Intent definitions. Type annotations
@@ -35,30 +34,25 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
         req.underlying.context.fireChannelRead(req.underlying.message) }
     )
 
+  final override def channelReadComplete(ctx: ChannelHandlerContext) =
+    ctx.flush()
+
   override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object): Unit =
     msg match {
-      case req: FullHttpRequest => guardedIntent {
+      case req: NettyHttpRequest => guardedIntent {
         new RequestBinding(ReceivedMessage(req, ctx, msg))
       }
       case chunk: HttpContent => ctx.fireChannelRead(chunk)
       case ue => sys.error("Unexpected message type from upstream: %s"
                            .format(ue))
     }
-
-  /*override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
-    e.getMessage() match {
-      case req: NHttpRequest => guardedIntent {
-        new RequestBinding(ReceivedMessage(req, ctx, e))
-      }
-      case chunk: HttpContent => ctx.sendUpstream(e)
-      case msg => sys.error("Unexpected message type from upstream: %s"
-                        .format(msg))
-    }
-  }*/
 }
 
 object Planify {
-  def apply(intentIn: Plan.Intent) = new Plan with ServerErrorResponse {
+  @Sharable
+  class Planned(intentIn: Plan.Intent) extends Plan
+    with ServerErrorResponse {
     val intent = intentIn
   }
+  def apply(intentIn: Plan.Intent) = new Planned(intentIn)
 }
