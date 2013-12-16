@@ -1,19 +1,20 @@
 package unfiltered.netty.request
-import org.specs._
+
+import org.specs.Specification
+
+import unfiltered.netty.{ async, cycle }
+import unfiltered.request.{ Path => UFPath, POST, & }
+import unfiltered.response.{ Html, ResponseString }
+
+import dispatch.classic._
+import dispatch.classic.mime.Mime._
+
+import java.io.{File => JFile,FileInputStream => FIS}
+
+import org.apache.commons.io.{IOUtils => IOU}
 
 object MixedPlanSpec extends Specification
   with unfiltered.spec.netty.Served {
-
-  import unfiltered.request._
-  import unfiltered.request.{Path => UFPath, _}
-  import unfiltered.response._
-  import unfiltered.netty._
-
-  import dispatch.classic._
-
-  import dispatch.classic.mime.Mime._
-  import java.io.{File => JFile,FileInputStream => FIS}
-  import org.apache.commons.io.{IOUtils => IOU}
 
   val html = <html>
         <head><title>unfiltered file netty uploads test</title></head>
@@ -133,9 +134,9 @@ object MixedPlanSpec extends Specification
       http(host as_str) must_== html.toString
     }
 
-    /** General */
+    // General
 
-    "respond with a 404 when passing non-parameterised content type value" in {
+   "respond with a 404 when passing non-parameterised content type value" in {
       val http = new dispatch.classic.Http with NoLogging
       try {
         http x (host / "ignored" << ("f", "v") <:< Map("Content-Type" -> "application/x-www-form-urlencoded") >|) {
@@ -145,9 +146,9 @@ object MixedPlanSpec extends Specification
       } finally { http.shutdown }
     }
 
-    /** Cycle */
+    // Cycle
 
-    "respond with 404 when posting to a non-existent url" in {
+  "respond with 404 when posting to a non-existent url" in {
       val http = new dispatch.classic.Http with NoLogging
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
@@ -193,7 +194,7 @@ object MixedPlanSpec extends Specification
       } finally { http.shutdown }
     }
 
-    /** Async */
+    // Async
 
     "handle async file uploads to disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)

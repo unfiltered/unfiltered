@@ -1,20 +1,20 @@
 package unfiltered.netty.request
 
-import org.specs._
+import org.specs.Specification
+
+import unfiltered.netty
+import unfiltered.netty.async
+import unfiltered.netty.{Http => NHttp}
+import unfiltered.request.{ Path => UFPath, POST, & }
+import unfiltered.response.{ NotFound, ResponseString }
+
+import dispatch.classic._
+import dispatch.classic.mime.Mime._
+import java.io.{File => JFile,FileInputStream => FIS}
+import org.apache.commons.io.{IOUtils => IOU}
 
 object AsyncUploadSpec extends Specification
   with unfiltered.spec.netty.Served {
-
-  import unfiltered.response._
-  import unfiltered.request.{Path => UFPath, _}
-  import unfiltered.netty
-  import unfiltered.netty._
-  import unfiltered.netty.{Http => NHttp}
-
-  import dispatch.classic._
-  import dispatch.classic.mime.Mime._
-  import java.io.{File => JFile,FileInputStream => FIS}
-  import org.apache.commons.io.{IOUtils => IOU}
 
   def setup = {
     val plan = async.MultiPartDecoder({
