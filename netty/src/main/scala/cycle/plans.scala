@@ -3,20 +3,20 @@ package unfiltered.netty.cycle
 import io.netty.handler.codec.http.{
   FullHttpRequest,
   HttpContent,
-  HttpRequest  => NHttpRequest,
-  HttpResponse => NHttpResponse }
+  HttpRequest => NettyHttpRequest,
+  HttpResponse,
+  HttpResponseStatus,
+  HttpVersion }
 import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter }
 import io.netty.channel.ChannelHandler.Sharable
-import io.netty.handler.codec.http.HttpResponseStatus._
-import io.netty.handler.codec.http.HttpVersion._
 
-import unfiltered.netty._
-import unfiltered.response.{ResponseFunction, Pass}
+import unfiltered.netty.{ ExceptionHandler, ReceivedMessage, RequestBinding, ServerErrorResponse }
+import unfiltered.response.{ Pass, ResponseFunction }
 import unfiltered.request.HttpRequest
 import unfiltered.util.control.NonFatal
 
 object Plan {
-  type Intent = unfiltered.Cycle.Intent[ReceivedMessage,NHttpResponse]
+  type Intent = unfiltered.Cycle.Intent[ReceivedMessage, HttpResponse]
 }
 
 /** Object to facilitate Plan.Intent definitions. Type annotations
@@ -39,17 +39,20 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
     (req: HttpRequest[ReceivedMessage]) =>
       req.underlying.context.fireChannelRead(req.underlying.message),
     (req: HttpRequest[ReceivedMessage],
-     rf: ResponseFunction[NHttpResponse]) =>
+     rf: ResponseFunction[HttpResponse]) =>
       executeResponse {
         catching(req.underlying.context) {
           req.underlying.respond(rf)
         }
       }
   )
+
+  final override def channelReadComplete(ctx: ChannelHandlerContext) =
+    ctx.flush()
   
   override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object ): Unit =
     msg match {
-      case req: FullHttpRequest =>
+      case req: NettyHttpRequest => // fixme: should we use FullHttpRequest instead
         catching(ctx) {
           executeIntent {
             catching(ctx) {
@@ -59,7 +62,8 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
             }
           }
         }
-      case chunk: HttpContent => ctx.fireChannelRead(chunk)
+      case chunk: HttpContent =>
+        ctx.fireChannelRead(chunk)
       case ue => sys.error("Unexpected message type from upstream: %s"
                            .format(ue))
     }
@@ -70,7 +74,9 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
 }
 
 object Planify {
-  def apply(intentIn: Plan.Intent) = new Plan with ThreadPool with ServerErrorResponse {
+  @Sharable
+  class Planned(intentIn: Plan.Intent) extends Plan with ThreadPool with ServerErrorResponse {
     val intent = intentIn
   }
+  def apply(intentIn: Plan.Intent) = new Planned(intentIn)
 }
