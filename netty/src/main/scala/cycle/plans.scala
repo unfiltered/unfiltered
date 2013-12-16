@@ -26,7 +26,7 @@ object Intent {
 }
 
 /** A Netty Plan for request cycle handling. */
-@Sharable // this indicates that the handler is stateless and be called without syncronization
+@Sharable
 trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
   def intent: Plan.Intent
   def catching(ctx: ChannelHandlerContext)(thunk: => Unit) {
@@ -52,7 +52,7 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
   
   override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object ): Unit =
     msg match {
-      case req: NettyHttpRequest => // fixme: should we use FullHttpRequest instead
+      case req: NettyHttpRequest =>
         catching(ctx) {
           executeIntent {
             catching(ctx) {
@@ -62,9 +62,11 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
             }
           }
         }
+      // fixme(doug): I don't think this will ever be the case as we are now always adding the aggregator to the pipeline
       case chunk: HttpContent =>
         ctx.fireChannelRead(chunk)
-      case ue => sys.error("Unexpected message type from upstream: %s"
+      // fixme(doug): Should we define an explicit exception to catch for this
+      case ue => sys.error("Received unexpected message type from upstream: %s"
                            .format(ue))
     }
 

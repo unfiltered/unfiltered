@@ -25,7 +25,7 @@ object Intent {
 }
 
 /** A Netty Plan for request-only handling. */
-@Sharable // this indicates that the handler is stateless and be called without syncronization
+@Sharable
 trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
   def intent: Plan.Intent
   private lazy val guardedIntent =
@@ -42,7 +42,9 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
       case req: NettyHttpRequest => guardedIntent {
         new RequestBinding(ReceivedMessage(req, ctx, msg))
       }
+      // fixme(doug): I don't think this will ever be the case as we are now always adding the aggregator to the pipeline
       case chunk: HttpContent => ctx.fireChannelRead(chunk)
+      // fixme(doug): Should we define an explicit exception to catch for this
       case ue => sys.error("Unexpected message type from upstream: %s"
                            .format(ue))
     }
