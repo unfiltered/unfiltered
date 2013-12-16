@@ -6,6 +6,7 @@ import unfiltered.response.{ ResponseFunction, Pass => UPass }
 import unfiltered.request.{ HttpRequest, POST }
 import unfiltered.util.control.NonFatal
 import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter }
+import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{ HttpObject, HttpResponse }
 
 /** Provides useful defaults for Passing */
@@ -16,6 +17,7 @@ object MultipartPlan {
 }
 
 /** Enriches an async netty plan with multipart decoding capabilities. */
+@Sharable
 trait MultiPartDecoder extends ChannelInboundHandlerAdapter
   with AbstractMultiPartDecoder with TidyExceptionHandler {
 
@@ -70,6 +72,7 @@ trait MultiPartDecoder extends ChannelInboundHandlerAdapter
   }
 }
 
+@Sharable
 class MultiPartPlanifier(val intent: MultipartPlan.Intent, val pass: MultiPartPass.PassHandler)
   extends MultiPartDecoder with ThreadPool with ServerErrorResponse
 

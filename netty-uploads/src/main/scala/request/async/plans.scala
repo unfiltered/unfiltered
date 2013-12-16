@@ -6,16 +6,21 @@ import unfiltered.request.HttpRequest
 import unfiltered.response.{ Pass => UPass, ResponseFunction }
 import unfiltered.Async
 import io.netty.channel.ChannelHandlerContext
+import io.netty.channel.ChannelHandler.Sharable
 
 /** Provides useful defaults for Passing */
 object MultipartPlan {
   type Intent = PartialFunction[HttpRequest[ReceivedMessage], MultiPartIntent]
   type MultiPartIntent = PartialFunction[MultiPartCallback, Unit]
-  val Pass  = ({ case _ => UPass }: MultiPartIntent)
+  val Pass: MultiPartIntent  = { case _ => UPass }
 }
 
 /** Enriches an async netty plan with multipart decoding capabilities. */
-trait MultiPartDecoder extends async.Plan with AbstractMultiPartDecoder with TidyExceptionHandler {
+@Sharable
+trait MultiPartDecoder
+  extends async.Plan
+     with AbstractMultiPartDecoder
+     with TidyExceptionHandler {
 
   def intent: MultipartPlan.Intent
 
@@ -52,8 +57,12 @@ trait MultiPartDecoder extends async.Plan with AbstractMultiPartDecoder with Tid
   }
 }
 
-class MultiPartPlanifier(val intent: MultipartPlan.Intent, val pass: MultiPartPass.PassHandler)
-  extends MultiPartDecoder with ServerErrorResponse
+@Sharable
+class MultiPartPlanifier(
+  val intent: MultipartPlan.Intent,
+  val pass: MultiPartPass.PassHandler)
+  extends MultiPartDecoder
+     with ServerErrorResponse
 
 /** Provides a MultiPart decoding plan that may buffer to disk while parsing the request */
 object MultiPartDecoder {

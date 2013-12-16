@@ -5,7 +5,7 @@ import unfiltered.request.POST
 import unfiltered.response.{ Pass => UPass, ResponseFunction }
 import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandler }
 import io.netty.handler.codec.http.{
-  FullHttpRequest,
+  HttpRequest,
   HttpContent,
   HttpHeaders,
   LastHttpContent
@@ -22,7 +22,7 @@ import io.netty.util.AttributeKey
 import scala.collection.JavaConversions._
 
 /** A PostDecoder wraps a HttpPostRequestDecoder. */
-class PostDecoder(req: FullHttpRequest, useDisk: Boolean = true) {
+class PostDecoder(req: HttpRequest, useDisk: Boolean = true) {
 
   /** Build a post decoder and parse the request. This only works with POST requests. */
   private lazy val decoder: Option[HttpPostRequestDecoder] =// [InterfaceHttpPostRequestDecoder] in 4.0.14
@@ -63,7 +63,7 @@ object PostDecoder {
   // todo: reduce scope
   val State = AttributeKey.valueOf[MultiPartChannelState]("PostDecoder.state")
 
-  def apply(req: FullHttpRequest, useDisk: Boolean = true): Option[PostDecoder] = {
+  def apply(req: HttpRequest, useDisk: Boolean = true): Option[PostDecoder] = {
     val postDecoder = new PostDecoder(req, useDisk)
     postDecoder.decoder match {
       case Some(dec) => Some(postDecoder) // ???
@@ -75,7 +75,7 @@ object PostDecoder {
 /** Provides storage for state when attached to a ChannelHandlerContext */
 private [netty] case class MultiPartChannelState(
   readingChunks: Boolean = false,
-  originalReq: Option[FullHttpRequest] = None,
+  originalReq: Option[HttpRequest] = None,
   decoder: Option[PostDecoder] = None)
 
 object MultiPartPass {
@@ -110,7 +110,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
     val channelState = Helpers.channelState(ctx)
 
     nmsg match {
-      case request: FullHttpRequest => 
+      case request: HttpRequest =>
         val msg = ReceivedMessage(request, ctx, nmsg)
         val binding = new RequestBinding(msg)
         binding match {
@@ -144,7 +144,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
 
   /** Sets up for handling a multipart request */
   protected def start(
-    request: FullHttpRequest,
+    request: HttpRequest,
     channelState: MultiPartChannelState,
     ctx: ChannelHandlerContext,
     msg: java.lang.Object) = { // TODO: remove msg param. its probably not needed
