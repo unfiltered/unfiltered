@@ -1,21 +1,17 @@
 package unfiltered.netty
 
-import unfiltered._
 import unfiltered.util.{ IO, RunnableServer }
 
 import java.net.InetSocketAddress
 
-import io.netty.channel.{
-  ChannelHandler,
-  ChannelInitializer,
-  ChannelPipeline }
+import io.netty.channel.{ ChannelHandler, ChannelInitializer, ChannelPipeline }
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.group.ChannelGroup
 import io.netty.handler.ssl.SslHandler
 
 import java.io.FileInputStream
-import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLContext, TrustManager, TrustManagerFactory }
 import java.security.{ KeyStore, SecureRandom }
+import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLEngine, SSLContext, TrustManager, TrustManagerFactory }
 
 object Https {
   def apply(port: Int, host: String): Https =
@@ -31,12 +27,14 @@ object Https {
 
 /** Http + Ssl implementation of the Server trait. */
 case class Https(
-  port: Int, host: String,
+  port: Int,
+  host: String,
   handlers: List[() => ChannelHandler],
   beforeStopBlock: () => Unit,
   chunkSize: Int = 1048576)
   extends HttpServer
   with Ssl { self =>
+
   type ServerBuilder = Https
 
   override def initializer: ChannelInitializer[SocketChannel] =
@@ -125,17 +123,22 @@ trait Trusted { self: Ssl =>
 /** ChannelPipelineFactory for secure Http connections */
 class SecureServerInit(
   val channels: ChannelGroup,
-  val handlers: List[() =>ChannelHandler],
+  val handlers: List[() => ChannelHandler],
   val chunkSize: Int,
   val security: Security)
   extends ChannelInitializer[SocketChannel] with DefaultServerInit {
 
   override def initChannel(ch: SocketChannel) = complete(ch.pipeline)
 
-  override protected def complete(line: ChannelPipeline) = {
+  protected def newEngine: SSLEngine = {
     val engine = security.createSslContext.createSSLEngine
     engine.setUseClientMode(false)
-    line.addLast("ssl", new SslHandler(engine))
-    super.complete(line)
+    engine
   }
+
+  /** completes the channel pipeline construction by prefixing with an ssl handler
+   *  followed by the default server init pipeline completion */
+  override protected def complete(line: ChannelPipeline) =
+    super.complete(line.addLast(
+      "ssl", new SslHandler(newEngine, true)))
 }
