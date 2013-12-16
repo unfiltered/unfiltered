@@ -182,17 +182,14 @@ trait DefaultServerInit {
   protected def channels: ChannelGroup
   protected def handlers: List[() => ChannelHandler]
   protected def chunkSize: Int
-  protected def complete(line: ChannelPipeline) = {
-    line.addLast("housekeeping", new HouseKeepingChannelHandler(channels))
-    line.addLast("decoder", new HttpRequestDecoder)
-    line.addLast("encoder", new HttpResponseEncoder)
-    line.addLast("chunker", new HttpObjectAggregator(chunkSize))
-    handlers.reverse.zipWithIndex.foreach { case (handler, idx) =>
-      line.addLast("handler-%s" format idx, handler())
-    }
-    line.addLast("notfound", new NotFoundHandler)
-    line
-  }
+  protected def complete(line: ChannelPipeline) =
+    (line.addLast("housekeeping", new HouseKeepingChannelHandler(channels))
+     .addLast("decoder", new HttpRequestDecoder)
+     .addLast("encoder", new HttpResponseEncoder)
+     .addLast("chunker", new HttpObjectAggregator(chunkSize)) /: handlers.reverse.zipWithIndex) {
+       case (pl, (handler, idx)) =>
+         pl.addLast("handler-%s" format idx, handler())
+    }.addLast("notfound", new NotFoundHandler)
 }
 
 /**
