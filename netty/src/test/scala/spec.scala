@@ -93,5 +93,4 @@ class ResponseSpec extends Specification {
       m("param:3") must_== List("value 3")
     }
   }
-
 }
