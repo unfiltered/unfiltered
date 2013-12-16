@@ -19,7 +19,8 @@ import io.netty.channel.{
   ChannelInitializer,
   ChannelOption,
   ChannelPipeline,
-  EventLoopGroup }
+  EventLoopGroup
+}
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.channel.group.{ ChannelGroup, DefaultChannelGroup }
 import io.netty.channel.socket.SocketChannel
@@ -117,7 +118,7 @@ trait Server extends RunnableServer {
   /** ChannelInitializer that initializes the server bootstrap */
   protected def initializer: ChannelInitializer[SocketChannel]
 
-  // todo: previously used Executors.newCachedThreadPool()'s with NioServerSocketChannelFactory. investigate this results in similar behavior
+  // todo: previously used Executors.newCachedThreadPool()'s with NioServerSocketChannelFactory. investigate if this results in similar behavior
 
   /** EventLoopGroup associated with accepting client connections */
   protected val acceptor: EventLoopGroup = new NioEventLoopGroup()
