@@ -19,7 +19,8 @@ object MultipartPlan {
 /** Enriches an async netty plan with multipart decoding capabilities. */
 @Sharable
 trait MultiPartDecoder extends ChannelInboundHandlerAdapter
-  with AbstractMultiPartDecoder with TidyExceptionHandler {
+  with AbstractMultiPartDecoder
+  with TidyExceptionHandler {
 
   def intent: MultipartPlan.Intent
 
@@ -46,7 +47,6 @@ trait MultiPartDecoder extends ChannelInboundHandlerAdapter
         val msg = ReceivedMessage(req, ctx, nmsg)
         val multiBinding = new MultiPartBinding(channelState.decoder, msg)
         val binding = new RequestBinding(msg)
-
         catching(ctx) {
           executeIntent {
             intent.orElse({ case _ => MultipartPlan.Pass }: MultipartPlan.Intent)(binding) match {
