@@ -1,11 +1,12 @@
 package unfiltered.netty
 
-import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext, ChannelInboundHandler }
-import io.netty.handler.codec.http._
 import io.netty.buffer.Unpooled
-
+import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext, ChannelInboundHandler }
+import io.netty.channel.ChannelHandler.Sharable
+import io.netty.handler.codec.http.{ DefaultFullHttpResponse, HttpVersion, HttpResponseStatus }
 import unfiltered.util.control.NonFatal
 
+@Sharable
 trait ExceptionHandler { self: ChannelInboundHandler =>
   def onException(ctx: ChannelHandlerContext, t: Throwable)
   override def exceptionCaught(ctx: ChannelHandlerContext,
@@ -14,6 +15,7 @@ trait ExceptionHandler { self: ChannelInboundHandler =>
   }
 }
 
+@Sharable
 trait ServerErrorResponse { self: ChannelInboundHandler =>
   def onException(ctx: ChannelHandlerContext, t: Throwable) {
     val ch = ctx.channel
