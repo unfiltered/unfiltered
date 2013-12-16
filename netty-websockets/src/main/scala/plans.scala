@@ -6,14 +6,12 @@ import io.netty.channel.{
   Channel, ChannelFuture, ChannelFutureListener,
   ChannelHandlerContext, ChannelInboundHandlerAdapter
 }
+import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.FullHttpRequest
 import io.netty.handler.codec.http.websocketx.{
   CloseWebSocketFrame, PingWebSocketFrame,
   PongWebSocketFrame, TextWebSocketFrame,
-  WebSocketFrame
-}
-import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker
-import io.netty.handler.codec.http.websocketx.{
+  WebSocketFrame, WebSocketServerHandshaker,
   WebSocketHandshakeException, WebSocketServerHandshakerFactory
 }
 import io.netty.util.CharsetUtil
@@ -153,18 +151,16 @@ case class SocketPlan(
  *  error handling baked in. To your own ExceptionHandler, Instantiate an instance of Planify
  *  yourself mixing a custom ExceptionHandler implementation */
 object Planify {
+  @Sharable
+  class Planned(val intent: Intent, val pass: PassHandler)
+    extends Plan with CloseOnException
+
   /** Creates a WebSocket Plan with a custom PassHandler function */
-  def apply(intentIn: Intent, passIn: PassHandler) =
-    new Plan with CloseOnException {
-      val intent = intentIn
-      val pass = passIn
-    }
+  def apply(intentIn: Intent, passIn: PassHandler): Plan =
+    new Planned(intentIn, passIn)
 
   /** Creates a WebSocket Plan that, when `Pass`ing, will return a forbidden
    *  response to the client */
   def apply(intentIn: Intent): Plan =
-    new Plan with CloseOnException {
-      val intent = intentIn
-      val pass = DefaultPassHandler
-    }
+    new Planned(intentIn, DefaultPassHandler)
 }
