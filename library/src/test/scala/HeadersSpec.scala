@@ -41,7 +41,7 @@ trait HeadersSpec extends unfiltered.spec.Hosted {
     case P("/v") & Via(v) => seqResp(v)
     case P("/xff") & XForwardedFor(v) => seqResp(v)
     // Note: `Connection` header sent by default
-    case P("/names") & req if req.headerNames.toSet.map((n:String) => n.toLowerCase) == Set("expect", "from", "host", "connection") => ResponseString("pass")
+    case P("/names") & req if (req.headerNames.toSet.map((n:String) => n.toLowerCase) - "content-length") == Set("expect", "from", "host", "connection") => ResponseString("pass")
   }
   def get(path: String, headers: (String, String)*) = {
      val hmap =  Map(headers:_*)
