@@ -1,13 +1,13 @@
 package unfiltered.netty.websockets
 
-import org.specs._
 import unfiltered.response.ResponseString
 import unfiltered.request.{ Path => UFPath }
 import unfiltered.netty
 
-// tests for an unfiltered web sockets
-// passing msgs along to a plan that 
-// can handle them
+/** tests for an unfiltered web sockets
+ *  passing msgs along to a plan that
+ *  can handle them
+ */
 object PassingSpec extends unfiltered.spec.netty.Served {
 
   def setup =
