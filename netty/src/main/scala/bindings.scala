@@ -1,14 +1,14 @@
 package unfiltered.netty
 
-import unfiltered.{ Async, Cookie }
+import unfiltered.Async
 import unfiltered.response.{ ResponseFunction, HttpResponse, Pass }
-import unfiltered.request.{ HttpRequest, POST, PUT, &, RequestContentType, Charset }
+import unfiltered.request.{ Charset, HttpRequest, POST, PUT, RequestContentType, & }
 
-import io.netty.buffer.{ Unpooled, ByteBufInputStream }
+import io.netty.buffer.{ ByteBufInputStream, Unpooled }
 import io.netty.channel.{ ChannelFuture, ChannelFutureListener, ChannelHandlerContext }
 import io.netty.handler.codec.http.{
   DefaultFullHttpResponse, FullHttpRequest, FullHttpResponse, HttpContent,
-  HttpHeaders, HttpRequest => NettyHttpRequest, HttpResponse => NHttpResponse,
+  HttpHeaders, HttpRequest => NettyHttpRequest,
   HttpResponseStatus, HttpVersion }
 import io.netty.handler.ssl.SslHandler
 
