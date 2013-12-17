@@ -15,8 +15,10 @@ trait ExceptionHandler { self: ChannelInboundHandler =>
   }
 }
 
+/** A ChannelInboundHandler mixin that writes a 500 response to clients before closing the channel
+ *  when an exception is thrown */
 @Sharable
-trait ServerErrorResponse { self: ChannelInboundHandler =>
+trait ServerErrorResponse extends ExceptionHandler { self: ChannelInboundHandler =>
   def onException(ctx: ChannelHandlerContext, t: Throwable) {
     val ch = ctx.channel
     if (ch.isOpen) try {
