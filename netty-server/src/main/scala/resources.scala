@@ -101,7 +101,7 @@ case class Resources(
                 LastModified(Dates.format(rsrc.lastModified))
 
               cal.add(Calendar.SECOND, cacheSeconds)
-              
+
               val writeHeaders = ctx.write(
                 req.underlying.defaultResponse(
                   heads ~> Expires(Dates.format(cal.getTime))))
