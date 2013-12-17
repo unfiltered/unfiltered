@@ -4,9 +4,7 @@ import io.netty.handler.codec.http.{
   FullHttpRequest,
   HttpContent,
   HttpRequest => NettyHttpRequest,
-  HttpResponse,
-  HttpResponseStatus,
-  HttpVersion }
+  HttpResponse }
 import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter }
 import io.netty.channel.ChannelHandler.Sharable
 
@@ -27,7 +25,8 @@ object Intent {
 
 /** A Netty Plan for request cycle handling. */
 @Sharable
-trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
+trait Plan extends ChannelInboundHandlerAdapter
+  with ExceptionHandler {
   def intent: Plan.Intent
   def catching(ctx: ChannelHandlerContext)(thunk: => Unit) {
     try { thunk } catch {
@@ -77,7 +76,8 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
 
 object Planify {
   @Sharable
-  class Planned(intentIn: Plan.Intent) extends Plan with ThreadPool with ServerErrorResponse {
+  class Planned(intentIn: Plan.Intent) extends Plan
+    with ThreadPool with ServerErrorResponse {
     val intent = intentIn
   }
   def apply(intentIn: Plan.Intent) = new Planned(intentIn)
