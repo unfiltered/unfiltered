@@ -64,8 +64,9 @@ case class Resources(
 
   // Returning Pass here will send the request upstream, otherwise
   // this method handles the request itself
-  def passOr[T <: HttpResponse](rf: => ResponseFunction[HttpResponse])
-                                (req: HttpRequest[ReceivedMessage]) =
+  def passOr[T <: HttpResponse](
+    rf: => ResponseFunction[HttpResponse])
+    (req: HttpRequest[ReceivedMessage]) =
     if (passOnFail) Pass else req.underlying.respond(rf)
 
   def forbid = passOr(Forbidden)_
@@ -151,9 +152,9 @@ case class Resources(
       }
     }
 
-   private def decode(uri: String) =
-     (allCatch.opt { URLDecoder.decode(uri, utf8.name()) }
-      orElse {
-        allCatch.opt { URLDecoder.decode(uri, iso88591.name()) }
-      })
+  private def decode(uri: String) =
+    (allCatch.opt { URLDecoder.decode(uri, utf8.name()) }
+     orElse {
+       allCatch.opt { URLDecoder.decode(uri, iso88591.name()) }
+     })
 }
