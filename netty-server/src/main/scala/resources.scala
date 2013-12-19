@@ -1,6 +1,7 @@
 package unfiltered.netty
 
-import unfiltered.netty.resources.{ FileSystemResource, Resolve, Resource }
+import unfiltered.netty.async
+import unfiltered.netty.resources.{ FileSystemResource, Resolve, Resource, Resources }
 import unfiltered.request.{ GET, HttpRequest, IfModifiedSince, Path, & }
 import unfiltered.response.{
   BadRequest, CacheControl, ContentLength, ContentType, Date,
@@ -19,12 +20,13 @@ import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.{ Calendar, GregorianCalendar }
 import javax.activation.MimetypesFileTypeMap
+
 import scala.util.control.Exception.allCatch
 
 object Mimes {
-    lazy val underlying =
+  private lazy val types =
     new MimetypesFileTypeMap(getClass.getResourceAsStream("/mime.types"))
-  def apply(path: String) = underlying.getContentType(path)
+  def apply(path: String) = types.getContentType(path)
 }
 
 object Dates {
@@ -59,8 +61,8 @@ case class Resources(
   base: java.net.URL,
   cacheSeconds: Int = 60,
   passOnFail: Boolean = true)
-  extends unfiltered.netty.async.Plan with ServerErrorResponse {
-  import unfiltered.netty.Resources._
+  extends async.Plan with ServerErrorResponse {
+  import Resources._
 
   // Returning Pass here will send the request upstream, otherwise
   // this method handles the request itself
@@ -123,7 +125,7 @@ case class Resources(
                       else new DefaultFileRegion(raf.getChannel, 0, len))
                     lastly(ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT))
                   case other =>
-                    ctx.write(new ChunkedStream(other.in))
+                    ctx.writeAndFlush(new ChunkedStream(other.in))
                 }
               } else lastly(writeHeaders)
             } catch {
@@ -143,10 +145,10 @@ case class Resources(
     decode(uri) flatMap { decoded =>
       decoded.replace('/', File.separatorChar) match {
         case p
-          if(p.contains(File.separator + ".") ||
-             p.contains("." + File.separator) ||
-             p.startsWith(".") ||
-             p.endsWith(".")) => None
+          if (p.contains(File.separator + ".") ||
+              p.contains("." + File.separator) ||
+              p.startsWith(".") ||
+              p.endsWith(".")) => None
         case path =>
           Resolve(new URL(base, decoded))
       }
