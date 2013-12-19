@@ -61,7 +61,7 @@ trait Security {
 
 /** Provides basic ssl support.
   * A keyStore and keyStorePassword are required and default to using the system property values
-  * "jetty.ssl.keyStore" and "jetty.ssl.keyStorePassword" respectively. */
+  * "netty.ssl.keyStore" and "netty.ssl.keyStorePassword" respectively. */
 trait Ssl extends Security {
 
   def requiredProperty(name: String) = System.getProperty(name) match {
