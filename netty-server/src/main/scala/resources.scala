@@ -1,7 +1,7 @@
 package unfiltered.netty
 
-import unfiltered.netty.async
-import unfiltered.netty.resources.{ FileSystemResource, Resolve, Resource, Resources }
+import unfiltered.netty.async.Plan
+import unfiltered.netty.resources.{ FileSystemResource, Resolve, Resource }
 import unfiltered.request.{ GET, HttpRequest, IfModifiedSince, Path, & }
 import unfiltered.response.{
   BadRequest, CacheControl, ContentLength, ContentType, Date,
@@ -61,7 +61,7 @@ case class Resources(
   base: java.net.URL,
   cacheSeconds: Int = 60,
   passOnFail: Boolean = true)
-  extends async.Plan with ServerErrorResponse {
+  extends Plan with ServerErrorResponse {
   import Resources._
 
   // Returning Pass here will send the request upstream, otherwise
