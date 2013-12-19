@@ -105,7 +105,7 @@ trait HttpServer extends Server with PlanServer[ChannelHandler] {
   }
 }
 
-/** Base Netty server trait for http, websockets... */
+/** Base Netty server trait for http and websockets */
 trait Server extends RunnableServer {
   /** port to listen on */
   val port: Int
@@ -214,11 +214,11 @@ class NotFoundHandler
     ctx: ChannelHandlerContext, msg: java.lang.Object): Unit =
     (msg match {
       case req: HttpMessage => Some(req.getProtocolVersion)
+      // fixme(doug): this may now be unessessary
       case chunk: HttpContent => None
-      case ue => sys.error("Unexpected message type from upstream: %s".format(msg))
-    }).map { v =>
-      val response = new DefaultHttpResponse(v, HttpResponseStatus.NOT_FOUND)
-      val future = ctx.channel.writeAndFlush(response)
-      future.addListener(ChannelFutureListener.CLOSE)
+      case ue => sys.error("Unexpected message type from upstream: %s".format(ue))
+    }).map { version =>
+      ctx.channel.writeAndFlush(new DefaultHttpResponse(version, HttpResponseStatus.NOT_FOUND))
+         .addListener(ChannelFutureListener.CLOSE)
     }.getOrElse(ctx.fireChannelRead(msg))
 }
