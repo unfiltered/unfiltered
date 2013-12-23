@@ -11,7 +11,7 @@ import io.netty.handler.codec.http.{
   HttpHeaders, HttpRequest => NettyHttpRequest,
   HttpResponseStatus, HttpVersion }
 import io.netty.handler.ssl.SslHandler
-
+import io.netty.util.ReferenceCountUtil
 import java.io.{ BufferedReader, ByteArrayOutputStream, InputStreamReader }
 import java.net.{ InetSocketAddress, URLDecoder }
 import java.nio.charset.{ Charset => JNIOCharset }
@@ -124,7 +124,7 @@ case class ReceivedMessage(
         defaultResponse(rf ~> closer)
       ).addListener(new ChannelFutureListener {
         def operationComplete(f: ChannelFuture) {
-          content.map(_.release())
+          content.map(ReferenceCountUtil.release)
         }
       })
       if (!keepAlive)
