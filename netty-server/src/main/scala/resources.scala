@@ -2,7 +2,7 @@ package unfiltered.netty
 
 import unfiltered.netty.async.Plan
 import unfiltered.netty.resources.{ FileSystemResource, Resolve, Resource }
-import unfiltered.request.{ GET, HttpRequest, IfModifiedSince, Path, & }
+import unfiltered.request.{ GET, HEAD, HttpRequest, IfModifiedSince, Path, & }
 import unfiltered.response.{
   BadRequest, CacheControl, ContentLength, ContentType, Date,
   Expires, Forbidden, LastModified, NotFound, NotModified, Ok,
@@ -43,7 +43,6 @@ object Dates {
 
 /** Extracts HttpRequest if a retrieval method */
 object Retrieval {
-  import unfiltered.request.{HttpRequest, GET, HEAD}
   def unapply[T](r: HttpRequest[T]) =
     GET.unapply(r).orElse { HEAD.unapply(r) }
 }
