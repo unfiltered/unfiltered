@@ -3,6 +3,7 @@ package unfiltered.spec.netty
 import unfiltered.netty.{ Http, Server, ServerErrorResponse }
 import unfiltered.netty.cycle.{ DeferralExecutor, DeferredIntent, Plan }
 import io.netty.channel.ChannelHandler.Sharable
+import io.netty.util.ResourceLeakDetector
 
 trait Planned extends Served {
   def setup = _.chunked().handler(planify(intent))
@@ -15,6 +16,11 @@ trait Served extends Started {
 }
 
 trait Started extends unfiltered.spec.Hosted {
+
+  // Enables paranoid resource leak detection which reports where the leaked object was accessed recently,
+  // at the cost of the highest possible overhead (for testing purposes only).
+  ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID)
+
   shareVariables()
   def server: Server
   
