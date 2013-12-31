@@ -1,17 +1,19 @@
 package unfiltered.netty.request
 
 import unfiltered.netty.{ ReceivedMessage, RequestBinding }
-import unfiltered.request.{ HttpRequest, RequestContentType }
 import unfiltered.request.{
   AbstractDiskExtractor,
   AbstractDiskFile,  
   AbstractStreamedFile,  
   DiskExtractor,
+  HttpRequest,
   MultiPartMatcher,
-  MultipartData,  
-  TupleGenerator,  
-  StreamedExtractor
+  MultipartData,
+  RequestContentType,
+  StreamedExtractor,
+  TupleGenerator
 }
+import unfiltered.request.io.FileIO
 import unfiltered.util.control.NonFatal
 
 import io.netty.handler.codec.http.multipart.{
@@ -22,12 +24,12 @@ import io.netty.handler.codec.http.multipart.{
 
 import scala.util.control.Exception.allCatch
 
-import java.io.{ File => JFile, FileInputStream => JFileInputStream, InputStream }
-import java.util.{ Iterator => JIterator }
+import java.io.{ File => JFile, FileInputStream, InputStream }
 
 trait MultiPartCallback
 case class Decode(binding: MultiPartBinding) extends MultiPartCallback
 
+// todo(doug): make sure decoder gets destroyed after responding
 class MultiPartBinding(val decoder: Option[PostDecoder], msg: ReceivedMessage) extends RequestBinding(msg)
 
 /** Matches requests that have multipart content */
@@ -83,7 +85,6 @@ object MultiPartParams {
          files.filter(_.getName == name).map(new StreamedFileWrapper(_)).toSeq
       }
       MultipartData(extractParam _,extractFile _)
-      
     }
   }
 
@@ -142,9 +143,9 @@ trait AbstractDisk
 
 class StreamedFileWrapper(item: FileUpload)
   extends AbstractStreamedFile
-  with unfiltered.request.io.FileIO {
+  with FileIO {
 
-  val bstm = new JFileInputStream(item.getFile)
+  val bstm = new FileInputStream(item.getFile)
 
   def write(out: JFile): Option[JFile] = allCatch.opt {
     stream { stm =>
