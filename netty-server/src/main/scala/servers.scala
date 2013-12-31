@@ -27,6 +27,7 @@ import io.netty.channel.socket.SocketChannel
 import io.netty.channel.nio.{ NioEventLoop, NioEventLoopGroup }
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.stream.ChunkedWriteHandler
+import io.netty.util.ReferenceCountUtil
 import io.netty.util.concurrent.GlobalEventExecutor
 
 import java.lang.{ Boolean => JBoolean, Integer => JInteger }
@@ -213,9 +214,13 @@ class NotFoundHandler
   override def channelRead(
     ctx: ChannelHandlerContext, msg: java.lang.Object): Unit =
     (msg match {
-      case req: HttpMessage => Some(req.getProtocolVersion)
-      // fixme(doug): this may now be unessessary
-      case chunk: HttpContent => None
+      case req: HttpMessage =>
+        ReferenceCountUtil.release(req)
+        Some(req.getProtocolVersion)
+        // fixme(doug): this may no be unessessary
+      case chunk: HttpContent =>
+        ReferenceCountUtil.release(chunk)
+        None
       case ue => sys.error("Unexpected message type from upstream: %s".format(ue))
     }).map { version =>
       ctx.channel.writeAndFlush(new DefaultHttpResponse(version, HttpResponseStatus.NOT_FOUND))
