@@ -28,8 +28,6 @@ object SslServerSpec
       case GET(UFPath("/")) =>
         ResponseString("secret") ~> Ok
       }
-    override def exceptionCaught(ctx: ChannelHandlerContext, thrown: Throwable) =
-      ctx.channel.close
   }
 
   // generated keystore for localhost
