@@ -6,10 +6,11 @@ import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{ DefaultFullHttpResponse, HttpVersion, HttpResponseStatus }
 import unfiltered.util.control.NonFatal
 
+// note(doug): this type is a little dubious as there as exceptions passed around are no longer wrapped in events. we may wish to remove this
 @Sharable
 trait ExceptionHandler { self: ChannelInboundHandler =>
   def onException(ctx: ChannelHandlerContext, t: Throwable)
-  override def exceptionCaught(ctx: ChannelHandlerContext,
+  final override def exceptionCaught(ctx: ChannelHandlerContext,
                                t: Throwable) {    
     onException(ctx, t)
   }
@@ -19,7 +20,7 @@ trait ExceptionHandler { self: ChannelInboundHandler =>
  *  when an exception is thrown */
 @Sharable
 trait ServerErrorResponse extends ExceptionHandler { self: ChannelInboundHandler =>
-  def onException(ctx: ChannelHandlerContext, t: Throwable) {
+  def onException(ctx: ChannelHandlerContext, t: Throwable) = {
     val ch = ctx.channel
     if (ch.isOpen) try {
       System.err.println("Exception caught handling request:")
