@@ -5,6 +5,7 @@ import unfiltered.netty.{ Http => NHttp, ExceptionHandler }
 import unfiltered.netty.cycle.ThreadPool
 import unfiltered.request.{ Path => UFPath, POST, & }
 import unfiltered.response.{ Pass, ResponseString }
+import unfiltered.spec.netty.Served
 
 import dispatch.classic._
 import dispatch.classic.mime.Mime._
@@ -19,7 +20,7 @@ import io.netty.handler.codec.http.{ DefaultFullHttpResponse, HttpResponseStatus
 import org.specs.Specification
 
 object NoChunkAggregatorSpec extends Specification
-  with unfiltered.spec.netty.Served {
+  with Served {
 
   trait ExpectedServerErrorResponse { self: ExceptionHandler =>
     def onException(ctx: ChannelHandlerContext, t: Throwable) {

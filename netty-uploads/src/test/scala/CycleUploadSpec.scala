@@ -7,15 +7,17 @@ import unfiltered.netty.cycle
 import unfiltered.netty.{ Http => NHttp }
 import unfiltered.request.{ Path => UFPath, POST, & }
 import unfiltered.response.{ NotFound, ResponseString }
+import unfiltered.spec.netty.Served
 
 import dispatch.classic._
 import dispatch.classic.mime.Mime._
-import java.io.{File => JFile,FileInputStream => FIS}
-import org.apache.commons.io.{IOUtils => IOU}
+
+import java.io.{ File => JFile,FileInputStream => FIS }
+
+import org.apache.commons.io.{ IOUtils => IOU }
 
 object CycleUploadSpec extends Specification
-  with unfiltered.spec.netty.Served {
-
+  with Served {
 
   def setup = {
     val plan = cycle.MultiPartDecoder({
