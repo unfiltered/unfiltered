@@ -26,6 +26,7 @@ import scala.util.control.Exception.allCatch
 
 import java.io.{ File => JFile, FileInputStream, InputStream }
 
+// fixme(doug): there's only one concrete impl. is this really needed?
 trait MultiPartCallback
 case class Decode(binding: MultiPartBinding) extends MultiPartCallback
 
@@ -33,7 +34,9 @@ case class Decode(binding: MultiPartBinding) extends MultiPartCallback
 class MultiPartBinding(val decoder: Option[PostDecoder], msg: ReceivedMessage) extends RequestBinding(msg)
 
 /** Matches requests that have multipart content */
-object MultiPart extends MultiPartMatcher[RequestBinding] {
+object MultiPart extends MultiPartMatcher[RequestBinding] {  
+  val Type = "multipart/form-data"
+  val Boundary = "boundary"
   def unapply(req: RequestBinding) =
     RequestContentType(req) match {
       case Some(r) if isMultipart(r) => Some(req)
@@ -42,11 +45,9 @@ object MultiPart extends MultiPartMatcher[RequestBinding] {
 
   /** Check the ContentType header value to determine whether the request is multipart */
   private def isMultipart(contentType: String) = {
-    val Multipart = "multipart/form-data"
-    val Boundary = "boundary"
     // Check if the Post is using "multipart/form-data; boundary=--89421926422648"
     splitContentTypeHeader(contentType) match {
-      case (Some(a), Some(b)) if a.toLowerCase.startsWith(Multipart) && b.toLowerCase.startsWith(Boundary) =>
+      case (Some(a), Some(b)) if a.toLowerCase.startsWith(Type) && b.toLowerCase.startsWith(Boundary) =>
         b.split("=").length == 2
       case _ => false
     }
