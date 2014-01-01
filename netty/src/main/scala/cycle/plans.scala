@@ -1,3 +1,4 @@
+
 package unfiltered.netty.cycle
 
 import io.netty.handler.codec.http.{
@@ -27,7 +28,15 @@ object Intent {
 @Sharable
 trait Plan extends ChannelInboundHandlerAdapter
   with ExceptionHandler {
+
   def intent: Plan.Intent
+
+  def executeIntent(thunk: => Unit)
+
+  def executeResponse(thunk: => Unit)
+
+  def shutdown()
+
   def catching(ctx: ChannelHandlerContext)(thunk: => Unit) {
     try { thunk } catch {
       case NonFatal(e) => onException(ctx, e)
@@ -68,10 +77,6 @@ trait Plan extends ChannelInboundHandlerAdapter
       case ue => sys.error("Received unexpected message type from upstream: %s"
                            .format(ue))
     }
-
-  def executeIntent(thunk: => Unit)
-  def executeResponse(thunk: => Unit)
-  def shutdown()
 }
 
 object Planify {
