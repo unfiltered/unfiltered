@@ -1,6 +1,6 @@
 package unfiltered.netty.cycle
 
-import java.util.concurrent.{ExecutorService,Executors}
+import java.util.concurrent.{ ExecutorService, Executors }
 
 /** Evaluates the intent in an unbounded CachedThreadPool
  * executor. For a production environment with known
@@ -26,7 +26,7 @@ trait SynchronousExecution {
 }
 
 trait Deferral {
-  def defer(f: => Unit)
+  def defer(f: => Unit): Unit
 }
 
 /** Defers all processing of the intent to a Deferral mechanism. */
