@@ -5,6 +5,7 @@ import unfiltered.netty.request.{ AbstractMultiPartDecoder, Decode, Helpers, Mul
 import unfiltered.request.HttpRequest
 import unfiltered.response.{ Pass => UPass, ResponseFunction }
 import unfiltered.Async
+
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelHandler.Sharable
 
@@ -13,6 +14,7 @@ object MultipartPlan {
   type Intent = PartialFunction[HttpRequest[ReceivedMessage], MultiPartIntent]
   type MultiPartIntent = PartialFunction[MultiPartCallback, Unit]
   val Pass: MultiPartIntent  = { case _ => UPass }
+  val PassAlong: Intent = { case _ => Pass }
 }
 
 /** Enriches an async netty plan with multipart decoding capabilities. */
@@ -27,31 +29,39 @@ trait MultiPartDecoder
   /** Decide if the intent could handle the request */
   protected def handleOrPass(
     ctx: ChannelHandlerContext, e: java.lang.Object, binding: RequestBinding)(thunk: => Unit) = {
-    intent.orElse({ case _ => MultipartPlan.Pass }: MultipartPlan.Intent)(binding) match {
+    intent.orElse(MultipartPlan.PassAlong)(binding) match {
         case MultipartPlan.Pass => pass(ctx, e)
         case _ => thunk
      }
   }
 
   /** Called when the chunked request has been fully received. Executes the intent */
-  protected def complete(ctx: ChannelHandlerContext, nmsg: java.lang.Object) = {
-    val channelState = Helpers.channelState(ctx)
-    channelState.originalReq match {
+  protected def complete(ctx: ChannelHandlerContext, nmsg: java.lang.Object)(cleanUp: => Unit) = {
+    val channelState = Helpers.channelStateOrCreate(ctx)
+    val res = channelState.originalReq match {
       case Some(req) =>
         val msg = ReceivedMessage(req, ctx, nmsg)
         val multiBinding = new MultiPartBinding(channelState.decoder, msg)
         val binding = new RequestBinding(msg)
-
-        intent.orElse({ case _ => MultipartPlan.Pass }: MultipartPlan.Intent)(binding) match {
-          case MultipartPlan.Pass => MultipartPlan.Pass
-          case multipartIntent => multipartIntent(Decode(multiBinding))
+        intent.orElse(MultipartPlan.PassAlong)(binding) match {
+          case MultipartPlan.Pass =>
+            // fixme(doug): this isn't really responding here?
+            MultipartPlan.Pass
+          case multipartIntent =>
+            multipartIntent(Decode(multiBinding))
         }
-      case _ => sys.error("Original request missing from channel state %s".format(ctx))
+        cleanUp
+      case _ =>
+        sys.error("Original request missing from channel state %s".format(ctx))
     }
+    cleanUp
+    res
   }
 
-  override def channelRead(ctx: ChannelHandlerContext, obj: java.lang.Object) = upgrade(ctx, obj)
-  override def channelInactive(ctx: ChannelHandlerContext) {
+  final override def channelRead(ctx: ChannelHandlerContext, obj: java.lang.Object) =
+    upgrade(ctx, obj)
+
+  final override def channelInactive(ctx: ChannelHandlerContext) {
     cleanFiles(ctx)
     ctx.fireChannelInactive()
   }
