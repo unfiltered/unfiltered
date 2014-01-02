@@ -15,11 +15,11 @@ case class Text(txt: String) extends Msg
 case class Binary(buf: ByteBuf) extends Msg
 
 case class WebSocket(channel: Channel) {
-  def send(str: String) = channel.write(new TextWebSocketFrame(str))
+  def send(str: String) = channel.writeAndFlush(new TextWebSocketFrame(str))
 
   /** will throw an IllegalArgumentException if (type & 0x80 == 0)
    * and the data is not encoded in UTF-8 */
-  def send(buf: ByteBuf) = channel.write(
+  def send(buf: ByteBuf) = channel.writeAndFlush(
     new BinaryWebSocketFrame(buf)
   )
 }
