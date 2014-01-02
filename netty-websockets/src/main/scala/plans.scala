@@ -9,12 +9,12 @@ import io.netty.channel.{
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.FullHttpRequest
 import io.netty.handler.codec.http.websocketx.{
-  CloseWebSocketFrame, PingWebSocketFrame,
+  BinaryWebSocketFrame, CloseWebSocketFrame, PingWebSocketFrame,
   PongWebSocketFrame, TextWebSocketFrame,
-  WebSocketFrame, WebSocketServerHandshaker,
-  WebSocketHandshakeException, WebSocketServerHandshakerFactory
+  WebSocketFrame, WebSocketFrameAggregator, WebSocketFrameDecoder,
+  WebSocketServerHandshaker, WebSocketHandshakeException, WebSocketServerHandshakerFactory
 }
-import io.netty.util.CharsetUtil
+import io.netty.util.{ CharsetUtil, ReferenceCountUtil }
 import scala.util.control.Exception.catching
 
 /** Serves the same purpose of unfiltered.netty.ServerErrorResponse, which is to
@@ -22,8 +22,8 @@ import scala.util.control.Exception.catching
  *  It will simply log the Throwable and close the Channel */
 trait CloseOnException { self: ExceptionHandler =>
   def onException(ctx: ChannelHandlerContext, t: Throwable) {
-    t.printStackTrace
-    ctx.channel.close
+    t.printStackTrace()
+    ctx.channel.close()
   }
 }
 
@@ -66,13 +66,14 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
     if (!request.getDecoderResult.isSuccess()) pass(ctx, request)
     else new RequestBinding(ReceivedMessage(request, ctx, request)) match {
       case r @ GET(_) =>
-        intent.orElse({ case _ => Pass }: Intent)(r) match {
+        intent.orElse(PassAlong)(r) match {
           case Pass => pass(ctx, request)
           case socketIntent =>
             def attempt = socketIntent.lift
             val factory =
               new WebSocketServerHandshakerFactory(
-                WSLocation(r), null/* subprotocols */, false/* allowExtensions */)
+                WSLocation(r), null/* subprotocols */,
+                false/* allowExtensions */)
             factory.newHandshaker(request) match {
               case null =>
                 WebSocketServerHandshakerFactory
@@ -93,8 +94,12 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
                           }
                         })
                         chan.pipeline.replace(
-                          Plan.this, ctx.name,
-                          SocketPlan(socketIntent, pass, shaker, Plan.this))
+                          Plan.this, ctx.name, SocketPlan(socketIntent, pass, shaker, Plan.this))
+                        // aggregate frames
+                        chan.pipeline.addAfter(
+                          chan.pipeline.context(classOf[WebSocketFrameDecoder]).name(),
+                          "ws-frame-aggregator", new WebSocketFrameAggregator(Integer.MAX_VALUE)
+                        )
                       }
                     })
                 }.fold({ _ => pass(ctx, request) }, identity)
@@ -131,13 +136,17 @@ case class SocketPlan(
     ctx: ChannelHandlerContext, msg: java.lang.Object) =
     msg match {
       case c: CloseWebSocketFrame =>
-        shaker.close(ctx.channel, c)
+        shaker.close(ctx.channel, c.retain())
       case p: PingWebSocketFrame =>
-        ctx.channel.write(new PongWebSocketFrame(p.content))
+        ctx.channel.writeAndFlush(new PongWebSocketFrame(p.content.retain()))
       case t: TextWebSocketFrame =>
         attempt(Message(WebSocket(ctx.channel), Text(t.text)))
+          .foreach(_ => ReferenceCountUtil.release(t))
+      case b: BinaryWebSocketFrame =>
+        attempt(Message(WebSocket(ctx.channel), Binary(b.content)))
+          .foreach(_ => ReferenceCountUtil.release(b))
       case f: WebSocketFrame =>
-        // only text frames are supported
+        // other frames are not supported at this time
         pass(ctx, f)
     }
 
