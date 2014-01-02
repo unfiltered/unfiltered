@@ -21,15 +21,15 @@ object SslServerSpec
 
   @Sharable
   class SecurePlan extends Plan
-    with Secured
+    with Secured // also catches netty Ssl errors
     with SynchronousExecution
     with ServerErrorResponse {
     def intent = {
       case GET(UFPath("/")) =>
         ResponseString("secret") ~> Ok
-      }
+    }
   }
-
+    
   // generated keystore for localhost
   // keytool -keystore keystore -alias unfiltered -genkey -keyalg RSA
   val keyStorePath = getClass.getResource("/keystore").getPath
