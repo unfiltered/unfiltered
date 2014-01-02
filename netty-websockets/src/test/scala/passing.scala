@@ -20,7 +20,8 @@ object PassingSpec extends unfiltered.spec.netty.Served {
         case Message(s, Text(msg)) => s.send(msg)
       }
       case UFPath("/c") => Pass
-    }).onPass(_.fireChannelRead(_)))
+    })
+    .onPass(_.fireChannelRead(_)))
     .handler(netty.cycle.Planify {
       case UFPath("/b") => ResponseString("http response b")
       case UFPath("/c") => ResponseString("http response c")
