@@ -6,7 +6,7 @@ import io.netty.handler.codec.http.{ DefaultFullHttpResponse, FullHttpRequest }
 import io.netty.handler.codec.http.HttpHeaders
 import io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN
 import io.netty.handler.codec.http.HttpVersion.HTTP_1_1
-import io.netty.util.CharsetUtil
+import io.netty.util.{ CharsetUtil, ReferenceCountUtil }
 
 /** Module defining function types used in the WebSockets module as well as
  *  function defaults */
@@ -27,22 +27,25 @@ package object websockets {
 
   /** Equivalent of an HttpResponse's Pass function,
    *  a SocketIntent that does nothing */
-  val Pass  = ({ case _ => () }: SocketIntent)
+  val Pass: SocketIntent  = { case _ => () }
+
+  val PassAlong: Intent = { case _ => Pass }
 
   /** A default implementation of a Plan.PassHandler which returns a HTTP protocol
    *  forbidden response code to the channel before closing the channel */
-  val DefaultPassHandler = ({ (ctx, message) =>
+  val DefaultPassHandler: PassHandler = { (ctx, message) =>
     message match {
-      case _: FullHttpRequest =>
+      case req: FullHttpRequest =>
         val res = new DefaultFullHttpResponse(
           HTTP_1_1, FORBIDDEN, Unpooled.copiedBuffer(
             FORBIDDEN.toString, CharsetUtil.UTF_8))
         HttpHeaders.setContentLength(res, res.content.readableBytes)
-        res.release()
-        ctx.channel.write(res).addListener(ChannelFutureListener.CLOSE)
+        ReferenceCountUtil.release(req)
+        ctx.channel.writeAndFlush(res).addListener(
+          ChannelFutureListener.CLOSE)
       case invalid =>
-        sys.error("Invalid type of event message (%s) for Plan pass handling".format(
-          invalid.getClass.getName))
+        sys.error("Invalid type of event message (%s) for Plan pass handling"
+                  .format(invalid.getClass.getName))
     }
-   }: PassHandler)
+  }
 }
