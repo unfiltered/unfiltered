@@ -77,7 +77,7 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
             factory.newHandshaker(request) match {
               case null =>
                 WebSocketServerHandshakerFactory
-                  .sendUnsupportedWebSocketVersionResponse(ctx.channel)
+                  .sendUnsupportedVersionResponse(ctx.channel)
               case shaker =>
                 // handle handshake exceptions for the use case
                 // of mounting an http plan on the same path
