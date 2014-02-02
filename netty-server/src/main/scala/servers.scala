@@ -79,11 +79,13 @@ object Http {
 
 /** An HTTP or HTTPS server */
 trait HttpServer extends Server with PlanServer[ChannelHandler] {
-  def beforeStopBlock: () => Unit
-  def handlers: List[() => ChannelHandler]
 
-  /*def chunked(maxContentLength: Int = 1048576) =
-    makePlan(new HttpObjectAggregator(maxContentLength))*/
+  /** block of code to be invoked when the server is stopped,
+   *  before connectons are closed */
+  def beforeStopBlock: () => Unit
+
+  /** list of functions which will produce a channel handler when invoked */
+  def handlers: List[() => ChannelHandler]
 
   def stop() = {
     beforeStopBlock()
