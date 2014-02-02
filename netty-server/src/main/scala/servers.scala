@@ -182,9 +182,17 @@ class ServerInit(
 /**  HTTP Netty pipline builder. Uses Netty defaults: maxInitialLineLength 4096, maxHeaderSize 8192 and
  *   maxChunkSize 8192 */
 trait DefaultServerInit {
+
+  /** A ChannelGroup used to manage cleanup with,
+   *  in particular channel closing on server shutdown in #closeConnections() */
   protected def channels: ChannelGroup
+
+  /** A list of functions which will produce a channel handler when invoked */
   protected def handlers: List[() => ChannelHandler]
+
+  /** Size, in bytes, to aggregate http requests in chunks of */
   protected def chunkSize: Int
+
   protected def complete(line: ChannelPipeline) =
     (line.addLast("housekeeping", new HouseKeepingChannelHandler(channels))
      .addLast("decoder", new HttpRequestDecoder)
