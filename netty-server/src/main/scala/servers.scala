@@ -3,14 +3,6 @@ package unfiltered.netty
 import unfiltered.util.{ RunnableServer, PlanServer }
 
 import io.netty.bootstrap.ServerBootstrap
-import io.netty.handler.codec.http.{
-  DefaultHttpResponse,
-  HttpContent,
-  HttpMessage,
-  HttpObjectAggregator,
-  HttpRequestDecoder,
-  HttpResponseEncoder,
-  HttpResponseStatus }
 import io.netty.channel.{
   ChannelFutureListener,
   ChannelHandler,
@@ -23,9 +15,17 @@ import io.netty.channel.{
 }
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.channel.group.{ ChannelGroup, DefaultChannelGroup }
-import io.netty.channel.socket.SocketChannel
 import io.netty.channel.nio.{ NioEventLoop, NioEventLoopGroup }
+import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
+import io.netty.handler.codec.http.{
+  DefaultHttpResponse,
+  HttpContent,
+  HttpMessage,
+  HttpObjectAggregator,
+  HttpRequestDecoder,
+  HttpResponseEncoder,
+  HttpResponseStatus }
 import io.netty.handler.stream.ChunkedWriteHandler
 import io.netty.util.ReferenceCountUtil
 import io.netty.util.concurrent.GlobalEventExecutor
@@ -34,7 +34,6 @@ import java.lang.{ Boolean => JBoolean, Integer => JInteger }
 import java.net.{ InetSocketAddress, URL }
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
-
 
 /** Default implementation of the Server trait. If you want to use a
  * custom pipeline factory it's better to extend Server directly. */
