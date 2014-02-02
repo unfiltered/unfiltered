@@ -1,0 +1,4 @@
+* Deprecate Directive.success in favor of Directives.success
+* `unfiltered.netty.async.FuturePlan` for intents that respond in a
+  Scala Future, avoiding the need to call respond explicitly (as
+  required by `async.Plan`)
