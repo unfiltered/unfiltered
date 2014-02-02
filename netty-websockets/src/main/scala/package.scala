@@ -2,8 +2,7 @@ package unfiltered.netty
 
 import io.netty.buffer.Unpooled
 import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext }
-import io.netty.handler.codec.http.{ DefaultFullHttpResponse, FullHttpRequest }
-import io.netty.handler.codec.http.HttpHeaders
+import io.netty.handler.codec.http.{ DefaultFullHttpResponse, FullHttpRequest, HttpHeaders }
 import io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN
 import io.netty.handler.codec.http.HttpVersion.HTTP_1_1
 import io.netty.util.{ CharsetUtil, ReferenceCountUtil }
