@@ -10,7 +10,7 @@ import unfiltered.util.control.NonFatal
 @Sharable
 trait ExceptionHandler { self: ChannelInboundHandler =>
   def onException(ctx: ChannelHandlerContext, t: Throwable)
-  final override def exceptionCaught(ctx: ChannelHandlerContext,
+  override def exceptionCaught(ctx: ChannelHandlerContext,
                                t: Throwable) {    
     onException(ctx, t)
   }

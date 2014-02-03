@@ -4,14 +4,13 @@ import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter }
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{
   HttpContent,
-  FullHttpRequest,
   HttpRequest  => NettyHttpRequest,
   HttpResponse => NettyHttpResponse }
 
 import unfiltered.Async
 import unfiltered.netty.{ ExceptionHandler, ReceivedMessage, RequestBinding, ServerErrorResponse }
 import unfiltered.request.HttpRequest
-import unfiltered.response._
+import unfiltered.response._ // for intent.onPass(...) lift
 
 object Plan {
   /** Note: The only return object a channel plan acts on is Pass */
@@ -28,8 +27,14 @@ object Intent {
 @Sharable
 trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
   def intent: Plan.Intent
+  def requestPlan = intent
+}
+
+/** Common base for async.Plan and future.Plan */
+trait RequestPlan extends ChannelInboundHandlerAdapter with ExceptionHandler {
+  def requestIntent: Plan.Intent
   private lazy val guardedIntent =
-    intent.onPass(
+    requestIntent.onPass(
       { req: HttpRequest[ReceivedMessage] =>
         req.underlying.context.fireChannelRead(req.underlying.message) }
     )

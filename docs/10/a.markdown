@@ -12,7 +12,7 @@ tool installed, please go [back to that page until you do][jetty].
 This step will fetch a number of dependencies and sometimes certain
 repositories are a little wonky, so cross your fingers.
 
-    g8 n8han/unfiltered-netty --name=nettyplayin
+    g8 unfiltered/unfiltered-netty --name=nettyplayin
     cd nettyplayin
     sbt console
 

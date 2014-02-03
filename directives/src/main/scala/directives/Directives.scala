@@ -10,6 +10,8 @@ trait Directives {
 
   def result[R, A](r:Result[R, A]) = Directive[Any, R, A](_ => r)
 
+  /** Produces a Directive with the given Result.Success value, for when a directive
+   *  is required to satisfy an intent's interface but all requests are acceptable */
   def success[A](value:A) = result[Nothing, A](Success(value))
 
   def failure[R](r:ResponseFunction[R]) = result[ResponseFunction[R], Nothing](Failure(r))

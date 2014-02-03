@@ -11,8 +11,7 @@ object Directive {
   def apply[T, R, A](run:HttpRequest[T] => Result[R, A]):Directive[T, R, A] =
     new Directive[T, R, A](run)
 
-  /** Produces a Directive with the given Result.Success value, for when a directive
-   *  is required to satisfy an intent's interface but all requests are acceptable */
+  @deprecated("Use Directives.success","0.7.2")
   def success[A,B](runSuccess: => B) =
     Directive[A, Nothing, B]({ (_: HttpRequest[A]) => Success(runSuccess) })
 
