@@ -1,23 +1,40 @@
 package unfiltered.netty
 
-import org.jboss.netty.channel.{ChannelHandlerContext, ChannelFutureListener,
-  ChannelFuture, ChannelStateEvent, SimpleChannelUpstreamHandler}
+import io.netty.channel.{ Channel, ChannelFuture, ChannelFutureListener, ChannelHandlerContext, ChannelInboundHandlerAdapter }
+import io.netty.channel.ChannelHandler.Sharable
+import io.netty.handler.ssl.{ NotSslRecordException, SslHandler, SslHandshakeCompletionEvent }
+import io.netty.util.concurrent.{ Future, GenericFutureListener }
 
 /** Adds ssl handshaking to a channel handler's #channelConnected method
-  * This assumes a SslHandler was added to the underlying ChannelPipeline */
-trait Secured extends SimpleChannelUpstreamHandler {
-  import org.jboss.netty.handler.ssl.SslHandler
-  
-  override def channelConnected(ctx: ChannelHandlerContext,
-                                e: ChannelStateEvent) =
-    ctx.getPipeline.get(classOf[SslHandler]) match {
-      case null => ()
-      case ssl: SslHandler => ssl.handshake.addListener(channelSecured(ctx))
+  * This assumes a SslHandler was added to the underlying ChannelPipeline.
+  * The ssl handshake will be handled for you. You may wish to know preform custom behavior on
+  * if the handshake is a pass or failure. To do so, use the handshakeSuccess(ctx) or handshakeFailure(ctx, event)
+  * to do so
+  * note(doug): since the handshake of ssl handlers are not invoked for you. this traits usefulness is a little dubious. users can just override userEventTriggered, matching on netties SslHandshakeCompletionEvent. we may want to remove this trait altogether as it adds little value */
+@Sharable
+trait Secured extends ChannelInboundHandlerAdapter with ServerErrorResponse {
+  /** Client code should _always_ pass userEventTriggered events upstream */
+  override def userEventTriggered(ctx: ChannelHandlerContext, event: java.lang.Object): Unit =
+    event match {
+      case complete: SslHandshakeCompletionEvent =>
+        if (complete.isSuccess) handshakeSuccess(ctx)
+        else handshakeFailure(ctx, complete)
+      case evt =>
+        ctx.fireUserEventTriggered(evt)
     }
-  
-  /** Called after a successful Ssl handshake. By default, this does nothing. 
-    * Override this for post-handshake behavior. */
-  def channelSecured(ctx: ChannelHandlerContext) = new ChannelFutureListener {
-    def operationComplete(future: ChannelFuture) { /* NO OP */ }
-  }
+
+  /** Called after a successful ssl handshake attempt */
+  def handshakeSuccess(ctx: ChannelHandlerContext): Unit = {}
+
+  /** Called after a failed ssl handshake attempt */
+  def handshakeFailure(ctx: ChannelHandlerContext, event: SslHandshakeCompletionEvent): Unit = {}
+
+  def onNotSslRecordException(ctx: ChannelHandlerContext, t: NotSslRecordException): Unit = {}
+
+  /** provides a filter to catch NotSslRecordExceptions raised by SslHandlers, falling back on ServerErrorResponse */
+  override def onException(ctx: ChannelHandlerContext, t: Throwable): Unit =
+    t match {
+      case sslerr: NotSslRecordException  => ()
+      case other => super.onException(ctx, t)
+    }
 }

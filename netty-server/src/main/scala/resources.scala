@@ -1,20 +1,35 @@
 package unfiltered.netty
 
-import org.jboss.netty.channel._
-import java.nio.charset.Charset
+import unfiltered.netty.async.Plan
+import unfiltered.netty.resources.{ FileSystemResource, Resolve, Resource }
+import unfiltered.request.{ GET, HEAD, HttpRequest, IfModifiedSince, Path, & }
+import unfiltered.response.{
+  BadRequest, CacheControl, ContentLength, ContentType, Date,
+  Expires, Forbidden, LastModified, NotFound, NotModified, Ok,
+  Pass, PlainTextContent, ResponseFunction }
 
-import unfiltered.netty.resources.Resolve
+import io.netty.channel.{ ChannelFuture, ChannelFutureListener, DefaultFileRegion }
+import io.netty.channel.ChannelHandler.Sharable
+import io.netty.handler.codec.http.{
+  LastHttpContent, HttpHeaders, HttpResponse }
+import io.netty.handler.stream.{ ChunkedFile, ChunkedStream }
+
+import java.io.{ File, FileNotFoundException, RandomAccessFile }
+import java.net.{ URL, URLDecoder }
+import java.nio.charset.Charset
+import java.text.SimpleDateFormat
+import java.util.{ Calendar, GregorianCalendar }
+import javax.activation.MimetypesFileTypeMap
+
+import scala.util.control.Exception.allCatch
 
 object Mimes {
-  import javax.activation.MimetypesFileTypeMap
-
-  lazy val underlying =
+  private lazy val types =
     new MimetypesFileTypeMap(getClass.getResourceAsStream("/mime.types"))
-  def apply(path: String) = underlying.getContentType(path)
+  def apply(path: String) = types.getContentType(path)
 }
 
 object Dates {
-  import java.text.SimpleDateFormat
   import java.util.{ Date, Locale, TimeZone }
 
   val HttpDateFormat = "EEE, dd MMM yyyy HH:mm:ss zzz"
@@ -28,7 +43,6 @@ object Dates {
 
 /** Extracts HttpRequest if a retrieval method */
 object Retrieval {
-  import unfiltered.request.{HttpRequest, GET, HEAD}
   def unapply[T](r: HttpRequest[T]) =
     GET.unapply(r).orElse { HEAD.unapply(r) }
 }
@@ -41,28 +55,19 @@ object Resources {
 /** Serves static resources.
  *  Adapted from Netty's example HttpStaticFileServerHandler
  */
-case class Resources(base: java.net.URL,
-                     cacheSeconds: Int = 60,
-                     passOnFail: Boolean = true)
-  extends unfiltered.netty.async.Plan with ServerErrorResponse {
+@Sharable
+case class Resources(
+  base: java.net.URL,
+  cacheSeconds: Int = 60,
+  passOnFail: Boolean = true)
+  extends Plan with ServerErrorResponse {
   import Resources._
-  import resources._
-  import unfiltered.request._
-  import unfiltered.response._
-  import java.io.{ File, FileNotFoundException, RandomAccessFile }
-  import java.net.{ URL, URLDecoder }
-  import java.util.{ Calendar, GregorianCalendar }
-  import org.jboss.netty.channel.{
-    ChannelFuture, ChannelFutureListener, DefaultFileRegion }
-  import org.jboss.netty.handler.codec.http.{
-    HttpHeaders, HttpResponse => NHttpResponse }
-  import org.jboss.netty.handler.stream.{ ChunkedFile, ChunkedStream }
-  import scala.util.control.Exception.allCatch
 
   // Returning Pass here will send the request upstream, otherwise
   // this method handles the request itself
-  def passOr[T <: NHttpResponse](rf: => ResponseFunction[NHttpResponse])
-                                (req: HttpRequest[ReceivedMessage]) =
+  def passOr[T <: HttpResponse](
+    rf: => ResponseFunction[HttpResponse])
+    (req: HttpRequest[ReceivedMessage]) =
     if (passOnFail) Pass else req.underlying.respond(rf)
 
   def forbid = passOr(Forbidden)_
@@ -74,11 +79,12 @@ case class Resources(base: java.net.URL,
   def intent = {
     case Retrieval(Path(path)) & req => safe(path.drop(1)) match {
       case Some(rsrc) =>
+        val ctx = req.underlying.context
         IfModifiedSince(req) match {
           case Some(since) if (since.getTime == rsrc.lastModified) =>
             // close immediately and do not include content-length header
             // http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
-            req.underlying.event.getChannel.write(
+            ctx.write(
               req.underlying.defaultResponse(
                 NotModified ~>
                 Date(Dates.format(new GregorianCalendar().getTime))
@@ -98,36 +104,27 @@ case class Resources(base: java.net.URL,
 
               cal.add(Calendar.SECOND, cacheSeconds)
 
-              val chan = req.underlying.event.getChannel
-              val writeHeaders = chan.write(
+              val writeHeaders = ctx.write(
                 req.underlying.defaultResponse(
                   heads ~> Expires(Dates.format(cal.getTime))))
 
               def lastly(future: ChannelFuture) =
-                if(!HttpHeaders.isKeepAlive(req.underlying.request)) {
+                if (!HttpHeaders.isKeepAlive(req.underlying.request)) {
                    future.addListener(ChannelFutureListener.CLOSE)
                 }
 
-              if(GET.unapply(req).isDefined && chan.isOpen) {
+              if (GET.unapply(req).isDefined && ctx.channel.isOpen) {
                 rsrc match {
                   case FileSystemResource(_) =>
                     val raf = new RandomAccessFile(rsrc.path, "r")
-                  if(req.isSecure)
-                    chan.write(new ChunkedFile(
-                      raf, 0, len, 8192/*ChunkedStream.DEFAULT_CHUNK_SIZE*/))
-                  else {
-                    // using zero-copy
-                    val region =
-                      new DefaultFileRegion(raf.getChannel, 0, len)
-                    val writeFile = chan.write(region)
-                    writeFile.addListener(new ChannelFutureListener {
-                      def operationComplete(f: ChannelFuture) =
-                        region.releaseExternalResources
-                    })
-                    lastly(writeFile)
-                  }
+                    ctx.write(
+                      if (req.isSecure)
+                        new ChunkedFile(
+                          raf, 0, len, 8192/*ChunkedStream.DEFAULT_CHUNK_SIZE*/)
+                      else new DefaultFileRegion(raf.getChannel, 0, len))
+                    lastly(ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT))
                   case other =>
-                    chan.write(new ChunkedStream(other.in))
+                    ctx.writeAndFlush(new ChunkedStream(other.in))
                 }
               } else lastly(writeHeaders)
             } catch {
@@ -147,18 +144,18 @@ case class Resources(base: java.net.URL,
     decode(uri) flatMap { decoded =>
       decoded.replace('/', File.separatorChar) match {
         case p
-          if(p.contains(File.separator + ".") ||
-             p.contains("." + File.separator) ||
-             p.startsWith(".") ||
-             p.endsWith(".")) => None
+          if (p.contains(File.separator + ".") ||
+              p.contains("." + File.separator) ||
+              p.startsWith(".") ||
+              p.endsWith(".")) => None
         case path =>
           Resolve(new URL(base, decoded))
       }
     }
 
-   private def decode(uri: String) =
-     (allCatch.opt { URLDecoder.decode(uri, utf8.name()) }
-      orElse {
-        allCatch.opt { URLDecoder.decode(uri, iso88591.name()) }
-      })
+  private def decode(uri: String) =
+    (allCatch.opt { URLDecoder.decode(uri, utf8.name()) }
+     orElse {
+       allCatch.opt { URLDecoder.decode(uri, iso88591.name()) }
+     })
 }

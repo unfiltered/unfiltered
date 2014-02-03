@@ -1,30 +1,34 @@
 package unfiltered.netty
 
-import org.jboss.netty.channel._
-import org.jboss.netty.handler.codec.http._
-import org.jboss.netty.buffer.ChannelBuffers
-
+import io.netty.buffer.Unpooled
+import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext, ChannelInboundHandler }
+import io.netty.channel.ChannelHandler.Sharable
+import io.netty.handler.codec.http.{ DefaultFullHttpResponse, HttpVersion, HttpResponseStatus }
 import unfiltered.util.control.NonFatal
 
-trait ExceptionHandler { self: SimpleChannelUpstreamHandler =>
+// note(doug): this type is a little dubious as there as exceptions passed around are no longer wrapped in events. we may wish to remove this
+@Sharable
+trait ExceptionHandler { self: ChannelInboundHandler =>
   def onException(ctx: ChannelHandlerContext, t: Throwable)
   override def exceptionCaught(ctx: ChannelHandlerContext,
-                               e: ExceptionEvent) {
-    onException(ctx, e.getCause)
+                               t: Throwable) {    
+    onException(ctx, t)
   }
 }
 
-trait ServerErrorResponse { self: ExceptionHandler =>
-  def onException(ctx: ChannelHandlerContext, t: Throwable) {
-    val ch = ctx.getChannel
+/** A ChannelInboundHandler mixin that writes a 500 response to clients before closing the channel
+ *  when an exception is thrown */
+@Sharable
+trait ServerErrorResponse extends ExceptionHandler { self: ChannelInboundHandler =>
+  def onException(ctx: ChannelHandlerContext, t: Throwable) = {
+    val ch = ctx.channel
     if (ch.isOpen) try {
       System.err.println("Exception caught handling request:")
-      t.printStackTrace(System.err)
-      val res = new DefaultHttpResponse(
-        HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR)
-      res.setContent(ChannelBuffers.copiedBuffer(
+      t.printStackTrace()
+      val res = new DefaultFullHttpResponse(
+        HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR, Unpooled.copiedBuffer(
         "Internal Server Error".getBytes("utf-8")))
-        ch.write(res).addListener(ChannelFutureListener.CLOSE)
+      ch.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE)
     } catch {
       case NonFatal(_) => ch.close()
     }

@@ -1,22 +1,35 @@
 package unfiltered.netty
 
-import org.specs._
 import unfiltered.spec
-import unfiltered.response._
-import unfiltered.request._
-import unfiltered.request.{Path => UFPath}
-import unfiltered.netty.cycle.{Plan,SynchronousExecution}
-import org.jboss.netty.channel.{ChannelHandlerContext, ExceptionEvent}
+import unfiltered.response.{ Ok, ResponseString }
+import unfiltered.request.{ GET, Path => UFPath}
+import unfiltered.netty.cycle.{ Plan, SynchronousExecution }
+
+import io.netty.channel.ChannelHandlerContext
+import io.netty.channel.ChannelHandler.Sharable
+
+import org.apache.http.NoHttpResponseException
+
+import org.specs.Specification
+
+import dispatch.classic._
 
 object SslServerSpec
-extends Specification 
-with spec.netty.Started
-with spec.SecureClient {
+  extends Specification 
+  with spec.netty.Started
+  with spec.SecureClient {  
 
-  import unfiltered.netty.Https
-  import org.apache.http.NoHttpResponseException
-  import dispatch.classic._
-
+  @Sharable
+  class SecurePlan extends Plan
+    with Secured // also catches netty Ssl errors
+    with SynchronousExecution
+    with ServerErrorResponse {
+    def intent = {
+      case GET(UFPath("/")) =>
+        ResponseString("secret") ~> Ok
+    }
+  }
+    
   // generated keystore for localhost
   // keytool -keystore keystore -alias unfiltered -genkey -keyalg RSA
   val keyStorePath = getClass.getResource("/keystore").getPath
@@ -27,29 +40,18 @@ with spec.SecureClient {
     System.setProperty("netty.ssl.keyStore", keyStorePath)
     System.setProperty("netty.ssl.keyStorePassword", keyStorePasswd)
   }
+
   doAfterSpec {
     System.clearProperty("netty.ssl.keyStore")
     System.clearProperty("netty.ssl.keyStorePassword")
   }
 
-  lazy val server = {
-    try {
-      val securePlan = new Plan with Secured with SynchronousExecution
-                                with ServerErrorResponse {
-
-        def intent = { case GET(UFPath("/")) => ResponseString("secret") ~> Ok }
-
-        override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) =
-          ctx.getChannel.close
-      }
-
-      Https(port, "localhost").handler(securePlan)
-    } catch { case e => e.printStackTrace
-      throw new RuntimeException(e)
-    }
-  }
+  lazy val server =
+    unfiltered.netty.Https(port, "localhost")
+      .handler(new SecurePlan)
 
   "A Secure Server" should {
+    shareVariables()
     "respond to secure requests" in {
       https(host.secure as_str) must_== "secret"
     }

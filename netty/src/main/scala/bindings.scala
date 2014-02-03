@@ -1,20 +1,21 @@
 package unfiltered.netty
 
-import unfiltered.{Async}
-import unfiltered.response.{ResponseFunction, HttpResponse, Pass}
-import unfiltered.request.{HttpRequest,POST,PUT,&,RequestContentType,Charset}
-import java.net.URLDecoder
-import org.jboss.netty.handler.codec.http._
-import java.io.{BufferedReader, ByteArrayOutputStream, InputStreamReader}
-import org.jboss.netty.buffer.{ChannelBuffers, ChannelBufferOutputStream,
-  ChannelBufferInputStream}
-import org.jboss.netty.channel._
-import org.jboss.netty.handler.codec.http.HttpVersion._
-import org.jboss.netty.handler.codec.http.HttpResponseStatus._
-import org.jboss.netty.handler.codec.http.{HttpResponse=>NHttpResponse,
-                                           HttpRequest=>NHttpRequest}
-import java.nio.charset.{Charset => JNIOCharset}
-import unfiltered.Cookie
+import unfiltered.Async
+import unfiltered.response.{ ResponseFunction, HttpResponse, Pass }
+import unfiltered.request.{ Charset, HttpRequest, POST, PUT, RequestContentType, & }
+
+import io.netty.buffer.{ ByteBufInputStream, Unpooled }
+import io.netty.channel.{ ChannelFuture, ChannelFutureListener, ChannelHandlerContext }
+import io.netty.handler.codec.http.{
+  DefaultFullHttpResponse, FullHttpRequest, FullHttpResponse, HttpContent,
+  HttpHeaders, HttpRequest => NettyHttpRequest,
+  HttpResponseStatus, HttpVersion }
+import io.netty.handler.ssl.SslHandler
+import io.netty.util.ReferenceCountUtil
+import java.io.{ BufferedReader, ByteArrayOutputStream, InputStreamReader }
+import java.net.{ InetSocketAddress, URLDecoder }
+import java.nio.charset.{ Charset => JNIOCharset }
+
 import scala.collection.JavaConverters._
 
 object HttpConfig {
@@ -22,110 +23,138 @@ object HttpConfig {
 }
 
 class RequestBinding(msg: ReceivedMessage)
-extends HttpRequest(msg) with Async.Responder[NHttpResponse] {
+  extends HttpRequest(msg) with Async.Responder[FullHttpResponse] {
+
   private val req = msg.request
-  lazy val params = queryParams ++ bodyParams
-  def queryParams = req.getUri.split("\\?", 2) match {
+
+  private val content = msg.content
+
+  private lazy val params = queryParams ++ bodyParams
+
+  private def queryParams = req.getUri.split("\\?", 2) match {
     case Array(_, qs) => URLParser.urldecode(qs)
     case _ => Map.empty[String,Seq[String]]
   }
-  def bodyParams = this match {
-    case (POST(_) | PUT(_)) & RequestContentType(ct) if ct.contains("application/x-www-form-urlencoded") =>
-      URLParser.urldecode(req.getContent.toString(JNIOCharset.forName(charset)))
-    case _ => Map.empty[String,Seq[String]]
+
+  private def bodyParams = (this, content) match {
+    case ((POST(_) | PUT(_)) & RequestContentType(ct), Some(content))
+      if ct.contains("application/x-www-form-urlencoded") =>
+      URLParser.urldecode(content.content.toString(JNIOCharset.forName(charset)))
+    case _ =>
+      Map.empty[String,Seq[String]]
   }
 
   private def charset = Charset(this).getOrElse {
     HttpConfig.DEFAULT_CHARSET
   }
-  lazy val inputStream = new ChannelBufferInputStream(req.getContent)
-  lazy val reader = {
+
+  lazy val inputStream =
+    new ByteBufInputStream(content.map(_.content).getOrElse(Unpooled.EMPTY_BUFFER))
+
+  lazy val reader =
     new BufferedReader(new InputStreamReader(inputStream, charset))
-  }
 
   def protocol = req.getProtocolVersion match {
     case HttpVersion.HTTP_1_0 => "HTTP/1.0"
     case HttpVersion.HTTP_1_1 => "HTTP/1.1"
+    case _ => "???"
   }
+
   def method = req.getMethod.toString.toUpperCase
 
   // todo should we call URLDecoder.decode(uri, charset) on this here?
   def uri = req.getUri
 
   def parameterNames = params.keySet.iterator
+
   def parameterValues(param: String) = params.getOrElse(param, Seq.empty)
-  def headerNames = req.getHeaderNames.iterator.asScala
-  def headers(name: String) = req.getHeaders(name).iterator.asScala
 
-  def isSecure = msg.context.getPipeline.get(classOf[org.jboss.netty.handler.ssl.SslHandler]) match {
-    case null => false
-    case _ => true
-  }
-  def remoteAddr =msg.context.getChannel.getRemoteAddress.asInstanceOf[java.net.InetSocketAddress].getAddress.getHostAddress
+  def headerNames = req.headers.names.iterator.asScala
 
-  def respond(rf: ResponseFunction[NHttpResponse]) =
+  def headers(name: String) = req.headers.getAll(name).iterator.asScala
+
+  def isSecure =
+    Option(msg.context.pipeline.get(classOf[SslHandler])).isDefined
+
+  def remoteAddr = msg.context.channel.remoteAddress.asInstanceOf[InetSocketAddress].getAddress.getHostAddress
+
+  def respond(rf: ResponseFunction[FullHttpResponse]) =
     underlying.respond(rf)
 }
+
 /** Extension of basic request binding to expose Netty-specific attributes */
 case class ReceivedMessage(
-  request: NHttpRequest,
+  request: NettyHttpRequest,
   context: ChannelHandlerContext,
-  event: MessageEvent) {
+  message: java.lang.Object) { // todo: remove this. its the same as request?
+
+  def content: Option[HttpContent] =
+    request match {
+      case has: HttpContent => Some(has)
+      case not => None
+    }
 
   /** Binds a Netty HttpResponse res to Unfiltered's HttpResponse to apply any
    * response function to it. */
-  def response[T <: NHttpResponse](res: T)(rf: ResponseFunction[T]) =
+  def response[T <: FullHttpResponse](res: T)(rf: ResponseFunction[T]) =
     rf(new ResponseBinding(res)).underlying
 
-  /** @return a new Netty DefaultHttpResponse bound to an Unfiltered HttpResponse */
-  val defaultResponse = response(new DefaultHttpResponse(HTTP_1_1, OK))_
+  /** @return a new Netty FullHttpResponse bound to an Unfiltered HttpResponse */
+  lazy val defaultResponse = response(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))_
+
   /** Applies rf to a new `defaultResponse` and writes it out */
-  def respond: (ResponseFunction[NHttpResponse] => Unit) = {
-    case Pass => context.sendUpstream(event)
+  def respond: (ResponseFunction[FullHttpResponse] => Unit) = {
+    case Pass =>
+      context.fireChannelRead(request)
     case rf =>
       val keepAlive = HttpHeaders.isKeepAlive(request)
-      val closer = new unfiltered.response.Responder[NHttpResponse] {
-        def respond(res: HttpResponse[NHttpResponse]) {
+      val closer = new unfiltered.response.Responder[FullHttpResponse] {
+        def respond(res: HttpResponse[FullHttpResponse]) {
           res.outputStream.close()
           (
             if (keepAlive)
               unfiltered.response.Connection("Keep-Alive") ~>
               unfiltered.response.ContentLength(
-                res.underlying.getContent().readableBytes().toString)
+                res.underlying.content().readableBytes().toString)
             else unfiltered.response.Connection("close")
           )(res)
         }
       }
-      val future = event.getChannel.write(
+      val future = context.channel.writeAndFlush(
         defaultResponse(rf ~> closer)
-      )
+      ).addListener(new ChannelFutureListener {
+        def operationComplete(f: ChannelFuture) {
+          content.map(ReferenceCountUtil.release)
+        }
+      })
       if (!keepAlive)
         future.addListener(ChannelFutureListener.CLOSE)
   }
 }
 
-class ResponseBinding[U <: NHttpResponse](res: U)
+class ResponseBinding[U <: FullHttpResponse](res: U)
     extends HttpResponse(res) {
   private lazy val byteOutputStream = new ByteArrayOutputStream {
+    // fixme: the docs state http://docs.oracle.com/javase/6/docs/api/java/io/ByteArrayOutputStream.html#close()
+    //  should have no effect. we are breaking that rule here if close is called more than once
     override def close = {
-      res.setContent(ChannelBuffers.copiedBuffer(this.toByteArray))
+      res.content.clear().writeBytes(Unpooled.copiedBuffer(this.toByteArray))
     }
   }
 
-  def status(statusCode: Int) =
-    res.setStatus(HttpResponseStatus.valueOf(statusCode))
-  def header(name: String, value: String) = res.addHeader(name, value)
+  def status(code: Int) =
+    res.setStatus(HttpResponseStatus.valueOf(code))
 
-  def redirect(url: String) = {
-    res.setStatus(HttpResponseStatus.FOUND)
-    res.setHeader(HttpHeaders.Names.LOCATION, url)
-  }
+  def header(name: String, value: String) =
+    res.headers.add(name, value)
+
+  def redirect(url: String) =
+    res.setStatus(HttpResponseStatus.FOUND).headers.add(HttpHeaders.Names.LOCATION, url)
 
   def outputStream = byteOutputStream
 }
 
 private [netty] object URLParser {
-
   def urldecode(enc: String) : Map[String, Seq[String]] = {
     def decode(raw: String) = URLDecoder.decode(raw, HttpConfig.DEFAULT_CHARSET)
     val pairs = enc.split('&').flatMap {
@@ -139,5 +168,4 @@ private [netty] object URLParser {
       case (m, (k, v)) => m + (k -> (v :: m(k)))
     }
   }
-
 }

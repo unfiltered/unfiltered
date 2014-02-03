@@ -1,19 +1,19 @@
 package unfiltered.netty.request
-import org.specs._
+
+import org.specs.Specification
+
+import unfiltered.netty.{ async, cycle }
+import unfiltered.request.{ Path => UFPath, POST, & }
+import unfiltered.response.{ Html, ResponseString }
+import unfiltered.spec.netty.Served
+
+import dispatch.classic._
+import dispatch.classic.mime.Mime._
+
+import java.io.{ File => JFile }
 
 object MixedPlanSpec extends Specification
-  with unfiltered.spec.netty.Served {
-
-  import unfiltered.request._
-  import unfiltered.request.{Path => UFPath, _}
-  import unfiltered.response._
-  import unfiltered.netty._
-
-  import dispatch.classic._
-
-  import dispatch.classic.mime.Mime._
-  import java.io.{File => JFile,FileInputStream => FIS}
-  import org.apache.commons.io.{IOUtils => IOU}
+  with Served {
 
   val html = <html>
         <head><title>unfiltered file netty uploads test</title></head>
@@ -24,8 +24,10 @@ object MixedPlanSpec extends Specification
 
   def setup = {
     _.handler(cycle.MultiPartDecoder {
-      case POST(UFPath("/cycle/passnotfound")) => cycle.MultipartPlan.Pass
-      case POST(UFPath("/cycle/pass")) => cycle.MultipartPlan.Pass
+      case POST(UFPath("/cycle/passnotfound")) =>
+        cycle.MultipartPlan.Pass
+      case POST(UFPath("/cycle/pass")) =>
+        cycle.MultipartPlan.Pass
       case POST(UFPath("/cycle/disk") & MultiPart(req)) => {
         case Decode(binding) =>
           val disk = MultiPartParams.Disk(binding)
@@ -47,7 +49,7 @@ object MixedPlanSpec extends Specification
             case _ =>  ResponseString("what's f?")
           }
       }
-      case r@POST(UFPath("/cycle/mem") & MultiPart(req)) => {
+      case POST(UFPath("/cycle/mem") & MultiPart(req)) => {
         case Decode(binding) =>
           val mem =  MultiPartParams.Memory(binding)
           (mem.files("f"), mem.params("p")) match {
@@ -69,11 +71,12 @@ object MixedPlanSpec extends Specification
             case _ => ResponseString("what's f?")
         }
       }
-    })
-    .handler(async.MultiPartDecoder{
-      case r @ POST(UFPath("/async/passnotfound")) => async.MultipartPlan.Pass
-      case r @ POST(UFPath("/async/pass")) => async.MultipartPlan.Pass
-      case r @ POST(UFPath("/async/disk") & MultiPart(req)) => {
+    }).handler(async.MultiPartDecoder {
+      case POST(UFPath("/async/passnotfound")) =>
+        async.MultipartPlan.Pass
+      case POST(UFPath("/async/pass")) =>
+        async.MultipartPlan.Pass
+      case POST(UFPath("/async/disk") & MultiPart(req)) => {
         case Decode(binding) =>
           val disk = MultiPartParams.Disk(binding)
           (disk.files("f"), disk.params("p")) match {
@@ -84,7 +87,7 @@ object MixedPlanSpec extends Specification
               case _ =>  binding.respond(ResponseString("what's f?"))
             }
       }
-      case r @ POST(UFPath("/async/stream") & MultiPart(req)) => {
+      case POST(UFPath("/async/stream") & MultiPart(req)) => {
         case Decode(binding) =>
           val stream = MultiPartParams.Streamed(binding)
           (stream.files("f"), stream.params("p")) match {
@@ -94,7 +97,7 @@ object MixedPlanSpec extends Specification
             case _ =>  binding.respond(ResponseString("what's f?"))
           }
       }
-      case r @ POST(UFPath("/async/mem") & MultiPart(req)) => {
+      case POST(UFPath("/async/mem") & MultiPart(req)) => {
         case Decode(binding) =>
           val mem = MultiPartParams.Memory(binding)
           (mem.files("f"), mem.params("p")) match {
@@ -105,7 +108,7 @@ object MixedPlanSpec extends Specification
           }
       }
     }).handler(async.MultiPartDecoder{
-      case r @ POST(UFPath("/async/pass") & MultiPart(req)) => {
+      case POST(UFPath("/async/pass") & MultiPart(req)) => {
         case Decode(binding) =>
           val disk = MultiPartParams.Disk(binding)
           (disk.files("f"), disk.params("p")) match {
@@ -117,8 +120,10 @@ object MixedPlanSpec extends Specification
           }
       }
     }).handler(cycle.Planify{
-      case POST(UFPath("/end")) & MultiPart(req) => ResponseString("")
-      case UFPath("/") => Html(html)
+      case POST(UFPath("/end")) & MultiPart(req) =>
+        ResponseString("")
+      case UFPath("/") =>
+        Html(html)
     })
   }
 
@@ -126,14 +131,14 @@ object MixedPlanSpec extends Specification
     shareVariables()
     doBefore {
       val out = new JFile("netty-upload-test-out.txt")
-      if(out.exists) out.delete
+      if (out.exists) out.delete
     }
 
     "pass GET request upstream" in {
       http(host as_str) must_== html.toString
     }
 
-    /** General */
+    // General
 
     "respond with a 404 when passing non-parameterised content type value" in {
       val http = new dispatch.classic.Http with NoLogging
@@ -145,7 +150,7 @@ object MixedPlanSpec extends Specification
       } finally { http.shutdown }
     }
 
-    /** Cycle */
+    // Cycle
 
     "respond with 404 when posting to a non-existent url" in {
       val http = new dispatch.classic.Http with NoLogging
@@ -170,11 +175,13 @@ object MixedPlanSpec extends Specification
       file.exists must_==true
       http(host / "cycle" / "stream" <<* ("f", file, "text/plain") as_str) must_== "cycle stream read file f is named netty-upload-big-text-test.txt with content type text/plain and param p List()"
     }
+
     "handle cycle file uploads memory" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       http(host / "cycle" / "mem" <<* ("f", file, "text/plain") as_str) must_== "cycle memory read file f is named netty-upload-big-text-test.txt with content type text/plain and param p List()"
     }
+
     "handle passed cycle file uploads to disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
@@ -193,7 +200,7 @@ object MixedPlanSpec extends Specification
       } finally { http.shutdown }
     }
 
-    /** Async */
+    // Async
 
     "handle async file uploads to disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)

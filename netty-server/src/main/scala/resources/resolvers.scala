@@ -1,9 +1,12 @@
 package unfiltered.netty.resources
 
-import java.io.{ File, FileInputStream, FilterInputStream, InputStream }
+import java.io.{ File, FileInputStream, FileNotFoundException, FilterInputStream, InputStream }
 import java.net.{ JarURLConnection, URL, URLDecoder }
 import java.util.jar.{ JarEntry, JarFile }
 
+import scala.util.control.Exception.catching
+
+// todo(doug): none of this is specific to unfiltered. consider factoring this out into its own library
 object Resolve {
   val JarPathDelimiter = "!/"
   type Resolver = PartialFunction[String, URL => Option[Resource]]
@@ -43,8 +46,6 @@ case class FileSystemResource(f: File) extends Resource {
 }
 
 case class JarResource(url: URL) extends Resource {
-  import scala.util.control.Exception.catching
-  import java.io.FileNotFoundException
 
   val urlstr = url.toString
   val sep = urlstr.indexOf(Resolve.JarPathDelimiter)

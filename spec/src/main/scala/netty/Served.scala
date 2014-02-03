@@ -1,23 +1,26 @@
 package unfiltered.spec.netty
 
-import org.specs._
-
-import unfiltered.netty._
-import unfiltered.netty.cycle._
+import unfiltered.netty.{ Http, Server, ServerErrorResponse }
+import unfiltered.netty.cycle.{ DeferralExecutor, DeferredIntent, Plan }
+import io.netty.channel.ChannelHandler.Sharable
+import io.netty.util.ResourceLeakDetector
 
 trait Planned extends Served {
-  import unfiltered.netty.cycle._
-
   def setup = _.chunked().handler(planify(intent))
   def intent[A,B]: unfiltered.Cycle.Intent[A,B]
 }
 
 trait Served extends Started {
-  def setup: (Http => Http)
+  def setup: Http => Http
   lazy val server = setup(Http(port))
 }
 
 trait Started extends unfiltered.spec.Hosted {
+
+  // Enables paranoid resource leak detection which reports where the leaked object was accessed recently,
+  // at the cost of the highest possible overhead (for testing purposes only).
+  ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID)
+
   shareVariables()
   def server: Server
   
@@ -29,7 +32,11 @@ trait Started extends unfiltered.spec.Hosted {
   /** planify using a local executor. Global executor is problematic
    *  for tests since it is shutdown by each server instance.*/
   def planify(intentIn: Plan.Intent) =
-    new Plan with DeferralExecutor with DeferredIntent
+    new StartedPlan(intentIn)
+
+  @Sharable
+  class StartedPlan(intentIn: Plan.Intent) extends Plan
+    with DeferralExecutor with DeferredIntent
              with ServerErrorResponse {
       def underlying = executor
       val intent = intentIn
