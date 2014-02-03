@@ -9,10 +9,10 @@ object FutureServerSpec extends unfiltered.spec.netty.Served {
   implicit val executionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   def setup = _.handler(future.Planify {
-    case req @ GET(UFPath("/ping")) =>
+    case GET(UFPath("/ping")) =>
       Future.successful(ResponseString("pong"))
 
-    case req @ GET(UFPath("/future-ping")) =>
+    case GET(UFPath("/future-ping")) =>
       Future { ResponseString(http(host / "ping" as_str)) }
 
     case GET(UFPath("/pass")) =>
