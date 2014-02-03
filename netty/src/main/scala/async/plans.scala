@@ -1,53 +1,65 @@
 package unfiltered.netty.async
 
-import org.jboss.netty.handler.codec.http.{HttpRequest=>NHttpRequest,
-                                           HttpResponse=>NHttpResponse,
-                                           HttpChunk=>NHttpChunk}
-import org.jboss.netty.channel._
-import unfiltered.netty._
-import unfiltered.response._
-import unfiltered.request.HttpRequest
+import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter }
+import io.netty.channel.ChannelHandler.Sharable
+import io.netty.handler.codec.http.{
+  HttpContent,
+  HttpRequest  => NettyHttpRequest,
+  HttpResponse => NettyHttpResponse }
+
 import unfiltered.Async
+import unfiltered.netty.{ ExceptionHandler, ReceivedMessage, RequestBinding, ServerErrorResponse }
+import unfiltered.request.HttpRequest
+import unfiltered.response._ // for intent.onPass(...) lift
 
 object Plan {
-  /** Note: The only return object an async plan acts on is Pass */
-  type Intent =
-    Async.Intent[ReceivedMessage, NHttpResponse]
+  /** Note: The only return object a channel plan acts on is Pass */
+  type Intent = Async.Intent[ReceivedMessage, NettyHttpResponse]
 }
+
 /** Object to facilitate Plan.Intent definitions. Type annotations
  *  are another option. */
 object Intent {
   def apply(intent: Plan.Intent) = intent
 }
 
-/** A Netty Plan async interaction, DIY responding */
-trait Plan extends SimpleChannelUpstreamHandler with ExceptionHandler {
+/** A Netty Plan for request-only handling. */
+@Sharable
+trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
   def intent: Plan.Intent
   def requestPlan = intent
 }
 
 /** Common base for async.Plan and future.Plan */
-trait RequestPlan extends SimpleChannelUpstreamHandler with ExceptionHandler {
+trait RequestPlan extends ChannelInboundHandlerAdapter with ExceptionHandler {
   def requestIntent: Plan.Intent
   private lazy val guardedIntent =
     requestIntent.onPass(
       { req: HttpRequest[ReceivedMessage] =>
-        req.underlying.context.sendUpstream(req.underlying.event) }
+        req.underlying.context.fireChannelRead(req.underlying.message) }
     )
-  override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
-    e.getMessage() match {
-      case req:NHttpRequest => guardedIntent {
-        new RequestBinding(ReceivedMessage(req, ctx, e))
+
+  final override def channelReadComplete(ctx: ChannelHandlerContext) =
+    ctx.flush()
+
+  override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object): Unit =
+    msg match {
+      case req: NettyHttpRequest => guardedIntent {
+        new RequestBinding(ReceivedMessage(req, ctx, msg))
       }
-      case chunk:NHttpChunk => ctx.sendUpstream(e)
-      case msg => sys.error("Unexpected message type from upstream: %s"
-                        .format(msg))
+      // fixme(doug): I don't think this will ever be the case as we are now always adding the aggregator to the pipeline
+      case chunk: HttpContent => ctx.fireChannelRead(chunk)
+      // fixme(doug): Should we define an explicit exception to catch for this
+      case ue => sys.error("Unexpected message type from upstream: %s"
+                           .format(ue))
     }
-  }
 }
 
 object Planify {
-  def apply(intentIn: Plan.Intent) = new Plan with ServerErrorResponse {
+  @Sharable
+  class Planned(intentIn: Plan.Intent) extends Plan
+    with ServerErrorResponse {
     val intent = intentIn
   }
+  def apply(intentIn: Plan.Intent) = new Planned(intentIn)
 }

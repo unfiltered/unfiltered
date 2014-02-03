@@ -1,56 +1,43 @@
 package unfiltered.netty.websockets
 
+import com.ning.http.client.providers.netty.NettyAsyncHttpProviderConfig
+import unfiltered.request.{ GET, Path => UFPath }
+import java.net.URI
+import scala.collection.mutable
+
 object WebSocketPlanSpec extends unfiltered.spec.netty.Served {
-  import unfiltered.request.{ Path => UFPath, _ }
-
-  import tubesocks.{
-    Open => TOpen,
-    Close => TClose,
-    Message => TMessage,
-    Error => TError,
-    _
-  }
-
-  def setup = _.handler(Planify({
+  def setup = _.handler(Planify {
     case GET(UFPath("/")) => {
       case Open(s) =>
         s.send("open")
       case Message(s, Text(m)) =>
         s.send(m)
     }
-  }))
+  })
 
   def wsuri = host.to_uri.toString.replace("http", "ws")
 
   "A websocket server" should {
     "accept connections" in {
-      import java.util.concurrent.{ CountDownLatch, TimeUnit }
-      var m = scala.collection.mutable.Map.empty[String, String]
-      val l = new CountDownLatch(1)
-      Sock.uri(wsuri) {
-        case TOpen(s) =>
+      var m = mutable.Map.empty[String, String]
+      tubesocks.Sock.uri(wsuri) {
+        case tubesocks.Open(s) =>
           s.send("open")
-        case TMessage(t, _) =>
+        case tubesocks.Message(t, _) =>
           m += ("rec" -> t)
-          l.countDown
       }
-      l.await(4, TimeUnit.MILLISECONDS)
-      m must havePair(("rec", "open"))
+      m must havePair(("rec", "open")).eventually
     }
 
     "handle messages" in {
-      import java.util.concurrent.{ CountDownLatch, TimeUnit }
-      var m = scala.collection.mutable.Map.empty[String, String]
-      val l = new CountDownLatch(2)
-      Sock.uri(wsuri) {
-        case TOpen(s) =>
+      var m = mutable.Map.empty[String, String]
+      tubesocks.Sock.uri(wsuri) {
+        case tubesocks.Open(s) =>
           s.send("from client")
-        case TMessage(t, _) =>
+        case tubesocks.Message(t, _) =>
           m += ("rec" -> t)
-          l.countDown
       }
-      l.await(4, TimeUnit.MILLISECONDS)
-      m must havePair(("rec", "from client"))
+      m must havePair(("rec", "from client")).eventually
     }
   }
 }

@@ -1,11 +1,11 @@
 package unfiltered.spec
 
-import org.specs._
 import dispatch.classic._
 import org.apache.http.client.HttpClient
 
 import java.security.KeyStore
 import java.io.FileInputStream
+
 import org.apache.http.conn.ssl.SSLSocketFactory
 import org.apache.http.conn.scheme.Scheme
 
@@ -30,7 +30,7 @@ trait SecureClient {
 
   /** Slient, resource-managed tls-enabled http request executor */
   def https[T](handler: => Handler[T]): T = {
-    val h = if(logHttpsRequests) new Http {
+    val h = if (logHttpsRequests) new Http {
       override def make_client =
         secure(super.make_client)
     } else new Http with NoLogging {

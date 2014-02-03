@@ -1,20 +1,23 @@
 package unfiltered.netty.request
 
-import org.specs._
+import org.specs.Specification
+
+import unfiltered.netty
+import unfiltered.netty.cycle
+import unfiltered.netty.{ Http => NHttp }
+import unfiltered.request.{ Path => UFPath, POST, & }
+import unfiltered.response.{ NotFound, ResponseString }
+import unfiltered.spec.netty.Served
+
+import dispatch.classic._
+import dispatch.classic.mime.Mime._
+
+import java.io.{ File => JFile,FileInputStream => FIS }
+
+import org.apache.commons.io.{ IOUtils => IOU }
 
 object CycleUploadSpec extends Specification
-  with unfiltered.spec.netty.Served {
-
-  import unfiltered.response._
-  import unfiltered.request.{Path => UFPath, _}
-  import unfiltered.netty
-  import unfiltered.netty._
-  import unfiltered.netty.{Http => NHttp}
-
-  import dispatch.classic._
-  import dispatch.classic.mime.Mime._
-  import java.io.{File => JFile,FileInputStream => FIS}
-  import org.apache.commons.io.{IOUtils => IOU}
+  with Served {
 
   def setup = {
     val plan = cycle.MultiPartDecoder({
@@ -33,7 +36,7 @@ object CycleUploadSpec extends Specification
             case Seq(f, _*) =>
               f.write(new JFile("upload-test-out.txt")) match {
                 case Some(outFile) =>
-                  if(IOU.toString(new FIS(outFile)) == new String(f.bytes)) ResponseString(
+                  if (IOU.toString(new FIS(outFile)) == new String(f.bytes)) ResponseString(
                     "wrote disk read file f named %s with content type %s with correct contents" format(
                       f.name, f.contentType)
                   )
@@ -63,7 +66,7 @@ object CycleUploadSpec extends Specification
               val src = IOU.toString(getClass.getResourceAsStream("/netty-upload-big-text-test.txt"))
               f.write(new JFile("upload-test-out.txt")) match {
                 case Some(outFile) =>
-                  if(IOU.toString(new FIS(outFile)) == src) ResponseString(
+                  if (IOU.toString(new FIS(outFile)) == src) ResponseString(
                     "wrote stream read file f named %s with content type %s with correct contents" format(
                       f.name, f.contentType)
                   )
@@ -111,7 +114,7 @@ object CycleUploadSpec extends Specification
     shareVariables()
     doBefore {
       val out = new JFile("netty-upload-test-out.txt")
-      if(out.exists) out.delete
+      if (out.exists) out.delete
     }
     "handle file uploads written to disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)

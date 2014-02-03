@@ -1,24 +1,26 @@
+
 package unfiltered.netty.request
 
-import org.specs._
+import org.specs.Specification
+
+import unfiltered.netty
+import unfiltered.netty.async
+import unfiltered.netty.{Http => NHttp}
+import unfiltered.request.{ Path => UFPath, POST, & }
+import unfiltered.response.{ NotFound, ResponseString }
+import unfiltered.spec.netty.Served
+
+import dispatch.classic._
+import dispatch.classic.mime.Mime._
+import java.io.{File => JFile,FileInputStream => FIS}
+import org.apache.commons.io.{IOUtils => IOU}
 
 object AsyncUploadSpec extends Specification
-  with unfiltered.spec.netty.Served {
-
-  import unfiltered.response._
-  import unfiltered.request.{Path => UFPath, _}
-  import unfiltered.netty
-  import unfiltered.netty._
-  import unfiltered.netty.{Http => NHttp}
-
-  import dispatch.classic._
-  import dispatch.classic.mime.Mime._
-  import java.io.{File => JFile,FileInputStream => FIS}
-  import org.apache.commons.io.{IOUtils => IOU}
+  with Served {
 
   def setup = {
     val plan = async.MultiPartDecoder({
-      case r@POST(UFPath("/disk-upload") & MultiPart(req)) => {
+      case POST(UFPath("/disk-upload") & MultiPart(req)) => {
         case Decode(binding) =>
           MultiPartParams.Disk(binding).files("f") match {
           case Seq(f, _*) => binding.respond(ResponseString(
@@ -27,7 +29,7 @@ object AsyncUploadSpec extends Specification
           case f =>  binding.respond(ResponseString("what's f?"))
         }
       }
-      case r@POST(UFPath("/disk-upload/write") & MultiPart(req)) => {
+      case POST(UFPath("/disk-upload/write") & MultiPart(req)) => {
         case Decode(binding) =>
           MultiPartParams.Disk(req).files("f") match {
           case Seq(f, _*) =>
@@ -47,7 +49,7 @@ object AsyncUploadSpec extends Specification
           case _ =>  binding.respond(ResponseString("what's f?"))
         }
       }
-      case r@POST(UFPath("/stream-upload") & MultiPart(req)) => {
+      case POST(UFPath("/stream-upload") & MultiPart(req)) => {
         case Decode(binding) =>
           MultiPartParams.Streamed(binding).files("f") match {
           case Seq(f, _*) => binding.respond(ResponseString(
@@ -56,7 +58,7 @@ object AsyncUploadSpec extends Specification
           case _ =>  binding.respond(ResponseString("what's f?"))
         }
       }
-      case r@POST(UFPath("/stream-upload/write") & MultiPart(req)) => {
+      case POST(UFPath("/stream-upload/write") & MultiPart(req)) => {
         case Decode(binding) =>
           MultiPartParams.Streamed(binding).files("f") match {
            case Seq(f, _*) =>
@@ -77,7 +79,7 @@ object AsyncUploadSpec extends Specification
             case _ => binding.respond(ResponseString("what's f?"))
           }
         }
-        case r@POST(UFPath("/mem-upload") & MultiPart(req)) => {
+        case POST(UFPath("/mem-upload") & MultiPart(req)) => {
           case Decode(binding) =>
             MultiPartParams.Memory(binding).files("f") match {
             case Seq(f, _*) => binding.respond(ResponseString(
@@ -86,7 +88,7 @@ object AsyncUploadSpec extends Specification
             case _ => binding.respond(ResponseString("what's f?"))
           }
         }
-        case r@POST(UFPath("/mem-upload/write") & MultiPart(req)) => {
+        case POST(UFPath("/mem-upload/write") & MultiPart(req)) => {
           case Decode(binding) =>
             MultiPartParams.Memory(binding).files("f") match {
             case Seq(f, _*) =>

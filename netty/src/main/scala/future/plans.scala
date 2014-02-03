@@ -1,27 +1,35 @@
 package unfiltered.netty.future
 
-import unfiltered.netty.{ReceivedMessage,ServerErrorResponse}
+import unfiltered.netty.{ ReceivedMessage, ServerErrorResponse }
 import unfiltered.request.HttpRequest
-import unfiltered.response.{Pass,InternalServerError, ResponseFunction}
+import unfiltered.response.{ Pass, InternalServerError, ResponseFunction }
 import unfiltered.netty.async
+import io.netty.channel.ChannelHandler.Sharable
+import io.netty.handler.codec.http.{ HttpResponse => NettyHttpResponse }
 
-import org.jboss.netty.handler.codec.http.{HttpResponse => NHttpResponse}
-
-import scala.concurrent.{Future, ExecutionContext}
-import scala.util.{Failure, Success}
+import scala.concurrent.{ Future, ExecutionContext }
+import scala.util.{ Failure, Success }
 
 object Plan {
-  type Intent = PartialFunction[HttpRequest[ReceivedMessage], Future[ResponseFunction[NHttpResponse]]]
+  type Intent =
+    PartialFunction[
+      HttpRequest[ReceivedMessage],
+      Future[ResponseFunction[NettyHttpResponse]]]
 }
 
 object Planify {
-  def apply(intentIn: Plan.Intent)(implicit executionContextIn: ExecutionContext): Plan =
-    new Plan with ServerErrorResponse {
-      val intent = intentIn
-      val executionContext = executionContextIn
-    }
+  @Sharable
+  class Planned(
+    val intent: Plan.Intent,
+    val executionContext: ExecutionContext) extends Plan
+    with ServerErrorResponse
+
+  def apply(intentIn: Plan.Intent)
+   (implicit executionContextIn: ExecutionContext): Plan =
+     new Planned(intentIn, executionContextIn)
 }
 
+@Sharable
 trait Plan extends async.RequestPlan {
   def intent: Plan.Intent
 

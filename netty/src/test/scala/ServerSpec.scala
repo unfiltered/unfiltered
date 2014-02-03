@@ -1,16 +1,16 @@
 package unfiltered.netty
 
-object ServerSpec extends unfiltered.spec.netty.Served {
-  import unfiltered.response._
-  import unfiltered.request._
-  import unfiltered.request.{Path => UFPath}
-  import unfiltered.netty.{Http => NHttp}
+import unfiltered.response.{ Pass, Ok, ResponseString }
+import unfiltered.request.{ GET, Params, Path => UFPath, POST, PUT, RemoteAddr, & }
 
-  import dispatch.classic._
+import dispatch.classic._
+
+object ServerSpec extends unfiltered.spec.netty.Served {
 
   def setup = _.handler(planify({
     case GET(UFPath("/pass")) => Pass
-    case GET(UFPath("/")) => ResponseString("test") ~> Ok
+    case GET(UFPath("/")) =>
+      ResponseString("test") ~> Ok
     case r @ GET(UFPath("/addr")) => ResponseString(r.remoteAddr) ~> Ok
     case GET(UFPath("/addr_extractor") & RemoteAddr(addr)) => ResponseString(addr) ~> Ok
   })).handler(async.Planify({
@@ -50,7 +50,7 @@ object ServerSpec extends unfiltered.spec.netty.Served {
     "echo POST parameters encoded in the entity body" in {
       http(host / "params" << Map("n0" -> "v0") as_str) must_== "POST:n0=v0"
     }
-    "ech PUT paremters encoded in the entity body" in {
+    "echo PUT paremters encoded in the entity body" in {
       http((host / "params" << Map("n0" -> "v0") PUT) as_str) must_== "PUT:n0=v0"
     }
   }

@@ -1,56 +1,60 @@
 package unfiltered.netty.request
 
-import unfiltered.netty
-import unfiltered.netty._
+import unfiltered.netty.{ ReceivedMessage, RequestBinding }
+import unfiltered.request.{
+  AbstractDiskExtractor,
+  AbstractDiskFile,  
+  AbstractStreamedFile,  
+  DiskExtractor,
+  HttpRequest,
+  MultiPartMatcher,
+  MultipartData,
+  RequestContentType,
+  StreamedExtractor,
+  TupleGenerator
+}
+import unfiltered.request.io.FileIO
+import unfiltered.util.control.NonFatal
+
+import io.netty.handler.codec.http.multipart.{
+  Attribute,
+  FileUpload,
+  InterfaceHttpData
+}
 
 import scala.util.control.Exception.allCatch
 
-import unfiltered.netty.RequestBinding
-import unfiltered.request.HttpRequest
-import unfiltered.request.RequestContentType
+import java.io.{ File => JFile, FileInputStream, InputStream }
 
-import unfiltered.request.{
-  MultiPartMatcher,MultipartData, AbstractDiskFile, TupleGenerator,
-  AbstractStreamedFile, StreamedExtractor, AbstractDiskExtractor,
-  DiskExtractor }
-import unfiltered.util.control.NonFatal
-
-import org.jboss.{netty => jnetty}
-import jnetty.handler.codec.http.{HttpRequest => NHttpRequest}
-import jnetty.handler.codec.http.{InterfaceHttpData => IOInterfaceHttpData}
-import jnetty.handler.codec.http.{Attribute => IOAttribute}
-import jnetty.handler.codec.http.{FileUpload => IOFileUpload}
-
-import java.io.{File => JFile}
-
+// fixme(doug): there's only one concrete impl. is this really needed?
 trait MultiPartCallback
 case class Decode(binding: MultiPartBinding) extends MultiPartCallback
 
+// todo(doug): make sure decoder gets destroyed after responding
 class MultiPartBinding(val decoder: Option[PostDecoder], msg: ReceivedMessage) extends RequestBinding(msg)
 
 /** Matches requests that have multipart content */
-object MultiPart extends MultiPartMatcher[RequestBinding] {
-  def unapply(req: RequestBinding) = {
+object MultiPart extends MultiPartMatcher[RequestBinding] {  
+  val Type = "multipart/form-data"
+  val Boundary = "boundary"
+  def unapply(req: RequestBinding) =
     RequestContentType(req) match {
       case Some(r) if isMultipart(r) => Some(req)
       case _ => None
     }
-  }
 
   /** Check the ContentType header value to determine whether the request is multipart */
   private def isMultipart(contentType: String) = {
-    val Multipart = "multipart/form-data"
-    val Boundary = "boundary"
     // Check if the Post is using "multipart/form-data; boundary=--89421926422648"
     splitContentTypeHeader(contentType) match {
-      case (Some(a), Some(b)) if a.toLowerCase.startsWith(Multipart) && b.toLowerCase.startsWith(Boundary) =>
+      case (Some(a), Some(b)) if a.toLowerCase.startsWith(Type) && b.toLowerCase.startsWith(Boundary) =>
         b.split("=").length == 2
       case _ => false
     }
   }
 
   /** Split the Content-Type header value into two strings */
-  private def splitContentTypeHeader(sb: String): Tuple2[Option[String],Option[String]] = {
+  private def splitContentTypeHeader(sb: String): (Option[String],Option[String]) = {
     def nonEmpty(s: String) = if (s.isEmpty) None else Some(s)
 
     val (contentType, params) = sb.trim.span(!_.isWhitespace)
@@ -62,16 +66,15 @@ object MultiPart extends MultiPartMatcher[RequestBinding] {
 object MultiPartParams {
 
   /** Streamed multi-part data extractor */
-  object Streamed extends StreamedExtractor[RequestBinding] {
-    import java.util.{Iterator => JIterator}
+  object Streamed extends StreamedExtractor[RequestBinding] {    
     def apply(req: RequestBinding) = {
 
       val decoder = req match {
         case r: MultiPartBinding => r.decoder
         case _ => PostDecoder(req.underlying.request)
       }
-      val params = decoder.map(_.parameters).getOrElse(List())
-      val files = decoder.map(_.fileUploads).getOrElse(List())
+      val params = decoder.map(_.parameters).getOrElse(Nil)
+      val files = decoder.map(_.fileUploads).getOrElse(Nil)
 
       /** attempt to extract the first named param from the stream */
       def extractParam(name: String): Seq[String] = {
@@ -83,7 +86,6 @@ object MultiPartParams {
          files.filter(_.getName == name).map(new StreamedFileWrapper(_)).toSeq
       }
       MultipartData(extractParam _,extractFile _)
-      
     }
   }
 
@@ -96,15 +98,14 @@ object MultiPartParams {
       to disk is prohibited.
       */
   object Memory extends StreamedExtractor[RequestBinding] {
-    import java.util.{Iterator => JIterator}
     def apply(req: RequestBinding) = {
 
       val decoder = req match {
         case r: MultiPartBinding => r.decoder
         case _ => PostDecoder(req.underlying.request)
       }
-      val params = decoder.map(_.parameters).getOrElse(List())
-      val files = decoder.map(_.fileUploads).getOrElse(List())
+      val params = decoder.map(_.parameters).getOrElse(Nil)
+      val files = decoder.map(_.fileUploads).getOrElse(Nil)
 
       /** attempt to extract the first named param from the stream */
       def extractParam(name: String): Seq[String] = {
@@ -115,27 +116,25 @@ object MultiPartParams {
       def extractFile(name: String): Seq[StreamedFileWrapper] = {
          files.filter(_.getName == name).map(new MemoryFileWrapper(_)).toSeq
       }
-      MultipartData(extractParam _,extractFile _)
-      
+      MultipartData(extractParam _, extractFile _)      
     }
   }
 }
 
 /** Netty extractor for multi-part data destined for disk. */
 trait AbstractDisk
-extends AbstractDiskExtractor[RequestBinding] with TupleGenerator {
-  import java.util.{Iterator => JIterator}
+  extends AbstractDiskExtractor[RequestBinding]
+  with TupleGenerator {
   def apply(req: RequestBinding) = {
-
     val items = req match {
-      case r: MultiPartBinding => r.decoder.map(_.items).getOrElse(List()).toIterator
-      case _ => PostDecoder(req.underlying.request).map(_.items).getOrElse(List()).toIterator 
+      case r: MultiPartBinding => r.decoder.map(_.items).getOrElse(Nil).toIterator
+      case _ => PostDecoder(req.underlying.request).map(_.items).getOrElse(Nil).toIterator 
     }  
 
-    val (params, files) = genTuple[String, DiskFileWrapper, IOInterfaceHttpData](items) ((maps, item) => item match {
-        case file: IOFileUpload =>
+    val (params, files) = genTuple[String, DiskFileWrapper, InterfaceHttpData](items) ((maps, item) => item match {
+        case file: FileUpload =>
           (maps._1, maps._2 + (file.getName -> (new DiskFileWrapper(file) :: maps._2(file.getName))))
-        case attr: IOAttribute =>
+        case attr: Attribute =>
           (maps._1 + (attr.getName -> (attr.getValue :: maps._1(attr.getName))), maps._2)
       })
 
@@ -143,12 +142,11 @@ extends AbstractDiskExtractor[RequestBinding] with TupleGenerator {
   }
 }
 
-class StreamedFileWrapper(item: IOFileUpload)
-extends AbstractStreamedFile
-  with unfiltered.request.io.FileIO {
-  import java.io.{FileInputStream => JFileInputStream}
+class StreamedFileWrapper(item: FileUpload)
+  extends AbstractStreamedFile
+  with FileIO {
 
-  val bstm = new JFileInputStream(item.getFile)
+  val bstm = new FileInputStream(item.getFile)
 
   def write(out: JFile): Option[JFile] = allCatch.opt {
     stream { stm =>
@@ -157,14 +155,14 @@ extends AbstractStreamedFile
     }
   }
 
-  def stream[T]: (java.io.InputStream => T) => T =
+  def stream[T]: (InputStream => T) => T =
     MultiPartParams.Streamed.withStreamedFile[T](bstm)_
   val name = item.getFilename
   val contentType = item.getContentType
 }
 
-class DiskFileWrapper(item: IOFileUpload)
-extends AbstractDiskFile {
+class DiskFileWrapper(item: FileUpload)
+  extends AbstractDiskFile {
   def write(out: JFile): Option[JFile] = try {
     item.renameTo(out)
     Some(out)
@@ -180,10 +178,10 @@ extends AbstractDiskFile {
 }
 
 /** Wrapper for an uploaded file with write functionality disabled. */
-class MemoryFileWrapper(item: IOFileUpload)
-extends StreamedFileWrapper(item) {
+class MemoryFileWrapper(item: FileUpload)
+  extends StreamedFileWrapper(item) {  
   override def write(out: JFile) = { 
-    //error("File writing is not permitted")
+    //error("File writing is not permitted") // todo: remove this
     None
   }
   def isInMemory = item.isInMemory

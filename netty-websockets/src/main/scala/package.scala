@@ -1,16 +1,16 @@
 package unfiltered.netty
 
+import io.netty.buffer.Unpooled
+import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext }
+import io.netty.handler.codec.http.{ DefaultFullHttpResponse, FullHttpRequest, HttpHeaders }
+import io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN
+import io.netty.handler.codec.http.HttpVersion.HTTP_1_1
+import io.netty.util.{ CharsetUtil, ReferenceCountUtil }
+
 /** Module defining function types used in the WebSockets module as well as
  *  function defaults */
 package object websockets {
-  import org.jboss.{ netty => jnetty }
-  import jnetty.buffer.ChannelBuffers
-  import jnetty.channel.{ ChannelEvent, ChannelFutureListener, ChannelHandlerContext, MessageEvent }
-  import jnetty.handler.codec.http.{ HttpRequest => NHttpRequest, DefaultHttpResponse }
-  import jnetty.handler.codec.http.HttpHeaders
-  import jnetty.handler.codec.http.HttpResponseStatus.FORBIDDEN
-  import jnetty.handler.codec.http.HttpVersion.HTTP_1_1
-  import jnetty.util.CharsetUtil
+
   /** The transition from an http request handling to websocket request handling.
    *  Note: This can not be an Async.Intent because RequestBinding is a Responder for HttpResponses */
   type Intent = PartialFunction[RequestBinding, SocketIntent]
@@ -22,28 +22,29 @@ package object websockets {
 
   /** A pass handler type represents a means to forward a request upstream for
    *  unhandled patterns and protocol messages */
-  type PassHandler = (ChannelHandlerContext, ChannelEvent) => Unit
+  type PassHandler = (ChannelHandlerContext, java.lang.Object) => Unit
 
   /** Equivalent of an HttpResponse's Pass function,
    *  a SocketIntent that does nothing */
-  val Pass  = ({ case _ => () }: SocketIntent)
+  val Pass: SocketIntent  = { case _ => () }
+
+  val PassAlong: Intent = { case _ => Pass }
 
   /** A default implementation of a Plan.PassHandler which returns a HTTP protocol
    *  forbidden response code to the channel before closing the channel */
-  val DefaultPassHandler = ({ (ctx, event) =>
-    event match {
-      case e: MessageEvent =>
-        e.getMessage match {
-          case _: NHttpRequest =>
-            val res = new DefaultHttpResponse(HTTP_1_1, FORBIDDEN)
-            res.setContent(ChannelBuffers.copiedBuffer(res.getStatus.toString, CharsetUtil.UTF_8))
-            HttpHeaders.setContentLength(res, res.getContent.readableBytes)
-            ctx.getChannel.write(res).addListener(ChannelFutureListener.CLOSE)
-          case msg =>
-            sys.error("Invalid type of event message (%s) for Plan pass handling".format(
-              msg.getClass.getName))
-        }
-      case _ => () // we really only care about MessageEvents but need to support the more generic ChannelEvent
+  val DefaultPassHandler: PassHandler = { (ctx, message) =>
+    message match {
+      case req: FullHttpRequest =>
+        val res = new DefaultFullHttpResponse(
+          HTTP_1_1, FORBIDDEN, Unpooled.copiedBuffer(
+            FORBIDDEN.toString, CharsetUtil.UTF_8))
+        HttpHeaders.setContentLength(res, res.content.readableBytes)
+        ReferenceCountUtil.release(req)
+        ctx.channel.writeAndFlush(res).addListener(
+          ChannelFutureListener.CLOSE)
+      case invalid =>
+        sys.error("Invalid type of event message (%s) for Plan pass handling"
+                  .format(invalid.getClass.getName))
     }
-   }: PassHandler)
+  }
 }
