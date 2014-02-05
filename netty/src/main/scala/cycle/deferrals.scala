@@ -1,6 +1,6 @@
 package unfiltered.netty.cycle
 
-import java.util.concurrent.{ ExecutorService, Executors }
+import java.util.concurrent.{ ExecutorService, Executors, RejectedExecutionException }
 
 /** Evaluates the intent in an unbounded CachedThreadPool
  * executor. For a production environment with known
@@ -51,8 +51,13 @@ trait DeferralExecutor extends Deferral {
   def underlying: ExecutorService
   def shutdown() { underlying.shutdown() }
   def defer(f: => Unit) {
-    underlying.execute(new Runnable {
-      def run { f }
-    })
+    try {
+      underlying.execute(new Runnable {
+        def run { f }
+      })
+    } catch {
+      /** Our underlying executor has already shutdown or has already completed all of its tasks following shutdown */
+      case e: RejectedExecutionException if underlying.isShutdown || underlying.isTerminated =>
+    }
   }
 }
