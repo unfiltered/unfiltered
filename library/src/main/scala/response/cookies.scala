@@ -37,11 +37,12 @@ object ToCookies {
       case empty => empty.toString
     }
 
-  private def quoted(k: String, v: String) =
-    """%s="%s";""" format(k, v match {
-      case null => ""
-      case value => value.replace("\\", "\\\\").replace("\"", "\\\"")
-    })
+  private def escape(s: String) = s match {
+    case null => ""
+    case value => value.replace("\\", "\\\\").replace("\"", "\\\"")
+  }
+
+  private def quoted(k: String, v: String) =  k + "=\"" + escape(v) + "\";"
 
   private def literal(k: String, v: String) = "%s=%s;" format(k, v)
 
