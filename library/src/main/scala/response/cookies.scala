@@ -25,9 +25,7 @@ object ToCookies {
   import unfiltered.CookieKeys._
   import unfiltered.request.DateFormatting
 
-  private val Quotables = Array(
-    '\t', ' ', '"', '(', ')', ',', '/', ':', ';', '<',
-    '=', '>', '?', '@', '[', '\\', ']', '{', '}')
+  private final val QuotableRegex = java.util.regex.Pattern.compile("""[\t "\(\),/:;<=>?@\[\\\]{}]""")
 
   def apply(cs: Cookie*): String =
     ((new StringBuilder /: cs) { (b, c) => append(b, c); b }) match {
@@ -49,7 +47,7 @@ object ToCookies {
   private def add(k: String, v: String) = v match {
     case null => quoted(k, v)
     case value =>
-      if(value.find(Quotables.contains).isDefined) quoted(k, v)
+      if(QuotableRegex.matcher(value).find()) quoted(k, v)
       else literal(k, v)
   }
 
