@@ -26,6 +26,22 @@ trait BasicAuthSpec extends unfiltered.spec.Hosted {
       case ("test", "secret:password") => ResponseString("pass")
       case _ => ResponseString("fail")
     }
+    case GET(UFPath("/blank-blank") & BasicAuth(name, pass)) => (name, pass) match {
+      case ("", "") => ResponseString("pass")
+      case _ => ResponseString("fail")
+    }
+    case GET(UFPath("/user-blank") & BasicAuth(name, pass)) => (name, pass) match {
+      case ("test", "") => ResponseString("pass")
+      case _ => ResponseString("fail")
+    }
+    case GET(UFPath("/blank-pass") & BasicAuth(name, pass)) => (name, pass) match {
+      case ("", "secret") => ResponseString("pass")
+      case _ => ResponseString("fail")
+    }
+    case GET(UFPath("/blank-pass-colon") & BasicAuth(name, pass)) => (name, pass) match {
+      case ("", "secret:password") => ResponseString("pass")
+      case _ => ResponseString("fail")
+    }
     case _ => ResponseString("not found")
   }
 
@@ -35,8 +51,24 @@ trait BasicAuthSpec extends unfiltered.spec.Hosted {
       val resp = http(host / "secret" as_!("test", "secret") as_str)
       resp must_== "pass"
     }
-    "authenticate a valid user with a : in the password" in {
+    "authenticate a valid user with a blank password" in {
+      val resp = http(host / "user-blank" as_!("test", "") as_str)
+      resp must_== "pass"
+    }
+    "authenticate a valid user with a password that contains a :" in {
       val resp = http(host / "spec" as_!("test", "secret:password") as_str)
+      resp must_== "pass"
+    }
+    "authenticate a valid user with a blank username and a blank password" in {
+      val resp = http(host / "blank-blank" as_!("", "") as_str)
+      resp must_== "pass"
+    }
+    "authenticate a valid user with a blank username and a good password" in {
+      val resp = http(host / "blank-pass" as_!("", "secret") as_str)
+      resp must_== "pass"
+    }
+    "authenticate a valid user with a blank username and a good password that contains a :" in {
+      val resp = http(host / "blank-pass-colon" as_!("", "secret:password") as_str)
       resp must_== "pass"
     }
     "not authenticate an invalid user" in {
