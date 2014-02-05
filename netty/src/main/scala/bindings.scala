@@ -133,6 +133,8 @@ case class ReceivedMessage(
 }
 
 class ResponseBinding[U <: FullHttpResponse](res: U) extends HttpResponse(res) {
+  private lazy val outStream = new ByteBufOutputStream(res.content)
+
   def status(code: Int) =
     res.setStatus(HttpResponseStatus.valueOf(code))
 
@@ -142,7 +144,7 @@ class ResponseBinding[U <: FullHttpResponse](res: U) extends HttpResponse(res) {
   def redirect(url: String) =
     res.setStatus(HttpResponseStatus.FOUND).headers.add(HttpHeaders.Names.LOCATION, url)
 
-  def outputStream = new ByteBufOutputStream(res.content)
+  def outputStream = outStream
 }
 
 private [netty] object URLParser {
