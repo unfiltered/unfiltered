@@ -27,13 +27,14 @@ object ToCookies {
 
   private final val QuotableRegex = java.util.regex.Pattern.compile("""[\t "\(\),/:;<=>?@\[\\\]{}]""")
 
-  def apply(cs: Cookie*): String =
-    ((new StringBuilder /: cs) { (b, c) => append(b, c); b }) match {
-      case sb if(!sb.isEmpty) =>
-        sb.setLength(sb.length - 1)
-        sb.toString
-      case empty => empty.toString
-    }
+  def apply(cs: Cookie*): String = {
+    val res = new StringBuilder
+    cs.foreach(append(res, _))
+    if (!res.isEmpty) {
+      res.setLength(res.length - 1)
+      res.toString
+    } else res.toString()
+  }
 
   private def escape(s: String) = s match {
     case null => ""
@@ -56,27 +57,27 @@ object ToCookies {
       new Date(System.currentTimeMillis() + secs * 1000L)
     )
 
-  private def append(sb: StringBuilder, c: Cookie) = {
+  private def append(sb: StringBuilder, c: Cookie) : Unit = {
     sb.append(add(c.name, c.value))
-    c.maxAge map { ma =>
+    c.maxAge foreach { ma =>
       sb.append(
         if(c.version == 0) literal(Expires, gmt(ma))
         else add(MaxAge, ma.toString)
       )
     }
-    c.path map { p =>
+    c.path foreach { p =>
       sb.append(
         if(c.version > 0) add(Path, p)
         else literal(Path, p)
       )
     }
-    c.domain map { d =>
+    c.domain foreach { d =>
       sb.append(
         if(c.version > 0) add(Domain, d)
         else literal(Domain, d)
       )
     }
-    c.secure map(if(_) sb.append("%s;" format Secure))
+    if (c.secure.getOrElse(false)) sb.append("%s;" format Secure)
     if(c.httpOnly) sb.append("%s;" format HTTPOnly)
     if (c.version > 0) {
        sb.append(add(Version, c.version.toString))
