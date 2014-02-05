@@ -33,7 +33,7 @@ object ToCookies {
     if (!res.isEmpty) {
       res.setLength(res.length - 1)
       res.toString
-    } else res.toString()
+    } else res.toString
   }
 
   private def escape(s: String) = s match {
