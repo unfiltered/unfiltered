@@ -13,6 +13,7 @@ object BasicAuth {
         case "Basic" =>
           new String(decodeBase64(tok.nextToken getBytes("utf8"))) split(":") match {
             case Array(u, p) => Some(u, p)
+            case Array(u, p, x @ _*) => Some(u, (Array(p) ++ x).mkString(":"))
             case _ => None
           }
         case _ => None

@@ -22,6 +22,10 @@ trait BasicAuthSpec extends unfiltered.spec.Hosted {
       case ("test", "secret") => ResponseString("pass")
       case _ => ResponseString("fail")
     }
+    case GET(UFPath("/spec") & BasicAuth(name, pass)) => (name, pass) match {
+      case ("test", "secret:password") => ResponseString("pass")
+      case _ => ResponseString("fail")
+    }
     case _ => ResponseString("not found")
   }
 
@@ -29,6 +33,10 @@ trait BasicAuthSpec extends unfiltered.spec.Hosted {
     shareVariables()
     "authenticate a valid user" in {
       val resp = http(host / "secret" as_!("test", "secret") as_str)
+      resp must_== "pass"
+    }
+    "authenticate a valid user with a : in the password" in {
+      val resp = http(host / "spec" as_!("test", "secret:password") as_str)
       resp must_== "pass"
     }
     "not authenticate an invalid user" in {
