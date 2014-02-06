@@ -57,7 +57,7 @@ trait DeferralExecutor extends Deferral {
       })
     } catch {
       /** Our underlying executor has already shutdown or has already completed all of its tasks following shutdown */
-      case e: RejectedExecutionException if underlying.isShutdown || underlying.isTerminated =>
+      case e: RejectedExecutionException if underlying.isShutdown || underlying.isTerminated => // no-op
     }
   }
 }
