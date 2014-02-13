@@ -1,7 +1,8 @@
 package unfiltered.response
 
 class DelegatingResponse[+T](val delegate: HttpResponse[T])
-extends HttpResponse[T](delegate.underlying) {
+extends HttpResponse[T] {
+  val underlying = delegate.underlying
   val outputStream = delegate.outputStream
   def status(statusCode: Int) {
     delegate.status(statusCode)

@@ -2,8 +2,8 @@ package unfiltered.netty
 
 import unfiltered.Async
 import unfiltered.response.{ 
-  ResponseFunction, ResponseHeader, ContentLength, 
-  ContentType, HttpResponse, Pass }
+  BaseResponseFunction, ResponseFunction, ResponseHeader, ContentLength, 
+  ContentType, BaseHttpResponse, HttpResponse, Pass }
 import unfiltered.request.{ Charset, HttpRequest, POST, PUT, RequestContentType, & }
 
 import io.netty.buffer.{ ByteBufInputStream, ByteBufOutputStream, Unpooled }
@@ -145,7 +145,7 @@ case class ReceivedMessage(
   /** @return a new Netty FullHttpResponse bound to an Unfiltered HttpResponse */
   lazy val defaultResponse = response(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))_
   // Required for sendFile, since writing a FullHttpResponse implies the request is done
-  private lazy val baseResponse = new ResponseBinding(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))
+  private lazy val baseResponse = new BaseResponseBinding(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))
 
   /** Applies rf to a new `defaultResponse` and writes it out */
   def respond: (ResponseFunction[FullHttpResponse] => Unit) = {
@@ -156,7 +156,7 @@ case class ReceivedMessage(
       finishResponse(writeFuture)
   }
 
-  def sendFile(file: File)(headers: ResponseHeader) {
+  def sendFile(file: File)(headers: BaseResponseFunction[Any]) {
     val size = file.length
     val heads = ContentLength(size.toString) ~> ContentType(Mimes(file.getCanonicalPath))
     
@@ -177,17 +177,18 @@ case class ReceivedMessage(
   }
 }
 
-class ResponseBinding[U <: NettyHttpResponse](res: U) extends HttpResponse(res) {
-  private lazy val outStream = new ByteBufOutputStream(res.content)
-
+class BaseResponseBinding[U <: NettyHttpResponse](val underlying: U) extends BaseHttpResponse[U] {
   def status(code: Int) =
-    res.setStatus(HttpResponseStatus.valueOf(code))
+    underlying.setStatus(HttpResponseStatus.valueOf(code))
 
   def header(name: String, value: String) =
-    res.headers.add(name, value)
+    underlying.headers.add(name, value)
 
   def redirect(url: String) =
-    res.setStatus(HttpResponseStatus.FOUND).headers.add(HttpHeaders.Names.LOCATION, url)
+    underlying.setStatus(HttpResponseStatus.FOUND).headers.add(HttpHeaders.Names.LOCATION, url)
+}
+class ResponseBinding[U <: FullHttpResponse](res: U) extends BaseResponseBinding(res) with HttpResponse[U] {
+  private lazy val outStream = new ByteBufOutputStream(res.content)
 
   def outputStream = outStream
 }

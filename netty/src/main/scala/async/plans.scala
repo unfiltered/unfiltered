@@ -36,7 +36,7 @@ trait RequestPlan extends ChannelInboundHandlerAdapter with ExceptionHandler {
   private lazy val guardedIntent =
     requestIntent.onPass(
       { req: HttpRequest[ReceivedMessage] =>
-        req.underlying.context.fireChannelRead(req.underlying.message) }
+        req.underlying.context.fireChannelRead(req.underlying.request) }
     )
 
   final override def channelReadComplete(ctx: ChannelHandlerContext) =
@@ -45,7 +45,7 @@ trait RequestPlan extends ChannelInboundHandlerAdapter with ExceptionHandler {
   override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object): Unit =
     msg match {
       case req: NettyHttpRequest => guardedIntent {
-        new RequestBinding(ReceivedMessage(req, ctx, msg))
+        new RequestBinding(ReceivedMessage(req, ctx))
       }
       // fixme(doug): I don't think this will ever be the case as we are now always adding the aggregator to the pipeline
       case chunk: HttpContent => ctx.fireChannelRead(chunk)

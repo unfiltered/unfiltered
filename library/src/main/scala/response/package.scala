@@ -1,6 +1,6 @@
 package unfiltered
 
-package object response {
+package object response extends response.implicits {
   import Pass.RF
   /** Implicit methods on PartialFunction: onPass and onFold.
    *  See unfiltered.response.Pass the explicit versions. */

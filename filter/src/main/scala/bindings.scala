@@ -30,11 +30,11 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   def remoteAddr = req.getRemoteAddr
 }
 
-class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
-  def status(statusCode: Int) = res.setStatus(statusCode)
-  def outputStream() = res.getOutputStream
-  def redirect(url: String) = res.sendRedirect(url)
-  def header(name: String, value: String) = res.addHeader(name, value)
+class ResponseBinding(val underlying: HttpServletResponse) extends HttpResponse[HttpServletResponse] {
+  def status(statusCode: Int) = underlying.setStatus(statusCode)
+  def outputStream() = underlying.getOutputStream
+  def redirect(url: String) = underlying.sendRedirect(url)
+  def header(name: String, value: String) = underlying.addHeader(name, value)
   def cookies(resCookies: Seq[Cookie]) = {
     import javax.servlet.http.{Cookie => JCookie}
     resCookies.foreach { c =>
@@ -43,7 +43,7 @@ class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
       if(c.path.isDefined) jc.setPath(c.path.get)
       if(c.maxAge.isDefined) jc.setMaxAge(c.maxAge.get)
       if(c.secure.isDefined) jc.setSecure(c.secure.get)
-      res.addCookie(jc)
+      underlying.addCookie(jc)
     }
   }
 }

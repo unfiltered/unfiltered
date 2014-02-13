@@ -110,15 +110,16 @@ case class Resources(
                       ContentLength(rsrc.size.toString) ~>
                       ContentType(Mimes(rsrc.path)))
                     ctx.write(new ChunkedStream(other.in))
-                    ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                    val future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                    receivedMessage.finishResponse(future)
                 }
               } else {
                 ctx.write(customHeads ~>
                   ContentLength(rsrc.size.toString) ~>
                   ContentType(Mimes(rsrc.path)))
-                ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                val future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                receivedMessage.finishResponse(future)
               }
-              receivedMessage.finishResponse(operationFuture)
             } catch {
               case e: FileNotFoundException => notFound(req)
             }

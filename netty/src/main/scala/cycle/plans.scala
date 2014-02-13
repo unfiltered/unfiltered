@@ -45,7 +45,7 @@ trait Plan extends ChannelInboundHandlerAdapter
 
   private lazy val guardedIntent = intent.fold(
     (req: HttpRequest[ReceivedMessage]) =>
-      req.underlying.context.fireChannelRead(req.underlying.message),
+      req.underlying.context.fireChannelRead(req.underlying.request),
     (req: HttpRequest[ReceivedMessage],
      rf: ResponseFunction[HttpResponse]) =>
       executeResponse {
@@ -65,7 +65,7 @@ trait Plan extends ChannelInboundHandlerAdapter
           executeIntent {
             catching(ctx) {
               guardedIntent(
-                new RequestBinding(ReceivedMessage(req, ctx, msg))
+                new RequestBinding(ReceivedMessage(req, ctx))
               )
             }
           }
