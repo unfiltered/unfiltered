@@ -127,7 +127,7 @@ case class ReceivedMessage(
     }
   }
 
-  def finishResponse(future: ChannelFuture) {
+  private[netty] def finishResponse(future: ChannelFuture) {
     future.addListener(new ChannelFutureListener {
       def operationComplete(f: ChannelFuture) {
         content.map(ReferenceCountUtil.release)
@@ -179,13 +179,7 @@ case class ReceivedMessage(
 
     val lastContent = context.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
 
-    lastContent.addListener(new ChannelFutureListener {
-      def operationComplete(f: ChannelFuture) {
-        content.map(ReferenceCountUtil.release)
-      }
-    })
-    lastContent.addListener(ChannelFutureListener.CLOSE)
-    //finishResponse(lastContent)
+    finishResponse(lastContent)
   }
 }
 
