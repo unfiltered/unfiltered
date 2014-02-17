@@ -198,7 +198,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         accessToken(request.method, request.underlying.getRequestURL.toString, params ++ headers) match {
           case Failure(code, msg) => fail(code, msg)
           case resp@AccessResponse(_, _) =>
-            (resp ~> FormEncodedContent): ResponseFunction[Any]
+            (resp ~> FormEncodedContent)
         }
       }
 
@@ -208,7 +208,7 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
       }
   }
 
-  def fail(status: Int, msg: String): ResponseFunction[Any] =
+  def fail(status: Int, msg: String) =
     Status(status) ~> ResponseString(msg)
 }
 
