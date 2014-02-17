@@ -6,9 +6,9 @@ import unfiltered.request.{ GET, HEAD, HttpRequest, IfModifiedSince, Path, & }
 import unfiltered.response.{
   BadRequest, CacheControl, ContentLength, ContentType, Date,
   Expires, Forbidden, LastModified, NotFound, NotModified, Ok,
-  Pass, PlainTextContent, ResponseFunction }
+  Pass, PlainTextContent, ResponseFunction, BaseResponseFunction }
 
-import io.netty.channel.ChannelFutureListener
+import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext }
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{
   LastHttpContent, HttpResponse }
@@ -68,13 +68,30 @@ case class Resources(
   def notFound = passOr(NotFound)_
 
   def badRequest = passOr(BadRequest ~> PlainTextContent)_
-  
+
   def respondNotModified(msg: ReceivedMessage) {
     val now = Dates.format(new GregorianCalendar().getTime)
     /** close immediately and do not include content-length header
       * http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html */
     msg.context.write(msg.defaultResponse(NotModified ~> Date(now)))
       .addListener(ChannelFutureListener.CLOSE)
+  }
+
+  def sendHeadHeadersWith(
+    msg: ReceivedMessage,
+    rsrc: Resource,
+    heads: BaseResponseFunction[Any]
+  )(f: ChannelHandlerContext => Unit) {
+    val ctx = msg.context
+    ctx.write(msg.defaultBaseResponse(
+      heads ~>
+      msg.closeOrKeepAlive ~>
+      ContentLength(rsrc.size.toString) ~>
+      ContentType(Mimes(rsrc.path))
+    ))
+    f(ctx)
+    val future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+    msg.finishResponse(future)
   }
 
   def requestIntent = {
@@ -91,14 +108,14 @@ case class Resources(
             else try {
               val len = rsrc.size
               val cal = new GregorianCalendar()
-              val baseHeads = Ok ~> 
+              val baseHeads = Ok ~>
                 // note: bin/text/charset not included
                 Date(Dates.format(cal.getTime)) ~>
                 CacheControl("private, max-age=%d" format cacheSeconds) ~>
                 LastModified(Dates.format(rsrc.lastModified))
 
               cal.add(Calendar.SECOND, cacheSeconds)
-              
+
               val customHeads = baseHeads ~> Expires(Dates.format(cal.getTime))
 
               if (!ctx.channel.isOpen) throw new java.nio.channels.ClosedChannelException
@@ -108,26 +125,13 @@ case class Resources(
                     case FileSystemResource(file) =>
                       receivedMessage.sendFile(file)(customHeads)
                     case other =>
-                      ctx.write(receivedMessage.defaultBaseResponse(
-                        customHeads ~>
-                        receivedMessage.closeOrKeepAlive ~>
-                        ContentLength(rsrc.size.toString) ~>
-                        ContentType(Mimes(rsrc.path))
-                      ))
-                      ctx.write(new ChunkedStream(other.in))
-                      val future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-                      receivedMessage.finishResponse(future)
+                      sendHeadHeadersWith(receivedMessage, rsrc, customHeads) { context =>
+                        context.write(new ChunkedStream(other.in))
+                      }
                   }
                 } else {
                   // send the HEAD response
-                  ctx.write(receivedMessage.defaultBaseResponse(
-                      customHeads ~>
-                      receivedMessage.closeOrKeepAlive ~>
-                      ContentLength(rsrc.size.toString) ~>
-                      ContentType(Mimes(rsrc.path))
-                    ))
-                  val future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-                  receivedMessage.finishResponse(future)
+                  sendHeadHeadersWith(receivedMessage, rsrc, customHeads) { _ => () }
                 }
               }
             } catch {
