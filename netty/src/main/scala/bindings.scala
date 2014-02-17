@@ -1,22 +1,36 @@
 package unfiltered.netty
 
 import unfiltered.Async
-import unfiltered.response.{ ResponseFunction, HttpResponse, Pass }
+import unfiltered.response.{
+  Responder, BaseResponder,
+  BaseResponseFunction, ResponseFunction, ResponseHeader, ContentLength,
+  ContentType, BaseHttpResponse, HttpResponse, Pass }
 import unfiltered.request.{ Charset, HttpRequest, POST, PUT, RequestContentType, & }
 
-import io.netty.buffer.{ ByteBufInputStream, Unpooled }
-import io.netty.channel.{ ChannelFuture, ChannelFutureListener, ChannelHandlerContext }
+import io.netty.buffer.{ ByteBufInputStream, ByteBufOutputStream, Unpooled }
+import io.netty.channel.{ ChannelFuture, ChannelFutureListener, ChannelHandlerContext,
+  DefaultFileRegion }
 import io.netty.handler.codec.http.{
   DefaultFullHttpResponse, FullHttpRequest, FullHttpResponse, HttpContent,
-  HttpHeaders, HttpRequest => NettyHttpRequest,
-  HttpResponseStatus, HttpVersion }
+  HttpResponse => NettyHttpResponse, DefaultHttpResponse, HttpHeaders,
+  HttpRequest => NettyHttpRequest, HttpResponseStatus, HttpVersion,
+  LastHttpContent }
 import io.netty.handler.ssl.SslHandler
+import io.netty.handler.stream.ChunkedFile
 import io.netty.util.ReferenceCountUtil
-import java.io.{ BufferedReader, ByteArrayOutputStream, InputStreamReader }
+import java.io.{ BufferedReader, ByteArrayOutputStream, InputStreamReader,
+  File, RandomAccessFile }
 import java.net.{ InetSocketAddress, URLDecoder }
 import java.nio.charset.{ Charset => JNIOCharset }
+import javax.activation.MimetypesFileTypeMap
 
 import scala.collection.JavaConverters._
+
+object Mimes {
+  private lazy val types =
+    new MimetypesFileTypeMap(getClass.getResourceAsStream("/mime.types"))
+  def apply(path: String) = types.getContentType(path)
+}
 
 object HttpConfig {
    val DEFAULT_CHARSET = "UTF-8"
@@ -73,8 +87,7 @@ class RequestBinding(msg: ReceivedMessage)
 
   def headers(name: String) = req.headers.getAll(name).iterator.asScala
 
-  def isSecure =
-    Option(msg.context.pipeline.get(classOf[SslHandler])).isDefined
+  def isSecure = msg.isSecure
 
   def remoteAddr = msg.context.channel.remoteAddress.asInstanceOf[InetSocketAddress].getAddress.getHostAddress
 
@@ -85,73 +98,105 @@ class RequestBinding(msg: ReceivedMessage)
 /** Extension of basic request binding to expose Netty-specific attributes */
 case class ReceivedMessage(
   request: NettyHttpRequest,
-  context: ChannelHandlerContext,
-  message: java.lang.Object) { // todo: remove this. its the same as request?
-
+  context: ChannelHandlerContext
+) {
   def content: Option[HttpContent] =
     request match {
       case has: HttpContent => Some(has)
       case not => None
     }
 
+  private[netty] def setContentLength = new Responder[FullHttpResponse] {
+    def respond(res: HttpResponse[FullHttpResponse]) {
+      if (!HttpHeaders.isContentLengthSet(res.underlying)) {
+        ContentLength(res.underlying.content().readableBytes().toString)(res)
+      }
+    }
+  }
+  private[netty] def closeOrKeepAlive = new BaseResponder[Any] {
+    def _respond[R <: BaseHttpResponse[Any]](res: R) {
+      (
+        if (isKeepAlive) unfiltered.response.Connection("Keep-Alive")
+        else unfiltered.response.Connection("close")
+      )(res)
+    }
+  }
+  private[netty] def closeStream = new Responder[FullHttpResponse] {
+    def respond(res: HttpResponse[FullHttpResponse]) {
+      res.outputStream.close()
+    }
+  }
+
+  private[netty] def finishResponse(future: ChannelFuture) {
+    future.addListener(new ChannelFutureListener {
+      def operationComplete(f: ChannelFuture) {
+        content.map(ReferenceCountUtil.release)
+      }
+    })
+    if (!isKeepAlive)
+      future.addListener(ChannelFutureListener.CLOSE)
+  }
+
+  def isKeepAlive = HttpHeaders.isKeepAlive(request)
+
+  def isSecure =
+    Option(context.pipeline.get(classOf[SslHandler])).isDefined
+
   /** Binds a Netty HttpResponse res to Unfiltered's HttpResponse to apply any
    * response function to it. */
   def response[T <: FullHttpResponse](res: T)(rf: ResponseFunction[T]) =
     rf(new ResponseBinding(res)).underlying
 
+  def baseResponse[T <: NettyHttpResponse](res: T)(brf: BaseResponseFunction[T]) =
+    brf(new BaseResponseBinding(res)).underlying
   /** @return a new Netty FullHttpResponse bound to an Unfiltered HttpResponse */
   lazy val defaultResponse = response(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))_
+  // Required for sendFile, since writing a FullHttpResponse implies the request is done
+  lazy val defaultBaseResponse = baseResponse(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))_
 
   /** Applies rf to a new `defaultResponse` and writes it out */
   def respond: (ResponseFunction[FullHttpResponse] => Unit) = {
     case Pass =>
       context.fireChannelRead(request)
     case rf =>
-      val keepAlive = HttpHeaders.isKeepAlive(request)
-      val closer = new unfiltered.response.Responder[FullHttpResponse] {
-        def respond(res: HttpResponse[FullHttpResponse]) {
-          res.outputStream.close()
-          (
-            if (keepAlive)
-              unfiltered.response.Connection("Keep-Alive") ~>
-              unfiltered.response.ContentLength(
-                res.underlying.content().readableBytes().toString)
-            else unfiltered.response.Connection("close")
-          )(res)
-        }
-      }
-      val future = context.channel.writeAndFlush(
-        defaultResponse(rf ~> closer)
-      ).addListener(new ChannelFutureListener {
-        def operationComplete(f: ChannelFuture) {
-          content.map(ReferenceCountUtil.release)
-        }
-      })
-      if (!keepAlive)
-        future.addListener(ChannelFutureListener.CLOSE)
+      val writeFuture = context.writeAndFlush(defaultResponse(rf ~> setContentLength ~> closeOrKeepAlive ~> closeStream))
+      finishResponse(writeFuture)
+  }
+
+  def sendFile(file: File)(headers: BaseResponseFunction[Any]) {
+    val size = file.length
+    val heads = ContentLength(size.toString) ~> ContentType(Mimes(file.getCanonicalPath))
+
+    // apply user headers after default ones
+    context.write(defaultBaseResponse(headers ~> heads ~> closeOrKeepAlive))
+
+    val raf = new RandomAccessFile(file.getCanonicalPath, "r")
+    // For standard Http this will use sendfile if available
+    val payload =
+      if (isSecure) new ChunkedFile(raf, 0, size, 8192) // ChunkedStream.DEFAULT_CHUNK_SIZE
+      else new DefaultFileRegion(raf.getChannel, 0, size)
+    context.write(payload)
+
+    val lastContent = context.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+
+    finishResponse(lastContent)
   }
 }
 
-class ResponseBinding[U <: FullHttpResponse](res: U)
-    extends HttpResponse(res) {
-  private lazy val byteOutputStream = new ByteArrayOutputStream {
-    // fixme: the docs state http://docs.oracle.com/javase/6/docs/api/java/io/ByteArrayOutputStream.html#close()
-    //  should have no effect. we are breaking that rule here if close is called more than once
-    override def close = {
-      res.content.clear().writeBytes(Unpooled.copiedBuffer(this.toByteArray))
-    }
-  }
-
+class BaseResponseBinding[U <: NettyHttpResponse](val underlying: U) extends BaseHttpResponse[U] {
   def status(code: Int) =
-    res.setStatus(HttpResponseStatus.valueOf(code))
+    underlying.setStatus(HttpResponseStatus.valueOf(code))
 
   def header(name: String, value: String) =
-    res.headers.add(name, value)
+    underlying.headers.add(name, value)
 
   def redirect(url: String) =
-    res.setStatus(HttpResponseStatus.FOUND).headers.add(HttpHeaders.Names.LOCATION, url)
+    underlying.setStatus(HttpResponseStatus.FOUND).headers.add(HttpHeaders.Names.LOCATION, url)
+}
+class ResponseBinding[U <: FullHttpResponse](res: U) extends BaseResponseBinding(res) with HttpResponse[U] {
+  private lazy val outStream = new ByteBufOutputStream(res.content)
 
-  def outputStream = byteOutputStream
+  def outputStream = outStream
 }
 
 private [netty] object URLParser {

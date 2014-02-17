@@ -1,33 +1,26 @@
 package unfiltered.netty
 
-import unfiltered.netty.async.Plan
+import unfiltered.netty.async.{Plan, RequestPlan}
 import unfiltered.netty.resources.{ FileSystemResource, Resolve, Resource }
 import unfiltered.request.{ GET, HEAD, HttpRequest, IfModifiedSince, Path, & }
 import unfiltered.response.{
   BadRequest, CacheControl, ContentLength, ContentType, Date,
   Expires, Forbidden, LastModified, NotFound, NotModified, Ok,
-  Pass, PlainTextContent, ResponseFunction }
+  Pass, PlainTextContent, ResponseFunction, BaseResponseFunction }
 
-import io.netty.channel.{ ChannelFuture, ChannelFutureListener, DefaultFileRegion }
+import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext }
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{
-  LastHttpContent, HttpHeaders, HttpResponse }
-import io.netty.handler.stream.{ ChunkedFile, ChunkedStream }
+  LastHttpContent, HttpResponse }
+import io.netty.handler.stream.ChunkedStream
 
-import java.io.{ File, FileNotFoundException, RandomAccessFile }
+import java.io.{ File, FileNotFoundException }
 import java.net.{ URL, URLDecoder }
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.{ Calendar, GregorianCalendar }
-import javax.activation.MimetypesFileTypeMap
 
 import scala.util.control.Exception.allCatch
-
-object Mimes {
-  private lazy val types =
-    new MimetypesFileTypeMap(getClass.getResourceAsStream("/mime.types"))
-  def apply(path: String) = types.getContentType(path)
-}
 
 object Dates {
   import java.util.{ Date, Locale, TimeZone }
@@ -60,7 +53,7 @@ case class Resources(
   base: java.net.URL,
   cacheSeconds: Int = 60,
   passOnFail: Boolean = true)
-  extends Plan with ServerErrorResponse {
+  extends RequestPlan with ServerErrorResponse {
   import Resources._
 
   // Returning Pass here will send the request upstream, otherwise
@@ -76,57 +69,71 @@ case class Resources(
 
   def badRequest = passOr(BadRequest ~> PlainTextContent)_
 
-  def intent = {
+  def respondNotModified(msg: ReceivedMessage) {
+    val now = Dates.format(new GregorianCalendar().getTime)
+    /** close immediately and do not include content-length header
+      * http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html */
+    msg.context.write(msg.defaultResponse(NotModified ~> Date(now)))
+      .addListener(ChannelFutureListener.CLOSE)
+  }
+
+  def sendHeadHeadersWith(
+    msg: ReceivedMessage,
+    rsrc: Resource,
+    heads: BaseResponseFunction[Any]
+  )(f: ChannelHandlerContext => Unit) {
+    val ctx = msg.context
+    ctx.write(msg.defaultBaseResponse(
+      heads ~>
+      msg.closeOrKeepAlive ~>
+      ContentLength(rsrc.size.toString) ~>
+      ContentType(Mimes(rsrc.path))
+    ))
+    f(ctx)
+    val future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+    msg.finishResponse(future)
+  }
+
+  def requestIntent = {
     case Retrieval(Path(path)) & req => safe(path.drop(1)) match {
       case Some(rsrc) =>
-        val ctx = req.underlying.context
+        val receivedMessage = req.underlying
+        val ctx = receivedMessage.context
         IfModifiedSince(req) match {
           case Some(since) if (since.getTime == rsrc.lastModified) =>
-            // close immediately and do not include content-length header
-            // http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
-            ctx.write(
-              req.underlying.defaultResponse(
-                NotModified ~>
-                Date(Dates.format(new GregorianCalendar().getTime))
-            )).addListener(ChannelFutureListener.CLOSE)
+            respondNotModified(receivedMessage)
           case _ =>
             if (!rsrc.exists || rsrc.hidden) notFound(req)
             else if (rsrc.directory) forbid(req)
             else try {
               val len = rsrc.size
               val cal = new GregorianCalendar()
-              var heads = Ok ~> ContentLength(len.toString) ~>
+              val baseHeads = Ok ~>
                 // note: bin/text/charset not included
-                ContentType(Mimes(rsrc.path)) ~>
                 Date(Dates.format(cal.getTime)) ~>
                 CacheControl("private, max-age=%d" format cacheSeconds) ~>
                 LastModified(Dates.format(rsrc.lastModified))
 
               cal.add(Calendar.SECOND, cacheSeconds)
 
-              val writeHeaders = ctx.write(
-                req.underlying.defaultResponse(
-                  heads ~> Expires(Dates.format(cal.getTime))))
+              val customHeads = baseHeads ~> Expires(Dates.format(cal.getTime))
 
-              def lastly(future: ChannelFuture) =
-                if (!HttpHeaders.isKeepAlive(req.underlying.request)) {
-                   future.addListener(ChannelFutureListener.CLOSE)
+              if (!ctx.channel.isOpen) throw new java.nio.channels.ClosedChannelException
+              else {
+                if (GET.unapply(req).isDefined) {
+                  rsrc match {
+                    case FileSystemResource(file) =>
+                      receivedMessage.sendFile(file)(customHeads)
+                    case other =>
+                      sendHeadHeadersWith(receivedMessage, rsrc, customHeads) { context =>
+                        context.write(new ChunkedStream(other.in))
+                      }
+                  }
+                } else {
+                  // send the HEAD response
+                  sendHeadHeadersWith(receivedMessage, rsrc, customHeads) { _ => () }
                 }
-
-              if (GET.unapply(req).isDefined && ctx.channel.isOpen) {
-                rsrc match {
-                  case FileSystemResource(_) =>
-                    val raf = new RandomAccessFile(rsrc.path, "r")
-                    ctx.write(
-                      if (req.isSecure)
-                        new ChunkedFile(
-                          raf, 0, len, 8192/*ChunkedStream.DEFAULT_CHUNK_SIZE*/)
-                      else new DefaultFileRegion(raf.getChannel, 0, len))
-                    lastly(ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT))
-                  case other =>
-                    ctx.writeAndFlush(new ChunkedStream(other.in))
-                }
-              } else lastly(writeHeaders)
+              }
             } catch {
               case e: FileNotFoundException => notFound(req)
             }

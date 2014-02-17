@@ -64,7 +64,7 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
     ctx: ChannelHandlerContext,
     request: FullHttpRequest) =
     if (!request.getDecoderResult.isSuccess()) pass(ctx, request)
-    else new RequestBinding(ReceivedMessage(request, ctx, request)) match {
+    else new RequestBinding(ReceivedMessage(request, ctx)) match {
       case r @ GET(_) =>
         intent.orElse(PassAlong)(r) match {
           case Pass => pass(ctx, request)

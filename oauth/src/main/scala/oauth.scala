@@ -198,11 +198,12 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
         accessToken(request.method, request.underlying.getRequestURL.toString, params ++ headers) match {
           case Failure(code, msg) => fail(code, msg)
           case resp@AccessResponse(_, _) =>
-            resp ~> FormEncodedContent
+            (resp ~> FormEncodedContent)
         }
       }
 
-      expected(params ++ headers) orFail { fails =>
+      val f: Map[String, Seq[String]] = params ++ headers
+      expected(f).orFail { fails =>
         BadRequest ~> ResponseString(fails.map { _.error } mkString(". "))
       }
   }

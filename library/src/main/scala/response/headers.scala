@@ -1,7 +1,7 @@
 package unfiltered.response
 
-case class ResponseHeader(name: String, values: Iterable[String]) extends Responder[Any] {
-  def respond(res: HttpResponse[Any]) {
+case class ResponseHeader(name: String, values: Iterable[String]) extends BaseResponder[Any] {
+  def _respond[R <: BaseHttpResponse[Any]](res: R) {
     values.foreach { v => res.header(name, v) } 
   }
 }

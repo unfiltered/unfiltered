@@ -45,7 +45,7 @@ trait Plan extends ChannelInboundHandlerAdapter
 
   private lazy val guardedIntent = intent.fold(
     (req: HttpRequest[ReceivedMessage]) =>
-      req.underlying.context.fireChannelRead(req.underlying.message),
+      req.underlying.context.fireChannelRead(req.underlying.request),
     (req: HttpRequest[ReceivedMessage],
      rf: ResponseFunction[HttpResponse]) =>
       executeResponse {
@@ -58,14 +58,14 @@ trait Plan extends ChannelInboundHandlerAdapter
   final override def channelReadComplete(ctx: ChannelHandlerContext) =
     ctx.flush()
   
-  override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object ): Unit =
+  override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object): Unit =
     msg match {
       case req: NettyHttpRequest =>
         catching(ctx) {
           executeIntent {
             catching(ctx) {
               guardedIntent(
-                new RequestBinding(ReceivedMessage(req, ctx, msg))
+                new RequestBinding(ReceivedMessage(req, ctx))
               )
             }
           }

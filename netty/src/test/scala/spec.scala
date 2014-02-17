@@ -17,7 +17,7 @@ class RequestSpec extends Specification {
   nettyReq.headers.add("Multi-Header", "A")
   nettyReq.headers.add("Multi-Header", "B")
 
-  val req = new RequestBinding(ReceivedMessage(nettyReq, null, null))
+  val req = new RequestBinding(ReceivedMessage(nettyReq, null))
 
   "Request Binding" should {
     "return the correct method" in {
@@ -44,7 +44,7 @@ class RequestSpec extends Specification {
     }
     "return empty seq for missing parameter when no parameters are present at all" in {
       val nreq = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/")
-      val req = new RequestBinding(ReceivedMessage(nreq, null, null))
+      val req = new RequestBinding(ReceivedMessage(nreq, null))
       req.parameterValues("param42") must_== Seq.empty
     }
     "return a working reader" in {

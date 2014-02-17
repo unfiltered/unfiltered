@@ -1,14 +1,14 @@
 package unfiltered.response
 
-trait BaseContentType extends Responder[Any] {
-  def respond(res: HttpResponse[Any]) {
+trait BaseContentType extends BaseResponder[Any] {
+  def _respond[R <: BaseHttpResponse[Any]](res: R) {
     res.header("Content-Type", contentType(res))
   }
-  def contentType(res: HttpResponse[Any]): String
+  def contentType(res: BaseHttpResponse[Any]): String
 }
 
 case class CharContentType(contentType: String) extends BaseContentType {
-  def contentType(res: HttpResponse[Any]) =
+  def contentType(res: BaseHttpResponse[Any]) =
     "%s; charset=%s".format(contentType, res.charset.name.toLowerCase)
 }
 
@@ -24,6 +24,6 @@ object FormEncodedContent extends ContentType("application/x-www-form-urlencoded
 
 case class ContentType(val staticContentType: String)
 extends BaseContentType {
-  def contentType(res: HttpResponse[Any]) = staticContentType
+  def contentType(res: BaseHttpResponse[Any]) = staticContentType
 }
 object PdfContent extends ContentType("application/pdf")
