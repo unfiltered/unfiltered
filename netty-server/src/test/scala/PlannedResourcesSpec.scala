@@ -1,6 +1,7 @@
 package unfiltered.netty
 
 import unfiltered.response.ResponseString
+import unfiltered.request.{ Path => UFPath, _ }
 
 /** Tests a netty server configured with both a plan and a resource handler */
 object PlannedResourcesSpec extends unfiltered.spec.netty.Served {
@@ -8,7 +9,7 @@ object PlannedResourcesSpec extends unfiltered.spec.netty.Served {
 
    def setup = _.resources(getClass().getResource("/files/")).handler(
      unfiltered.netty.cycle.Planify {
-       case _ => ResponseString("planned")
+       case GET(UFPath(Seg(Nil))) => ResponseString("planned")
      })
 
    "A server with resources and plans" should {

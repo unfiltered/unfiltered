@@ -58,7 +58,7 @@ trait Plan extends ChannelInboundHandlerAdapter
   final override def channelReadComplete(ctx: ChannelHandlerContext) =
     ctx.flush()
   
-  override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object ): Unit =
+  override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object): Unit =
     msg match {
       case req: NettyHttpRequest =>
         catching(ctx) {

@@ -54,7 +54,7 @@ trait MultiPartDecoder extends ChannelInboundHandlerAdapter
     val channelState = Helpers.channelStateOrCreate(ctx)
     channelState.originalReq match {
       case Some(req) =>
-        val msg = ReceivedMessage(req, ctx, nmsg)
+        val msg = ReceivedMessage(req, ctx)
         val multiBinding = new MultiPartBinding(channelState.decoder, msg)
         val binding = new RequestBinding(msg)
         catching(ctx) {

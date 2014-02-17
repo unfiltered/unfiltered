@@ -114,7 +114,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
   protected def upgrade(ctx: ChannelHandlerContext, msg: java.lang.Object) =
     msg match {
       case request: HttpRequest =>
-        val binding = new RequestBinding(ReceivedMessage(request, ctx, request))
+        val binding = new RequestBinding(ReceivedMessage(request, ctx))
         binding match {
           // Should match the initial multipart request
           case POST(MultiPart(_)) =>
@@ -134,7 +134,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
         channelState.originalReq match {
           // Ensure that multipart handling was started for the request
           case Some(request) =>
-            val binding = new RequestBinding(ReceivedMessage(request, ctx, chunk))
+            val binding = new RequestBinding(ReceivedMessage(request, ctx))
             // Determine whether the chunk is destined for this plan's intent and if not, pass
             handleOrPass(ctx, chunk, binding) {
               // The chunk is destined for this intent, so handle it

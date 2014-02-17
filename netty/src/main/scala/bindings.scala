@@ -1,8 +1,9 @@
 package unfiltered.netty
 
 import unfiltered.Async
-import unfiltered.response.{ 
-  BaseResponseFunction, ResponseFunction, ResponseHeader, ContentLength, 
+import unfiltered.response.{
+  Responder, BaseResponder,
+  BaseResponseFunction, ResponseFunction, ResponseHeader, ContentLength,
   ContentType, BaseHttpResponse, HttpResponse, Pass }
 import unfiltered.request.{ Charset, HttpRequest, POST, PUT, RequestContentType, & }
 
@@ -11,13 +12,13 @@ import io.netty.channel.{ ChannelFuture, ChannelFutureListener, ChannelHandlerCo
   DefaultFileRegion }
 import io.netty.handler.codec.http.{
   DefaultFullHttpResponse, FullHttpRequest, FullHttpResponse, HttpContent,
-  HttpResponse => NettyHttpResponse, DefaultHttpResponse, HttpHeaders, 
+  HttpResponse => NettyHttpResponse, DefaultHttpResponse, HttpHeaders,
   HttpRequest => NettyHttpRequest, HttpResponseStatus, HttpVersion,
   LastHttpContent }
 import io.netty.handler.ssl.SslHandler
 import io.netty.handler.stream.ChunkedFile
 import io.netty.util.ReferenceCountUtil
-import java.io.{ BufferedReader, ByteArrayOutputStream, InputStreamReader, 
+import java.io.{ BufferedReader, ByteArrayOutputStream, InputStreamReader,
   File, RandomAccessFile }
 import java.net.{ InetSocketAddress, URLDecoder }
 import java.nio.charset.{ Charset => JNIOCharset }
@@ -104,24 +105,28 @@ case class ReceivedMessage(
       case has: HttpContent => Some(has)
       case not => None
     }
-  
-  private def closeOrKeepAlive = new unfiltered.response.Responder[FullHttpResponse] {
+
+  private[netty] def setContentLength = new Responder[FullHttpResponse] {
     def respond(res: HttpResponse[FullHttpResponse]) {
-      res.outputStream.close()
-      val hasContentLength = HttpHeaders.isContentLengthSet(res.underlying)
-      val withKeepAlive = 
+      if (!HttpHeaders.isContentLengthSet(res.underlying)) {
+        ContentLength(res.underlying.content().readableBytes().toString)(res)
+      }
+    }
+  }
+  private[netty] def closeOrKeepAlive = new BaseResponder[Any] {
+    def _respond[R <: BaseHttpResponse[Any]](res: R) {
+      (
         if (isKeepAlive) unfiltered.response.Connection("Keep-Alive")
         else unfiltered.response.Connection("close")
-      (
-        if (hasContentLength) withKeepAlive
-        else {
-          withKeepAlive ~> 
-          unfiltered.response.ContentLength(res.underlying.content().readableBytes().toString)
-        }
       )(res)
     }
   }
- 
+  private[netty] def closeStream = new Responder[FullHttpResponse] {
+    def respond(res: HttpResponse[FullHttpResponse]) {
+      res.outputStream.close()
+    }
+  }
+
   def finishResponse(future: ChannelFuture) {
     future.addListener(new ChannelFutureListener {
       def operationComplete(f: ChannelFuture) {
@@ -131,7 +136,7 @@ case class ReceivedMessage(
     if (!isKeepAlive)
       future.addListener(ChannelFutureListener.CLOSE)
   }
-  
+
   def isKeepAlive = HttpHeaders.isKeepAlive(request)
 
   def isSecure =
@@ -142,38 +147,45 @@ case class ReceivedMessage(
   def response[T <: FullHttpResponse](res: T)(rf: ResponseFunction[T]) =
     rf(new ResponseBinding(res)).underlying
 
+  def baseResponse[T <: NettyHttpResponse](res: T)(brf: BaseResponseFunction[T]) =
+    brf(new BaseResponseBinding(res)).underlying
   /** @return a new Netty FullHttpResponse bound to an Unfiltered HttpResponse */
   lazy val defaultResponse = response(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))_
   // Required for sendFile, since writing a FullHttpResponse implies the request is done
-  private lazy val baseResponse = new BaseResponseBinding(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))
+  lazy val defaultBaseResponse = baseResponse(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))_
 
   /** Applies rf to a new `defaultResponse` and writes it out */
   def respond: (ResponseFunction[FullHttpResponse] => Unit) = {
     case Pass =>
       context.fireChannelRead(request)
     case rf =>
-      val writeFuture = context.writeAndFlush(defaultResponse(rf ~> closeOrKeepAlive))
+      val writeFuture = context.writeAndFlush(defaultResponse(rf ~> setContentLength ~> closeOrKeepAlive ~> closeStream))
       finishResponse(writeFuture)
   }
 
   def sendFile(file: File)(headers: BaseResponseFunction[Any]) {
     val size = file.length
     val heads = ContentLength(size.toString) ~> ContentType(Mimes(file.getCanonicalPath))
-    
+
     // apply user headers after default ones
-    context.write((headers ~> heads)(baseResponse))
-    
+    context.write(defaultBaseResponse(headers ~> heads ~> closeOrKeepAlive))
+
     val raf = new RandomAccessFile(file.getCanonicalPath, "r")
     // For standard Http this will use sendfile if available
     val payload =
       if (isSecure) new ChunkedFile(raf, 0, size, 8192) // ChunkedStream.DEFAULT_CHUNK_SIZE
       else new DefaultFileRegion(raf.getChannel, 0, size)
-
     context.write(payload)
-    
+
     val lastContent = context.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-   
-    finishResponse(lastContent)
+
+    lastContent.addListener(new ChannelFutureListener {
+      def operationComplete(f: ChannelFuture) {
+        content.map(ReferenceCountUtil.release)
+      }
+    })
+    lastContent.addListener(ChannelFutureListener.CLOSE)
+    //finishResponse(lastContent)
   }
 }
 

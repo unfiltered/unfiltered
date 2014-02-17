@@ -2,7 +2,7 @@ package unfiltered.response
 
 
 case class Status(code: Int) extends BaseResponder[Any] {
-  def respond(res: BaseHttpResponse[Any]) { res.status(code) }
+  def _respond[R <: BaseHttpResponse[Any]](res: R) { res.status(code) }
 }
 
 // http://www.iana.org/assignments/http-status-codes & http://en.wikipedia.org/wiki/List_of_HTTP_status_codes

@@ -1,19 +1,14 @@
 package unfiltered.response
 import unfiltered.request._
 
-trait implicits {
-  @inline implicit def upcast[A](baseRes: BaseResponseFunction[A]) = new ResponseFunction[A] {
-    def apply[B <: A](res: HttpResponse[B]) = baseRes(res)
-  }
-}
-trait BaseResponseFunction[-A] { self =>
-  def apply[R <: BaseHttpResponse[A]](res: R): R
+trait BaseResponseFunction[-A] extends ResponseFunction[A] { self =>
+  protected def _apply[R <: BaseHttpResponse[A]](res: R): R
+
+  def apply[R <: BaseHttpResponse[A]](res: R): R = _apply(res)
+  def apply[B <: A](res: HttpResponse[B]): HttpResponse[B] = _apply(res)
 
   def ~> [B <: A](that: BaseResponseFunction[B]) = new BaseResponseFunction[B] {
-    def apply[R <: BaseHttpResponse[B]](res: R) = that(self(res))
-  }
-  def ~> [B <: A](that: ResponseFunction[B]) = new ResponseFunction[B] {
-    def apply[C <: B](res: HttpResponse[C]) = that(self(res))
+    def _apply[R <: BaseHttpResponse[B]](res: R) = that(self(res))
   }
 }
 trait ResponseFunction[-A] { self =>
@@ -25,17 +20,17 @@ trait ResponseFunction[-A] { self =>
   def ~> [B <: A](that: ResponseFunction[B]) = new ResponseFunction[B] {
     def apply[C <: B](res: HttpResponse[C]) = that(self(res))
   }
-  def ~> [B <: A](that: BaseResponseFunction[B]) = new ResponseFunction[B] {
-    def apply[C <: B](res: HttpResponse[C]) = that(self(res))
-  }
 }
 
 trait BaseResponder[A] extends BaseResponseFunction[A] {
-  def apply[R <: BaseHttpResponse[A]](res: R): R = {
+  protected def _apply[R <: BaseHttpResponse[A]](res: R): R = {
     respond(res)
     res
   }
-  def respond(res: BaseHttpResponse[A])
+  
+  protected def _respond[R <: BaseHttpResponse[A]](res: R)
+  def respond(res: BaseHttpResponse[A]) = _respond(res)
+  def respond(res: HttpResponse[A]) = _respond(res)
 }
 /** Responders always return the provided instance of HttpResponse */
 trait Responder[A] extends ResponseFunction[A] {

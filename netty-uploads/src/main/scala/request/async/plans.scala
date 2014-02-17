@@ -40,7 +40,7 @@ trait MultiPartDecoder
     val channelState = Helpers.channelStateOrCreate(ctx)
     val res = channelState.originalReq match {
       case Some(req) =>
-        val msg = ReceivedMessage(req, ctx, nmsg)
+        val msg = ReceivedMessage(req, ctx)
         val multiBinding = new MultiPartBinding(channelState.decoder, msg)
         val binding = new RequestBinding(msg)
         intent.orElse(MultipartPlan.PassAlong)(binding) match {

@@ -1,6 +1,6 @@
 package unfiltered.netty
 
-import unfiltered.netty.async.Plan
+import unfiltered.netty.async.{Plan, RequestPlan}
 import unfiltered.netty.resources.{ FileSystemResource, Resolve, Resource }
 import unfiltered.request.{ GET, HEAD, HttpRequest, IfModifiedSince, Path, & }
 import unfiltered.response.{
@@ -53,7 +53,7 @@ case class Resources(
   base: java.net.URL,
   cacheSeconds: Int = 60,
   passOnFail: Boolean = true)
-  extends Plan with ServerErrorResponse {
+  extends RequestPlan with ServerErrorResponse {
   import Resources._
 
   // Returning Pass here will send the request upstream, otherwise
@@ -77,7 +77,7 @@ case class Resources(
       .addListener(ChannelFutureListener.CLOSE)
   }
 
-  def intent = {
+  def requestIntent = {
     case Retrieval(Path(path)) & req => safe(path.drop(1)) match {
       case Some(rsrc) =>
         val receivedMessage = req.underlying
@@ -101,24 +101,34 @@ case class Resources(
               
               val customHeads = baseHeads ~> Expires(Dates.format(cal.getTime))
 
-              val operationFuture = if (GET.unapply(req).isDefined && ctx.channel.isOpen) {
-                rsrc match {
-                  case FileSystemResource(file) =>
-                    receivedMessage.sendFile(file)(customHeads)
-                  case other =>
-                    ctx.write(customHeads ~>
+              if (!ctx.channel.isOpen) throw new java.nio.channels.ClosedChannelException
+              else {
+                if (GET.unapply(req).isDefined) {
+                  rsrc match {
+                    case FileSystemResource(file) =>
+                      receivedMessage.sendFile(file)(customHeads)
+                    case other =>
+                      ctx.write(receivedMessage.defaultBaseResponse(
+                        customHeads ~>
+                        receivedMessage.closeOrKeepAlive ~>
+                        ContentLength(rsrc.size.toString) ~>
+                        ContentType(Mimes(rsrc.path))
+                      ))
+                      ctx.write(new ChunkedStream(other.in))
+                      val future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                      receivedMessage.finishResponse(future)
+                  }
+                } else {
+                  // send the HEAD response
+                  ctx.write(receivedMessage.defaultBaseResponse(
+                      customHeads ~>
+                      receivedMessage.closeOrKeepAlive ~>
                       ContentLength(rsrc.size.toString) ~>
-                      ContentType(Mimes(rsrc.path)))
-                    ctx.write(new ChunkedStream(other.in))
-                    val future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-                    receivedMessage.finishResponse(future)
+                      ContentType(Mimes(rsrc.path))
+                    ))
+                  val future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
+                  receivedMessage.finishResponse(future)
                 }
-              } else {
-                ctx.write(customHeads ~>
-                  ContentLength(rsrc.size.toString) ~>
-                  ContentType(Mimes(rsrc.path)))
-                val future = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT)
-                receivedMessage.finishResponse(future)
               }
             } catch {
               case e: FileNotFoundException => notFound(req)
