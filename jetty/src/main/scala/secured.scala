@@ -21,7 +21,7 @@ case class Https(port: Int, host: String) extends Server with Ssl {
   * "jetty.ssl.keyStore" and "jetty.ssl.keyStorePassword" respectively.
   * For added trust store support, mix in the Trusted trait */
 trait Ssl { self: Server =>
-  import org.eclipse.jetty.server.ssl.SslSocketConnector
+  import org.eclipse.jetty.server._
   import org.eclipse.jetty.util.ssl.SslContextFactory
 
   def tryProperty(name: String) = System.getProperty(name) match {
@@ -31,7 +31,6 @@ trait Ssl { self: Server =>
 
   def sslPort: Int
   val sslMaxIdleTime = 90000
-  val sslHandshakeTimeout = 120000
   lazy val keyStore = tryProperty("jetty.ssl.keyStore")
   lazy val keyStorePassword = tryProperty("jetty.ssl.keyStorePassword")
 
@@ -39,11 +38,17 @@ trait Ssl { self: Server =>
       setKeyStorePath(keyStore)
       setKeyStorePassword(keyStorePassword)
   }
-  val sslConn = new SslSocketConnector(sslContextFactory) {
-    setPort(sslPort)
-    setMaxIdleTime(sslMaxIdleTime)
-    setHandshakeTimeout(sslHandshakeTimeout)
-  }
+
+  val httpsConfig = new HttpConfiguration
+  httpsConfig.setSecurePort(sslPort)
+  httpsConfig.addCustomizer(new SecureRequestCustomizer)
+
+  val sslConn = new ServerConnector(underlying,
+    new SslConnectionFactory(sslContextFactory, "http/1.1"),
+    new HttpConnectionFactory(httpsConfig))
+  sslConn.setPort(sslPort)
+  sslConn.setIdleTimeout(sslMaxIdleTime)
+
   underlying.addConnector(sslConn)
 }
 
@@ -54,6 +59,6 @@ trait Ssl { self: Server =>
 trait Trusted { self: Ssl =>
   lazy val trustStore = tryProperty("jetty.ssl.trustStore")
   lazy val trustStorePassword = tryProperty("jetty.ssl.trustStorePassword")
-  sslContextFactory.setTrustStore(trustStore)
+  sslContextFactory.setTrustStore(java.security.KeyStore.getInstance(trustStore))
   sslContextFactory.setTrustStorePassword(trustStorePassword)
 }
