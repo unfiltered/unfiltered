@@ -27,7 +27,7 @@ object MIMEType {
       val names = mimeType.getParameters.getNames
       val params = names.foldLeft(Map.empty[String, String]) {
         case (acc, p: String) =>
-          acc + (p -> mimeType.getParameter(p.asInstanceOf))
+          acc + (p -> mimeType.getParameter(p))
       }
       new MIMEType(mimeType.getPrimaryType, mimeType.getSubType, params)
     }
