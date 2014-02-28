@@ -4,7 +4,7 @@ object Common {
   import Keys._
 
   val servletApiDep = "javax.servlet" % "servlet-api" % "2.3" % "provided"
-  val jettyVersion = "8.1.13.v20130916"
+  val jettyVersion = "8.1.13.v20140228"
 
   def specsDep(sv: String) =
     sv.split("[.-]").toList match {
@@ -51,6 +51,8 @@ object Common {
     homepage := Some(new java.net.URL("http://unfiltered.databinder.net/")),
 
     publishMavenStyle := true,
+
+    resolvers += "Applicius" at "https://raw.github.com/applicius/mvn-repo/master/snapshots",
 
     publishTo := Some("releases" at
               "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
