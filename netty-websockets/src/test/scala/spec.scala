@@ -1,6 +1,7 @@
 package unfiltered.netty.websockets
 
 import com.ning.http.client.providers.netty.NettyAsyncHttpProviderConfig
+import org.specs2.mutable.Specification
 import unfiltered.request.{ GET, Path => UFPath }
 import java.net.URI
 import scala.collection.mutable
