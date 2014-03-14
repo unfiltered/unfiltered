@@ -24,7 +24,6 @@ trait BasicAuthKitSpec extends Specification with unfiltered.specs2.Hosted {
   })
 
   "Basic Auth kit" should {
-    shareVariables()
     "authenticate a valid user" in {
       val resp = http(host / "secret" as_!("test", "secret") as_str)
       resp must_== "we're in"

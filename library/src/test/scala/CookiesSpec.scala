@@ -72,11 +72,11 @@ trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
           h(host.POST / "save" << Map("foo" -> "bar") as_str) must_== "foo bar!"
           val someCookies = jar.getCookies
           someCookies.size must_== 1
-          someCookies.find(_.getName == "foo") must beSomething
+          someCookies.find(_.getName == "foo") must beSome
           h(host / "clear" as_str) must_== "foo who?"
           val noCookies = jar.getCookies
           noCookies.size must_== 0
-          noCookies.find(_.getName == "foo") mustNot beSomething
+          noCookies.find(_.getName == "foo") must beNone
         } finally {
           h.shutdown()
         }
@@ -89,13 +89,13 @@ trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
           h(host.POST / "save_multi" << Map("foo" -> "bar", "baz" -> "boom") as_str) must_== "foo bar baz boom!"
           val someCookies = jar.getCookies
           someCookies.size must_== 2
-          someCookies.find(_.getName == "foo") must beSomething
-          someCookies.find(_.getName == "baz") must beSomething
+          someCookies.find(_.getName == "foo") must beSome
+          someCookies.find(_.getName == "baz") must beSome
           h(host / "clear_multi" as_str) must_== "foo who?"
           val noCookies = jar.getCookies
           noCookies.size must_== 0
-          noCookies.find(_.getName == "foo") mustNot beSomething
-          noCookies.find(_.getName == "baz") mustNot beSomething
+          noCookies.find(_.getName == "foo") must beNone
+          noCookies.find(_.getName == "baz") must beNone
         } finally {
           h.shutdown()
         }

@@ -28,7 +28,6 @@ trait PassSpec extends Specification with unfiltered.specs2.Hosted {
   }
 
   "Pass" should {
-    shareVariables()
     "match in the first intent" in {
       val resp = http(host / "intent1" as_str)
       resp must_== "intent1"
