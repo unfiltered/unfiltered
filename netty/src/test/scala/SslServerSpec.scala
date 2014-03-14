@@ -16,7 +16,7 @@ import dispatch.classic._
 
 object SslServerSpec
   extends Specification 
-  with spec.netty.Started
+  with unfiltered.specs2.netty.Started
   with spec.SecureClient {  
 
   @Sharable

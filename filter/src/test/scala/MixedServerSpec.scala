@@ -3,7 +3,7 @@ package unfiltered.server
 import unfiltered.spec
 import org.specs2.mutable._
 
-object MixedServerSpec extends Specification with spec.jetty.Served with spec.SecureClient {
+object MixedServerSpec extends Specification with unfiltered.specs2.jetty.Served with spec.SecureClient {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}

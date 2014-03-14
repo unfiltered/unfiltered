@@ -3,10 +3,10 @@ package unfiltered.request
 import org.specs2.mutable._
 import unfiltered.spec
 
-object TypeSpecJetty extends spec.jetty.Planned with TypeSpec
-object TypeSpecNetty extends spec.netty.Planned with TypeSpec
+object TypeSpecJetty extends unfiltered.specs2.jetty.Planned with TypeSpec
+object TypeSpecNetty extends unfiltered.specs2.netty.Planned with TypeSpec
 
-trait TypeSpec extends spec.Hosted {
+trait TypeSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
