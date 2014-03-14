@@ -128,7 +128,6 @@ object MixedPlanSpec extends Specification
   }
 
   "Netty MultiPartDecoder cycle and async plans, when used in the same pipeline" should {
-    shareVariables()
     doBefore {
       val out = new JFile("netty-upload-test-out.txt")
       if (out.exists) out.delete

@@ -4,7 +4,6 @@ import unfiltered.spec
 import org.specs2.mutable._
 
 object SslServerSpec extends Specification with unfiltered.specs2.Hosted with spec.SecureClient {
-  shareVariables()
 
   import unfiltered.response._
   import unfiltered.request._

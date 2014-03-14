@@ -110,7 +110,6 @@ object AsyncUploadSpec extends Specification
   }
 
   "Netty async.MultiPartDecoder" should {
-    shareVariables()
     doBefore {
       val out = new JFile("netty-upload-test-out.txt")
       if(out.exists) out.delete

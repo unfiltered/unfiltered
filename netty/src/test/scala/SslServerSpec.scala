@@ -51,7 +51,6 @@ object SslServerSpec
       .handler(new SecurePlan)
 
   "A Secure Server" should {
-    shareVariables()
     "respond to secure requests" in {
       https(host.secure as_str) must_== "secret"
     }

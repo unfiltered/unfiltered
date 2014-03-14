@@ -85,7 +85,6 @@ object NoChunkAggregatorSpec extends Specification
   }
 
   "When receiving multipart requests with no chunk aggregator, regular netty plans" should {
-    shareVariables()
     doBefore {
       val out = new JFile("netty-upload-test-out.txt")
       if (out.exists) out.delete
