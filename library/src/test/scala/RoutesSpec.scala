@@ -12,7 +12,7 @@ object RoutesSpecNetty
 extends unfiltered.specs2.netty.Planned
 with RoutesSpec
 
-trait RoutesSpec extends unfiltered.specs2.Hosted {
+trait RoutesSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
   import unfiltered.Cookie

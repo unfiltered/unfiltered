@@ -10,7 +10,7 @@ object QueryParamsSpecNetty
 extends unfiltered.specs2.netty.Planned
 with QueryParamsSpec
 
-trait QueryParamsSpec extends unfiltered.specs2.Hosted {
+trait QueryParamsSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
 

@@ -10,7 +10,7 @@ object HeadersSpecNetty
 extends unfiltered.specs2.netty.Planned
 with HeadersSpec
 
-trait HeadersSpec extends unfiltered.specs2.Hosted {
+trait HeadersSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => P}

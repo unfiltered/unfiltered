@@ -10,7 +10,7 @@ object CookiesSpecNetty
 extends unfiltered.specs2.netty.Planned
 with CookiesSpec
 
-trait CookiesSpec extends unfiltered.specs2.Hosted {
+trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
   import scala.collection.JavaConversions._
 
   import unfiltered.response._

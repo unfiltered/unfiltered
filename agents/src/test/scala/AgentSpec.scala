@@ -11,7 +11,7 @@ object AgentSpecNetty
 extends unfiltered.specs2.netty.Planned
 with AgentSpec
 
-trait AgentSpec extends unfiltered.specs2.Hosted {
+trait AgentSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}

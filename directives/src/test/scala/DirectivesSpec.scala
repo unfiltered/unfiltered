@@ -14,7 +14,7 @@ object DirectivesSpecNetty
 extends unfiltered.specs2.netty.Planned
 with DirectivesSpec
 
-trait DirectivesSpec extends unfiltered.specs2.Hosted {
+trait DirectivesSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.directives._, Directives._
 

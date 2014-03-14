@@ -14,7 +14,7 @@ object RoutesRegexSpecNetty
 extends unfiltered.specs2.netty.Planned
 with RoutesRegexSpec
 
-trait RoutesRegexSpec extends unfiltered.specs2.Hosted {
+trait RoutesRegexSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
   import unfiltered.Cookie

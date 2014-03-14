@@ -10,7 +10,7 @@ object BasicAuthKitSpecNetty
 extends unfiltered.specs2.netty.Planned
 with BasicAuthKitSpec
 
-trait BasicAuthKitSpec extends unfiltered.specs2.Hosted {
+trait BasicAuthKitSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}

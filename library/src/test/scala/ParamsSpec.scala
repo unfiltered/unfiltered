@@ -11,7 +11,7 @@ object ParamsSpecNetty
 extends unfiltered.specs2.netty.Planned
 with ParamsSpec
 
-trait ParamsSpec extends unfiltered.specs2.Hosted {
+trait ParamsSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
   import QParams._
