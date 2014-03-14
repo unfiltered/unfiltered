@@ -3,7 +3,7 @@ package unfiltered.netty
 import unfiltered.response.ResponseString
 
 /** Tests a netty server configured with both a plan and a resource handler */
-object PlannedResourcesSpec extends unfiltered.specs2.netty.Served {
+object PlannedResourcesSpec extends Specification with unfiltered.specs2.netty.Served {
    import dispatch.classic._
 
    def setup = _.resources(getClass().getResource("/files/")).handler(

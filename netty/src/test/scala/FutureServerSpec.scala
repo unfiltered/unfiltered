@@ -1,10 +1,12 @@
 package unfiltered.netty
 
+import org.specs2.mutable.Specification
+
 import unfiltered.response.{ Pass, ResponseString }
 import unfiltered.request.{ GET, Path => UFPath }
 import scala.concurrent.Future
 
-object FutureServerSpec extends unfiltered.specs2.netty.Served {
+object FutureServerSpec extends Specification with unfiltered.specs2.netty.Served {
 
   implicit val executionContext = scala.concurrent.ExecutionContext.Implicits.global
 

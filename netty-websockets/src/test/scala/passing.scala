@@ -8,7 +8,7 @@ import unfiltered.netty
  *  passing msgs along to a plan that
  *  can handle them
  */
-object PassingSpec extends unfiltered.specs2.netty.Served {
+object PassingSpec extends Specification with unfiltered.specs2.netty.Served {
 
   def setup =
     _.handler(planify {
