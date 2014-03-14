@@ -20,7 +20,7 @@ object HeaderSpec extends Specification {
         "oauth_version=\"1.0\"" ::
         "non_protocol_param=\"bogus\"":: Nil
       val extractedOpt = OAuth.Header.unapply(values)
-      extractedOpt must beSomething
+      extractedOpt must beSome
       val extracted = extractedOpt.get.map {
         // Seq equivalence seems broken in 2.7.7, just unSeq
         case (k, v) => k -> v(0)
