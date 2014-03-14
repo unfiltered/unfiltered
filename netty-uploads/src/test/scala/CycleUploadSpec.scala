@@ -111,7 +111,7 @@ object CycleUploadSpec extends Specification
   }
 
   "Netty cycle.MultiPartDecoder" should {
-    doBefore {
+    step {
       val out = new JFile("netty-upload-test-out.txt")
       if (out.exists) out.delete
     }
