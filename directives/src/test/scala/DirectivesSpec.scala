@@ -54,14 +54,14 @@ trait DirectivesSpec extends Specification with unfiltered.specs2.Hosted {
 
   def intent[A,B] = Directive.Intent.Path {
     case "/affirmation" =>
-      Directive.success {
+      Directives.success {
         ResponseString("this request needs no validation")
       }
     case "/commit_or" =>
       val a = for {
         _ <- GET
         _ <- commit
-        _ <- failure(BadRequest)
+        _ <- Directives.failure(BadRequest)
       } yield Ok ~> ResponseString("a")
       val b = for {
         _ <- POST
