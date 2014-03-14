@@ -1,5 +1,7 @@
 package unfiltered.netty
 
+import org.specs2.mutable.Specification
+
 import unfiltered.response.ResponseString
 
 /** Tests a netty server configured with both a plan and a resource handler */
