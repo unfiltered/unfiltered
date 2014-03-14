@@ -10,7 +10,7 @@ import io.netty.channel.ChannelHandler.Sharable
 
 import org.apache.http.NoHttpResponseException
 
-import org.specs.Specification
+import org.specs2.mutable.Specification
 
 import dispatch.classic._
 

@@ -17,7 +17,7 @@ import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext }
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{ DefaultFullHttpResponse, HttpResponseStatus, HttpVersion }
 
-import org.specs.Specification
+import org.specs2.mutable.Specification
 
 object NoChunkAggregatorSpec extends Specification
   with Served {

@@ -1,6 +1,6 @@
 package unfiltered.netty.request
 
-import org.specs.Specification
+import org.specs2.mutable.Specification
 
 import unfiltered.netty.{ async, cycle }
 import unfiltered.request.{ Path => UFPath, POST, & }

@@ -1,6 +1,6 @@
 package unfiltered.netty
 
-import org.specs.Specification
+import org.specs2.mutable.Specification
 import io.netty.buffer.Unpooled
 import io.netty.handler.codec.http.{ DefaultFullHttpRequest, DefaultFullHttpResponse, HttpResponseStatus, HttpMethod, HttpVersion }
 
