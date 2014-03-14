@@ -1,8 +1,9 @@
 package unfiltered.mac
 
 import org.specs2.mutable._
+import org.specs2.matcher.ThrownMessages
 
-object MacSpec extends Specification with unfiltered.specs2.jetty.Served {
+object MacSpec extends Specification with ThrownMessages with unfiltered.specs2.jetty.Served {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
