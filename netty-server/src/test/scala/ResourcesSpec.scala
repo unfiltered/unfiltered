@@ -1,7 +1,7 @@
 package unfiltered.netty
 
 /** Tests a netty server configured to handle static resources only */
-object ResourcesSpec extends unfiltered.spec.netty.Served {
+object ResourcesSpec extends unfiltered.specs2.netty.Served {
    import dispatch.classic._
 
    implicit def toStatusVerb(req: dispatch.classic.Request) = new {

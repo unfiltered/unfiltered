@@ -5,7 +5,7 @@ import org.specs.Specification
 import unfiltered.netty.{ async, cycle }
 import unfiltered.request.{ Path => UFPath, POST, & }
 import unfiltered.response.{ Html, ResponseString }
-import unfiltered.spec.netty.Served
+import unfiltered.specs2.netty.Served
 
 import dispatch.classic._
 import dispatch.classic.mime.Mime._

@@ -5,7 +5,7 @@ import unfiltered.netty.{ Http => NHttp, ExceptionHandler }
 import unfiltered.netty.cycle.ThreadPool
 import unfiltered.request.{ Path => UFPath, POST, & }
 import unfiltered.response.{ Pass, ResponseString }
-import unfiltered.spec.netty.Served
+import unfiltered.specs2.netty.Served
 
 import dispatch.classic._
 import dispatch.classic.mime.Mime._

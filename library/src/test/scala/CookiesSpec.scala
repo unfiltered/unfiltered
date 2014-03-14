@@ -3,14 +3,14 @@ package unfiltered.request
 import org.specs2.mutable._
 
 object CookiesSpecJetty
-extends unfiltered.spec.jetty.Planned
+extends unfiltered.specs2.jetty.Planned
 with CookiesSpec
 
 object CookiesSpecNetty
-extends unfiltered.spec.netty.Planned
+extends unfiltered.specs2.netty.Planned
 with CookiesSpec
 
-trait CookiesSpec extends unfiltered.spec.Hosted {
+trait CookiesSpec extends unfiltered.specs2.Hosted {
   import scala.collection.JavaConversions._
 
   import unfiltered.response._

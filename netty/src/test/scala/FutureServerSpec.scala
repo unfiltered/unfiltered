@@ -4,7 +4,7 @@ import unfiltered.response.{ Pass, ResponseString }
 import unfiltered.request.{ GET, Path => UFPath }
 import scala.concurrent.Future
 
-object FutureServerSpec extends unfiltered.spec.netty.Served {
+object FutureServerSpec extends unfiltered.specs2.netty.Served {
 
   implicit val executionContext = scala.concurrent.ExecutionContext.Implicits.global
 

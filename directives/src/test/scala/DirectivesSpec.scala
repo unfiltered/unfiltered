@@ -7,14 +7,14 @@ import unfiltered.request._
 import java.util.concurrent.atomic.AtomicLong
 
 object DirectivesSpecJetty
-extends unfiltered.spec.jetty.Planned
+extends unfiltered.specs2.jetty.Planned
 with DirectivesSpec
 
 object DirectivesSpecNetty
-extends unfiltered.spec.netty.Planned
+extends unfiltered.specs2.netty.Planned
 with DirectivesSpec
 
-trait DirectivesSpec extends unfiltered.spec.Hosted {
+trait DirectivesSpec extends unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.directives._, Directives._
 

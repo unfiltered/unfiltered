@@ -2,7 +2,7 @@ package unfiltered.oauth
 
 import org.specs2.mutable._
 
-object OAuthSpec extends Specification with unfiltered.spec.jetty.Served {
+object OAuthSpec extends Specification with unfiltered.specs2.jetty.Served {
 
   import unfiltered.response._
   import unfiltered.request._

@@ -3,14 +3,14 @@ package unfiltered.request
 import org.specs2.mutable._
 
 object AcceptsSpecJetty
-extends unfiltered.spec.jetty.Planned
+extends unfiltered.specs2.jetty.Planned
 with AcceptsSpec
 
 object AcceptsSpecNetty
-extends unfiltered.spec.netty.Planned
+extends unfiltered.specs2.netty.Planned
 with AcceptsSpec
 
-trait AcceptsSpec extends unfiltered.spec.Hosted {
+trait AcceptsSpec extends unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}

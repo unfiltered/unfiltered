@@ -2,7 +2,7 @@ package unfiltered.request
 
 import org.specs2.mutable._
 
-object JsonpSpec extends Specification  with unfiltered.spec.jetty.Served {
+object JsonpSpec extends Specification  with unfiltered.specs2.jetty.Served {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}

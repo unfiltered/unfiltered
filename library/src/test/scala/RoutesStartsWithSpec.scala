@@ -5,14 +5,14 @@ import org.specs2.mutable._
 import unfiltered.request._
 
 object RoutesStartsWithSpecJetty
-extends unfiltered.spec.jetty.Planned
+extends unfiltered.specs2.jetty.Planned
 with RoutesStartsWithSpec
 
 object RoutesStartsWithSpecNetty
-extends unfiltered.spec.netty.Planned
+extends unfiltered.specs2.netty.Planned
 with RoutesStartsWithSpec
 
-trait RoutesStartsWithSpec extends unfiltered.spec.Hosted {
+trait RoutesStartsWithSpec extends unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
   import unfiltered.Cookie

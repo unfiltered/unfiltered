@@ -5,7 +5,7 @@ import unfiltered.request.{ GET, Params, Path => UFPath, POST, PUT, RemoteAddr, 
 
 import dispatch.classic._
 
-object ServerSpec extends unfiltered.spec.netty.Served {
+object ServerSpec extends unfiltered.specs2.netty.Served {
 
   def setup = _.handler(planify({
     case GET(UFPath("/pass")) => Pass

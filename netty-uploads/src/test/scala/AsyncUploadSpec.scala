@@ -8,7 +8,7 @@ import unfiltered.netty.async
 import unfiltered.netty.{Http => NHttp}
 import unfiltered.request.{ Path => UFPath, POST, & }
 import unfiltered.response.{ NotFound, ResponseString }
-import unfiltered.spec.netty.Served
+import unfiltered.specs2.netty.Served
 
 import dispatch.classic._
 import dispatch.classic.mime.Mime._
