@@ -1,7 +1,7 @@
 package unfiltered.server
 
 import unfiltered.spec
-import org.specs._
+import org.specs2.mutable._
 
 object MixedServerSpec extends Specification with spec.jetty.Served with spec.SecureClient {
   import unfiltered.response._

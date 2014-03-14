@@ -1,6 +1,6 @@
 package unfiltered.kit
 
-import org.specs._
+import org.specs2.mutable._
 
 import unfiltered.request._
 

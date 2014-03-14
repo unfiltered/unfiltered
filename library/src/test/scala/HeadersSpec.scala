@@ -1,6 +1,6 @@
 package unfiltered.request
 
-import org.specs._
+import org.specs2.mutable._
 
 object HeadersSpecJetty
 extends unfiltered.spec.jetty.Planned

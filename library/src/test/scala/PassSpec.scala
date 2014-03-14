@@ -1,6 +1,6 @@
 package unfiltered.response
 
-import org.specs._
+import org.specs2.mutable._
 
 object PassSpecJetty
 extends unfiltered.spec.jetty.Planned

@@ -1,6 +1,6 @@
 package unfiltered.server
 
-import org.specs._
+import org.specs2.mutable._
 
 object ServerSpec extends Specification with unfiltered.spec.jetty.Served {
   import unfiltered.response._

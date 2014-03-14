@@ -1,6 +1,6 @@
 package unfiltered.request
 
-import org.specs._
+import org.specs2.mutable._
 import java.util.Date
 
 // ported testcases from netty cookie decoder tests

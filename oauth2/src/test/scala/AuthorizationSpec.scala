@@ -1,6 +1,6 @@
 package unfiltered.oauth2
 
-import org.specs._
+import org.specs2.mutable._
 
 object AuthorizationSpec
   extends Specification

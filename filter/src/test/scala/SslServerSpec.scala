@@ -1,7 +1,7 @@
 package unfiltered.server
 
 import unfiltered.spec
-import org.specs._
+import org.specs2.mutable._
 
 object SslServerSpec extends Specification with unfiltered.spec.Hosted with spec.SecureClient {
   shareVariables()
