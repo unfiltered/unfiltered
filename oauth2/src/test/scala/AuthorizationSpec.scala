@@ -4,6 +4,7 @@ import org.specs2.mutable._
 
 object AuthorizationSpec
   extends Specification
+  with org.specs2.matcher.ThrownMessages
   with unfiltered.specs2.jetty.Served {
 
   import unfiltered.response._
