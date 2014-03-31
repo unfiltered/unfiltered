@@ -1,9 +1,9 @@
 package unfiltered.server
 
-import unfiltered.spec
+import unfiltered.spec.SecureClient
 import org.specs2.mutable._
 
-object SslServerSpec extends Specification with unfiltered.specs2.Hosted with spec.SecureClient {
+object SslServerSpec extends Specification with unfiltered.specs2.Hosted with SecureClient {
 
   import unfiltered.response._
   import unfiltered.request._
@@ -31,13 +31,10 @@ object SslServerSpec extends Specification with unfiltered.specs2.Hosted with sp
 
   lazy val httpServer = new UFHttp(httpPort, "0.0.0.0").filter(filt)
 
-  doBeforeSpec { server.start(); httpServer.start() }
-  doAfterSpec {
-    server.stop()
-    server.destroy()
-    httpServer.stop()
-    httpServer.destroy()
-  }
+  override def xhttp[T](handler: Handler[T]): T =
+    super[SecureClient].xhttp(handler)
+
+  step { server.start(); httpServer.start() }
 
   val filt = unfiltered.filter.Planify(secured.onPass(whatever))
   def secured = 
@@ -62,5 +59,12 @@ object SslServerSpec extends Specification with unfiltered.specs2.Hosted with sp
     "nonmatching pass to insecure" in {
       https(host as_str) must_== "false"
     }
+  }
+
+  step {
+    server.stop()
+    server.destroy()
+    httpServer.stop()
+    httpServer.destroy()
   }
 }
