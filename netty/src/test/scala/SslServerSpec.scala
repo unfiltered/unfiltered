@@ -16,7 +16,6 @@ import dispatch.classic._
 
 object SslServerSpec
   extends Specification 
-  with BeforeAfter
   with unfiltered.specs2.netty.Started
   with spec.SecureClient {  
 
