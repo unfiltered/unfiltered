@@ -85,7 +85,7 @@ object UploadsSpec extends Specification with unfiltered.specs2.jetty.Served {
   def setup = { _.filter(new TestPlan) }
 
   "MultiPartParams" should {
-    doBefore {
+    step {
       val out = new JFile("upload-test-out.txt")
       if(out.exists) out.delete
     }
