@@ -10,12 +10,13 @@ import io.netty.channel.ChannelHandler.Sharable
 
 import org.apache.http.NoHttpResponseException
 
-import org.specs2.mutable.Specification
+import org.specs2.mutable.{BeforeAfter, Specification}
 
 import dispatch.classic._
 
 object SslServerSpec
   extends Specification 
+  with BeforeAfter
   with unfiltered.specs2.netty.Started
   with spec.SecureClient {  
 
@@ -36,14 +37,12 @@ object SslServerSpec
   val keyStorePasswd = "unfiltered"
   val securePort = port
 
-  doBeforeSpec {
+  override def xhttp[T](handler: Handler[T]): T =
+    super[SecureClient].xhttp(handler)
+
+  step {
     System.setProperty("netty.ssl.keyStore", keyStorePath)
     System.setProperty("netty.ssl.keyStorePassword", keyStorePasswd)
-  }
-
-  doAfterSpec {
-    System.clearProperty("netty.ssl.keyStore")
-    System.clearProperty("netty.ssl.keyStorePassword")
   }
 
   lazy val server =
@@ -57,5 +56,10 @@ object SslServerSpec
     "refuse connection to unsecure requests" in {
       https(host as_str) must throwA[NoHttpResponseException]
     }
+  }
+
+  step {
+    System.clearProperty("netty.ssl.keyStore")
+    System.clearProperty("netty.ssl.keyStorePassword")
   }
 }

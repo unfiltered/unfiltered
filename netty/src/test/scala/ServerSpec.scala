@@ -1,13 +1,13 @@
 package unfiltered.netty
 
-import org.specs2.mutable.Specification
+import org.specs2.mutable.{BeforeAfter, Specification}
 
 import unfiltered.response.{ Pass, Ok, ResponseString }
 import unfiltered.request.{ GET, Params, Path => UFPath, POST, PUT, RemoteAddr, & }
 
 import dispatch.classic._
 
-object ServerSpec extends Specification with unfiltered.specs2.netty.Served {
+object ServerSpec extends Specification with BeforeAfter with unfiltered.specs2.netty.Served {
 
   def setup = _.handler(planify({
     case GET(UFPath("/pass")) => Pass
