@@ -7,11 +7,13 @@ import unfiltered.request._
 import java.util.concurrent.atomic.AtomicLong
 
 object DirectivesSpecJetty
-extends unfiltered.specs2.jetty.Planned
+extends Specification
+with unfiltered.specs2.jetty.Planned
 with DirectivesSpec
 
 object DirectivesSpecNetty
-extends unfiltered.specs2.netty.Planned
+extends Specification
+with unfiltered.specs2.netty.Planned
 with DirectivesSpec
 
 trait DirectivesSpec extends Specification with unfiltered.specs2.Hosted {

@@ -4,11 +4,13 @@ package unfiltered.request
 import org.specs2.mutable._
 
 object ParamsSpecJetty
-extends unfiltered.specs2.jetty.Planned
+extends Specification
+with unfiltered.specs2.jetty.Planned
 with ParamsSpec
 
 object ParamsSpecNetty
-extends unfiltered.specs2.netty.Planned
+extends Specification
+with unfiltered.specs2.netty.Planned
 with ParamsSpec
 
 trait ParamsSpec extends Specification with unfiltered.specs2.Hosted {

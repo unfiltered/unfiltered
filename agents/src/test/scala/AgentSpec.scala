@@ -4,11 +4,13 @@ import test.AgentStrings
 import org.specs2.mutable._
 
 object AgentSpecJetty
-extends unfiltered.specs2.jetty.Planned
+extends Specification
+with unfiltered.specs2.jetty.Planned
 with AgentSpec
 
 object AgentSpecNetty
-extends unfiltered.specs2.netty.Planned
+extends Specification
+with unfiltered.specs2.netty.Planned
 with AgentSpec
 
 trait AgentSpec extends Specification with unfiltered.specs2.Hosted {

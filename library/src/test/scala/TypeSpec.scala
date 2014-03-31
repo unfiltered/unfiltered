@@ -3,8 +3,8 @@ package unfiltered.request
 import org.specs2.mutable._
 import unfiltered.spec
 
-object TypeSpecJetty extends unfiltered.specs2.jetty.Planned with TypeSpec
-object TypeSpecNetty extends unfiltered.specs2.netty.Planned with TypeSpec
+object TypeSpecJetty extends Specification with unfiltered.specs2.jetty.Planned with TypeSpec
+object TypeSpecNetty extends Specification with unfiltered.specs2.netty.Planned with TypeSpec
 
 trait TypeSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._

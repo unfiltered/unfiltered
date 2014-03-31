@@ -4,11 +4,13 @@ import org.specs2.mutable._
 import unfiltered.spec
 
 object GzipSpecJetty
-extends unfiltered.specs2.jetty.Planned
+extends Specification
+with unfiltered.specs2.jetty.Planned
 with GZipSpec
 
 object GzipSpecNetty
-extends unfiltered.specs2.netty.Planned
+extends Specification
+with unfiltered.specs2.netty.Planned
 with GZipSpec
 
 trait GZipSpec extends Specification with unfiltered.specs2.Hosted {

@@ -3,11 +3,13 @@ package unfiltered.request
 import org.specs2.mutable._
 
 object HeadersSpecJetty
-extends unfiltered.specs2.jetty.Planned
+extends Specification
+with unfiltered.specs2.jetty.Planned
 with HeadersSpec
 
 object HeadersSpecNetty
-extends unfiltered.specs2.netty.Planned
+extends Specification
+with unfiltered.specs2.netty.Planned
 with HeadersSpec
 
 trait HeadersSpec extends Specification with unfiltered.specs2.Hosted {

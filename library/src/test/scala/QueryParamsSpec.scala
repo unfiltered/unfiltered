@@ -3,11 +3,13 @@ package unfiltered.request
 import org.specs2.mutable._
 
 object QueryParamsSpecJetty
-extends unfiltered.specs2.jetty.Planned
+extends Specification
+with unfiltered.specs2.jetty.Planned
 with QueryParamsSpec
 
 object QueryParamsSpecNetty
-extends unfiltered.specs2.netty.Planned
+extends Specification
+with unfiltered.specs2.netty.Planned
 with QueryParamsSpec
 
 trait QueryParamsSpec extends Specification with unfiltered.specs2.Hosted {

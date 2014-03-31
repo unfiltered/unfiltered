@@ -7,11 +7,13 @@ import unfiltered.request._
 import scala.util.matching.Regex
 
 object RoutesRegexSpecJetty
-extends unfiltered.specs2.jetty.Planned
+extends Specification
+with unfiltered.specs2.jetty.Planned
 with RoutesRegexSpec
 
 object RoutesRegexSpecNetty
-extends unfiltered.specs2.netty.Planned
+extends Specification
+with unfiltered.specs2.netty.Planned
 with RoutesRegexSpec
 
 trait RoutesRegexSpec extends Specification with unfiltered.specs2.Hosted {

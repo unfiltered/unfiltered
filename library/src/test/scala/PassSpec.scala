@@ -3,11 +3,13 @@ package unfiltered.response
 import org.specs2.mutable._
 
 object PassSpecJetty
-extends unfiltered.specs2.jetty.Planned
+extends Specification
+with unfiltered.specs2.jetty.Planned
 with PassSpec
 
 object PassSpecNetty
-extends unfiltered.specs2.netty.Planned
+extends Specification
+with unfiltered.specs2.netty.Planned
 with PassSpec
 
 trait PassSpec extends Specification with unfiltered.specs2.Hosted {

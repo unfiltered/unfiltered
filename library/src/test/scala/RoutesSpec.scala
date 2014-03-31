@@ -5,11 +5,13 @@ import org.specs2.mutable._
 import unfiltered.request._
 
 object RoutesSpecJetty
-extends unfiltered.specs2.jetty.Planned
+extends Specification
+with unfiltered.specs2.jetty.Planned
 with RoutesSpec
 
 object RoutesSpecNetty
-extends unfiltered.specs2.netty.Planned
+extends Specification
+with unfiltered.specs2.netty.Planned
 with RoutesSpec
 
 trait RoutesSpec extends Specification with unfiltered.specs2.Hosted {
