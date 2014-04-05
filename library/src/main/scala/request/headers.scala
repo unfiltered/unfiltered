@@ -139,6 +139,20 @@ object Accept extends ConnegHeader("Accept")
 object AcceptCharset extends ConnegHeader("Accept-Charset")
 object AcceptEncoding extends ConnegHeader("Accept-Encoding")
 object AcceptLanguage extends ConnegHeader("Accept-Language")
+/** To handle request body content encodings */
+object RequestContentEncoding extends ConnegHeader("Content-Encoding") {
+  private def matching(t: String) =
+    RequestExtractor.predicate(RequestContentEncoding) { encs =>
+      encs.exists { _.equalsIgnoreCase(t) }
+    }
+
+  val GZip = matching("gzip")
+  val Deflate = matching("deflate")
+  val Compress = matching("compress")
+  val SDCH = matching("sdch")
+  val Identity = matching("identity")
+}
+
 object Authorization extends StringHeader("Authorization")
 object Connection extends StringHeader("Connection")
 object RequestContentType extends StringHeader("Content-Type")
