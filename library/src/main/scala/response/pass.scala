@@ -5,6 +5,11 @@ object Pass extends ResponseFunction[Any] {
   type RF = ResponseFunction[Any]
   def apply[T](res: HttpResponse[T]) = res
 
+  /** Promote given intent to one defined for all requests. Returns
+    * Pass where given intent is not defined. */
+  def lift[A, B >: RF](intent: PartialFunction[A,B]) =
+    onPass(intent, Function.const(Pass) _)
+
   /**
    * Similar to PartialFunction#orElse, but is Pass-aware. If intent
    * is not defined or returns Pass, the onPass function is attempted.

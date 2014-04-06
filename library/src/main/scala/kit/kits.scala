@@ -36,6 +36,15 @@ trait Prepend { self =>
     }
 }
 
+/** Selectively wrap HttpRequest objects */
+trait RequestWrapper { self =>
+  def wrap[A]: PartialFunction[HttpRequest[A], HttpRequest[A]]
+
+  def apply[A,B](intent: unfiltered.Cycle.Intent[A,B]): unfiltered.Cycle.Intent[A,B]  = {
+    wrap.andThen(Pass.lift(intent)).orElse(intent)
+  }
+}
+
 object NoOpResponder extends Responder[Any] {
   def respond(res: HttpResponse[Any]) { }
 }

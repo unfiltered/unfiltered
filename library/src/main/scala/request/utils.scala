@@ -16,8 +16,8 @@ object RequestExtractor {
 
   /** @return new extractor, reproduces request when predicate is satisfied */
   def predicate[E](reqExtract: RE[E])(predicate: E => Boolean) = new {
-    def unapply[T](req: HttpRequest[T]) = 
+    def unapply[T](req: HttpRequest[T]): Option[HttpRequest[T]] =
       for (value <- reqExtract.unapply(req) if predicate(value))
-      yield Some(req)
+      yield req
   }
 }

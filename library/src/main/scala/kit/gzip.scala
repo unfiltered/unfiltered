@@ -11,4 +11,13 @@ object GZip extends Prepend {
   def intent = Cycle.Intent[Any,Any] {
     case Decodes.GZip(req) => ContentEncoding.GZip ~> ResponseFilter.GZip
   }
+  /**
+   * Wraps request in a RequestFilter.GZip if a Content-Encoding
+   * is present for gzip, to handle gzip-encoded requests.
+   */
+  object Requests extends RequestWrapper {
+    def wrap[A] = {
+      case RequestContentEncoding.GZip(req) => RequestFilter.GZip(req)
+    }
+  }
 }
