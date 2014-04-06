@@ -1,11 +1,11 @@
 package unfiltered.netty.request
 
-import org.specs.Specification
+import org.specs2.mutable.Specification
 
 import unfiltered.netty.{ async, cycle }
 import unfiltered.request.{ Path => UFPath, POST, & }
 import unfiltered.response.{ Html, ResponseString }
-import unfiltered.spec.netty.Served
+import unfiltered.specs2.netty.Served
 
 import dispatch.classic._
 import dispatch.classic.mime.Mime._
@@ -128,8 +128,7 @@ object MixedPlanSpec extends Specification
   }
 
   "Netty MultiPartDecoder cycle and async plans, when used in the same pipeline" should {
-    shareVariables()
-    doBefore {
+    step {
       val out = new JFile("netty-upload-test-out.txt")
       if (out.exists) out.delete
     }

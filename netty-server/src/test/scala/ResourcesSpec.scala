@@ -1,7 +1,9 @@
 package unfiltered.netty
 
+import org.specs2.mutable.Specification
+
 /** Tests a netty server configured to handle static resources only */
-object ResourcesSpec extends unfiltered.spec.netty.Served {
+object ResourcesSpec extends Specification with unfiltered.specs2.netty.Served {
    import dispatch.classic._
 
    implicit def toStatusVerb(req: dispatch.classic.Request) = new {
@@ -53,9 +55,9 @@ object ResourcesSpec extends unfiltered.spec.netty.Served {
        val ifmodsince = Map(
          "If-Modified-Since" -> Dates.format(cal.getTime))
        xhttp(host / "foo.css" <:< ifmodsince statuscode) must be_==(304)
-       xhttp(host / "foo.css" <:< ifmodsince >:> { h => h }) must notHavePair(
+       xhttp(host / "foo.css" <:< ifmodsince >:> { h => h }) must not(havePair(
          "Connection" -> "keep-alive"
-       )
+       ))
      }
    }
 }

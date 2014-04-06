@@ -31,7 +31,7 @@ object Common {
   def dispatchOAuthDep =
     "net.databinder" %% "dispatch-oauth" % dispatchVersion
 
-  def integrationTestDeps(sv: String) = (specsDep(sv) :: dispatchDeps) map { _ % "test" }
+  def integrationTestDeps(sv: String) = (specs2Dep(sv) :: dispatchDeps) map { _ % "test" }
 
   val settings: Seq[Setting[_]] = Seq(
     organization := "net.databinder",

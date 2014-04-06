@@ -1,16 +1,18 @@
 package unfiltered.request
 
-import org.specs._
+import org.specs2.mutable._
 
 object CookiesSpecJetty
-extends unfiltered.spec.jetty.Planned
+extends Specification
+with unfiltered.specs2.jetty.Planned
 with CookiesSpec
 
 object CookiesSpecNetty
-extends unfiltered.spec.netty.Planned
+extends Specification
+with unfiltered.specs2.netty.Planned
 with CookiesSpec
 
-trait CookiesSpec extends unfiltered.spec.Hosted {
+trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
   import scala.collection.JavaConversions._
 
   import unfiltered.response._
@@ -72,11 +74,11 @@ trait CookiesSpec extends unfiltered.spec.Hosted {
           h(host.POST / "save" << Map("foo" -> "bar") as_str) must_== "foo bar!"
           val someCookies = jar.getCookies
           someCookies.size must_== 1
-          someCookies.find(_.getName == "foo") must beSomething
+          someCookies.find(_.getName == "foo") must beSome
           h(host / "clear" as_str) must_== "foo who?"
           val noCookies = jar.getCookies
           noCookies.size must_== 0
-          noCookies.find(_.getName == "foo") mustNot beSomething
+          noCookies.find(_.getName == "foo") must beNone
         } finally {
           h.shutdown()
         }
@@ -89,13 +91,13 @@ trait CookiesSpec extends unfiltered.spec.Hosted {
           h(host.POST / "save_multi" << Map("foo" -> "bar", "baz" -> "boom") as_str) must_== "foo bar baz boom!"
           val someCookies = jar.getCookies
           someCookies.size must_== 2
-          someCookies.find(_.getName == "foo") must beSomething
-          someCookies.find(_.getName == "baz") must beSomething
+          someCookies.find(_.getName == "foo") must beSome
+          someCookies.find(_.getName == "baz") must beSome
           h(host / "clear_multi" as_str) must_== "foo who?"
           val noCookies = jar.getCookies
           noCookies.size must_== 0
-          noCookies.find(_.getName == "foo") mustNot beSomething
-          noCookies.find(_.getName == "baz") mustNot beSomething
+          noCookies.find(_.getName == "foo") must beNone
+          noCookies.find(_.getName == "baz") must beNone
         } finally {
           h.shutdown()
         }

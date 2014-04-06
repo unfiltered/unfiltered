@@ -1,17 +1,19 @@
 package unfiltered.request
 
 import test.AgentStrings
-import org.specs._
+import org.specs2.mutable._
 
 object AgentSpecJetty
-extends unfiltered.spec.jetty.Planned
+extends Specification
+with unfiltered.specs2.jetty.Planned
 with AgentSpec
 
 object AgentSpecNetty
-extends unfiltered.spec.netty.Planned
+extends Specification
+with unfiltered.specs2.netty.Planned
 with AgentSpec
 
-trait AgentSpec extends unfiltered.spec.Hosted {
+trait AgentSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}

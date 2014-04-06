@@ -1,7 +1,7 @@
 description := "monadic api for unfiltered"
 
 unmanagedClasspath in (local("directives"), Test) <++=
-  (fullClasspath in (local("spec"), Compile))
+  (fullClasspath in (local("specs2"), Compile))
 
 
 libraryDependencies +=

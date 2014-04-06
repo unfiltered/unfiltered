@@ -1,10 +1,10 @@
 package unfiltered.oauth2
 
-import org.specs._
+import org.specs2.mutable._
 
 object CustomAuthorizationSpec
   extends Specification
-  with unfiltered.spec.jetty.Served {
+  with unfiltered.specs2.jetty.Served {
 
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}

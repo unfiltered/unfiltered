@@ -1,7 +1,7 @@
 description := "Json4s request matchers and response functions"
 
 unmanagedClasspath in (local("json4s"), Test) <++=
-  (fullClasspath in (local("spec"), Compile),
+  (fullClasspath in (local("specs2"), Compile),
    fullClasspath in (local("filter"), Compile)) map { (s, f) =>
      s ++ f
    }

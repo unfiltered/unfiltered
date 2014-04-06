@@ -1,16 +1,18 @@
 package unfiltered.request
 
-import org.specs._
+import org.specs2.mutable._
 
 object BasicAuthKitSpecJetty
-extends unfiltered.spec.jetty.Planned
+extends Specification
+with unfiltered.specs2.jetty.Planned
 with BasicAuthKitSpec
 
 object BasicAuthKitSpecNetty
-extends unfiltered.spec.netty.Planned
+extends Specification
+with unfiltered.specs2.netty.Planned
 with BasicAuthKitSpec
 
-trait BasicAuthKitSpec extends unfiltered.spec.Hosted {
+trait BasicAuthKitSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
@@ -24,7 +26,6 @@ trait BasicAuthKitSpec extends unfiltered.spec.Hosted {
   })
 
   "Basic Auth kit" should {
-    shareVariables()
     "authenticate a valid user" in {
       val resp = http(host / "secret" as_!("test", "secret") as_str)
       resp must_== "we're in"

@@ -1,12 +1,12 @@
 package unfiltered.request
 
-import org.specs._
+import org.specs2.mutable._
 import unfiltered.spec
 
-object TypeSpecJetty extends spec.jetty.Planned with TypeSpec
-object TypeSpecNetty extends spec.netty.Planned with TypeSpec
+object TypeSpecJetty extends Specification with unfiltered.specs2.jetty.Planned with TypeSpec
+object TypeSpecNetty extends Specification with unfiltered.specs2.netty.Planned with TypeSpec
 
-trait TypeSpec extends spec.Hosted {
+trait TypeSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
@@ -29,14 +29,14 @@ trait TypeSpec extends spec.Hosted {
         (req as_str, req >:> { _("Content-Type") })
       })
       resp must_== message
-      enc.map(_.toLowerCase) mustHaveMatch "text/plain; ?charset=utf-8"
+      enc.map(_.toLowerCase) must containPattern("text/plain; ?charset=utf-8")
     }
     "Correctly encode response in iso-8859-1 if requested" in {
       val (resp, enc) = http((host / "latin").gzip  >+ { req =>
         (req as_str, req >:> { _("Content-Type") })
       })
       resp must_== message
-      enc.map(_.toLowerCase) mustHaveMatch "text/plain; ?charset=iso-8859-1"
+      enc.map(_.toLowerCase) must containPattern("text/plain; ?charset=iso-8859-1")
     }
   }
 }

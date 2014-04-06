@@ -1,9 +1,9 @@
 package unfiltered.server
 
-import unfiltered.spec
-import org.specs._
+import unfiltered.spec.SecureClient
+import org.specs2.mutable._
 
-object MixedServerSpec extends Specification with spec.jetty.Served with spec.SecureClient {
+object MixedServerSpec extends Specification with unfiltered.specs2.jetty.Served with SecureClient {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
@@ -33,6 +33,9 @@ object MixedServerSpec extends Specification with spec.jetty.Served with spec.Se
     case HTTPS(GET(UFPath("/https_only"))) => ResponseString("secret") ~> Ok
     case HTTPS(GET(UFPath("/tryme"))) => ResponseString("secret") ~> Ok
   })}
+
+  override def xhttp[T](handler: Handler[T]): T =
+    super[SecureClient].xhttp(handler)
 
   "A Mixed Secure Server" should {
     "respond to matched unsecure requests" in {

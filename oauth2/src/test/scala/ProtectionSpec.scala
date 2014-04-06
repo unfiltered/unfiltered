@@ -1,8 +1,8 @@
 package unfiltered.oauth2
 
-import org.specs._
+import org.specs2.mutable._
 
-object ProtectionSpec extends Specification with unfiltered.spec.jetty.Served {
+object ProtectionSpec extends Specification with org.specs2.matcher.ThrownMessages with unfiltered.specs2.jetty.Served {
   import unfiltered.response._
   import unfiltered.request._
   import dispatch.classic._

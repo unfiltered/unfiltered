@@ -1,20 +1,22 @@
 package unfiltered.directives
 
-import org.specs._
+import org.specs2.mutable._
 
 import unfiltered.request._
 
 import java.util.concurrent.atomic.AtomicLong
 
 object DirectivesSpecJetty
-extends unfiltered.spec.jetty.Planned
+extends Specification
+with unfiltered.specs2.jetty.Planned
 with DirectivesSpec
 
 object DirectivesSpecNetty
-extends unfiltered.spec.netty.Planned
+extends Specification
+with unfiltered.specs2.netty.Planned
 with DirectivesSpec
 
-trait DirectivesSpec extends unfiltered.spec.Hosted {
+trait DirectivesSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.directives._, Directives._
 
@@ -54,14 +56,14 @@ trait DirectivesSpec extends unfiltered.spec.Hosted {
 
   def intent[A,B] = Directive.Intent.Path {
     case "/affirmation" =>
-      Directive.success {
+      Directives.success {
         ResponseString("this request needs no validation")
       }
     case "/commit_or" =>
       val a = for {
         _ <- GET
         _ <- commit
-        _ <- failure(BadRequest)
+        _ <- Directives.failure(BadRequest)
       } yield Ok ~> ResponseString("a")
       val b = for {
         _ <- POST

@@ -1,6 +1,6 @@
 package unfiltered.oauth
 
-import org.specs._
+import org.specs2.mutable._
 
 object HeaderSpec extends Specification {
   import OAuth._
@@ -20,7 +20,7 @@ object HeaderSpec extends Specification {
         "oauth_version=\"1.0\"" ::
         "non_protocol_param=\"bogus\"":: Nil
       val extractedOpt = OAuth.Header.unapply(values)
-      extractedOpt must beSomething
+      extractedOpt must beSome
       val extracted = extractedOpt.get.map {
         // Seq equivalence seems broken in 2.7.7, just unSeq
         case (k, v) => k -> v(0)
@@ -37,8 +37,8 @@ object HeaderSpec extends Specification {
         Verifier -> "asdfasdfasd",
         Version -> "1.0"
       )
-      extracted must notHavePair(ConsumerKey, "malformed")
-      extracted must notHaveKey("non_protocol_param")
+      extracted must not(havePair(ConsumerKey, "malformed"))
+      extracted must not(haveKey("non_protocol_param"))
     }
   }
 }

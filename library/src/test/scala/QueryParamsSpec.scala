@@ -1,16 +1,18 @@
 package unfiltered.request
 
-import org.specs._
+import org.specs2.mutable._
 
 object QueryParamsSpecJetty
-extends unfiltered.spec.jetty.Planned
+extends Specification
+with unfiltered.specs2.jetty.Planned
 with QueryParamsSpec
 
 object QueryParamsSpecNetty
-extends unfiltered.spec.netty.Planned
+extends Specification
+with unfiltered.specs2.netty.Planned
 with QueryParamsSpec
 
-trait QueryParamsSpec extends unfiltered.spec.Hosted {
+trait QueryParamsSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
 

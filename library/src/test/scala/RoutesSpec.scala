@@ -1,18 +1,20 @@
 package unfiltered.kit
 
-import org.specs._
+import org.specs2.mutable._
 
 import unfiltered.request._
 
 object RoutesSpecJetty
-extends unfiltered.spec.jetty.Planned
+extends Specification
+with unfiltered.specs2.jetty.Planned
 with RoutesSpec
 
 object RoutesSpecNetty
-extends unfiltered.spec.netty.Planned
+extends Specification
+with unfiltered.specs2.netty.Planned
 with RoutesSpec
 
-trait RoutesSpec extends unfiltered.spec.Hosted {
+trait RoutesSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
   import unfiltered.Cookie

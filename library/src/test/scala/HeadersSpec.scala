@@ -1,16 +1,18 @@
 package unfiltered.request
 
-import org.specs._
+import org.specs2.mutable._
 
 object HeadersSpecJetty
-extends unfiltered.spec.jetty.Planned
+extends Specification
+with unfiltered.specs2.jetty.Planned
 with HeadersSpec
 
 object HeadersSpecNetty
-extends unfiltered.spec.netty.Planned
+extends Specification
+with unfiltered.specs2.netty.Planned
 with HeadersSpec
 
-trait HeadersSpec extends unfiltered.spec.Hosted {
+trait HeadersSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => P}

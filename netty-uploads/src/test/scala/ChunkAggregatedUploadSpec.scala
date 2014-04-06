@@ -1,12 +1,12 @@
 package unfiltered.netty.request
 
-import org.specs.Specification
+import org.specs2.mutable.Specification
 
 import unfiltered.netty
 import unfiltered.netty.{ Http => NHttp }
 import unfiltered.request.{ Path => UFPath, POST, & }
 import unfiltered.response.{ NotFound, ResponseString }
-import unfiltered.spec.netty.Served
+import unfiltered.specs2.netty.Served
 import dispatch.classic._
 import dispatch.classic.mime.Mime._
 
@@ -162,8 +162,7 @@ object ChunkAggregatedUploadSpec extends Specification
   }
 
  "MultiPartParams used in netty.cycle.Plan and netty.async.Plan with a chunk aggregator" should {
-    shareVariables()
-    doBefore {
+    step {
       val out = new JFile("netty-upload-test-out.txt")
       if (out.exists) out.delete
     }

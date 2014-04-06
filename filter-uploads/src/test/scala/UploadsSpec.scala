@@ -1,8 +1,8 @@
 package unfiltered.filter.request
 
-import org.specs._
+import org.specs2.mutable._
 
-object UploadsSpec extends Specification with unfiltered.spec.jetty.Served {
+object UploadsSpec extends Specification with unfiltered.specs2.jetty.Served {
   import java.io.{File => JFile,FileInputStream => FIS}
   import org.apache.commons.io.{IOUtils => IOU}
   import unfiltered.response._
@@ -85,8 +85,7 @@ object UploadsSpec extends Specification with unfiltered.spec.jetty.Served {
   def setup = { _.filter(new TestPlan) }
 
   "MultiPartParams" should {
-    shareVariables()
-    doBefore {
+    step {
       val out = new JFile("upload-test-out.txt")
       if(out.exists) out.delete
     }

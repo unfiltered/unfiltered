@@ -5,7 +5,7 @@ import unfiltered.netty.{ Http => NHttp, ExceptionHandler }
 import unfiltered.netty.cycle.ThreadPool
 import unfiltered.request.{ Path => UFPath, POST, & }
 import unfiltered.response.{ Pass, ResponseString }
-import unfiltered.spec.netty.Served
+import unfiltered.specs2.netty.Served
 
 import dispatch.classic._
 import dispatch.classic.mime.Mime._
@@ -17,7 +17,7 @@ import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext }
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{ DefaultFullHttpResponse, HttpResponseStatus, HttpVersion }
 
-import org.specs.Specification
+import org.specs2.mutable.Specification
 
 object NoChunkAggregatorSpec extends Specification
   with Served {
@@ -85,8 +85,7 @@ object NoChunkAggregatorSpec extends Specification
   }
 
   "When receiving multipart requests with no chunk aggregator, regular netty plans" should {
-    shareVariables()
-    doBefore {
+    step {
       val out = new JFile("netty-upload-test-out.txt")
       if (out.exists) out.delete
     }

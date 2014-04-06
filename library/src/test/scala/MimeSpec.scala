@@ -1,6 +1,6 @@
 package unfiltered.request
 
-import org.specs._
+import org.specs2.mutable._
 
 class MimeSpec extends Specification {
   "Mime" should {

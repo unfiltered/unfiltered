@@ -1,8 +1,8 @@
 package unfiltered.server
 
-import org.specs._
+import org.specs2.mutable._
 
-object ServerSpec extends Specification with unfiltered.spec.jetty.Served {
+object ServerSpec extends Specification with unfiltered.specs2.jetty.Served {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}

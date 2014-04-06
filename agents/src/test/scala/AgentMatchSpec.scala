@@ -1,7 +1,7 @@
 package unfiltered.request
 
 import test.AgentStrings
-import org.specs._
+import org.specs2.mutable._
 
 class AgentMatchSpec extends Specification {
   "Chrome strings" should {

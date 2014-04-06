@@ -1,17 +1,19 @@
 package unfiltered.request
 
-import org.specs._
+import org.specs2.mutable._
 import unfiltered.spec
 
 object GzipSpecJetty
-extends spec.jetty.Planned
+extends Specification
+with unfiltered.specs2.jetty.Planned
 with GZipSpec
 
 object GzipSpecNetty
-extends spec.netty.Planned
+extends Specification
+with unfiltered.specs2.netty.Planned
 with GZipSpec
 
-trait GZipSpec extends spec.Hosted {
+trait GZipSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
