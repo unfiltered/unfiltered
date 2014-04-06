@@ -5,7 +5,8 @@ case class ResponseHeader(name: String, values: Iterable[String]) extends Respon
     values.foreach { v => res.header(name, v) } 
   }
 }
-class HeaderName(name: String) {
+
+class HeaderName(val name: String) {
   def apply(value: String*) = ResponseHeader(name, value)
 }
 
