@@ -20,7 +20,7 @@ object Common {
     }
 
 
-  val dispatchVersion = "0.8.9"
+  val dispatchVersion = "0.8.10"
   def dispatchDeps =
     "net.databinder" %% "dispatch-mime" % dispatchVersion ::
     "net.databinder" %% "dispatch-http" % dispatchVersion :: Nil
