@@ -45,8 +45,8 @@ object Unfiltered extends Build {
     ).aggregate(
             library, filters, filtersAsync , uploads, filterUploads,
             nettyUploads, util, jetty,
-            jettyAjpProject, netty, nettyServer, json4s, specHelpers,
-            specs2Helpers, scalaTestHelpers, websockets, oauth,  mac,
+            jettyAjpProject, netty, nettyServer, json4s,
+            specs2Helpers, /* scalaTestHelpers, */ websockets, oauth,  mac,
             oauth2, agents, directives)
 
   lazy val library: Project =
@@ -89,9 +89,6 @@ object Unfiltered extends Build {
     ).dependsOn(netty, util)
 
   lazy val netty = module("netty")().dependsOn(library)
-
-  lazy val specHelpers =
-    module("spec")().dependsOn(filters, jetty, nettyServer)
 
   lazy val specs2Helpers =
     module("specs2")().dependsOn(filters, jetty, nettyServer)

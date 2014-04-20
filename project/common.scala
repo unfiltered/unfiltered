@@ -6,13 +6,6 @@ object Common {
   val servletApiDep = "javax.servlet" % "servlet-api" % "2.3" % "provided"
   val jettyVersion = "8.1.13.v20130916"
 
-  def specsDep(sv: String) =
-    sv.split("[.-]").toList match {
-      case "2" :: "9" :: "0" :: _ :: _ => "org.scala-tools.testing" %% "specs" % "1.6.8"
-      case "2" :: "9" :: _ => "org.scala-tools.testing" % "specs_2.9.1" % "1.6.9"
-      case _ => "org.scala-tools.testing" %% "specs" % "1.6.9"
-    }
-
   def specs2Dep(sv: String) =
     sv.split("[.-]").toList match {
       case "2" :: "9" :: _ => "org.specs2" %% "specs2" % "1.12.4.1"
