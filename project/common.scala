@@ -73,6 +73,9 @@ object Common {
           <url>http://twitter.com/softprops</url>
         </developer>
       </developers>
-    )
+    ),
+
+    // this should resolve artifacts recently published to sonatype oss not yet mirrored to maven central
+    resolvers += "sonatype releases" at "https://oss.sonatype.org/content/repositories/releases"
   )
 }
