@@ -37,11 +37,11 @@ object Common {
 
     scalaVersion := "2.9.3",
 
-    crossScalaVersions := Seq("2.9.3", "2.10.3"),
+    crossScalaVersions := Seq("2.9.3", "2.10.4", "2.11.0"),
 
     scalacOptions <++= scalaVersion.map(sv=>
       Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked")
-        ++ (if (sv.startsWith("2.10")) Seq("-feature") else Seq.empty[String])),
+        ++ (if (!sv.startsWith("2.9")) Seq("-feature") else Seq.empty[String])),
 
     parallelExecution in Test := false, // :( test servers collide on same port
 
