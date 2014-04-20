@@ -35,9 +35,9 @@ object Common {
 
     version := "0.8.0-SNAPSHOT",
 
-    scalaVersion := "2.9.3",
-
     crossScalaVersions := Seq("2.9.3", "2.10.4", "2.11.0"),
+
+    scalaVersion := crossScalaVersions.value.head,
 
     scalacOptions <++= scalaVersion.map(sv=>
       Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked")
