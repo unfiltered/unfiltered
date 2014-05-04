@@ -11,7 +11,7 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   def reader = req.getReader
   def protocol = req.getProtocol
   def method = req.getMethod.toUpperCase
-  def uri = req.getRequestURI :: Nil ++ Option(req.getQueryString).map("?%s".format(_)) mkString("")
+  def uri = Option(req.getRequestURI) ++ Option(req.getQueryString).map("?%s".format(_)) mkString("")
   def parameterNames =
     req.getParameterNames.asInstanceOf[java.util.Enumeration[String]].asScala
   def parameterValues(param: String) = Option[Seq[String]](req.getParameterValues(param)).getOrElse(Nil)
