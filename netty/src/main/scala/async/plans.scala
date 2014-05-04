@@ -25,9 +25,9 @@ object Intent {
 
 /** A Netty Plan for request-only handling. */
 @Sharable
-trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
+trait Plan extends RequestPlan {
   def intent: Plan.Intent
-  def requestPlan = intent
+  def requestIntent = intent
 }
 
 /** Common base for async.Plan and future.Plan */
