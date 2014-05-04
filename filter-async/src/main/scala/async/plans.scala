@@ -1,7 +1,5 @@
 package unfiltered.filter.async
 
-import org.eclipse.jetty.continuation.ContinuationSupport
-import org.eclipse.jetty.continuation.Continuation
 import util._
 import unfiltered.filter.{AsyncBinding,RequestBinding,ResponseBinding}
 import unfiltered.response.{NotFound, Pass}
@@ -37,17 +35,13 @@ trait Plan extends unfiltered.filter.InittedFilter {
   def doFilter(request: ServletRequest,
                         response: ServletResponse,
                         chain: FilterChain) {
-   val continuation = ContinuationSupport.getContinuation(request)
-   if (continuation.isExpired) {
-       response.asInstanceOf[HttpServletResponse].setStatus(408)
-       chain.doFilter(request,response)
-   } else {
-     continuation.setTimeout(asyncRequestTimeoutMillis)
-     continuation.suspend()
+    val asyncContext = request.startAsync
+    asyncContext.setTimeout(asyncRequestTimeoutMillis)
+
      (request, response) match {
        case (hreq: HttpServletRequest, hres: HttpServletResponse) =>
           val requestBinding = new RequestBinding(hreq) with AsyncBinding {
-            val con = continuation
+            val async = asyncContext
             val filterChain = chain
           }
           val responseBinding = new ResponseBinding(hres)
@@ -58,7 +52,6 @@ trait Plan extends unfiltered.filter.InittedFilter {
                              responseBinding.underlying)
           )(requestBinding)
       }
-    }
  }
 }
 

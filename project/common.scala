@@ -3,8 +3,8 @@ import sbt._
 object Common {
   import Keys._
 
-  val servletApiDep = "javax.servlet" % "servlet-api" % "2.3" % "provided"
-  val jettyVersion = "8.1.13.v20130916"
+  val servletApiDep = "javax.servlet" % "javax.servlet-api" % "3.0.1" % "provided"
+  val jettyVersion = "9.1.2.v20140210"
 
   def specsDep(sv: String) =
     sv.split("[.-]").toList match {

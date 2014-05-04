@@ -90,7 +90,7 @@ trait AuthScheme {
     val attrs = List("error" -> error, "error_description" -> description).collect { case (key, Some(value)) => key -> value }
     attrs.tail.foldLeft(
       attrs.headOption.foldLeft(challenge) { case (current, (key, value)) => """%s %s="%s"""".format(current, key, value) }
-    ) { case (current, (key, value)) => current + ",\n%s=\"%s\"".format(key, value) }
+    ) { case (current, (key, value)) => current + ",%s=\"%s\"".format(key, value) }
   }
 
   /**
