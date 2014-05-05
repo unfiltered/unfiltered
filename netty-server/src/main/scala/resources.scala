@@ -13,7 +13,7 @@ import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{
   LastHttpContent, HttpHeaders, HttpResponse }
 import io.netty.handler.stream.{ ChunkedFile, ChunkedStream }
-
+import io.netty.util.ReferenceCountUtil
 import java.io.{ File, FileNotFoundException, RandomAccessFile }
 import java.net.{ URL, URLDecoder }
 import java.nio.charset.Charset
@@ -108,20 +108,37 @@ case class Resources(
                 req.underlying.defaultResponse(
                   heads ~> Expires(Dates.format(cal.getTime))))
 
-              def lastly(future: ChannelFuture) =
+              def lastly(future: ChannelFuture) = {
+                // close channel if not keep alive
                 if (!HttpHeaders.isKeepAlive(req.underlying.request)) {
                    future.addListener(ChannelFutureListener.CLOSE)
                 }
+                // be sure to adjust reference count
+                future.addListener(new ChannelFutureListener {
+                  def operationComplete(f: ChannelFuture) {
+                    req.underlying.content.map { c =>
+                      ReferenceCountUtil.release(c)
+                    }
+                  }
+                })
+              }
 
               if (GET.unapply(req).isDefined && ctx.channel.isOpen) {
                 rsrc match {
                   case FileSystemResource(_) =>
                     val raf = new RandomAccessFile(rsrc.path, "r")
-                    ctx.write(
+                    val send = ctx.write(
                       if (req.isSecure)
                         new ChunkedFile(
                           raf, 0, len, 8192/*ChunkedStream.DEFAULT_CHUNK_SIZE*/)
                       else new DefaultFileRegion(raf.getChannel, 0, len))
+                    // seeing DefaultChannelPromise@15e3752b(failure(io.netty.handler.codec.EncoderException: java.lang.IllegalStateException: unexpected message type: DefaultFileRegion)
+                    /*send.addListener(new ChannelFutureListener {
+                      def operationComplete(f: ChannelFuture) {
+                        println("send complete %s" format(f))
+                      }
+                    })*/
+
                     lastly(ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT))
                   case other =>
                     ctx.writeAndFlush(new ChunkedStream(other.in))
