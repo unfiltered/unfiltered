@@ -104,8 +104,10 @@ case class Resources(
 
               cal.add(Calendar.SECOND, cacheSeconds)
 
+              // note: we are sending are using a partial response
+              // because files are chunked.
               val writeHeaders = ctx.write(
-                req.underlying.defaultResponse(
+                req.underlying.defaultPartialResponse(
                   heads ~> Expires(Dates.format(cal.getTime))))
 
               def lastly(future: ChannelFuture) = {
@@ -127,17 +129,11 @@ case class Resources(
                 rsrc match {
                   case FileSystemResource(_) =>
                     val raf = new RandomAccessFile(rsrc.path, "r")
-                    val send = ctx.write(
+                    ctx.write(
                       if (req.isSecure)
                         new ChunkedFile(
                           raf, 0, len, 8192/*ChunkedStream.DEFAULT_CHUNK_SIZE*/)
                       else new DefaultFileRegion(raf.getChannel, 0, len))
-                    // seeing DefaultChannelPromise@15e3752b(failure(io.netty.handler.codec.EncoderException: java.lang.IllegalStateException: unexpected message type: DefaultFileRegion)
-                    /*send.addListener(new ChannelFutureListener {
-                      def operationComplete(f: ChannelFuture) {
-                        println("send complete %s" format(f))
-                      }
-                    })*/
 
                     lastly(ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT))
                   case other =>

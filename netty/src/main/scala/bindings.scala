@@ -7,8 +7,8 @@ import unfiltered.request.{ Charset, HttpRequest, POST, PUT, RequestContentType,
 import io.netty.buffer.{ ByteBufInputStream, Unpooled }
 import io.netty.channel.{ ChannelFuture, ChannelFutureListener, ChannelHandlerContext }
 import io.netty.handler.codec.http.{
-  DefaultFullHttpResponse, FullHttpRequest, FullHttpResponse, HttpContent,
-  HttpHeaders, HttpRequest => NettyHttpRequest,
+  DefaultHttpResponse, DefaultFullHttpResponse, FullHttpRequest, FullHttpResponse, HttpContent,
+  HttpHeaders, HttpRequest => NettyHttpRequest, HttpResponse => NettyHttpResponse,
   HttpResponseStatus, HttpVersion }
 import io.netty.handler.ssl.SslHandler
 import io.netty.util.ReferenceCountUtil
@@ -23,7 +23,7 @@ object HttpConfig {
 }
 
 class RequestBinding(msg: ReceivedMessage)
-  extends HttpRequest(msg) with Async.Responder[FullHttpResponse] {
+  extends HttpRequest(msg) with Async.Responder[NettyHttpResponse] {
 
   private val req = msg.request
 
@@ -78,7 +78,7 @@ class RequestBinding(msg: ReceivedMessage)
 
   def remoteAddr = msg.context.channel.remoteAddress.asInstanceOf[InetSocketAddress].getAddress.getHostAddress
 
-  def respond(rf: ResponseFunction[FullHttpResponse]) =
+  def respond(rf: ResponseFunction[NettyHttpResponse]) =
     underlying.respond(rf)
 }
 
@@ -96,27 +96,33 @@ case class ReceivedMessage(
 
   /** Binds a Netty HttpResponse res to Unfiltered's HttpResponse to apply any
    * response function to it. */
-  def response[T <: FullHttpResponse](res: T)(rf: ResponseFunction[T]) =
+  def response[T <: NettyHttpResponse](res: T)(rf: ResponseFunction[T]) =
     rf(new ResponseBinding(res)).underlying
 
   /** @return a new Netty FullHttpResponse bound to an Unfiltered HttpResponse */
   lazy val defaultResponse = response(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))_
 
+  lazy val defaultPartialResponse = response(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))_
+
   /** Applies rf to a new `defaultResponse` and writes it out */
-  def respond: (ResponseFunction[FullHttpResponse] => Unit) = {
+  def respond: (ResponseFunction[NettyHttpResponse] => Unit) = {
     case Pass =>
       context.fireChannelRead(request)
     case rf =>
       val keepAlive = HttpHeaders.isKeepAlive(request)
-      val closer = new unfiltered.response.Responder[FullHttpResponse] {
-        def respond(res: HttpResponse[FullHttpResponse]) {
+      val closer = new unfiltered.response.Responder[NettyHttpResponse] {
+        def respond(res: HttpResponse[NettyHttpResponse]) {
           res.outputStream.close()
           (
-            if (keepAlive)
-              unfiltered.response.Connection("Keep-Alive") ~>
-              unfiltered.response.ContentLength(
-                res.underlying.content().readableBytes().toString)
-            else unfiltered.response.Connection("close")
+            if (keepAlive) {
+              val defaults = unfiltered.response.Connection("Keep-Alive")
+              content match {
+                case Some(has) =>
+                  defaults ~> unfiltered.response.ContentLength(
+                    has.content().readableBytes().toString)
+                case _ => defaults
+              }
+            } else unfiltered.response.Connection("close")
           )(res)
         }
       }
@@ -132,13 +138,21 @@ case class ReceivedMessage(
   }
 }
 
-class ResponseBinding[U <: FullHttpResponse](res: U)
-    extends HttpResponse(res) {
+class ResponseBinding[U <: NettyHttpResponse](res: U)
+  extends HttpResponse(res) {
+
+  def content: Option[HttpContent] =
+    res match {
+      case has: HttpContent => Some(has)
+      case not => None
+    }
+
   private lazy val byteOutputStream = new ByteArrayOutputStream {
     // fixme: the docs state http://docs.oracle.com/javase/6/docs/api/java/io/ByteArrayOutputStream.html#close()
     //  should have no effect. we are breaking that rule here if close is called more than once
     override def close = {
-      res.content.clear().writeBytes(Unpooled.copiedBuffer(this.toByteArray))
+      // only FullHttpResponses have content
+      content.foreach(_.content.clear().writeBytes(Unpooled.copiedBuffer(this.toByteArray)))
     }
   }
 
