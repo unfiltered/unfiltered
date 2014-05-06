@@ -43,6 +43,8 @@ object Common {
       Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked")
         ++ (if (!sv.startsWith("2.9")) Seq("-feature") else Seq.empty[String])),
 
+    incOptions := incOptions.value.withNameHashing(true),
+
     parallelExecution in Test := false, // :( test servers collide on same port
 
     homepage := Some(new java.net.URL("http://unfiltered.databinder.net/")),
