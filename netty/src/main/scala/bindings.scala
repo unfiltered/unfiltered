@@ -38,7 +38,7 @@ class RequestBinding(msg: ReceivedMessage)
 
   private def bodyParams = (this, content) match {
     case ((POST(_) | PUT(_)) & RequestContentType(ct), Some(content))
-      if ct.contains("application/x-www-form-urlencoded") =>
+      if ct.contains(HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED) =>
       URLParser.urldecode(content.content.toString(JNIOCharset.forName(charset)))
     case _ =>
       Map.empty[String,Seq[String]]
@@ -54,11 +54,7 @@ class RequestBinding(msg: ReceivedMessage)
   lazy val reader =
     new BufferedReader(new InputStreamReader(inputStream, charset))
 
-  def protocol = req.getProtocolVersion match {
-    case HttpVersion.HTTP_1_0 => "HTTP/1.0"
-    case HttpVersion.HTTP_1_1 => "HTTP/1.1"
-    case _ => "???"
-  }
+  def protocol = req.getProtocolVersion.text()
 
   def method = req.getMethod.toString.toUpperCase
 
