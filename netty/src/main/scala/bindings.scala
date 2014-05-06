@@ -8,7 +8,7 @@ import io.netty.buffer.{ ByteBufInputStream, Unpooled }
 import io.netty.channel.{ ChannelFuture, ChannelFutureListener, ChannelHandlerContext }
 import io.netty.handler.codec.http.{
   DefaultHttpResponse, DefaultFullHttpResponse, FullHttpRequest, FullHttpResponse, HttpContent,
-  HttpHeaders, HttpRequest => NettyHttpRequest, HttpResponse => NettyHttpResponse,
+  HttpHeaders, HttpMessage, HttpRequest => NettyHttpRequest, HttpResponse => NettyHttpResponse,
   HttpResponseStatus, HttpVersion }
 import io.netty.handler.ssl.SslHandler
 import io.netty.util.{ CharsetUtil, ReferenceCountUtil }
@@ -20,6 +20,14 @@ import scala.collection.JavaConverters._
 
 object HttpConfig {
    val DEFAULT_CHARSET = CharsetUtil.UTF_8.name()
+}
+
+object Content {
+  def unapply(msg: HttpMessage) =
+    msg match {
+      case has: HttpContent => Some(has)
+      case _ => None
+    }
 }
 
 class RequestBinding(msg: ReceivedMessage)
@@ -85,10 +93,7 @@ case class ReceivedMessage(
   message: java.lang.Object) { // todo: remove this. its the same as request?
 
   def content: Option[HttpContent] =
-    request match {
-      case has: HttpContent => Some(has)
-      case not => None
-    }
+    Content.unapply(request)
 
   /** Binds a Netty HttpResponse res to Unfiltered's HttpResponse to apply any
    * response function to it. */
@@ -114,7 +119,7 @@ case class ReceivedMessage(
             if (keepAlive) {
               val defaults = unfiltered.response.Connection(HttpHeaders.Values.KEEP_ALIVE)
               res.underlying match {
-                case has: HttpContent =>
+                case Content(has) =>
                   defaults ~> unfiltered.response.ContentLength(
                     has.content.readableBytes.toString)
                 case _ =>
@@ -143,10 +148,7 @@ case class ReceivedMessage(
 class ResponseBinding[U <: NettyHttpResponse](res: U)
   extends HttpResponse(res) {
   private[netty] lazy val content: Option[HttpContent] =
-    res match {
-      case has: HttpContent => Some(has)
-      case not => None
-    }
+    Content.unapply(res)
 
   private[this] lazy val byteOutputStream = new ByteArrayOutputStream {
     // fixme: the docs state http://docs.oracle.com/javase/6/docs/api/java/io/ByteArrayOutputStream.html#close()
