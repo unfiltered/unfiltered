@@ -4,7 +4,7 @@ import unfiltered.netty.async.Plan
 import unfiltered.netty.resources.{ FileSystemResource, Resolve, Resource }
 import unfiltered.request.{ GET, HEAD, HttpRequest, IfModifiedSince, Path, & }
 import unfiltered.response.{
-  BadRequest, CacheControl, ContentLength, ContentType, Date,
+  BadRequest, CacheControl, Connection, ContentLength, ContentType, Date,
   Expires, Forbidden, LastModified, NotFound, NotModified, Ok,
   Pass, PlainTextContent, ResponseFunction }
 
@@ -13,10 +13,9 @@ import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{
   LastHttpContent, HttpHeaders, HttpResponse }
 import io.netty.handler.stream.{ ChunkedFile, ChunkedStream }
-import io.netty.util.ReferenceCountUtil
+import io.netty.util.{ CharsetUtil, ReferenceCountUtil }
 import java.io.{ File, FileNotFoundException, RandomAccessFile }
 import java.net.{ URL, URLDecoder }
-import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.{ Calendar, GregorianCalendar }
 import javax.activation.MimetypesFileTypeMap
@@ -47,10 +46,6 @@ object Retrieval {
     GET.unapply(r).orElse { HEAD.unapply(r) }
 }
 
-object Resources {
-  val utf8 = Charset.forName("UTF-8")
-  val iso88591 = Charset.forName("ISO-8859-1")
-}
 
 /** Serves static resources.
  *  Adapted from Netty's example HttpStaticFileServerHandler
@@ -68,7 +63,8 @@ case class Resources(
   def passOr[T <: HttpResponse](
     rf: => ResponseFunction[HttpResponse])
     (req: HttpRequest[ReceivedMessage]) =
-    if (passOnFail) Pass else req.underlying.respond(rf)
+    if (passOnFail) Pass
+    else req.underlying.respond(rf)
 
   def forbid = passOr(Forbidden)_
 
@@ -95,7 +91,7 @@ case class Resources(
             else try {
               val len = rsrc.size
               val cal = new GregorianCalendar()
-              var heads = Ok ~> ContentLength(len.toString) ~>
+              var defaultHeaders = Ok ~> ContentLength(len.toString) ~>
                 // note: bin/text/charset not included
                 ContentType(Mimes(rsrc.path)) ~>
                 Date(Dates.format(cal.getTime)) ~>
@@ -104,11 +100,15 @@ case class Resources(
 
               cal.add(Calendar.SECOND, cacheSeconds)
 
-              // note: we are sending are using a partial response
+              val headers =
+                if (HttpHeaders.isKeepAlive(req.underlying.request))
+                  defaultHeaders ~> Connection(HttpHeaders.Values.KEEP_ALIVE)
+                else defaultHeaders
+              // we are sending are using a partial response
               // because files are chunked.
               val writeHeaders = ctx.write(
-                req.underlying.defaultPartialResponse(
-                  heads ~> Expires(Dates.format(cal.getTime))))
+                req.underlying.partialResponse(
+                  headers ~> Expires(Dates.format(cal.getTime))))
 
               def lastly(future: ChannelFuture) = {
                 // close channel if not keep alive
@@ -139,14 +139,17 @@ case class Resources(
                   case other =>
                     ctx.writeAndFlush(new ChunkedStream(other.in))
                 }
-              } else lastly(writeHeaders)
+              } else lastly(writeHeaders) // HEAD request
             } catch {
-              case e: FileNotFoundException => notFound(req)
+              case e: FileNotFoundException =>
+                notFound(req)
             }
         }
-      case _ => forbid(req)
+      case _ =>
+        forbid(req)
     }
-    case req => badRequest(req)
+    case req =>
+      badRequest(req)
   }
 
   /** Converts a raw uri to a safe resource path. Attempts to prevent
@@ -167,8 +170,8 @@ case class Resources(
     }
 
   private def decode(uri: String) =
-    (allCatch.opt { URLDecoder.decode(uri, utf8.name()) }
+    (allCatch.opt { URLDecoder.decode(uri, CharsetUtil.UTF_8.name()) }
      orElse {
-       allCatch.opt { URLDecoder.decode(uri, iso88591.name()) }
+       allCatch.opt { URLDecoder.decode(uri, CharsetUtil.ISO_8859_1.name()) }
      })
 }
