@@ -11,7 +11,7 @@ import io.netty.handler.codec.http.{
   HttpHeaders, HttpRequest => NettyHttpRequest, HttpResponse => NettyHttpResponse,
   HttpResponseStatus, HttpVersion }
 import io.netty.handler.ssl.SslHandler
-import io.netty.util.ReferenceCountUtil
+import io.netty.util.{ CharsetUtil, ReferenceCountUtil }
 import java.io.{ BufferedReader, ByteArrayOutputStream, InputStreamReader }
 import java.net.{ InetSocketAddress, URLDecoder }
 import java.nio.charset.{ Charset => JNIOCharset }
@@ -19,17 +19,17 @@ import java.nio.charset.{ Charset => JNIOCharset }
 import scala.collection.JavaConverters._
 
 object HttpConfig {
-   val DEFAULT_CHARSET = "UTF-8"
+   val DEFAULT_CHARSET = CharsetUtil.UTF_8.name()
 }
 
 class RequestBinding(msg: ReceivedMessage)
   extends HttpRequest(msg) with Async.Responder[NettyHttpResponse] {
 
-  private val req = msg.request
+  private[this] val req = msg.request
 
-  private val content = msg.content
+  private[this] val content = msg.content
 
-  private lazy val params = queryParams ++ bodyParams
+  private[this] lazy val params = queryParams ++ bodyParams
 
   private def queryParams = req.getUri.split("\\?", 2) match {
     case Array(_, qs) => URLParser.urldecode(qs)
@@ -102,7 +102,8 @@ case class ReceivedMessage(
   /** @return a new Netty FullHttpResponse bound to an Unfiltered HttpResponse */
   lazy val defaultResponse = response(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))_
 
-  lazy val defaultPartialResponse = response(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))_
+  /** @return a new partial Netty HttpResonse bound to an Unfiltered HttpResponse. */
+  lazy val partialResponse = response(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))_
 
   /** Applies rf to a new `defaultResponse` and writes it out */
   def respond: (ResponseFunction[NettyHttpResponse] => Unit) = {
@@ -110,19 +111,20 @@ case class ReceivedMessage(
       context.fireChannelRead(request)
     case rf =>
       val keepAlive = HttpHeaders.isKeepAlive(request)
-      val closer = new unfiltered.response.Responder[NettyHttpResponse] {
+      lazy val closer = new unfiltered.response.Responder[NettyHttpResponse] {
         def respond(res: HttpResponse[NettyHttpResponse]) {
-          res.outputStream.close()
+          res.outputStream.close() // close() triggers writing content to response body
           (
             if (keepAlive) {
-              val defaults = unfiltered.response.Connection("Keep-Alive")
-              content match {
-                case Some(has) =>
+              val defaults = unfiltered.response.Connection(HttpHeaders.Values.KEEP_ALIVE)
+              res.underlying match {
+                case has: HttpContent =>
                   defaults ~> unfiltered.response.ContentLength(
-                    has.content().readableBytes().toString)
-                case _ => defaults
+                    has.content.readableBytes.toString)
+                case _ =>
+                  defaults
               }
-            } else unfiltered.response.Connection("close")
+            } else unfiltered.response.Connection(HttpHeaders.Values.CLOSE)
           )(res)
         }
       }
@@ -138,21 +140,29 @@ case class ReceivedMessage(
   }
 }
 
+/** An unfiltered response implementation backed by a netty http response.
+ *  Note the type of netty HttpResponse determines whether or not the unfiltered
+ *  response combinators can write to it. As a general rule of thumb, only netty
+ *  FullHttpResponses may be writen to by calling respond with a response writer */
 class ResponseBinding[U <: NettyHttpResponse](res: U)
   extends HttpResponse(res) {
-
-  def content: Option[HttpContent] =
+  private[netty] lazy val content: Option[HttpContent] =
     res match {
       case has: HttpContent => Some(has)
       case not => None
     }
 
-  private lazy val byteOutputStream = new ByteArrayOutputStream {
+  private[this] lazy val byteOutputStream = new ByteArrayOutputStream {
     // fixme: the docs state http://docs.oracle.com/javase/6/docs/api/java/io/ByteArrayOutputStream.html#close()
     //  should have no effect. we are breaking that rule here if close is called more than once
     override def close = {
-      // only FullHttpResponses have content
-      content.foreach(_.content.clear().writeBytes(Unpooled.copiedBuffer(this.toByteArray)))
+      val bytes = this.toByteArray
+      content match {
+        case Some(buf) =>
+          buf.content.clear().writeBytes(Unpooled.copiedBuffer(bytes))
+        case _ => if (bytes.nonEmpty) System.err.println(
+          "Attempt made to write to a partial http response. This is not a supported operation.")
+      }
     }
   }
 
