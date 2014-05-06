@@ -7,7 +7,7 @@ import unfiltered.request.{ Charset, HttpRequest, POST, PUT, RequestContentType,
 import io.netty.buffer.{ ByteBufInputStream, Unpooled }
 import io.netty.channel.{ ChannelFuture, ChannelFutureListener, ChannelHandlerContext }
 import io.netty.handler.codec.http.{
-  DefaultHttpResponse, DefaultFullHttpResponse, FullHttpRequest, FullHttpResponse, HttpContent,
+  DefaultHttpResponse, DefaultFullHttpResponse, HttpContent,
   HttpHeaders, HttpMessage, HttpRequest => NettyHttpRequest, HttpResponse => NettyHttpResponse,
   HttpResponseStatus, HttpVersion }
 import io.netty.handler.ssl.SslHandler
