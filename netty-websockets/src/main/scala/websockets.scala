@@ -9,8 +9,11 @@ case class Open(socket: WebSocket) extends SocketCallback
 case class Close(socket: WebSocket) extends SocketCallback
 case class Message(socket: WebSocket, msg: Msg) extends SocketCallback
 case class Error(socket: WebSocket, err: Throwable) extends SocketCallback
+case class Continuation(
+  socket: WebSocket, fragment: Fragment) extends SocketCallback
 
 sealed trait Msg
+case class Fragment(buf: ByteBuf, last: Boolean) extends Msg
 case class Text(txt: String) extends Msg
 case class Binary(buf: ByteBuf) extends Msg
 

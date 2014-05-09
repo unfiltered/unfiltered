@@ -9,10 +9,11 @@ import io.netty.channel.{
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.FullHttpRequest
 import io.netty.handler.codec.http.websocketx.{
-  BinaryWebSocketFrame, CloseWebSocketFrame, PingWebSocketFrame,
-  PongWebSocketFrame, TextWebSocketFrame,
+  BinaryWebSocketFrame, CloseWebSocketFrame, ContinuationWebSocketFrame,
+  PingWebSocketFrame, PongWebSocketFrame, TextWebSocketFrame,
   WebSocketFrame, WebSocketFrameAggregator, WebSocketFrameDecoder,
-  WebSocketServerHandshaker, WebSocketHandshakeException, WebSocketServerHandshakerFactory
+  WebSocketServerHandshaker, WebSocketHandshakeException,
+  WebSocketServerHandshakerFactory
 }
 import io.netty.util.{ CharsetUtil, ReferenceCountUtil }
 import scala.util.control.Exception.catching
@@ -145,6 +146,13 @@ case class SocketPlan(
       case b: BinaryWebSocketFrame =>
         attempt(Message(WebSocket(ctx.channel), Binary(b.content)))
           .foreach(_ => ReferenceCountUtil.release(b))
+      case p: PongWebSocketFrame =>
+        // unsolicited pong rec from client, a response is not expected
+        // http://tools.ietf.org/html/rfc6455#section-5.5.3
+      case c: ContinuationWebSocketFrame =>
+        attempt(Continuation(
+          WebSocket(ctx.channel), Fragment(c.content, c.isFinalFragment)))
+          .foreach(_ => ReferenceCountUtil.release(c))
       case f: WebSocketFrame =>
         // other frames are not supported at this time
         pass(ctx, f)
