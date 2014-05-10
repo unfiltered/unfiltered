@@ -1,3 +1,17 @@
+The major new feature of this release is an **upgrade to
+[Netty 4][netty4]** for `unfiltered-netty-*` modules, carried out by
+[softprops][softprops].
+
+Support for Netty 3 is not continued on the Unfiltered 0.8.x line. If
+you need anything for Netty 3, speak up on the [list][list] and we can
+work out an 0.7.x release. (Most modules of Unfiltered 0.7.1 were
+built and published for Scala 2.11 on April 20th.)
+
+There's also a bevy of bug fixes and new features, including many from
+the [Scala Bug Bash Meetup][bash].
+
+Thanks to all who contributed!
+
 * Catch `RejectedExecutionException` if server is already shutdown or terminated [#56][56]
 * Fix bug causing auth failure on passwords containing `:` character [#193][193]
 * Support for defining an async `Intent` using Scala futures [#176][176]
@@ -11,6 +25,8 @@
 * Request uri can be the string "null" [#210][210]
 * Handle unsolicited websockets pong [#212][212]
 
+ This version of Unfiltered supports Scala 2.9.3 thorugh 2.11.x.
+
 [56]: https://github.com/unfiltered/unfiltered/issues/56
 [176]: https://github.com/unfiltered/unfiltered/pull/176
 [193]: https://github.com/unfiltered/unfiltered/pull/193
@@ -23,3 +39,7 @@
 [136]: https://github.com/unfiltered/unfiltered/issues/136
 [210]: https://github.com/unfiltered/unfiltered/issues/210
 [212]: https://github.com/unfiltered/unfiltered/issues/212
+[netty4]: http://netty.io/wiki/new-and-noteworthy-in-4.x.html
+[bash]: http://www.meetup.com/Scala-Bug-Bash/
+[softprops]: https://twitter.com/softprops
+[list]: https://groups.google.com/forum/#!forum/unfiltered-scala
