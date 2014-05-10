@@ -3,6 +3,8 @@ package unfiltered.mac
 import unfiltered.request._
 import unfiltered.response._
 
+import scala.language.implicitConversions
+
 object Mac extends Signing {
   def challenge: ResponseFunction[Any] = challenge(None)
   def challenge(err: Option[String]) = Unauthorized ~> WWWAuthenticate("%s%s" format("MAC", err match {

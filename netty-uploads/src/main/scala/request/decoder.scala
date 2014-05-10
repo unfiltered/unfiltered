@@ -43,7 +43,7 @@ class PostDecoder(req: HttpRequest, useDisk: Boolean = true) {
     try decoder.map(_.getBodyHttpDatas.asScala.toList).getOrElse(Nil) catch {
       case e: NotEnoughDataDecoderException =>
         sys.error("Tried to decode a multipart request before it was fully received. Make sure there is either a HttpChunkAggregator in the handler pipeline e.g. _.chunked() or use a MultiPartDecoder plan.")
-      case e/*potentially thrown if items is called after destroy is called*/ =>
+      case e: Exception /*potentially thrown if items is called after destroy is called*/ =>
         sys.error("unexpected error in items %s" format e)
     }
   }

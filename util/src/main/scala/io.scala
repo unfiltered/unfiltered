@@ -1,4 +1,5 @@
 package unfiltered.util
+import scala.language.reflectiveCalls
 
 trait IO {
   /** Manage the usage of some object that must be closed after use */

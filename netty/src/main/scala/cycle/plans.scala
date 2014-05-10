@@ -14,6 +14,8 @@ import unfiltered.response.{ Pass, ResponseFunction }
 import unfiltered.request.HttpRequest
 import unfiltered.util.control.NonFatal
 
+import scala.language.reflectiveCalls
+
 object Plan {
   type Intent = unfiltered.Cycle.Intent[ReceivedMessage, HttpResponse]
 }

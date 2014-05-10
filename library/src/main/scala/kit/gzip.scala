@@ -3,6 +3,7 @@ package unfiltered.kit
 import unfiltered.request._
 import unfiltered.response._
 import unfiltered.Cycle
+import scala.language.reflectiveCalls
 
 object GZip extends Prepend {
   /** Inserts ResponseFilter.GZip and GZip header into the output

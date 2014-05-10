@@ -103,17 +103,17 @@ object FromCookies {
                   if(maxMils < 1)  0
                   else (maxMils / 1000).toInt + (if(maxMils % 1000 != 0) 1 else 0)))
               } catch {
-                case _ => cookie
+                case _: Exception => cookie
               })
               case (LCMaxAge, v)     => iter.next;  (false, try {
                 cookie.copy(maxAge = Option(Integer.parseInt(v)))
               } catch {
-                case _ => cookie
+                case _: Exception => cookie
               })
               case (LCVersion, v)    => iter.next;  (false, try {
                 cookie.copy(version = Integer.parseInt(v))
               } catch {
-                case _ => cookie
+                case _: Exception => cookie
               })
               case (LCPort, _)    =>  iter.next; (false, cookie) // don't support
               case (pass, _)      =>  (true, cookie)

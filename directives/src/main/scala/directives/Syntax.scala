@@ -2,6 +2,7 @@ package unfiltered.directives
 
 import unfiltered.request._
 import unfiltered.response._
+import scala.language.implicitConversions
 
 trait Syntax extends Directives {
   class Ops[X](x:X){

@@ -1,6 +1,7 @@
 package unfiltered.request
 
 import unfiltered.response.ResponseFunction
+import scala.language.implicitConversions
 import scala.util.control.Exception.allCatch
 import java.net.URLDecoder
 
@@ -73,7 +74,7 @@ object QueryParams {
   
   def urldecode(enc: String) : Map[String, Seq[String]] = {
     def decode(raw: String) = URLDecoder.decode(raw, "UTF-8")
-    val params = enc.dropWhile('?'!=).dropWhile('?'==)
+    val params = enc.dropWhile('?'!= _).dropWhile('?'== _)
     val pairs: Seq[(String,String)] = params.split('&').flatMap {
       _.split('=') match {
         case Array(key, value) => List((decode(key), decode(value)))

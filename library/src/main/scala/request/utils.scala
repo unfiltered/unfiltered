@@ -1,5 +1,7 @@
 package unfiltered.request
 
+import scala.language.reflectiveCalls
+
 object & {
   /** Used to bind extractors to a single request object */
   def unapply[A](a: A) = Some(a, a)

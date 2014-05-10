@@ -6,6 +6,9 @@ import unfiltered.response._
 import unfiltered.request.{ HttpRequest => Req }
 import unfiltered.filter.request.ContextPath // work on removing this dep
 
+import scala.language.reflectiveCalls
+import scala.language.implicitConversions
+
 object OAuthorization {
 
   val RedirectURI = "redirect_uri"

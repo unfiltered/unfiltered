@@ -80,7 +80,7 @@ private [request] object SeqValueParser extends (Iterator[String] => List[String
    def apply(values: Iterator[String]) = {
      def split(raw: String): List[String] =
        (raw.split(",") map {
-         _.trim.takeWhile { _ != ';' } mkString
+         _.trim.takeWhile { _ != ';' }.mkString
        }).toList
      values.toList.flatMap(split)
    }

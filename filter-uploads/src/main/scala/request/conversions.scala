@@ -4,6 +4,7 @@ object IteratorConversions {
   import org.apache.commons.{fileupload => fu}
   import fu.{FileItemIterator, FileItemStream}
   import java.util.{Iterator => JIterator}
+  import scala.language.implicitConversions
   
   /** convert apache commons file iterator to scala iterator */
   implicit def acfi2si(i : FileItemIterator) = new FIIteratorWrapper(i)

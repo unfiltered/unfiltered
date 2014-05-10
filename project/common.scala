@@ -28,13 +28,12 @@ object Common {
 
     version := "0.8.1-SNAPSHOT",
 
-    crossScalaVersions := Seq("2.9.3", "2.10.4", "2.11.0"),
+    crossScalaVersions := Seq("2.10.4", "2.11.0"),
 
     scalaVersion := crossScalaVersions.value.head,
 
-    scalacOptions <++= scalaVersion.map(sv=>
-      Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked")
-        ++ (if (!sv.startsWith("2.9")) Seq("-feature") else Seq.empty[String])),
+    scalacOptions ++=
+      Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked", "-feature"),
 
     incOptions := incOptions.value.withNameHashing(true),
 
