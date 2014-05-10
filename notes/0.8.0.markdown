@@ -1,0 +1,25 @@
+* Catch `RejectedExecutionException` if server is already shutdown or terminated [#56][56]
+* Fix bug causing auth failure on passwords containing `:` character [#193][193]
+* Support for defining an async `Intent` using Scala futures [#176][176]
+* Faster serialization for cookies [#196][196]
+* Support gzip-encoded request bodies [#201][201]
+* Fix MIME type parsing failure [#202][202]
+* Add Content-Disposition header [#203][203]
+* Name of unfiltered.response.HeaderName should be a val [#206][206]
+* Use specs2 instead of specs in all tests [#207][207]
+* OAuth 1 header parsing should trim spaces [#136][136]
+* Request uri can be the string "null" [#210][210]
+* Handle unsolicited websockets pong [#212][212]
+
+[56]: https://github.com/unfiltered/unfiltered/issues/56
+[176]: https://github.com/unfiltered/unfiltered/pull/176
+[193]: https://github.com/unfiltered/unfiltered/pull/193
+[196]: https://github.com/unfiltered/unfiltered/pull/196
+[201]: https://github.com/unfiltered/unfiltered/issues/201
+[202]: https://github.com/unfiltered/unfiltered/pull/202
+[203]: https://github.com/unfiltered/unfiltered/pull/203
+[207]: https://github.com/unfiltered/unfiltered/pull/207
+[206]: https://github.com/unfiltered/unfiltered/issues/206
+[136]: https://github.com/unfiltered/unfiltered/issues/136
+[210]: https://github.com/unfiltered/unfiltered/issues/210
+[212]: https://github.com/unfiltered/unfiltered/issues/212
