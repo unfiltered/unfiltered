@@ -25,7 +25,7 @@ but these instructions will not assume it is.
     ~/bin/cs n8han/giter8
 
 That installs a `g8`. Now you have a script to run giter8. The next
-step creates a sbt 0.12 project under the current working directory.
+step creates a sbt project under the current working directory.
 
     ~/bin/g8 unfiltered/unfiltered --name=justplayin
 
