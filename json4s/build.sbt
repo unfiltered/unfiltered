@@ -7,5 +7,5 @@ unmanagedClasspath in (local("json4s"), Test) <++=
    }
 
 libraryDependencies <++= scalaVersion( sv =>
-  Seq("org.json4s" %% "json4s-native" % "3.2.8") ++ Common.integrationTestDeps(sv)
+  Seq("org.json4s" %% "json4s-native" % "3.2.9") ++ Common.integrationTestDeps(sv)
 )
