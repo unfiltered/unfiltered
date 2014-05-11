@@ -3,8 +3,8 @@ before_script:
  - "export JAVA_OPTS='-Xmx512m -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=256M'"
 language: scala
 scala:
-  - 2.9.3
-  - 2.10.3
+  - 2.10.4
+  - 2.11.0
 jdk:
   - openjdk6
 

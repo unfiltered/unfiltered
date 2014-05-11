@@ -101,6 +101,7 @@ object NoChunkAggregatorSpec extends Specification
             code must_== 200
         }
       } finally { http.shutdown }
+      success
     }
 
     // note(doug): in netty3 versions of unfiltered this would result in a 500 error
@@ -114,6 +115,7 @@ object NoChunkAggregatorSpec extends Specification
             code must_== 200
         }
       } finally { http.shutdown }
+      success
     }
 
     "handle multipart uploads which are not chunked" in {
