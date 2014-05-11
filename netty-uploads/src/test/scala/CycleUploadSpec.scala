@@ -150,6 +150,7 @@ object CycleUploadSpec extends Specification
             code must_== 404
         }
       } finally { http.shutdown }
+      success
     }
   }
 }

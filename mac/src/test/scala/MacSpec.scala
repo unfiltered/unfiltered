@@ -33,17 +33,20 @@ object MacSpec extends Specification with ThrownMessages with unfiltered.specs2.
        Http.when(_ == 401)(host / "echo" >:> { h =>
          h must havePair(("WWW-Authenticate", Set("MAC")))
        })
+       success
      }
     "respond with a challenge when required authorization params are missing" in {
       Http.when(_ == 401)(host / "echo" >:> { h =>
         h must havePair(("WWW-Authenticate", Set("MAC")))
       })
+      success
     }
     "respond with a challege with a malformed nonce" in {
        Http.when(_ == 401)(host / "echo" <:< Map(
          "Authorization" -> """MAC id="%s",nonce="%s",mac="%s" """.format("test_id", "test:test", "asdfasdf")) >:> { h =>
          h must havePair(("WWW-Authenticate", Set("MAC")))
        })
+       success
      }
     "respond with a body when authorization is valid" in {
        val body = Http(host / "echo" <:<  Map(

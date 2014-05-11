@@ -208,6 +208,7 @@ object ChunkAggregatedUploadSpec extends Specification
             code must_== 404
         }
       } finally { http.shutdown }
+      success
     }
 
     // Cycle
@@ -251,6 +252,7 @@ object ChunkAggregatedUploadSpec extends Specification
             code must_== 404
         }
       } finally { http.shutdown }
+      success
     }
   }
 }

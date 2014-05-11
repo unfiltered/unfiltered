@@ -147,6 +147,7 @@ object MixedPlanSpec extends Specification
             code must_== 404
         }
       } finally { http.shutdown }
+      success
     }
 
     // Cycle
@@ -161,6 +162,7 @@ object MixedPlanSpec extends Specification
             code must_== 404
         }
       } finally { http.shutdown }
+      success
     }
 
     "handle cycle file uploads disk" in {
@@ -197,6 +199,7 @@ object MixedPlanSpec extends Specification
             code must_== 404
         }
       } finally { http.shutdown }
+      success
     }
 
     // Async
@@ -235,6 +238,7 @@ object MixedPlanSpec extends Specification
             code must_== 404
         }
       } finally { http.shutdown }
+      success
     }
   }
 }
