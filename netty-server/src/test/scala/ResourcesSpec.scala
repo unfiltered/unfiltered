@@ -6,7 +6,7 @@ import org.specs2.mutable.Specification
 object ResourcesSpec extends Specification with unfiltered.specs2.netty.Served {
    import dispatch.classic._
 
-   implicit def toStatusVerb(req: dispatch.classic.Request) = new {
+   implicit class toStatusVerb(req: dispatch.classic.Request) {
      def statuscode = dispatch.classic.Handler(req, {
        case (code, _, _) => code
      }, scala.util.control.Exception.nothingCatcher)
