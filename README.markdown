@@ -32,9 +32,9 @@ Binds the core library to a Netty channel handler and provides an embedded serve
 
 Provides extractors for multipart posts using netty.
 
-### spec
+### specs2
 
-Provides helpers for testing Intents with [specs](http://code.google.com/p/specs/).
+Provides helpers for testing Intents with [specs2](http://etorreborre.github.io/specs2/).
 
 ### uploads
 
