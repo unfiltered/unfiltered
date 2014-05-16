@@ -26,7 +26,7 @@ names are as follows:
 * unfiltered-netty-server_$scala$
 * unfiltered-uploads_$scala$
 * unfiltered-util_$scala$
-* unfiltered-spec_$scala$
+* unfiltered-specs2_$scala$
 * unfiltered-scalatest_$scala$
 * unfiltered-json_$scala$
 * unfiltered-oauth_$scala$
