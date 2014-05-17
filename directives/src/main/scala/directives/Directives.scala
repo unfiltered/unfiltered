@@ -20,7 +20,7 @@ trait Directives {
 
   object commit extends Directive[Any, Nothing, Unit](_ => Success(())){
     override def flatMap[T, R, A](f:Unit => Directive[T, R, A]):Directive[T, R, A] =
-      commit(f())
+      commit(f(()))
 
     def apply[T, R, A](d:Directive[T, R, A]) = Directive[T, R, A]{ r => d(r) match {
       case Failure(response) => Error(response)

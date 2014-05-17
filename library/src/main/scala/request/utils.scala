@@ -9,15 +9,18 @@ object & {
   def unapply[A,B](tup: Tuple2[A,B]) = Some(tup)
 }
 
+abstract class RequestExtractor[E] {
+  def unapply[T](req: HttpRequest[T]): Option[E]
+}
+
 /** For working with request extractor objects */
 object RequestExtractor {
-  /** structural type for request extractors */
-  type RE[E] = {
-    def unapply[T](req: HttpRequest[T]): Option[E]
-  }
 
   /** @return new extractor, reproduces request when predicate is satisfied */
-  def predicate[E](reqExtract: RE[E])(predicate: E => Boolean) = new {
+  def predicate[E](reqExtract: RequestExtractor[E])(predicate: E => Boolean): Predicate[E] =
+    new Predicate(reqExtract, predicate)
+
+  final class Predicate[E] private[RequestExtractor] (reqExtract: RequestExtractor[E], predicate: E => Boolean) {
     def unapply[T](req: HttpRequest[T]): Option[HttpRequest[T]] =
       for (value <- reqExtract.unapply(req) if predicate(value))
       yield req
