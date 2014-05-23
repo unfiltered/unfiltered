@@ -135,10 +135,10 @@ case class Resources(
                           raf, 0, len, 8192/*ChunkedStream.DEFAULT_CHUNK_SIZE*/)
                       else new DefaultFileRegion(raf.getChannel, 0, len))
 
-                    lastly(ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT))
                   case other =>
-                    ctx.writeAndFlush(new ChunkedStream(other.in))
+                    ctx.write(new ChunkedStream(other.in))
                 }
+                lastly(ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT))
               } else lastly(writeHeaders) // HEAD request
             } catch {
               case e: FileNotFoundException =>
