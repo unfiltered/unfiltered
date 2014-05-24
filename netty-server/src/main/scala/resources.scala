@@ -77,11 +77,11 @@ case class Resources(
     case Retrieval(Path(path)) & req => safe(path.drop(1)) match {
       case Some(rsrc) =>
         val ctx = req.underlying.context
-        def ms_to_s(t: Long) = MILLISECONDS.toSeconds(t)
+        def seconds(t: Long) = MILLISECONDS.toSeconds(t)
         IfModifiedSince(req) match {
           // compare using 1 second resolution because that's the
           // precision of the time format in the IfModifiedSince header
-          case Some(since) if (ms_to_s(since.getTime) == ms_to_s(rsrc.lastModified)) =>
+          case Some(since) if seconds(since.getTime) == seconds(rsrc.lastModified) =>
             // close immediately and do not include content-length header
             // http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
             ctx.write(
