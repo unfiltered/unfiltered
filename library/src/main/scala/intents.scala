@@ -1,7 +1,7 @@
 package unfiltered
 
 import unfiltered.request.HttpRequest
-import unfiltered.response.{ResponseFunction,HttpResponse,Pass}
+import unfiltered.response.{ResponseFunction,Pass}
 
 object Cycle {
   /** A roundtrip intent is a set of instructions for producing

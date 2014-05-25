@@ -1,6 +1,5 @@
 package unfiltered.oauth
 
-import unfiltered._
 import unfiltered.request._
 import unfiltered.response._
 import unfiltered.request.{HttpRequest => Req}

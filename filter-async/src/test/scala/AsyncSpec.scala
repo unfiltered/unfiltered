@@ -6,8 +6,6 @@ object AsyncSpec extends Specification with unfiltered.specs2.jetty.Served {
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
 
-  import dispatch.classic._
-
   object APlan extends async.Plan  {
     def intent = {
       case GET(UFPath("/pass")) => Pass

@@ -18,7 +18,6 @@ trait GZipSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
 
-  import dispatch.classic._
   import java.io.{OutputStreamWriter,ByteArrayOutputStream}
   import java.util.zip.{GZIPOutputStream => GZOS}
 

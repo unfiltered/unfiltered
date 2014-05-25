@@ -9,7 +9,6 @@ import unfiltered.request.{ Path => UFPath, POST, & }
 import unfiltered.response.{ NotFound, ResponseString }
 import unfiltered.specs2.netty.Served
 
-import dispatch.classic._
 import dispatch.classic.mime.Mime._
 
 import java.io.{ File => JFile,FileInputStream => FIS }

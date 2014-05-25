@@ -16,7 +16,6 @@ trait QueryParamsSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
 
-  import dispatch.classic._
 
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = {
           

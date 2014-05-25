@@ -19,7 +19,6 @@ trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.request.{ Path => UFPath }
   import unfiltered.Cookie
   import unfiltered.Cycle.Intent
-  import QParams._
 
   import dispatch.classic._
 

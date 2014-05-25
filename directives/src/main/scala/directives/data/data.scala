@@ -1,6 +1,5 @@
 package unfiltered.directives.data
 
-import unfiltered.response.ResponseFunction
 import unfiltered.directives._
 
 trait Interpreter[A,B,+E] { self =>

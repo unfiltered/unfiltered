@@ -1,6 +1,5 @@
 package unfiltered.request
 
-import unfiltered.response.ResponseFunction
 import scala.language.implicitConversions
 import scala.util.control.Exception.allCatch
 import java.net.URLDecoder
