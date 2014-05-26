@@ -57,7 +57,6 @@ case class Resources(
   cacheSeconds: Int = 60,
   passOnFail: Boolean = true)
   extends Plan with ServerErrorResponse {
-  import Resources._
 
   // Returning Pass here will send the request upstream, otherwise
   // this method handles the request itself
@@ -95,7 +94,7 @@ case class Resources(
             else try {
               val len = rsrc.size
               val cal = new GregorianCalendar()
-              var defaultHeaders = Ok ~> ContentLength(len.toString) ~>
+              val defaultHeaders = Ok ~> ContentLength(len.toString) ~>
                 // note: bin/text/charset not included
                 ContentType(Mimes(rsrc.path)) ~>
                 Date(Dates.format(cal.getTime)) ~>

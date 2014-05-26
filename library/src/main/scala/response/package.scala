@@ -1,7 +1,5 @@
 package unfiltered
 
-import scala.language.implicitConversions
-
 package object response {
   import Pass.RF
   /** Implicit methods on PartialFunction: onPass and onFold.

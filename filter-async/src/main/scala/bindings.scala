@@ -2,8 +2,7 @@ package unfiltered.filter
 
 import unfiltered.response._
 import unfiltered.Async
-import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import unfiltered.filter
+import javax.servlet.http.HttpServletResponse
 
 trait AsyncBinding extends Async.Responder[HttpServletResponse] {
   self: RequestBinding =>

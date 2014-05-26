@@ -17,7 +17,6 @@ trait DecodesSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
 
-  import dispatch.classic._
 
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = {
     case GET(UFPath(Seg(ext :: Nil)) & Decodes.Chunked(_)) => ResponseString("chunked")

@@ -20,7 +20,7 @@ object WebSocketPlanSpec extends Specification with unfiltered.specs2.netty.Serv
 
   "A websocket server" should {
     "accept connections" in {
-      var m = mutable.Map.empty[String, String]
+      val m = mutable.Map.empty[String, String]
       tubesocks.Sock.uri(wsuri) {
         case tubesocks.Open(s) =>
           s.send("open")
@@ -31,7 +31,7 @@ object WebSocketPlanSpec extends Specification with unfiltered.specs2.netty.Serv
     }
 
     "handle messages" in {
-      var m = mutable.Map.empty[String, String]
+      val m = mutable.Map.empty[String, String]
       tubesocks.Sock.uri(wsuri) {
         case tubesocks.Open(s) =>
           s.send("from client")

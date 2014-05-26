@@ -4,7 +4,6 @@ import org.specs2.mutable.Specification
 
 /** Tests a netty server configured to handle static resources only */
 object ResourcesSpec extends Specification with unfiltered.specs2.netty.Served {
-   import dispatch.classic._
 
    implicit class toStatusVerb(req: dispatch.classic.Request) {
      def statuscode = dispatch.classic.Handler(req, {

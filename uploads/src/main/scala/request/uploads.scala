@@ -1,7 +1,5 @@
 package unfiltered.request
 
-import scala.util.control.Exception.allCatch
-
 import java.io.{File => JFile}
 
 trait MultiPartMatcher[T] {

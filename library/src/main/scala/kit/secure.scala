@@ -3,8 +3,6 @@ package unfiltered.kit
 import unfiltered.request._
 import unfiltered.response._
 
-import scala.language.reflectiveCalls
-
 object Secure {
   def redir[A,B](intent: unfiltered.Cycle.Intent[A,B],
                  port: Int = -1) = {

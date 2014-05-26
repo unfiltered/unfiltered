@@ -1,5 +1,4 @@
 package unfiltered.response
-import unfiltered.request._
 
 trait ResponseFunction[-A] { self =>
   // A is contravariant so e.g. a ResponseFunction[Any] can be supplied

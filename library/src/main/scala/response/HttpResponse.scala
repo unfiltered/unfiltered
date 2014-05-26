@@ -1,7 +1,6 @@
 package unfiltered.response
 
-import java.io.{OutputStream, PrintWriter, OutputStreamWriter}
-import unfiltered.Cookie
+import java.io.OutputStream
 
 // T is covariant so e.g. a HttpResponse[HttpServletResponse] can be
 // supplied when HttpResponse[Any] is expected.

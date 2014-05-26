@@ -8,10 +8,8 @@ object TypeSpecNetty extends Specification with unfiltered.specs2.netty.Planned 
 
 trait TypeSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
-  import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
 
-  import dispatch.classic._
 
   val message = "élo"
 

@@ -18,7 +18,6 @@ trait HeadersSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.request.{Path => P}
   import unfiltered.request.{Connection => Conn}
 
-  import dispatch.classic._
 
   def seqResp[T](s: Seq[T]) = ResponseString(s match { case Nil => "fail" case _ => "pass" })
 

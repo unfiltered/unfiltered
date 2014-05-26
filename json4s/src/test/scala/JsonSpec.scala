@@ -4,12 +4,9 @@ import org.specs2.mutable._
 
 object JsonSpec extends Specification  with unfiltered.specs2.jetty.Served {
   import unfiltered.response._
-  import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
 
-  import dispatch.classic._
   import org.json4s.JsonDSL._
-  import org.json4s.native.JsonParser._
 
   class TestPlan extends unfiltered.filter.Plan {
     def intent = {

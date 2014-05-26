@@ -1,9 +1,8 @@
 package unfiltered.netty
 
-import io.netty.channel.{ Channel, ChannelFuture, ChannelFutureListener, ChannelHandlerContext, ChannelInboundHandlerAdapter }
+import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter }
 import io.netty.channel.ChannelHandler.Sharable
-import io.netty.handler.ssl.{ NotSslRecordException, SslHandler, SslHandshakeCompletionEvent }
-import io.netty.util.concurrent.{ Future, GenericFutureListener }
+import io.netty.handler.ssl.{ NotSslRecordException, SslHandshakeCompletionEvent }
 
 /** Adds ssl handshaking to a channel handler's #channelConnected method
   * This assumes a SslHandler was added to the underlying ChannelPipeline.

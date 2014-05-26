@@ -2,7 +2,6 @@ package unfiltered.kit
 
 import unfiltered.request.BasicAuth
 import unfiltered.response._
-import scala.language.reflectiveCalls
 
 /** Self-contained basic auth */
 object Auth {
