@@ -76,18 +76,34 @@ case class Resources(
     case Retrieval(Path(path)) & req => safe(path.drop(1)) match {
       case Some(rsrc) =>
         val ctx = req.underlying.context
+
+        def lastly(future: ChannelFuture) = {
+          // close channel if not keep alive
+          if (!HttpHeaders.isKeepAlive(req.underlying.request)) {
+            future.addListener(ChannelFutureListener.CLOSE)
+          }
+          // be sure to adjust reference count
+          future.addListener(req.underlying.releaser)
+        }
+
+        def setKeepAlive(headers: ResponseFunction[Any]) =
+          if (HttpHeaders.isKeepAlive(req.underlying.request))
+            headers ~> Connection(HttpHeaders.Values.KEEP_ALIVE)
+          else headers
+
         def seconds(t: Long) = MILLISECONDS.toSeconds(t)
         IfModifiedSince(req) match {
           // compare using 1 second resolution because that's the
           // precision of the time format in the IfModifiedSince header
           case Some(since) if seconds(since.getTime) == seconds(rsrc.lastModified) =>
-            // close immediately and do not include content-length header
+            // do not include content-length header for HTTP status 304
             // http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
-            ctx.write(
-              req.underlying.defaultResponse(
-                NotModified ~>
-                Date(Dates.format(new GregorianCalendar().getTime))
-            )).addListeners(ChannelFutureListener.CLOSE, req.underlying.releaser)
+            val headers = setKeepAlive(
+              NotModified ~>
+              Date(Dates.format(new GregorianCalendar().getTime)))
+
+            lastly(ctx.write(req.underlying.defaultResponse(headers)))
+
           case _ =>
             if (!rsrc.exists || rsrc.hidden) notFound(req)
             else if (rsrc.directory) forbid(req)
@@ -103,24 +119,13 @@ case class Resources(
 
               cal.add(Calendar.SECOND, cacheSeconds)
 
-              val headers =
-                if (HttpHeaders.isKeepAlive(req.underlying.request))
-                  defaultHeaders ~> Connection(HttpHeaders.Values.KEEP_ALIVE)
-                else defaultHeaders
+              val headers = setKeepAlive(defaultHeaders)
+
               // we are sending are using a partial response
               // because files are chunked.
               val writeHeaders = ctx.write(
                 req.underlying.partialResponse(
                   headers ~> Expires(Dates.format(cal.getTime))))
-
-              def lastly(future: ChannelFuture) = {
-                // close channel if not keep alive
-                if (!HttpHeaders.isKeepAlive(req.underlying.request)) {
-                   future.addListener(ChannelFutureListener.CLOSE)
-                }
-                // be sure to adjust reference count
-                future.addListener(req.underlying.releaser)
-              }
 
               if (GET.unapply(req).isDefined && ctx.channel.isOpen) {
                 rsrc match {

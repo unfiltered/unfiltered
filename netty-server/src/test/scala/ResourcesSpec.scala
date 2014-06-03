@@ -54,9 +54,6 @@ object ResourcesSpec extends Specification with unfiltered.specs2.netty.Served {
        val ifmodsince = Map(
          "If-Modified-Since" -> Dates.format(cal.getTime))
        xhttp(host / "foo.css" <:< ifmodsince statuscode) must be_==(304)
-       xhttp(host / "foo.css" <:< ifmodsince >:> { h => h }) must not(havePair(
-         "Connection" -> "keep-alive"
-       ))
      }
    }
 }
