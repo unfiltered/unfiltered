@@ -106,6 +106,12 @@ case class ReceivedMessage(
   /** @return a new partial Netty HttpResonse bound to an Unfiltered HttpResponse. */
   lazy val partialResponse = response(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))_
 
+  /** @return a ChannelFutureListener which releases the NettyHttpRequest of this message */
+  lazy val releaser = new ChannelFutureListener {
+    def operationComplete(f: ChannelFuture): Unit =
+      ReferenceCountUtil.release(request)
+  }
+
   /** Applies rf to a new `defaultResponse` and writes it out */
   def respond: (ResponseFunction[NettyHttpResponse] => Unit) = {
     case Pass =>
@@ -131,11 +137,7 @@ case class ReceivedMessage(
       }
       val future = context.channel.writeAndFlush(
         defaultResponse(rf ~> closer)
-      ).addListener(new ChannelFutureListener {
-        def operationComplete(f: ChannelFuture) {
-          content.map(ReferenceCountUtil.release)
-        }
-      })
+      ).addListener(releaser)
       if (!keepAlive)
         future.addListener(ChannelFutureListener.CLOSE)
   }

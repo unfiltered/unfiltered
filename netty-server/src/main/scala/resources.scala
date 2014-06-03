@@ -87,7 +87,7 @@ case class Resources(
               req.underlying.defaultResponse(
                 NotModified ~>
                 Date(Dates.format(new GregorianCalendar().getTime))
-            )).addListener(ChannelFutureListener.CLOSE)
+            )).addListeners(ChannelFutureListener.CLOSE, req.underlying.releaser)
           case _ =>
             if (!rsrc.exists || rsrc.hidden) notFound(req)
             else if (rsrc.directory) forbid(req)
@@ -119,13 +119,7 @@ case class Resources(
                    future.addListener(ChannelFutureListener.CLOSE)
                 }
                 // be sure to adjust reference count
-                future.addListener(new ChannelFutureListener {
-                  def operationComplete(f: ChannelFuture) {
-                    req.underlying.content.map { c =>
-                      ReferenceCountUtil.release(c)
-                    }
-                  }
-                })
+                future.addListener(req.underlying.releaser)
               }
 
               if (GET.unapply(req).isDefined && ctx.channel.isOpen) {
