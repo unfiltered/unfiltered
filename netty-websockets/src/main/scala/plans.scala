@@ -85,7 +85,7 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
                 // as a websocket handler
                 catching(classOf[WebSocketHandshakeException]).either {
                   shaker.handshake(ctx.channel, request)
-                    .addListener(new ChannelFutureListener {
+                    .addListeners(new ChannelFutureListener {
                       def operationComplete(hf: ChannelFuture) {
                         val chan = hf.channel
                         attempt(Open(WebSocket(chan)))
@@ -101,6 +101,11 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
                           chan.pipeline.context(classOf[WebSocketFrameDecoder]).name(),
                           "ws-frame-aggregator", new WebSocketFrameAggregator(Integer.MAX_VALUE)
                         )
+                      }
+                    // todo: change this to r.underlying.releaser after pr # 222
+                    }, new ChannelFutureListener {
+                      def operationComplete(f: ChannelFuture) {
+                        ReferenceCountUtil.release(request)
                       }
                     })
                 }.fold({ _ => pass(ctx, request) }, identity)
