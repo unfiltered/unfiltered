@@ -13,23 +13,23 @@ unfiltered-jetty, you will also need to specify unfiltered-filter.
 Each module is [cross-built][sbt] against several versions of Scala
 and published to the [sonatype][sonatype] repository with the
 organization-id "net.databinder". The modules have the Scala version
-they are built against appended. For Scala $scala$, the full artifact
+they are built against appended. For Scala $scalaBinary$+, the full artifact
 names are as follows:
 
-* unfiltered_$scala$
-* unfiltered-filter_$scala$
-* unfiltered-filter-async_$scala$
-* unfiltered-netty_$scala$
-* unfiltered-netty-websockets_$scala$
-* unfiltered-jetty_$scala$
-* unfiltered-jetty-ajp_$scala$
-* unfiltered-netty-server_$scala$
-* unfiltered-uploads_$scala$
-* unfiltered-util_$scala$
-* unfiltered-specs2_$scala$
-* unfiltered-scalatest_$scala$
-* unfiltered-json_$scala$
-* unfiltered-oauth_$scala$
+* unfiltered_$scalaBinary$
+* unfiltered-filter_$scalaBinary$
+* unfiltered-filter-async_$scalaBinary$
+* unfiltered-netty_$scalaBinary$
+* unfiltered-netty-websockets_$scalaBinary$
+* unfiltered-jetty_$scalaBinary$
+* unfiltered-jetty-ajp_$scalaBinary$
+* unfiltered-netty-server_$scalaBinary$
+* unfiltered-uploads_$scalaBinary$
+* unfiltered-util_$scalaBinary$
+* unfiltered-specs2_$scalaBinary$
+* unfiltered-scalatest_$scalaBinary$
+* unfiltered-json_$scalaBinary$
+* unfiltered-oauth_$scalaBinary$
 
 [sonatype]: https://oss.sonatype.org/content/repositories/releases/net/databinder/
 [sbt]: http://www.scala-sbt.org/release/docs/Detailed-Topics/Cross-Build.html
@@ -80,7 +80,7 @@ For Maven, specify the full artifact name:
 ```xml
 <dependency>
   <groupId>net.databinder</groupId>
-  <artifactId>unfiltered-filter_$scala$</artifactId>
+  <artifactId>unfiltered-filter_$scalaBinary$</artifactId>
   <version>$version$</version>
 </dependency>
 ```
