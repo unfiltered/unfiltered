@@ -102,12 +102,7 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
                           "ws-frame-aggregator", new WebSocketFrameAggregator(Integer.MAX_VALUE)
                         )
                       }
-                    // todo: change this to r.underlying.releaser after pr # 222
-                    }, new ChannelFutureListener {
-                      def operationComplete(f: ChannelFuture) {
-                        ReferenceCountUtil.release(request)
-                      }
-                    })
+                    }, r.underlying.releaser)
                 }.fold({ _ => pass(ctx, request) }, identity)
             }
         }
