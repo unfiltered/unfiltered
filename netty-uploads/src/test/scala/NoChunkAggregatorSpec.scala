@@ -19,6 +19,8 @@ import io.netty.handler.codec.http.{ DefaultFullHttpResponse, HttpResponseStatus
 
 import org.specs2.mutable.Specification
 
+import scala.util.control.NonFatal
+
 object NoChunkAggregatorSpec extends Specification
   with Served {
 
@@ -33,7 +35,7 @@ object NoChunkAggregatorSpec extends Specification
             HttpResponseStatus.INTERNAL_SERVER_ERROR.toString.getBytes("utf-8")))
         ch.write(res).addListener(ChannelFutureListener.CLOSE)
       } catch {
-        case _ => ch.close()
+        case NonFatal(_) => ch.close()
       }
     }
   }
