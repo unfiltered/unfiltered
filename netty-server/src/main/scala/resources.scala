@@ -102,7 +102,7 @@ case class Resources(
               NotModified ~>
               Date(Dates.format(new GregorianCalendar().getTime)))
 
-            lastly(ctx.write(req.underlying.defaultResponse(headers)))
+            lastly(ctx.writeAndFlush(req.underlying.defaultResponse(headers)))
 
           case _ =>
             if (!rsrc.exists || rsrc.hidden) notFound(req)
