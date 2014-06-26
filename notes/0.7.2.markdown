@@ -2,3 +2,8 @@
 * `unfiltered.netty.async.FuturePlan` for intents that respond in a
   Scala Future, avoiding the need to call respond explicitly (as
   required by `async.Plan`)
+* More robust handling of request completion in the provided `unfiltered-filter`
+  intent in the event that a response function or external servlet component has
+  called [ServletResponse#getWriter].
+
+[ServletResponse#getWriter]: http://docs.oracle.com/javaee/6/api/javax/servlet/ServletResponse.html#getWriter()
