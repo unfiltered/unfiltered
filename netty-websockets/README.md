@@ -66,11 +66,11 @@ To mix in websockets in with a Netty HTTP server, use the full `Plan.Intent` fun
              case Open(socket) =>
                socket.send("push!")
           }
-        )
-        // onPass overrides default connection closing on invalid websocket requests
-        // and sends control flow  upstream to the next ChannelHandler
-        .onPass(_.sendUpstream(_))
-        .handler(netty.channel.Planify({
-           case Path("/bar") =>
-              ...
-        })
+       })
+       // onPass overrides default connection closing on invalid websocket requests
+       // and sends control flow  upstream to the next ChannelHandler
+       .onPass(_.fireChannelRead(_)))
+       .handler(netty.channel.Planify({
+          case Path("/bar") =>
+             ...
+       })
