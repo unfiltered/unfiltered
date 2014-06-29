@@ -37,20 +37,17 @@ object Unfiltered extends Build {
     ls.Plugin.lsSettings ++
     Seq(
     organization := "net.databinder",
-    version := "0.6.2",
+    version := "0.6.2-SNAPSHOT",
     crossScalaVersions := Seq("2.8.0", "2.8.1", "2.8.2",
                               "2.9.0", "2.9.0-1", "2.9.1", "2.9.1-1", "2.9.2"),
     scalaVersion := "2.8.2",
-    publishTo := Some("Scala Tools Nexus" at "http://nexus.scala-tools.org/content/repositories/releases/"),
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     scalacOptions ++= Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked"),
     parallelExecution in Test := false, // :( test servers collide on same port
     homepage :=
       Some(new java.net.URL("http://unfiltered.databinder.net/")),
     publishMavenStyle := true,
-    publishTo :=
-      Some("releases" at
-           "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
+    publishTo := Some("General Sentiment S3 repo" at "s3://s3-us-east-1.amazonaws.com/generalsentiment/release"),
     publishArtifact in Test := false,
     licenses := Seq("MIT" -> url("http://www.opensource.org/licenses/MIT")),
     pomExtra := (
