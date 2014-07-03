@@ -1,5 +1,6 @@
 package unfiltered.scalatest.netty
 
+import org.scalatest.Outcome
 import unfiltered.netty.Server
 import unfiltered.scalatest.Hosted
 import org.scalatest.fixture.FeatureSpec
@@ -14,7 +15,7 @@ trait Served extends FeatureSpec with Hosted {
   def setup: Int => Server
   def getServer = setup(port)
 
-  override protected def withFixture(test: NoArgTest) {
+  override protected def withFixture(test: NoArgTest): Outcome = {
     val server = getServer
     server.start()
     try {

@@ -1,7 +1,7 @@
 package unfiltered.scalatest.jetty
 
 import unfiltered.scalatest.Hosted
-import org.scalatest.FeatureSpec
+import org.scalatest.{Outcome, FeatureSpec}
 
 trait Served extends FeatureSpec with Hosted {
 
@@ -9,7 +9,7 @@ trait Served extends FeatureSpec with Hosted {
   def setup: (Server => Server)
   def getServer = setup(Http(port))
 
-  override protected def withFixture(test: NoArgTest) {
+  override protected def withFixture(test: NoArgTest): Outcome = {
     val server = getServer
     server.start()
     try {
