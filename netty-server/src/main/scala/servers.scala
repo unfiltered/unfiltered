@@ -49,7 +49,8 @@ case class Http(
     new ServerInit(channels, handlers, chunkSize)
 
   override def makePlan(h: => ChannelHandler) =
-    Http(port, host, { () => h } :: handlers, beforeStopBlock)
+    copy(handlers = { () => h } :: handlers)
+
   /** Convenience method for adding a HttpObjectAggregator to the
    *  pipeline. Supports chunked request bodies up to the specified
    *  maximum bytes. Without this aggregator, chunked requests will
@@ -60,7 +61,7 @@ case class Http(
   def handler(h: ChannelHandler) = makePlan(h)
 
   def beforeStop(block: => Unit) =
-    Http(port, host, handlers, { () => beforeStopBlock(); block })
+    copy(beforeStopBlock = { () => beforeStopBlock(); block })
 }
 
 /** Factory for creating Http servers */
