@@ -173,6 +173,8 @@ object Upgrade extends RepeatableHeader("Upgrade")
 object UserAgent extends StringHeader("User-Agent")// maybe a bit more structure here
 object Via extends RepeatableHeader("Via")
 object XForwardedFor extends RepeatableHeader("X-Forwarded-For")
+object XForwardedPort extends IntHeader("X-Forwarded-Port")
+object XForwardedProto extends StringHeader("X-Forwarded-Proto")
 
 /** Extracts the charset value from the Content-Type header, if present */
 object Charset {
