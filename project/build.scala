@@ -94,7 +94,7 @@ object Unfiltered extends Build {
     module("specs2")().dependsOn(filters, jetty, nettyServer)
 
   lazy val scalaTestHelpers =
-    module("scalatest")().dependsOn(jetty, nettyServer)
+    module("scalatest")().dependsOn(filters, jetty, nettyServer)
 
   lazy val json4s =
     module("json4s")(

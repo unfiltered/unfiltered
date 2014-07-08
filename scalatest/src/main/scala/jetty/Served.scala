@@ -1,9 +1,16 @@
 package unfiltered.scalatest.jetty
 
 import unfiltered.scalatest.Hosted
-import org.scalatest.{Outcome, FeatureSpec}
+import org.scalatest.{BeforeAndAfterAll, Suite, Outcome}
 
-trait Served extends FeatureSpec with Hosted {
+trait Planned extends Served { self: Hosted =>
+
+  def setup = _.plan(unfiltered.filter.Planify(intent))
+
+  def intent[A, B]: unfiltered.Cycle.Intent[A, B]
+}
+
+trait Served extends Suite { self: Hosted =>
 
   import unfiltered.jetty._
   def setup: (Server => Server)

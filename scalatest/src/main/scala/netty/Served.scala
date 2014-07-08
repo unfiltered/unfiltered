@@ -1,12 +1,11 @@
 package unfiltered.scalatest.netty
 
-import org.scalatest.Outcome
+import org.scalatest.{ Suite, Outcome }
 import unfiltered.netty.Server
 import unfiltered.scalatest.Hosted
-import org.scalatest.fixture.FeatureSpec
 import io.netty.util.ResourceLeakDetector
 
-trait Served extends FeatureSpec with Hosted {
+trait Served extends Suite with Hosted {
 
   // Enables paranoid resource leak detection which reports where the leaked object was accessed recently,
   // at the cost of the highest possible overhead (for testing purposes only).
