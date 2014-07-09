@@ -1,15 +1,17 @@
 package unfiltered.netty.websockets
 
-object WebSocketPlanSpec extends unfiltered.spec.netty.Served {
-  import unfiltered.request.{ Path => UFPath, _ }
+import unfiltered.request.{Path => UFPath, GET}
+import unfiltered.response.{ResponseString, Ok}
 
-  import tubesocks.{
-    Open => TOpen,
-    Close => TClose,
-    Message => TMessage,
-    Error => TError,
-    _
-  }
+import tubesocks.{
+  Open => TOpen,
+  Close => TClose,
+  Message => TMessage,
+  Error => TError,
+  _
+}
+
+object WebSocketPlanSpec extends unfiltered.spec.netty.Served {
 
   def setup = _.handler(Planify({
     case GET(UFPath("/")) => {
@@ -25,7 +27,7 @@ object WebSocketPlanSpec extends unfiltered.spec.netty.Served {
   "A websocket server" should {
     "accept connections" in {
       import java.util.concurrent.{ CountDownLatch, TimeUnit }
-      var m = scala.collection.mutable.Map.empty[String, String]
+      val m = scala.collection.mutable.Map.empty[String, String]
       val l = new CountDownLatch(1)
       Sock.uri(wsuri) {
         case TOpen(s) =>
