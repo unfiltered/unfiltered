@@ -85,9 +85,19 @@ object WebSocketSecurePlanSpec
     }
 
     "refuse unsecure websocket requests" in {
-      (Sock.uri(wsuri) {
-        case _ => ()
-      }) must throwA[Exception]
+      var ex = ""
+      val l = new CountDownLatch(1)
+      try {
+        Sock.uri(wsuri) {
+          case TError(e) =>
+            ex = e.getClass.getSimpleName
+            l.countDown
+        }
+      } catch {
+        case _: Exception => ()
+      }
+      l.await(10, TimeUnit.MILLISECONDS)
+      ex must_== "IOException"
     }
 
     "refuse unsecure HTTP requests" in {
