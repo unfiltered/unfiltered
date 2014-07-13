@@ -6,6 +6,7 @@ import io.netty.handler.codec.http.{
   HttpContent,
   HttpRequest => NettyHttpRequest,
   HttpResponse }
+import io.netty.handler.codec.http.websocketx.WebSocketFrame
 import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter }
 import io.netty.channel.ChannelHandler.Sharable
 
@@ -73,8 +74,8 @@ trait Plan extends ChannelInboundHandlerAdapter
           }
         }
       // fixme(doug): I don't think this will ever be the case as we are now always adding the aggregator to the pipeline
-      case chunk: HttpContent =>
-        ctx.fireChannelRead(chunk)
+      case chunk: HttpContent => ctx.fireChannelRead(chunk)
+      case frame: WebSocketFrame => ctx.fireChannelRead(frame)
       // fixme(doug): Should we define an explicit exception to catch for this
       case ue => sys.error("Received unexpected message type from upstream: %s"
                            .format(ue))
