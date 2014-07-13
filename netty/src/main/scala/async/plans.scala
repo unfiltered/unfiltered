@@ -49,6 +49,7 @@ trait RequestPlan extends ChannelInboundHandlerAdapter with ExceptionHandler {
       }
       // fixme(doug): I don't think this will ever be the case as we are now always adding the aggregator to the pipeline
       case chunk: HttpContent => ctx.fireChannelRead(chunk)
+      case frame: WebSocketFrame => ctx.fireChannelRead(frame)
       // fixme(doug): Should we define an explicit exception to catch for this
       case ue => sys.error("Unexpected message type from upstream: %s"
                            .format(ue))
