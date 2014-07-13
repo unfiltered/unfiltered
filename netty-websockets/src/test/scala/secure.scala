@@ -44,7 +44,7 @@ object WebSocketSecurePlanSpec
 
   lazy val server = {
     try {
-      val securePlan = new Plan with Secured with SynchronousExecution
+      val securePlan = new Plan with SynchronousExecution
         with ServerErrorResponse {
 
         def pass = DefaultPassHandler
