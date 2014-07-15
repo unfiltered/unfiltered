@@ -6,7 +6,7 @@ import io.netty.handler.codec.http.{
   HttpContent,
   HttpRequest  => NettyHttpRequest,
   HttpResponse => NettyHttpResponse }
-
+import io.netty.handler.codec.http.websocketx.WebSocketFrame
 import unfiltered.Async
 import unfiltered.netty.{ ExceptionHandler, ReceivedMessage, RequestBinding, ServerErrorResponse }
 import unfiltered.request.HttpRequest
