@@ -15,7 +15,7 @@ import io.netty.channel.{
 }
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.channel.group.{ ChannelGroup, DefaultChannelGroup }
-import io.netty.channel.nio.{ NioEventLoop, NioEventLoopGroup }
+import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.codec.http.{
@@ -25,10 +25,11 @@ import io.netty.handler.codec.http.{
   HttpObjectAggregator,
   HttpRequestDecoder,
   HttpResponseEncoder,
-  HttpResponseStatus }
+  HttpResponseStatus
+}
 import io.netty.handler.stream.ChunkedWriteHandler
 import io.netty.util.ReferenceCountUtil
-import io.netty.util.concurrent.GlobalEventExecutor
+import io.netty.util.concurrent.{ EventExecutor, GlobalEventExecutor }
 
 import java.lang.{ Boolean => JBoolean, Integer => JInteger }
 import java.net.{ InetSocketAddress, URL }
@@ -41,12 +42,22 @@ case class Http(
   port: Int, host: String,
   handlers: List[() => ChannelHandler],
   beforeStopBlock: () => Unit,
-  chunkSize: Int = 1048576)
+  chunkSize: Int                     = 1048576,
+  acceptorGroup: EventLoopGroup      = new NioEventLoopGroup(),
+  workerGroup: EventLoopGroup        = new NioEventLoopGroup(),
+  houseKeepingEventExecutor: () => EventExecutor = () => GlobalEventExecutor.INSTANCE)
   extends HttpServer with DefaultServerInit { self =>
   type ServerBuilder = Http
 
   def initializer: ChannelInitializer[SocketChannel] =
     new ServerInit(channels, handlers, chunkSize)
+
+  def acceptor(group: EventLoopGroup) = copy(acceptorGroup = group)
+
+  def worker(group: EventLoopGroup) = copy(workerGroup = group)
+
+  def houseKeepingExecutor(exec: => EventExecutor) =
+    copy(houseKeepingEventExecutor = () => exec)
 
   override def makePlan(h: => ChannelHandler) =
     copy(handlers = { () => h } :: handlers)
@@ -114,9 +125,9 @@ trait Server extends RunnableServer {
   val port: Int
 
   /** host to bind to */
-  val host: String
+  def host: String
 
-  val url =  "http://%s:%d/" format(host, port)
+  val url = s"http://$host:$port"
 
   /** ChannelInitializer that initializes the server bootstrap */
   protected def initializer: ChannelInitializer[SocketChannel]
@@ -124,14 +135,16 @@ trait Server extends RunnableServer {
   // todo: previously used Executors.newCachedThreadPool()'s with NioServerSocketChannelFactory. investigate if this results in similar behavior
 
   /** EventLoopGroup associated with accepting client connections */
-  protected val acceptor: EventLoopGroup = new NioEventLoopGroup()
+  protected def acceptorGroup: EventLoopGroup
 
   /** EventLoopGroup associated with handling client requests */
-  protected val workers: EventLoopGroup = new NioEventLoopGroup()
+  protected def workerGroup: EventLoopGroup
+
+  protected def houseKeepingEventExecutor: () => EventExecutor
 
   /** any channels added to this will receive broadcasted events */
   protected val channels = new DefaultChannelGroup(
-    "Netty Unfiltered Server Channel Group", GlobalEventExecutor.INSTANCE)
+    "Netty Unfiltered Server Channel Group", houseKeepingEventExecutor())
 
   /** Starts default server bootstrap */
   def start() = start(identity)
@@ -139,7 +152,7 @@ trait Server extends RunnableServer {
   /** Starts server with preBind callback called before connection binding */
   def start(preBind: ServerBootstrap => ServerBootstrap): ServerBuilder = {
     val bootstrap = preBind(new ServerBootstrap()
-      .group(acceptor, workers)
+      .group(acceptorGroup, workerGroup)
       .channel(classOf[NioServerSocketChannel])
       .childHandler(initializer)
       .childOption(ChannelOption.TCP_NODELAY, JBoolean.TRUE)
@@ -165,8 +178,8 @@ trait Server extends RunnableServer {
 
   def destroy() = {
     // Release NIO resources to the OS
-    workers.shutdownGracefully()
-    acceptor.shutdownGracefully()
+    workerGroup.shutdownGracefully()
+    acceptorGroup.shutdownGracefully()
     this
   }
 }
@@ -184,8 +197,8 @@ class ServerInit(
  *   maxChunkSize 8192 */
 trait DefaultServerInit {
 
-  /** A ChannelGroup used to manage cleanup with,
-   *  in particular channel closing on server shutdown in #closeConnections() */
+  /** A ChannelGroup used to manage cleanup
+   *  and channel closing on server shutdown in #closeConnections() */
   protected def channels: ChannelGroup
 
   /** A list of functions which will produce a channel handler when invoked */

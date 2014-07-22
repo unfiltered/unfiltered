@@ -4,10 +4,12 @@ import unfiltered.util.{ IO, RunnableServer }
 
 import java.net.InetSocketAddress
 
-import io.netty.channel.{ ChannelHandler, ChannelInitializer, ChannelPipeline }
-import io.netty.channel.socket.SocketChannel
+import io.netty.channel.{ ChannelHandler, ChannelInitializer, ChannelPipeline, EventLoopGroup }
 import io.netty.channel.group.ChannelGroup
+import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.socket.SocketChannel
 import io.netty.handler.ssl.SslHandler
+import io.netty.util.concurrent.{ EventExecutor, GlobalEventExecutor }
 
 import java.io.FileInputStream
 import java.security.{ KeyStore, SecureRandom }
@@ -31,7 +33,10 @@ case class Https(
   host: String,
   handlers: List[() => ChannelHandler],
   beforeStopBlock: () => Unit,
-  chunkSize: Int = 1048576)
+  chunkSize: Int                = 1048576,
+  acceptorGroup: EventLoopGroup = new NioEventLoopGroup(),
+  workerGroup: EventLoopGroup   = new NioEventLoopGroup(),
+  houseKeepingEventExecutor: () => EventExecutor = () => GlobalEventExecutor.INSTANCE)
   extends HttpServer
   with Ssl { self =>
 
@@ -40,8 +45,15 @@ case class Https(
   override def initializer: ChannelInitializer[SocketChannel] =
      new SecureServerInit(channels, handlers, chunkSize, this)
 
+  def acceptor(group: EventLoopGroup) = copy(acceptorGroup = group)
+
+  def worker(group: EventLoopGroup) = copy(workerGroup = group)
+
+  def houseKeepingExecutor(exec: => EventExecutor) =
+    copy(houseKeepingEventExecutor = () => exec)
+
   override def makePlan(h: => ChannelHandler) =
-    Https(port, host, { () => h } :: handlers, beforeStopBlock)
+    copy(handlers = { () => h } :: handlers)
 
   def handler(h: ChannelHandler) = makePlan(h)
 
