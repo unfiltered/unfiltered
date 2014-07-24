@@ -1,19 +1,21 @@
 package unfiltered.netty
 
-import unfiltered.util.{ IO, RunnableServer }
-
-import java.net.InetSocketAddress
+import unfiltered.util.IO
 
 import io.netty.channel.{ ChannelHandler, ChannelInitializer, ChannelPipeline, EventLoopGroup }
 import io.netty.channel.group.ChannelGroup
-import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.nio.{ NioEventLoop, NioEventLoopGroup }
 import io.netty.channel.socket.SocketChannel
 import io.netty.handler.ssl.SslHandler
-import io.netty.util.concurrent.{ EventExecutor, GlobalEventExecutor }
+import io.netty.util.concurrent.{ EventExecutor, ImmediateEventExecutor }
 
 import java.io.FileInputStream
 import java.security.{ KeyStore, SecureRandom }
-import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLEngine, SSLContext, TrustManager, TrustManagerFactory }
+import javax.net.ssl.{ KeyManagerFactory, SSLEngine, SSLContext, TrustManagerFactory }
+
+// fixme(doug): this class of server feels dubious in implementation and nature. it implements 90% of Http but
+//        shares only little. Https feels like it should be an plugable `feature` of Http and
+//        not a separate class hierarchy. We should collapse these into one if possible
 
 object Https {
   def apply(port: Int, host: String): Https =
@@ -33,10 +35,12 @@ case class Https(
   host: String,
   handlers: List[() => ChannelHandler],
   beforeStopBlock: () => Unit,
-  chunkSize: Int                = 1048576,
-  acceptorGroup: EventLoopGroup = new NioEventLoopGroup(),
-  workerGroup: EventLoopGroup   = new NioEventLoopGroup(),
-  houseKeepingEventExecutor: () => EventExecutor = () => GlobalEventExecutor.INSTANCE)
+  chunkSize: Int                                 = Http.DefaultChunkSize,
+  acceptorGroup: () => EventLoopGroup            = () => new NioEventLoopGroup(),
+  workerGroup:   () => EventLoopGroup            = () => new NioEventLoopGroup(),
+  // there are typically 3 choices
+  // GlobalEventExecutor, ImmediateEventExecutor, SingleThreadEventExecutor
+  houseKeepingEventExecutor: () => EventExecutor = () => ImmediateEventExecutor.INSTANCE)
   extends HttpServer
   with Ssl { self =>
 
@@ -45,10 +49,14 @@ case class Https(
   override def initializer: ChannelInitializer[SocketChannel] =
      new SecureServerInit(channels, handlers, chunkSize, this)
 
-  def acceptor(group: EventLoopGroup) = copy(acceptorGroup = group)
+  /** specifies the EventLoopGroup used by the ServerBootstrap's for accepting incoming connections */
+  def acceptor(group: => EventLoopGroup) = copy(acceptorGroup = () => group)
 
-  def worker(group: EventLoopGroup) = copy(workerGroup = group)
+  /** specifies the EventLoopGroup used by the ServerBootstrap's for handling
+   *  requests after having registered with the acceptor */
+  def workers(group: => EventLoopGroup) = copy(workerGroup = () => group)
 
+  /** specifies the EventExecuture used by the pre-pipelined housekeeping channel group */
   def houseKeepingExecutor(exec: => EventExecutor) =
     copy(houseKeepingEventExecutor = () => exec)
 
@@ -61,7 +69,7 @@ case class Https(
     copy(chunkSize = size)
 
   def beforeStop(block: => Unit) =
-    Https(port, host, handlers, { () => beforeStopBlock(); block })
+    copy(beforeStopBlock = { () => beforeStopBlock(); block })
 }
 
 /** Provides security dependencies */
@@ -132,7 +140,7 @@ trait Trusted { self: Ssl =>
   }
 }
 
-/** ChannelPipelineFactory for secure Http connections */
+/** ChannelInitializer for secure tls enabled connections */
 class SecureServerInit(
   val channels: ChannelGroup,
   val handlers: List[() => ChannelHandler],

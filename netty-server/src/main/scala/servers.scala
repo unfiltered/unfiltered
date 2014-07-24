@@ -29,12 +29,10 @@ import io.netty.handler.codec.http.{
 }
 import io.netty.handler.stream.ChunkedWriteHandler
 import io.netty.util.ReferenceCountUtil
-import io.netty.util.concurrent.{ EventExecutor, GlobalEventExecutor }
+import io.netty.util.concurrent.{ EventExecutor, ImmediateEventExecutor }
 
 import java.lang.{ Boolean => JBoolean, Integer => JInteger }
 import java.net.{ InetSocketAddress, URL }
-import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicInteger
 
 /** Default implementation of the Server trait. If you want to use a
  * custom pipeline factory it's better to extend Server directly. */
@@ -42,20 +40,26 @@ case class Http(
   port: Int, host: String,
   handlers: List[() => ChannelHandler],
   beforeStopBlock: () => Unit,
-  chunkSize: Int                     = 1048576,
-  acceptorGroup: EventLoopGroup      = new NioEventLoopGroup(),
-  workerGroup: EventLoopGroup        = new NioEventLoopGroup(),
-  houseKeepingEventExecutor: () => EventExecutor = () => GlobalEventExecutor.INSTANCE)
+  chunkSize: Int                                 = Http.DefaultChunkSize,
+  acceptorGroup: () => EventLoopGroup            = () => new NioEventLoopGroup(),
+  workerGroup:   () => EventLoopGroup            = () => new NioEventLoopGroup(),
+  // there are typically 3 choices
+  // GlobalEventExecutor, ImmediateEventExecutor, SingleThreadEventExecutor
+  houseKeepingEventExecutor: () => EventExecutor = () => ImmediateEventExecutor.INSTANCE)
   extends HttpServer with DefaultServerInit { self =>
   type ServerBuilder = Http
 
   def initializer: ChannelInitializer[SocketChannel] =
     new ServerInit(channels, handlers, chunkSize)
 
-  def acceptor(group: EventLoopGroup) = copy(acceptorGroup = group)
+  /** specifies the EventLoopGroup used by the ServerBootstrap's for accepting incoming connections */
+  def acceptor(group: => EventLoopGroup) = copy(acceptorGroup = () => group)
 
-  def worker(group: EventLoopGroup) = copy(workerGroup = group)
+  /** specifies the EventLoopGroup used by the ServerBootstrap's for handling
+   *  requests after having registered with the acceptor */
+  def workers(group: => EventLoopGroup) = copy(workerGroup = () => group)
 
+  /** specifies the EventExecuture used by the pre-pipelined housekeeping channel group */
   def houseKeepingExecutor(exec: => EventExecutor) =
     copy(houseKeepingEventExecutor = () => exec)
 
@@ -77,6 +81,7 @@ case class Http(
 
 /** Factory for creating Http servers */
 object Http {
+  val DefaultChunkSize = 1048576
   def apply(port: Int, host: String): Http =
     Http(port, host, Nil, () => ())
   def apply(port: Int): Http =
@@ -132,13 +137,15 @@ trait Server extends RunnableServer {
   /** ChannelInitializer that initializes the server bootstrap */
   protected def initializer: ChannelInitializer[SocketChannel]
 
-  // todo: previously used Executors.newCachedThreadPool()'s with NioServerSocketChannelFactory. investigate if this results in similar behavior
-
   /** EventLoopGroup associated with accepting client connections */
-  protected def acceptorGroup: EventLoopGroup
+  protected def acceptorGroup: () => EventLoopGroup
+
+  protected[this] lazy val boss = acceptorGroup()
 
   /** EventLoopGroup associated with handling client requests */
-  protected def workerGroup: EventLoopGroup
+  protected def workerGroup: () => EventLoopGroup
+
+  protected[this] lazy val workers = workerGroup()
 
   protected def houseKeepingEventExecutor: () => EventExecutor
 
@@ -152,7 +159,7 @@ trait Server extends RunnableServer {
   /** Starts server with preBind callback called before connection binding */
   def start(preBind: ServerBootstrap => ServerBootstrap): ServerBuilder = {
     val bootstrap = preBind(new ServerBootstrap()
-      .group(acceptorGroup, workerGroup)
+      .group(boss, workers)
       .channel(classOf[NioServerSocketChannel])
       .childHandler(initializer)
       .childOption(ChannelOption.TCP_NODELAY, JBoolean.TRUE)
@@ -178,8 +185,8 @@ trait Server extends RunnableServer {
 
   def destroy() = {
     // Release NIO resources to the OS
-    workerGroup.shutdownGracefully()
-    acceptorGroup.shutdownGracefully()
+    boss.shutdownGracefully()
+    workers.shutdownGracefully()
     this
   }
 }
@@ -213,7 +220,7 @@ trait DefaultServerInit {
      .addLast("encoder", new HttpResponseEncoder)
      .addLast("chunker", new HttpObjectAggregator(chunkSize)) /: handlers.reverse.zipWithIndex) {
        case (pl, (handler, idx)) =>
-         pl.addLast("handler-%s" format idx, handler())
+         pl.addLast(s"handler-$idx", handler())
     }.addLast("notfound", new NotFoundHandler)
 }
 
