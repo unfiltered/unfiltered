@@ -34,10 +34,10 @@ trait CookiesSpec extends unfiltered.spec.Hosted {
       ResponseString("foo who?")
 
     case POST(UFPath("/save") & Params(p)) =>
-      SetCookies(Cookie("foo", p("foo")(0))) ~> Redirect("/")
+      SetCookies(Cookie("foo", p("foo")(0))) andThen Redirect("/")
 
     case UFPath("/clear") =>
-      SetCookies.discarding("foo") ~> Redirect("/")
+      SetCookies.discarding("foo") andThen Redirect("/")
 
     case UFPath("/multi") & Cookies(cs) if(cs("foo").isDefined && cs("baz").isDefined) =>
       ResponseString("foo %s baz %s!" format(
@@ -49,10 +49,10 @@ trait CookiesSpec extends unfiltered.spec.Hosted {
       ResponseString("who and the what now?")
 
     case POST(UFPath("/save_multi") & Params(p)) =>
-      SetCookies(Cookie("foo", p("foo")(0)), Cookie("baz", p("baz")(0))) ~> Redirect("/multi")
+      SetCookies(Cookie("foo", p("foo")(0)), Cookie("baz", p("baz")(0))) andThen Redirect("/multi")
 
     case UFPath("/clear_multi") & Params(p) =>
-      SetCookies.discarding("foo", "baz") ~> Redirect("/")
+      SetCookies.discarding("foo", "baz") andThen Redirect("/")
   }
 
   "Cookies" should {
