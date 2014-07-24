@@ -5,10 +5,13 @@ trait ResponseFunction[-A] { self =>
   // when ResponseFunction[HttpServletResponse] is expected.
   def apply[B <: A](res: HttpResponse[B]): HttpResponse[B]
 
-  /** Like andThen, composes another response function around this one */
-  def ~> [B <: A](that: ResponseFunction[B]) = new ResponseFunction[B] {
+  /** Like Function1#andThen. Composes another response function around this one */
+  def andThen[B <: A](that: ResponseFunction[B]) = new ResponseFunction[B] {
     def apply[C <: B](res: HttpResponse[C]) = that(self(res))
   }
+
+  /** Symbolic alias for andThen */
+  def ~>[B <: A](that: ResponseFunction[B]) = andThen(that)
 }
 
 /** Responders always return the provided instance of HttpResponse */
