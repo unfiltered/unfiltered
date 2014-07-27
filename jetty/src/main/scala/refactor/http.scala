@@ -16,6 +16,7 @@ case class Http(
     val server = new JettyServer()
     for (provider <- connectorProviders)
       server.addConnector(provider.connector)
+    server
   }
 }
 
