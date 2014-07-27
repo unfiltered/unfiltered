@@ -9,7 +9,9 @@ import org.eclipse.jetty.util.ssl.SslContextFactory
   * HttpBuilder provides convenience methods for attaching connectors. */
 case class Http(
   connectorProviders: List[ConnectorProvider]
-) extends HttpBuilder {
+) extends unfiltered.util.RunnableServer with HttpBuilder { self =>
+  type ServerBuilder = Http
+
   def attach(connector: ConnectorProvider) = copy(connector :: connectorProviders)
 
   lazy val underlying = {
@@ -17,6 +19,25 @@ case class Http(
     for (provider <- connectorProviders)
       server.addConnector(provider.connector)
     server
+  }
+  lazy val port = connectorProviders.headOption.map(_.port).getOrElse(0)
+  /** Starts server in the background */
+  def start() = {
+    underlying.setStopAtShutdown(true)
+    underlying.start()
+    this
+  }
+  /** Stops server running in the background */
+  def stop() = {
+    underlying.stop()
+    this
+  }
+  /** Destroys the Jetty server instance and frees its resources.
+   * Call after stopping a server, if finished with the instance,
+   * to help avoid PermGen errors in an ongoing JVM session. */
+  def destroy() = {
+    underlying.destroy()
+    this
   }
 }
 
