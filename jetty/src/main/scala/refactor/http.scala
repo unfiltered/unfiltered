@@ -15,7 +15,7 @@ import org.eclipse.jetty.servlet.{
   * ConnectorBuilder provides convenience methods for attaching connectors. */
 case class Http(
   connectorProviders: List[ConnectorProvider],
-  contextProviders: List[ContextAdder]
+  contextAdders: List[ContextAdder]
 ) extends unfiltered.util.RunnableServer
     with unfiltered.util.PlanServer[Filter]
     with ConnectorBuilder {
@@ -24,23 +24,30 @@ case class Http(
   def attach(connector: ConnectorProvider) = copy(
     connectorProviders = connector :: connectorProviders
   )
+  def attach(contextAdder: ContextAdder) = copy(
+    contextAdders = contextAdder :: contextAdders
+  )
+
+  /** attaches to most recently added context */
   def attach(filterAdder: FilterAdder) = copy(
-    contextProviders = contextProviders match {
+    contextAdders = contextAdders match {
       case head :: tail => head.attach(filterAdder) :: tail
-      case _ => contextProviders
+      case _ => contextAdders
     })
 
   lazy val underlying = {
     val server = new JettyServer()
     for (provider <- connectorProviders)
       server.addConnector(provider.connector)
-    for (provider <- contextProviders)
-      provider.addToServer(server)
+    for (adder <- contextAdders)
+      adder.addToServer(server)
     server
   }
-  def makePlan(plan: => Filter) = attach(
-    FilterAdder(BasicFilterHolder(plan))
+  def context(path: String) = attach(
+    DefaultServletContextAdder(path, Nil)
   )
+  def filter(filter: => Filter) = attach(FilterAdder(BasicFilterHolder(filter)))
+  def makePlan(plan: => Filter) = filter(plan)
 
   /** Supertypes assume we listen on one port only, so give them the first. */
   lazy val port = connectorProviders.headOption.map(_.port).getOrElse(0)
