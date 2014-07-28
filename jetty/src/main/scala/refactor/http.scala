@@ -4,7 +4,7 @@ import java.util.EnumSet
 import javax.servlet.{ Filter, DispatcherType }
 
 import org.eclipse.jetty.server.{Server => JettyServer, Connector, Handler, HandlerContainer}
-import org.eclipse.jetty.server.handler.ContextHandler
+import org.eclipse.jetty.server.handler.{ContextHandler, ContextHandlerCollection}
 import org.eclipse.jetty.server.bio.SocketConnector
 import org.eclipse.jetty.server.ssl.SslSocketConnector
 import org.eclipse.jetty.util.ssl.SslContextFactory
@@ -39,12 +39,14 @@ case class Http(
     val server = new JettyServer()
     for (provider <- connectorProviders)
       server.addConnector(provider.connector)
+    val contextHandlers = new ContextHandlerCollection
     for (adder <- contextAdders)
-      adder.addToServer(server)
+      adder.addToParent(contextHandlers)
+    server.setHandler(contextHandlers)
     server
   }
-  def context(path: String) = attach(
-    DefaultServletContextAdder(path, Nil)
+  def context(path: String)(block: ContextAdder => ContextAdder) = attach(
+    block(DefaultServletContextAdder(path, Nil))
   )
   def filter(filter: => Filter) = attach(FilterAdder(BasicFilterHolder(filter)))
   def makePlan(plan: => Filter) = filter(plan)
@@ -193,19 +195,23 @@ case class SslSocketConnectorProvider (
 }
 
 trait ContextAdder {
-  def addToServer(parent: HandlerContainer): Unit
+  def addToParent(parent: ContextHandlerCollection): Unit
   def attach(filter: FilterAdder): ContextAdder
+  def filter(filter: Filter) = attach(FilterAdder(BasicFilterHolder(filter)))
 }
 
 case class DefaultServletContextAdder(
   path: String,
   filterAdders: List[FilterAdder]
 ) extends ContextAdder {
-  def addToServer(parent: HandlerContainer) = {
+  def addToParent(parent: ContextHandlerCollection) = {
     val ctx = new ServletContextHandler(parent, path, false, false)
     val holder = new ServletHolder(classOf[org.eclipse.jetty.servlet.DefaultServlet])
     holder.setName(CountedName.Servlet.name)
     ctx.addServlet(holder, "/")
+
+    for (filterAdder <- filterAdders)
+      filterAdder.addToContext(ctx)
   }
   def attach(filter: FilterAdder) = copy(filterAdders = filter :: filterAdders)
 }

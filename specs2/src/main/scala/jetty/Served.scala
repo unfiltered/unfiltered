@@ -14,7 +14,7 @@ trait Planned extends Served {
 
 trait Served extends Hosted with BaseSpecification {
 
-  import unfiltered.jetty._
+  import unfiltered.jetty.refactor._
 
   def after = {
     server.stop()
@@ -25,7 +25,7 @@ trait Served extends Hosted with BaseSpecification {
     server.start()
   }
 
-  def setup: (Server => Server)
+  def setup: (Http => Http)
 
   lazy val server = setup(Http(port))
 
