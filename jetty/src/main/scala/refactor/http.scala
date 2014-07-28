@@ -1,25 +1,48 @@
 package unfiltered.jetty.refactor
 
-import org.eclipse.jetty.server.{Server => JettyServer, Connector, Handler}
+import java.util.EnumSet
+import javax.servlet.{ Filter, DispatcherType }
+
+import org.eclipse.jetty.server.{Server => JettyServer, Connector, Handler, HandlerContainer}
+import org.eclipse.jetty.server.handler.ContextHandler
 import org.eclipse.jetty.server.bio.SocketConnector
 import org.eclipse.jetty.server.ssl.SslSocketConnector
 import org.eclipse.jetty.util.ssl.SslContextFactory
+import org.eclipse.jetty.servlet.{
+  FilterHolder, FilterMapping, ServletContextHandler, ServletHolder}
 
 /** Holds connector providers that listen to selected ports and interfaces.
-  * HttpBuilder provides convenience methods for attaching connectors. */
+  * ConnectorBuilder provides convenience methods for attaching connectors. */
 case class Http(
-  connectorProviders: List[ConnectorProvider]
-) extends unfiltered.util.RunnableServer with HttpBuilder { self =>
+  connectorProviders: List[ConnectorProvider],
+  contextProviders: List[ContextAdder]
+) extends unfiltered.util.RunnableServer
+    with unfiltered.util.PlanServer[Filter]
+    with ConnectorBuilder {
   type ServerBuilder = Http
 
-  def attach(connector: ConnectorProvider) = copy(connector :: connectorProviders)
+  def attach(connector: ConnectorProvider) = copy(
+    connectorProviders = connector :: connectorProviders
+  )
+  def attach(filterAdder: FilterAdder) = copy(
+    contextProviders = contextProviders match {
+      case head :: tail => head.attach(filterAdder) :: tail
+      case _ => contextProviders
+    })
 
   lazy val underlying = {
     val server = new JettyServer()
     for (provider <- connectorProviders)
       server.addConnector(provider.connector)
+    for (provider <- contextProviders)
+      provider.addToServer(server)
     server
   }
+  def makePlan(plan: => Filter) = attach(
+    FilterAdder(BasicFilterHolder(plan))
+  )
+
+  /** Supertypes assume we listen on one port only, so give them the first. */
   lazy val port = connectorProviders.headOption.map(_.port).getOrElse(0)
   /** Starts server in the background */
   def start() = {
@@ -42,13 +65,15 @@ case class Http(
 }
 
 /** Base object that used to construct Http instances.
-  * HttpBuilder provides convenience methods for attaching connectors. */
-object Http extends HttpBuilder {
-  def attach(connector: ConnectorProvider) = Http(connector :: Nil)
+  * ConnectorBuilder provides convenience methods for attaching
+  * connectors. */
+object Http extends ConnectorBuilder {
+  def attach(connector: ConnectorProvider) =
+    Http(connector :: Nil, DefaultServletContextAdder("/", Nil) :: Nil)
 }
 
 /** Convenience methods for attaching connector providers. */
-trait HttpBuilder {
+trait ConnectorBuilder {
   val allInterfacesHost = "0.0.0.0"
   val localInterfaceHost = "127.0.0.1"
   val defaultHttpPort = 80
@@ -158,4 +183,50 @@ case class SslSocketConnectorProvider (
     c.setHost(host)
     c
   }
+}
+
+trait ContextAdder {
+  def addToServer(parent: HandlerContainer): Unit
+  def attach(filter: FilterAdder): ContextAdder
+}
+
+case class DefaultServletContextAdder(
+  path: String,
+  filterAdders: List[FilterAdder]
+) extends ContextAdder {
+  def addToServer(parent: HandlerContainer) = {
+    val ctx = new ServletContextHandler(parent, path, false, false)
+    val holder = new ServletHolder(classOf[org.eclipse.jetty.servlet.DefaultServlet])
+    holder.setName(CountedName.Servlet.name)
+    ctx.addServlet(holder, "/")
+  }
+  def attach(filter: FilterAdder) = copy(filterAdders = filter :: filterAdders)
+}
+
+object BasicFilterHolder {
+  def apply(filter: Filter) = {
+    val holder = new FilterHolder(filter)
+    holder.setName(CountedName.Filter.name)
+    holder
+  }
+}
+
+case class FilterAdder(
+  filterHolder: FilterHolder,
+  pathSpec: String = "/*",
+  dispatches: EnumSet[DispatcherType] = EnumSet.of(DispatcherType.REQUEST)
+) {
+  def addToContext(ctx: ServletContextHandler) {
+    ctx.addFilter(filterHolder, pathSpec, dispatches)
+  }
+}
+
+case class CountedName(prefix: String) {
+  private val counter = new java.util.concurrent.atomic.AtomicInteger
+  def name = prefix + " " + counter.incrementAndGet
+}
+
+object CountedName {
+  val Servlet = CountedName("Servlet")
+  val Filter = CountedName("Filter")
 }
