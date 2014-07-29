@@ -7,7 +7,7 @@ object MixedServerSpec extends Specification with unfiltered.specs2.jetty.Served
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
-  import unfiltered.jetty.{Http, Ssl}
+  import unfiltered.jetty.refactor.Http
   import unfiltered.util.Port
   import org.apache.http.client.ClientProtocolException
 
@@ -21,11 +21,13 @@ object MixedServerSpec extends Specification with unfiltered.specs2.jetty.Served
 
   override val host = :/("localhost", port)
 
-  override lazy val server = setup(new Http(port, "0.0.0.0") with Ssl {
-    def sslPort = securePort
-    override lazy val keyStore = keyStorePath
-    override lazy val keyStorePassword = keyStorePasswd
-  })
+  override lazy val server = setup(
+    Http(port).secure(
+      port = securePort,
+      keyStorePath = keyStorePath,
+      keyStorePassword = keyStorePasswd
+    )
+  )
 
   def setup = { _.filter(unfiltered.filter.Planify {
     case GET(UFPath("/")) => ResponseString("public") ~> Ok
