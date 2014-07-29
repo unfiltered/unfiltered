@@ -28,19 +28,19 @@ case class Http(
     contextAdders = contextAdder :: contextAdders
   )
 
-  /** attaches to most recently added context */
+  /** attaches to first-added (last) context */
   def attach(filterAdder: FilterAdder) = copy(
-    contextAdders = contextAdders match {
-      case head :: tail => head.attach(filterAdder) :: tail
+    contextAdders = contextAdders.reverse match {
+      case head :: tail => (head.attach(filterAdder) :: tail).reverse
       case _ => contextAdders
     })
 
   lazy val underlying = {
     val server = new JettyServer()
-    for (provider <- connectorProviders)
+    for (provider <- connectorProviders.reverseIterator)
       server.addConnector(provider.connector)
     val contextHandlers = new ContextHandlerCollection
-    for (adder <- contextAdders)
+    for (adder <- contextAdders.reverseIterator)
       adder.addToParent(contextHandlers)
     server.setHandler(contextHandlers)
     server
@@ -210,7 +210,7 @@ case class DefaultServletContextAdder(
     holder.setName(CountedName.Servlet.name)
     ctx.addServlet(holder, "/")
 
-    for (filterAdder <- filterAdders)
+    for (filterAdder <- filterAdders.reverseIterator)
       filterAdder.addToContext(ctx)
   }
   def attach(filter: FilterAdder) = copy(filterAdders = filter :: filterAdders)
