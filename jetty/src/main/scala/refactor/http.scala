@@ -51,8 +51,7 @@ case class Http(
   def filter(filter: => Filter) = attach(FilterAdder(BasicFilterHolder(filter)))
   def makePlan(plan: => Filter) = filter(plan)
 
-  /** Supertypes assume we listen on one port only, so give them the first. */
-  lazy val port = connectorProviders.headOption.map(_.port).getOrElse(0)
+  def ports: Traversable[Int] = connectorProviders.reverseIterator.map(_.port)
   /** Starts server in the background */
   def start() = {
     underlying.setStopAtShutdown(true)

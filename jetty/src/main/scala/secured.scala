@@ -13,6 +13,7 @@ case class Https(port: Int, host: String) extends Server with Ssl {
   type ServerBuilder = Https
   val url = "https://%s:%d/" format (host, port)
   def sslPort = port
+  def ports = port :: sslPort :: Nil
   sslConn.setHost(host)
 }
 

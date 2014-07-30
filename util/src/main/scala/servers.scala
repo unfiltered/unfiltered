@@ -15,7 +15,7 @@ trait StartableServer extends Server {
   def start(): ServerBuilder
   def stop(): ServerBuilder
   def destroy(): ServerBuilder
-  val port:  Int
+  def ports:  Traversable[Int]
 }
 trait RunnableServer extends StartableServer { self =>
   /** Calls run with no afterStart or afterStop functions */
@@ -49,7 +49,7 @@ trait RunnableServer extends StartableServer { self =>
       case _ =>
         start()
         afterStart(RunnableServer.this)
-        println("Embedded server running on port %d. Press any key to stop." format port)
+        println(s"Embedded server listening on port ${ports.mkString(", ")}. Press any key to stop.")
         def doWait() {
           try { Thread.sleep(1000) } catch { case _: InterruptedException => () }
           if(System.in.available() <= 0)

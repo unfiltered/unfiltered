@@ -113,6 +113,8 @@ trait Server extends RunnableServer {
   /** port to listen on */
   val port: Int
 
+  def ports = port :: Nil
+
   /** host to bind to */
   val host: String
 

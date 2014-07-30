@@ -27,6 +27,7 @@ case class Http(port: Int, host: String) extends Server {
   conn.setPort(port)
   conn.setHost(host)
   underlying.addConnector(conn)
+  def ports = port :: Nil
 }
 
 trait ContextBuilder {
