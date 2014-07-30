@@ -51,7 +51,7 @@ case class Http(
   def filter(filter: => Filter) = attach(FilterAdder(BasicFilterHolder(filter)))
   def makePlan(plan: => Filter) = filter(plan)
 
-  def ports: Traversable[Int] = connectorProviders.reverseIterator.map(_.port)
+  def ports: Traversable[Int] = connectorProviders.reverse.map(_.port)
   /** Starts server in the background */
   def start() = {
     underlying.setStopAtShutdown(true)
