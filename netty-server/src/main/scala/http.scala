@@ -4,16 +4,12 @@ import unfiltered.util.{ RunnableServer, PlanServer }
 
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.{
-  ChannelFutureListener,
   ChannelHandler,
-  ChannelHandlerContext,
-  ChannelInboundHandlerAdapter,
   ChannelInitializer,
   ChannelOption,
   ChannelPipeline,
   EventLoopGroup
 }
-import io.netty.channel.ChannelHandler.Sharable
 import io.netty.channel.group.{ ChannelGroup, DefaultChannelGroup }
 import io.netty.channel.nio.{ NioEventLoop, NioEventLoopGroup }
 import io.netty.channel.socket.SocketChannel
