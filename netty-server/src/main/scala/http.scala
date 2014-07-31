@@ -78,7 +78,7 @@ object Http {
 }
 
 /** An HTTP or HTTPS server */
-trait HttpServer extends Server with PlanServer[ChannelHandler] {
+trait HttpServer extends NettyBase with PlanServer[ChannelHandler] {
 
   /** block of code to be invoked when the server is stopped,
    *  before connectons are closed */
@@ -109,7 +109,7 @@ trait HttpServer extends Server with PlanServer[ChannelHandler] {
 }
 
 /** Base Netty server trait for http and websockets */
-trait Server extends RunnableServer {
+trait NettyBase extends RunnableServer {
   /** port to listen on */
   val port: Int
 
