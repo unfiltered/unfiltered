@@ -1,6 +1,6 @@
 package unfiltered.specs2.netty
 
-import unfiltered.netty.{ Http, Server, ServerErrorResponse }
+import unfiltered.netty.{ Http, NettyBase, ServerErrorResponse }
 import unfiltered.netty.cycle.{ DeferralExecutor, DeferredIntent, Plan }
 import org.specs2.specification.{ BaseSpecification, Fragments, Step }
 import io.netty.channel.ChannelHandler.Sharable
@@ -22,7 +22,7 @@ trait Started extends unfiltered.specs2.Hosted with BaseSpecification {
   // at the cost of the highest possible overhead (for testing purposes only).
   ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID)
 	
-  def server: Server
+  def server: NettyBase
   
   def after = {
     server.stop()
