@@ -23,6 +23,7 @@ case class Https(port: Int, host: String) extends JettyBase with Ssl {
   * A keyStore, keyStorePassword are required and default to using the system property values
   * "jetty.ssl.keyStore" and "jetty.ssl.keyStorePassword" respectively.
   * For added trust store support, mix in the Trusted trait */
+@deprecated("Use unfiltered.jetty.Server", since="0.8.1")
 trait Ssl { self: JettyBase =>
   import org.eclipse.jetty.server.ssl.SslSocketConnector
   import org.eclipse.jetty.util.ssl.SslContextFactory
