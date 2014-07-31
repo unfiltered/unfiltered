@@ -8,7 +8,7 @@ object SslServerSpec extends Specification with unfiltered.specs2.Hosted with Se
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
-  import unfiltered.jetty.{Https,Http=>UFHttp}
+  import unfiltered.jetty.Server
   import unfiltered.util.Port
   import org.apache.http.client.ClientProtocolException
 
@@ -23,13 +23,14 @@ object SslServerSpec extends Specification with unfiltered.specs2.Hosted with Se
 
   override val host = :/("localhost", httpPort)
 
-  lazy val server = new Https(securePort, "0.0.0.0") {
-    filter(filt)
-    override lazy val keyStore = keyStorePath
-    override lazy val keyStorePassword = keyStorePasswd
-  }
+  lazy val server = Server.https(
+    securePort,
+    "0.0.0.0",
+    keyStorePath = keyStorePath,
+    keyStorePassword = keyStorePasswd
+  ).filter(filt)
 
-  lazy val httpServer = new UFHttp(httpPort, "0.0.0.0").filter(filt)
+  lazy val httpServer = Server.http(httpPort, "0.0.0.0").filter(filt)
 
   override def xhttp[T](handler: Handler[T]): T =
     super[SecureClient].xhttp(handler)
