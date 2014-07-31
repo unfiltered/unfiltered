@@ -9,7 +9,7 @@ object Https {
   def anylocal = local(unfiltered.util.Port.any)
 }
 
-case class Https(port: Int, host: String) extends Server with Ssl {
+case class Https(port: Int, host: String) extends JettyBase with Ssl {
   type ServerBuilder = Https
   val url = "https://%s:%d/" format (host, port)
   def sslPort = port
@@ -21,7 +21,7 @@ case class Https(port: Int, host: String) extends Server with Ssl {
   * A keyStore, keyStorePassword are required and default to using the system property values
   * "jetty.ssl.keyStore" and "jetty.ssl.keyStorePassword" respectively.
   * For added trust store support, mix in the Trusted trait */
-trait Ssl { self: Server =>
+trait Ssl { self: JettyBase =>
   import org.eclipse.jetty.server.ssl.SslSocketConnector
   import org.eclipse.jetty.util.ssl.SslContextFactory
 

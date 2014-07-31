@@ -20,7 +20,7 @@ object Http {
   def anylocal = local(unfiltered.util.Port.any)
 }
 
-case class Http(port: Int, host: String) extends Server {
+case class Http(port: Int, host: String) extends JettyBase {
   type ServerBuilder = Http
   val url = "http://%s:%d/" format (host, port)
   val conn = new SocketConnector()
@@ -50,11 +50,11 @@ trait ContextBuilder {
   }
 }
 
-trait Server
+trait JettyBase
 extends ContextBuilder
 with unfiltered.util.PlanServer[Filter]
 with unfiltered.util.RunnableServer { self =>
-  type ServerBuilder >: self.type <: Server
+  type ServerBuilder >: self.type <: JettyBase
 
   val underlying = new JettyServer()
   val handlers = new ContextHandlerCollection
@@ -76,9 +76,9 @@ with unfiltered.util.RunnableServer { self =>
   def context(path: String)(block: ContextBuilder => Unit) = {
     block(new ContextBuilder {
       val current = contextHandler(path)
-      val counter = Server.this.counter
+      val counter = JettyBase.this.counter
     })
-    Server.this
+    JettyBase.this
   }
   lazy val current = contextHandler("/")
 
@@ -86,12 +86,12 @@ with unfiltered.util.RunnableServer { self =>
   def start() = {
     underlying.setStopAtShutdown(true)
     underlying.start()
-    Server.this
+    JettyBase.this
   }
   /** Stops server running in the background */
   def stop() = {
     underlying.stop()
-    Server.this
+    JettyBase.this
   }
   /** Destroys the Jetty server instance and frees its resources.
    * Call after stopping a server, if finished with the instance,
