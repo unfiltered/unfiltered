@@ -1,4 +1,4 @@
-package unfiltered.jetty.refactor
+package unfiltered.jetty
 
 import java.util.EnumSet
 import javax.servlet.{ Filter, DispatcherType }
@@ -13,13 +13,13 @@ import org.eclipse.jetty.servlet.{
 
 /** Holds connector providers that listen to selected ports and interfaces.
   * ConnectorBuilder provides convenience methods for attaching connectors. */
-case class Http(
+case class Server(
   connectorProviders: List[ConnectorProvider],
   contextAdders: List[ContextAdder]
 ) extends unfiltered.util.RunnableServer
     with unfiltered.util.PlanServer[Filter]
     with ConnectorBuilder {
-  type ServerBuilder = Http
+  type ServerBuilder = Server
 
   def attach(connector: ConnectorProvider) = copy(
     connectorProviders = connector :: connectorProviders
@@ -72,12 +72,12 @@ case class Http(
   }
 }
 
-/** Base object that used to construct Http instances.
+/** Base object that used to construct Server instances.
   * ConnectorBuilder provides convenience methods for attaching
   * connectors. */
-object Http extends ConnectorBuilder {
+object Server extends ConnectorBuilder {
   def attach(connector: ConnectorProvider) =
-    Http(connector :: Nil, DefaultServletContextAdder("/", Nil) :: Nil)
+    Server(connector :: Nil, DefaultServletContextAdder("/", Nil) :: Nil)
 }
 
 /** Convenience methods for attaching connector providers. */
@@ -89,19 +89,19 @@ trait ConnectorBuilder {
   val defaultKeystorePathProperty = "jetty.ssl.keyStore"
   val defaultKeystorePasswordProperty = "jetty.ssl.keyStorePassword"
 
-  def attach(connector: ConnectorProvider): Http
+  def attach(connector: ConnectorProvider): Server
 
-  def apply(port: Int = defaultHttpPort, host: String = allInterfacesHost) = attach(
+  def http(port: Int = defaultHttpPort, host: String = allInterfacesHost) = attach(
     SocketConnectorProvider(port, host)
   )
 
-  def local(port: Int): Http = attach(
+  def local(port: Int): Server = attach(
     SocketConnectorProvider(port, localInterfaceHost)
   )
 
-  def anylocal: Http = local(unfiltered.util.Port.any)
+  def anylocal: Server = local(unfiltered.util.Port.any)
 
-  def secure(
+  def https(
     port: Int = defaultHttpsPort,
     host: String = allInterfacesHost,
     keyStorePath: String,
@@ -117,7 +117,7 @@ trait ConnectorBuilder {
     )
   )
 
-  def secureSysProperties(
+  def httpsSysProperties(
     port: Int = defaultHttpsPort,
     host: String = allInterfacesHost,
     keyStorePathProperty: String = defaultKeystorePathProperty,

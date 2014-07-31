@@ -14,7 +14,7 @@ trait Planned extends Served {
 
 trait Served extends Hosted with BaseSpecification {
 
-  import unfiltered.jetty.refactor._
+  import unfiltered.jetty._
 
   def after = {
     server.stop()
@@ -25,9 +25,9 @@ trait Served extends Hosted with BaseSpecification {
     server.start()
   }
 
-  def setup: (Http => Http)
+  def setup: (Server => Server)
 
-  lazy val server = setup(Http(port))
+  lazy val server = setup(Server.http(port))
 
   override def map(fs: =>Fragments) = Step(before) ^ fs ^ Step(after)
 }
