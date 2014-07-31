@@ -1,5 +1,6 @@
 package unfiltered.jetty
 
+@deprecated("Use unfiltered.jetty.Server", since="0.8.1")
 object Https {
   /** bind to the given port for any host */
   def apply(port: Int): Https = Https(port, "0.0.0.0")
@@ -9,6 +10,7 @@ object Https {
   def anylocal = local(unfiltered.util.Port.any)
 }
 
+@deprecated("Use unfiltered.jetty.Server", since="0.8.1")
 case class Https(port: Int, host: String) extends JettyBase with Ssl {
   type ServerBuilder = Https
   val url = "https://%s:%d/" format (host, port)

@@ -11,6 +11,7 @@ import org.eclipse.jetty.util.resource.Resource
 import java.util.concurrent.atomic.AtomicInteger
 import javax.servlet.{ Filter, DispatcherType }
 
+@deprecated("Use unfiltered.jetty.Server", since="0.8.1")
 object Http {
   /** bind to the given port for any host */
   def apply(port: Int): Http = Http(port, "0.0.0.0")
@@ -20,6 +21,7 @@ object Http {
   def anylocal = local(unfiltered.util.Port.any)
 }
 
+@deprecated("Use unfiltered.jetty.Server", since="0.8.1")
 case class Http(port: Int, host: String) extends JettyBase {
   type ServerBuilder = Http
   val url = "http://%s:%d/" format (host, port)
@@ -50,6 +52,7 @@ trait ContextBuilder {
   }
 }
 
+@deprecated("Use unfiltered.jetty.Server", since="0.8.1")
 trait JettyBase
 extends ContextBuilder
 with unfiltered.util.PlanServer[Filter]
