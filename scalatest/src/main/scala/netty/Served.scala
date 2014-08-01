@@ -1,9 +1,9 @@
 package unfiltered.scalatest.netty
 
-import org.scalatest.{ Suite, Outcome }
-import unfiltered.netty.Server
-import unfiltered.scalatest.Hosted
 import io.netty.util.ResourceLeakDetector
+import org.scalatest.{ Suite, Outcome }
+import unfiltered.netty.Http
+import unfiltered.scalatest.Hosted
 
 trait Planned extends Served { self: Hosted =>
   def setup = _.handler(unfiltered.netty.cycle.Planify(intent))
@@ -11,7 +11,6 @@ trait Planned extends Served { self: Hosted =>
 }
 
 trait Served extends Suite with Hosted {
-  import unfiltered.netty._
   // Enables paranoid resource leak detection which reports where the leaked object was accessed recently,
   // at the cost of the highest possible overhead (for testing purposes only).
   ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID)
