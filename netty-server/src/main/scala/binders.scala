@@ -30,22 +30,22 @@ trait Binders {
 
   def bind(binder: Binder): Server
 
-  def apply(port: Int = defaultHttpPort, host: String = allInterfacesHost) =
+  def http(port: Int = defaultHttpPort, host: String = allInterfacesHost) =
     bind(SocketBinder(port, host))
 
   def local(port: Int) =
-    apply(port, localInterfaceHost)
+    http(port, localInterfaceHost)
 
   def anylocal =
     local(unfiltered.util.Port.any)
 
-  def secure(
+  def https(
     port: Int = defaultHttpsPort,
     host: String = allInterfacesHost,
     ssl: SslContextProvider) =
     bind(SecureContextSocketBinder(port, host, ssl))
 
-  def secureEngine(
+  def httpsEngine(
     port: Int = defaultHttpsPort,
     host: String = allInterfacesHost,
     ssl: SslEngineProvider) =
@@ -86,7 +86,6 @@ case class SecureEngineSocketBinder(
 trait SslEngineProvider {  
   def engine: SSLEngine
 }
-
 /** An engine provider based on file system paths */
 trait SslEngineFromPath extends SslEngineProvider {
   def keyStorePath: String
@@ -94,7 +93,9 @@ trait SslEngineFromPath extends SslEngineProvider {
   def engine = {
     val ctx = SSLContext.getInstance("TLS")
     ctx.init(keyManagers, null, new SecureRandom)
-    ctx.createSSLEngine
+    val e = ctx.createSSLEngine
+    e.setUseClientMode(false)
+    e
   }
 
   private def keyManagers = {
