@@ -45,8 +45,14 @@ object SslServerSpec
   }
 
   lazy val server =
-    unfiltered.netty.Https(port, "localhost")
-      .handler(new SecurePlan)
+    unfiltered.netty.Server.httpsEngine(
+        port = securePort,
+        host = "localhost",
+        ssl  = SslEngineFromPath.Simple(
+          keyStorePath,
+          keyStorePasswd
+        ))
+      .plan(new SecurePlan)
 
   "A Secure Server" should {
     "respond to secure requests" in {
