@@ -71,12 +71,12 @@ case class Server(
 
   def start(prebind: ServerBootstrap => ServerBootstrap) = {    
     val bindings = binders.map { binder =>
-      val bootstrap = prebind(
-        configure(new ServerBootstrap()
-                  .group(acceptor, workers)
-                  .channel(classOf[NioServerSocketChannel])
-                  .childHandler(initializer(binder))))
-      binder.bind(bootstrap).sync
+      val bootstrap = configure(
+        new ServerBootstrap()
+          .group(acceptor, workers)
+          .channel(classOf[NioServerSocketChannel])
+          .childHandler(initializer(binder)))
+      binder.bind(prebind(bootstrap)).sync
     }
     bindings.foreach(b => channels.add(b.channel))
 
