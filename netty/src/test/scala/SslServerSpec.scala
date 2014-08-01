@@ -4,7 +4,10 @@ import unfiltered.spec
 import unfiltered.response.{ Ok, ResponseString }
 import unfiltered.request.{ GET, Path => UFPath}
 import unfiltered.netty.cycle.{ Plan, SynchronousExecution }
-
+import io.netty.handler.ssl.{
+  NotSslRecordException,
+  SslHandshakeCompletionEvent
+}
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelHandler.Sharable
 
@@ -21,12 +24,28 @@ object SslServerSpec
 
   @Sharable
   class SecurePlan extends Plan
-    with Secured // also catches netty Ssl errors
     with SynchronousExecution
     with ServerErrorResponse {
     def intent = {
       case GET(UFPath("/")) =>
         ResponseString("secret") ~> Ok
+    }
+
+    // ignoring not ssl record exception
+    override def onException(
+       ctx: ChannelHandlerContext, t: Throwable): Unit = t match {
+      case sslerr: NotSslRecordException  => ()
+      case other => super.onException(ctx, t)
+    }
+
+    // how to get notified of handshake events
+    override def userEventTriggered(
+      ctx: ChannelHandlerContext,
+      event: java.lang.Object): Unit = event match {
+      case s: SslHandshakeCompletionEvent =>
+        // do something with result of handshake
+      case e =>
+        ctx.fireUserEventTriggered(e)
     }
   }
     
