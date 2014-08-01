@@ -86,6 +86,7 @@ case class SecureEngineSocketBinder(
 trait SslEngineProvider {  
   def engine: SSLEngine
 }
+
 /** An engine provider based on file system paths */
 trait SslEngineFromPath extends SslEngineProvider {
   def keyStorePath: String
