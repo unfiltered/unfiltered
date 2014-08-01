@@ -40,10 +40,10 @@ case class Server(
   type ServerBuilder = Server
 
   /** a shared event loop group for accepting connections shared between bootstraps */
-  private[this] lazy val acceptor  = new NioEventLoopGroup()
+  private[this] lazy val acceptor = new NioEventLoopGroup()
 
   /** a shared event loop group for handling accepted connections shared between bootstraps */
-  private[this] lazy val workers   = new NioEventLoopGroup()
+  private[this] lazy val workers = new NioEventLoopGroup()
 
   /** a channel group used to collect connected channels so that they may be shutdown properly on RunnableServer#stop() */
   lazy val channels = new DefaultChannelGroup(
