@@ -135,6 +135,3 @@ case class Server(
           }.addLast("notfound", new NotFoundHandler)
     }
 }
-
-
-
