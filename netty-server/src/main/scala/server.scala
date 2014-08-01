@@ -123,17 +123,16 @@ case class Server(
   /** @param binder a binder which may contribute to channel initialization */
   def initializer(binder: Binder): ChannelInitializer[SocketChannel] =
     new ChannelInitializer[SocketChannel] {
-      def initChannel(channel: SocketChannel) = {
-        binder.init(channel)
-        (channel.pipeline
+      def initChannel(channel: SocketChannel) =
+        (binder.init(channel).pipeline
           .addLast("housekeeping", new HouseKeepingChannelHandler(channels))
           .addLast("decoder", new HttpRequestDecoder)
           .addLast("encoder", new HttpResponseEncoder)
-          .addLast("chunker", new HttpObjectAggregator(chunkSize)) /: handlers.reverse.zipWithIndex) {
+          .addLast("chunker", new HttpObjectAggregator(chunkSize))
+           /: handlers.reverse.zipWithIndex) {
             case (pipe, (handler, index)) =>
               pipe.addLast(s"handler-$index", handler())
-        }.addLast("notfound", new NotFoundHandler)
-      }
+          }.addLast("notfound", new NotFoundHandler)
     }
 }
 
