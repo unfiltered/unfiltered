@@ -3,9 +3,9 @@ package unfiltered.netty
 import unfiltered.util.{ PlanServer, RunnableServer }
 
 import io.netty.bootstrap.ServerBootstrap
-import io.netty.channel.{ ChannelHandler, ChannelInitializer, ChannelOption }
-import io.netty.channel.group.DefaultChannelGroup
-import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.{ ChannelHandler, ChannelInitializer, ChannelOption, EventLoopGroup }
+import io.netty.channel.group.{ ChannelGroup, DefaultChannelGroup }
+import io.netty.channel.nio.{ NioEventLoop, NioEventLoopGroup }
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.codec.http.{
@@ -14,14 +14,31 @@ import io.netty.handler.codec.http.{
   HttpResponseEncoder
 }
 import io.netty.handler.stream.ChunkedWriteHandler
-import io.netty.util.concurrent.GlobalEventExecutor
+import io.netty.util.concurrent.ImmediateEventExecutor
 import java.lang.{ Boolean => JBoolean, Integer => JInteger }
 
 import java.net.URL
 
 object Server extends Binders {  
   def bind(binder: Binder): Server =
-    Server(binder :: Nil, Nil, () => (), 1048576)
+    Server(binder :: Nil, Nil, () => (), 1048576, DefaultEngine)
+}
+
+trait Engine {
+  /** a shared event loop group for accepting connections shared between bootstraps */
+  def acceptor: EventLoopGroup
+  /** a shared event loop group for handling accepted connections shared between bootstraps */
+  def workers: EventLoopGroup
+  /** a channel group used to collect connected channels so that they may be shutdown properly on RunnableServer#stop() */
+  def channels: ChannelGroup
+}
+
+object DefaultEngine extends Engine {
+  def acceptor = new NioEventLoopGroup()
+  def workers = new NioEventLoopGroup()
+  def channels = new DefaultChannelGroup(
+    "Netty Unfiltered Server Channel Group",
+    ImmediateEventExecutor.INSTANCE)
 }
 
 /** A RunnableServer backed by a list of netty bootstrapped port bindings
@@ -33,22 +50,34 @@ case class Server(
   binders: List[Binder],
   handlers: List[() => ChannelHandler],
   beforeStopBlock: () => Unit,
-  chunkSize: Int
+  chunkSize: Int,
+  engine: Engine
 ) extends RunnableServer
   with PlanServer[ChannelHandler]
   with Binders {
   type ServerBuilder = Server
 
-  /** a shared event loop group for accepting connections shared between bootstraps */
-  private[this] lazy val acceptor = new NioEventLoopGroup()
+  def acceptor(group: EventLoopGroup) = copy(engine = new Engine {
+      lazy val acceptor = group
+      lazy val workers = engine.workers
+      lazy val channels = engine.channels
+  })
 
-  /** a shared event loop group for handling accepted connections shared between bootstraps */
-  private[this] lazy val workers = new NioEventLoopGroup()
+  def workers(group: EventLoopGroup) = copy(engine = new Engine {
+    lazy val acceptor = engine.acceptor
+    lazy val workers = group
+    lazy val channels = engine.channels
+  })
 
-  /** a channel group used to collect connected channels so that they may be shutdown properly on RunnableServer#stop() */
-  lazy val channels = new DefaultChannelGroup(
-    "Netty Unfiltered Server Channel Group",
-    GlobalEventExecutor.INSTANCE) // todo: pick the best eventLoop option for the task
+  def channels(group: ChannelGroup) = copy(engine = new Engine {
+    lazy val acceptor = engine.acceptor
+    lazy val workers = engine.workers
+    lazy val channels = group
+  })
+
+  private[this] lazy val acceptorGrp = engine.acceptor
+  private[this] lazy val workerGrp  = engine.workers
+  private[this] lazy val channelGrp = engine.channels
 
   def chunked(size: Int) = copy(chunkSize = size)
 
@@ -73,12 +102,12 @@ case class Server(
     val bindings = binders.map { binder =>
       val bootstrap = configure(
         new ServerBootstrap()
-          .group(acceptor, workers)
+          .group(acceptorGrp, workerGrp)
           .channel(classOf[NioServerSocketChannel])
           .childHandler(initializer(binder)))
       binder.bind(prebind(bootstrap)).sync
     }
-    bindings.foreach(b => channels.add(b.channel))
+    bindings.foreach(b => channelGrp.add(b.channel))
 
     this
   }
@@ -96,13 +125,13 @@ case class Server(
   }
 
   override def destroy() = {
-    workers.shutdownGracefully()
-    acceptor.shutdownGracefully()
+    workerGrp.shutdownGracefully()
+    acceptorGrp.shutdownGracefully()
     this
   }
 
   def closeConnections() = {
-    channels.close.awaitUninterruptibly()
+    channelGrp.close.awaitUninterruptibly()
     this
   }
 
@@ -125,7 +154,7 @@ case class Server(
     new ChannelInitializer[SocketChannel] {
       def initChannel(channel: SocketChannel) =
         (binder.init(channel).pipeline
-          .addLast("housekeeping", new HouseKeepingChannelHandler(channels))
+          .addLast("housekeeping", new HouseKeepingChannelHandler(channelGrp))
           .addLast("decoder", new HttpRequestDecoder)
           .addLast("encoder", new HttpResponseEncoder)
           .addLast("chunker", new HttpObjectAggregator(chunkSize))
