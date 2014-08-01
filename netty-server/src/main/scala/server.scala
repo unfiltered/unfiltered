@@ -24,7 +24,7 @@ object Server extends Binders {
     Server(binder :: Nil, Nil, () => (), 1048576)
 }
 
-/** A RunnableServer backed by a list of netty bootstraped port bindings
+/** A RunnableServer backed by a list of netty bootstrapped port bindings
  *  @param binders a list of port bindings
  *  @param handlers a list of functions which produce channel handlers
  *  @param beforeStopBlock a function to be invoked when the server is shutdown before channels are closed
@@ -39,13 +39,13 @@ case class Server(
   with Binders {
   type ServerBuilder = Server
 
-  /** a shared event loop group for accepting connections shared between bootraps */
+  /** a shared event loop group for accepting connections shared between bootstraps */
   private[this] lazy val acceptor  = new NioEventLoopGroup()
 
-  /** a shared event loop group for handling accepted connections shared between bootraps */
+  /** a shared event loop group for handling accepted connections shared between bootstraps */
   private[this] lazy val workers   = new NioEventLoopGroup()
 
-  /** a channel group used to collect connected channels so that they may be shutdown propertly on RunnableServer#stop() */
+  /** a channel group used to collect connected channels so that they may be shutdown properly on RunnableServer#stop() */
   lazy val channels = new DefaultChannelGroup(
     "Netty Unfiltered Server Channel Group",
     GlobalEventExecutor.INSTANCE) // todo: pick the best eventLoop option for the task

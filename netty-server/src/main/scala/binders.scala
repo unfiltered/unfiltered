@@ -9,7 +9,7 @@ import io.netty.handler.ssl.{ SslContext, SslHandler }
 import io.netty.handler.ssl.util.SelfSignedCertificate
 import java.io.{ File, FileInputStream }
 import java.security.{ KeyStore, SecureRandom }
-import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLContext, SSLEngine }
+import javax.net.ssl.{ KeyManagerFactory, SSLContext, SSLEngine }
 
 /** A binder defines a port binding for a ServerBootstrap. */
 trait Binder {
@@ -52,7 +52,7 @@ trait Binders {
     bind(SecureEngineSocketBinder(port, host, ssl))
 }
 
-/** A basic binder for socket addreses */
+/** A basic binder for socket addresses */
 case class SocketBinder(
   port: Int, host: String) extends Binder {
   def init(channel: SocketChannel) = channel
