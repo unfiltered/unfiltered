@@ -8,7 +8,7 @@ trait Hosted {
 
   /** Silent, resource-managed http request executor */
   def http[T](handler: Handler[T]): T = {
-    val h = Http
+    val h = new Http
     try { h(handler) }
     finally { h.shutdown() }
   }
@@ -16,7 +16,7 @@ trait Hosted {
   /** Silent, resource-managed http request executor which accepts
       non-ok status */
   def xhttp[T](handler: Handler[T]): T  = {
-    val h = Http
+    val h = new Http
     try { h.x(handler) }
     finally { h.shutdown() }
   }

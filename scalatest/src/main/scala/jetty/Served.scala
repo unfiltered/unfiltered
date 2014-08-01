@@ -1,7 +1,7 @@
 package unfiltered.scalatest.jetty
 
 import unfiltered.scalatest.Hosted
-import org.scalatest.{BeforeAndAfterAll, Suite, Outcome}
+import org.scalatest.{Suite, Outcome}
 
 trait Planned extends Served { self: Hosted =>
 

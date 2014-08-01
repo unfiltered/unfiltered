@@ -6,12 +6,11 @@ import test.AgentStrings
 
 class AgentSpecJetty
 extends AgentSpec
-with unfiltered.scalatest.jetty.Planned // TODO this order matters!
+with unfiltered.scalatest.jetty.Planned
 
-//object AgentSpecNetty
-//extends Specification
-//with unfiltered.specs2.netty.Planned
-//with AgentSpec
+class AgentSpecNetty
+extends AgentSpec
+with unfiltered.scalatest.netty.Planned
 
 trait AgentSpec extends WordSpec with Matchers with unfiltered.scalatest.Hosted {
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = {
