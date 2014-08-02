@@ -13,7 +13,7 @@ import io.netty.channel.ChannelHandler.Sharable
 
 import org.apache.http.NoHttpResponseException
 
-import org.specs2.mutable.{BeforeAfter, Specification}
+import org.specs2.mutable.{ BeforeAfter, Specification }
 
 import dispatch.classic._
 
@@ -64,14 +64,14 @@ object SslServerSpec
   }
 
   lazy val server =
-    unfiltered.netty.Server.httpsEngine(
-        port = securePort,
-        host = "localhost",
-        ssl  = SslEngineFromPath.Simple(
-          keyStorePath,
-          keyStorePasswd
-        ))
-      .plan(new SecurePlan)
+    Server.httpsEngine(
+      port = securePort,
+      host = "localhost",
+      ssl  = SslEngineFromPath.Simple(
+        keyStorePath,
+        keyStorePasswd
+      ))
+    .plan(new SecurePlan)
 
   "A Secure Server" should {
     "respond to secure requests" in {
