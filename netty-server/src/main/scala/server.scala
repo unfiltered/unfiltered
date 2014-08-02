@@ -57,6 +57,10 @@ case class Server(
   with Binders {
   type ServerBuilder = Server
 
+  private[this] lazy val acceptorGrp = engine.acceptor
+  private[this] lazy val workerGrp  = engine.workers
+  private[this] lazy val channelGrp = engine.channels
+
   def acceptor(group: EventLoopGroup) = copy(engine = new Engine {
       lazy val acceptor = group
       lazy val workers = engine.workers
@@ -75,28 +79,14 @@ case class Server(
     lazy val channels = group
   })
 
-  private[this] lazy val acceptorGrp = engine.acceptor
-  private[this] lazy val workerGrp  = engine.workers
-  private[this] lazy val channelGrp = engine.channels
+  def bind(binder: Binder) = copy(binders = binder :: binders)
 
-  def chunked(size: Int) = copy(chunkSize = size)
+  def ports = binders.map(_.port)
 
-  override def bind(binder: Binder) = copy(binders = binder :: binders)
-
-  override def ports = binders.map(_.port)
-
-  def resources(
-    path: URL,
-    cacheSeconds: Int   = 60,
-    passOnFail: Boolean = true) = {
-    val resources = Resources(path, cacheSeconds, passOnFail)
-    this.plan(resources).makePlan(new ChunkedWriteHandler)
-  }
-
-  override def makePlan(plan: => ChannelHandler) =
+  def makePlan(plan: => ChannelHandler) =
     copy(handlers = { () => plan } :: handlers)
 
-  override def start() = start(identity)
+  def start() = start(identity)
 
   def start(prebind: ServerBootstrap => ServerBootstrap) = {    
     val bindings = binders.map { binder =>
@@ -112,7 +102,7 @@ case class Server(
     this
   }
 
-  override def stop() = {
+  def stop() = {
     beforeStopBlock()
     closeConnections()
     handlers.foreach { handler =>
@@ -124,7 +114,7 @@ case class Server(
     destroy()
   }
 
-  override def destroy() = {
+  def destroy() = {
     workerGrp.shutdownGracefully()
     acceptorGrp.shutdownGracefully()
     this
@@ -163,4 +153,14 @@ case class Server(
               pipe.addLast(s"handler-$index", handler())
           }.addLast("notfound", new NotFoundHandler)
     }
+
+  def chunked(size: Int) = copy(chunkSize = size)
+
+  def resources(
+    path: URL,
+    cacheSeconds: Int   = 60,
+    passOnFail: Boolean = true) = {
+    val resources = Resources(path, cacheSeconds, passOnFail)
+    this.plan(resources).makePlan(new ChunkedWriteHandler)
+  }
 }
