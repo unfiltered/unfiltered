@@ -11,11 +11,11 @@ import java.io.{ File, FileInputStream }
 import java.security.{ KeyStore, SecureRandom }
 import javax.net.ssl.{ KeyManagerFactory, SSLContext, SSLEngine }
 
-/** A binder defines a port binding for a ServerBootstrap. */
+/** A binder defines a port binding for a ServerBootstrap */
 trait Binder {
   /** @return port to listen on */
   def port: Int
-  /** contribute to a channel's initialization */
+  /** contribute to a channel's initialization before defaults are applied */
   def init(channel: SocketChannel): SocketChannel
   /** bind to a ServerBootstrap returning the resulting ChannelFuture */
   def bind(bootstap: ServerBootstrap): ChannelFuture
