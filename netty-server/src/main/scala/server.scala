@@ -21,24 +21,28 @@ import java.net.URL
 
 object Server extends Binders {  
   def bind(binder: Binder): Server =
-    Server(binder :: Nil, Nil, () => (), 1048576, DefaultEngine)
+    Server(binder :: Nil, Nil, () => (), 1048576, Engine.Default)
 }
 
+/** Defines the set of resources used for process scheduling
+ *  and collecting active channels needed for graceful shutdown */
 trait Engine {
   /** a shared event loop group for accepting connections shared between bootstraps */
   def acceptor: EventLoopGroup
   /** a shared event loop group for handling accepted connections shared between bootstraps */
   def workers: EventLoopGroup
-  /** a channel group used to collect connected channels so that they may be shutdown properly on RunnableServer#stop() */
+  /** a channel group used to collect active channels so that they may be shutdown properly on RunnableServer#stop() */
   def channels: ChannelGroup
 }
 
-object DefaultEngine extends Engine {
-  def acceptor = new NioEventLoopGroup()
-  def workers = new NioEventLoopGroup()
-  def channels = new DefaultChannelGroup(
-    "Netty Unfiltered Server Channel Group",
-    ImmediateEventExecutor.INSTANCE)
+object Engine {
+  object Default extends Engine {
+    def acceptor = new NioEventLoopGroup()
+    def workers = new NioEventLoopGroup()
+    def channels = new DefaultChannelGroup(
+      "Netty Unfiltered Server Channel Group",
+      ImmediateEventExecutor.INSTANCE)
+  }
 }
 
 /** A RunnableServer backed by a list of netty bootstrapped port bindings
