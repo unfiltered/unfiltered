@@ -5,7 +5,7 @@ import org.eclipse.jetty.server.bio.SocketConnector
 import org.eclipse.jetty.server.ssl.SslSocketConnector
 import org.eclipse.jetty.util.ssl.SslContextFactory
 
-/** Convenience methods for attaching connector providers. */
+/** Convenience methods for adding connector providers. */
 trait ConnectorBuilder {
   val allInterfacesHost = "0.0.0.0"
   val localInterfaceHost = "127.0.0.1"
@@ -14,11 +14,10 @@ trait ConnectorBuilder {
   val defaultKeystorePathProperty = "jetty.ssl.keyStore"
   val defaultKeystorePasswordProperty = "jetty.ssl.keyStorePassword"
 
-  def attach(connector: ConnectorProvider): Server
+  def connector(connector: ConnectorProvider): Server
 
-  def http(port: Int = defaultHttpPort, host: String = allInterfacesHost) = attach(
-    SocketConnectorProvider(port, host)
-  )
+  def http(port: Int = defaultHttpPort, host: String = allInterfacesHost) =
+    connector(SocketConnectorProvider(port, host))
 
   def local(port: Int): Server =
     http(port, localInterfaceHost)
@@ -30,7 +29,7 @@ trait ConnectorBuilder {
     host: String = allInterfacesHost,
     keyStorePath: String,
     keyStorePassword: String
-  ) = attach(
+  ) = connector(
     SslSocketConnectorProvider(
       port,
       host,
@@ -46,7 +45,7 @@ trait ConnectorBuilder {
     host: String = allInterfacesHost,
     keyStorePathProperty: String = defaultKeystorePathProperty,
     keyStorePasswordProperty: String = defaultKeystorePasswordProperty
-  ) = attach(
+  ) = connector(
     SslSocketConnectorProvider(
       port,
       host,

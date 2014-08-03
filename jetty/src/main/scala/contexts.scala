@@ -8,8 +8,8 @@ import org.eclipse.jetty.util.resource.Resource
 
 trait ContextAdder {
   def addToParent(parent: ContextHandlerCollection): Unit
-  def attach(filter: FilterAdder): ContextAdder
-  def filter(filter: Filter) = attach(FilterAdder(BasicFilterHolder(filter)))
+  def filterAdder(filter: FilterAdder): ContextAdder
+  def filter(filter: Filter) = filterAdder(FilterAdder(BasicFilterHolder(filter)))
   def resources(path: java.net.URL): ContextAdder
 }
 
@@ -31,7 +31,7 @@ case class DefaultServletContextAdder(
       ctx.setBaseResource(Resource.newResource(path))
   }
 
-  def attach(filter: FilterAdder) = copy(filterAdders = filter :: filterAdders)
+  def filterAdder(filter: FilterAdder) = copy(filterAdders = filter :: filterAdders)
 
   def resources(path: java.net.URL) = copy(resourcePath = Some(path))
 }
