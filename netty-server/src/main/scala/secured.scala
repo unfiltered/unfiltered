@@ -13,6 +13,7 @@ import java.io.FileInputStream
 import java.security.{ KeyStore, SecureRandom }
 import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLEngine, SSLContext, TrustManager, TrustManagerFactory }
 
+@deprecated("Use unfiltered.netty.Server", since="0.8.1")
 object Https {
   def apply(port: Int, host: String): Https =
     Https(port, host, Nil, () => ())
@@ -26,6 +27,7 @@ object Https {
 }
 
 /** Http + Ssl implementation of the Server trait. */
+@deprecated("Use unfiltered.netty.Server", since="0.8.1")
 case class Https(
   port: Int,
   host: String,
@@ -53,6 +55,7 @@ case class Https(
 }
 
 /** Provides security dependencies */
+@deprecated("Use unfiltered.netty.Server", since="0.8.1")
 trait Security {
   import javax.net.ssl.SSLContext
   /** create an SSLContext from which an SSLEngine can be created */
@@ -62,6 +65,7 @@ trait Security {
 /** Provides basic ssl support.
   * A keyStore and keyStorePassword are required and default to using the system property values
   * "netty.ssl.keyStore" and "netty.ssl.keyStorePassword" respectively. */
+@deprecated("Use unfiltered.netty.Server", since="0.8.1")
 trait Ssl extends Security {
 
   def requiredProperty(name: String) = System.getProperty(name) match {
@@ -99,6 +103,7 @@ trait Ssl extends Security {
   * to the System property values "netty.ssl.trustStore" and
   * "netty.ssl.trustStorePassword" respectively
   */
+@deprecated("Use unfiltered.netty.Server", since="0.8.1")
 trait Trusted { self: Ssl =>
 
   lazy val trustStore = requiredProperty("netty.ssl.trustStore")
@@ -121,6 +126,7 @@ trait Trusted { self: Ssl =>
 }
 
 /** ChannelPipelineFactory for secure Http connections */
+@deprecated("Use unfiltered.netty.Server", since="0.8.1")
 class SecureServerInit(
   val channels: ChannelGroup,
   val handlers: List[() => ChannelHandler],

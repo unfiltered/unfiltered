@@ -56,12 +56,7 @@ case class JarResource(url: URL) extends Resource {
   lazy val entry = jarfile.flatMap { jar =>
     import scala.collection.JavaConversions.enumerationAsScalaIterator
     enumerationAsScalaIterator(jar.entries)
-      .filter(_.getName.replace("\\","/") == path).toSeq.headOption match {
-        case Some(e) =>
-          Some(e)
-        case _ =>
-          None
-      }
+      .find(_.getName.replace("\\","/") == path)
   }
   lazy val exists = entry.isDefined
   lazy val lastModified = entry match  {

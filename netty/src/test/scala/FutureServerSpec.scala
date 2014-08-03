@@ -10,7 +10,7 @@ object FutureServerSpec extends Specification with org.specs2.matcher.ThrownMess
 
   implicit val executionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  def setup = _.handler(future.Planify {
+  def setup = _.plan(future.Planify {
     case GET(UFPath("/ping")) =>
       Future.successful(ResponseString("pong"))
 
