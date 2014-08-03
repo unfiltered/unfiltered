@@ -20,9 +20,8 @@ trait ConnectorBuilder {
     SocketConnectorProvider(port, host)
   )
 
-  def local(port: Int): Server = attach(
-    SocketConnectorProvider(port, localInterfaceHost)
-  )
+  def local(port: Int): Server =
+    http(port, localInterfaceHost)
 
   def anylocal: Server = local(unfiltered.util.Port.any)
 
