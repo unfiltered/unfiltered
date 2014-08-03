@@ -112,6 +112,8 @@ object SslEngineProvider {
   val defaultKeystorePathProperty = "netty.ssl.keyStore"
   val defaultKeystorePasswordProperty = "netty.ssl.keyStorePassword"
 
+  case class Simple(engine: SSLEngine) extends SslEngineProvider
+
   /** An engine provider based on file system path to keystore */
   trait Path extends SslEngineProvider {
     def keyStorePath: String
@@ -161,6 +163,8 @@ object SslEngineProvider {
       lazy val keyStorePassword = props(keyStorePasswordProperty)
     }
   }
+
+  def apply(engine: SSLEngine) = Simple(engine)
 
   def path(
     keyStorePath: String,
