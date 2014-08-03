@@ -2,11 +2,11 @@ package unfiltered.scalatest.netty
 
 import io.netty.util.ResourceLeakDetector
 import org.scalatest.{ Suite, Outcome }
-import unfiltered.netty.Http
+import unfiltered.netty.Server
 import unfiltered.scalatest.Hosted
 
 trait Planned extends Served { self: Hosted =>
-  def setup = _.handler(unfiltered.netty.cycle.Planify(intent))
+  def setup = _.plan(unfiltered.netty.cycle.Planify(intent))
   def intent[A, B]: unfiltered.Cycle.Intent[A, B]
 }
 
@@ -15,8 +15,8 @@ trait Served extends Suite with Hosted {
   // at the cost of the highest possible overhead (for testing purposes only).
   ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID)
 
-  def setup: Http => Http
-  def getServer = setup(Http(port))
+  def setup: Server => Server
+  def getServer = setup(Server.http(port))
 
   override protected def withFixture(test: NoArgTest): Outcome = {
     val server = getServer

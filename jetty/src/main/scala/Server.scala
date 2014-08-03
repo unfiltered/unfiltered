@@ -5,7 +5,7 @@ import javax.servlet.Filter
 import org.eclipse.jetty.server.handler.ContextHandlerCollection
 
 /** Holds connector providers that listen to selected ports and interfaces.
-  * ConnectorBuilder provides convenience methods for attaching connectors. */
+  * ConnectorBuilder provides convenience methods for adding connectors. */
 case class Server(
   connectorProviders: List[ConnectorProvider],
   contextAdders: List[ContextAdder]
@@ -14,20 +14,20 @@ case class Server(
     with ConnectorBuilder {
   type ServerBuilder = Server
 
-  def attach(connector: ConnectorProvider) = copy(
+  /** Add a connector to this server. */
+  def connector(connector: ConnectorProvider) = copy(
     connectorProviders = connector :: connectorProviders
   )
-  def attach(contextAdder: ContextAdder) = copy(
-    contextAdders = contextAdder :: contextAdders
-  )
 
-  /** attaches to first-added (last) context */
-  def attach(filterAdder: FilterAdder) = copy(
+  /** Update the server's first-added context. */
+  def originalContext(replace: ContextAdder => ContextAdder) = copy(
     contextAdders = contextAdders.reverse match {
-      case head :: tail => (head.attach(filterAdder) :: tail).reverse
+      case head :: tail => (replace(head) :: tail).reverse
       case _ => contextAdders
     })
 
+  /** The mutable underlying jetty server object. This is built
+    * on-demand according to the discribed configuration. */
   lazy val underlying = {
     val server = new org.eclipse.jetty.server.Server()
     for (provider <- connectorProviders.reverseIterator)
@@ -38,13 +38,27 @@ case class Server(
     server.setHandler(contextHandlers)
     server
   }
-  def context(path: String)(block: ContextAdder => ContextAdder) = attach(
-    block(DefaultServletContextAdder(path, Nil))
+
+  /** Add a servlet context with the given path */
+  def context(path: String)(block: ContextAdder => ContextAdder) = copy(
+    contextAdders =
+      block(DefaultServletContextAdder(path, Nil, None)) :: contextAdders
   )
-  def filter(filter: => Filter) = attach(FilterAdder(BasicFilterHolder(filter)))
+
+  /** Add a filter to the original (root) context of this builder. */
+  def filter(filter: => Filter) = originalContext(
+    _.filterAdder(FilterAdder(BasicFilterHolder(filter)))
+  )
+
+  /** Definition used by super-trait to implement `plan()`. */
   def makePlan(plan: => Filter) = filter(plan)
 
+  /** Add a resource path to the original, root context */
+  def resources(path: java.net.URL) = originalContext(_.resources(path))
+
+  /** Ports used by this server, reported by super-trait */
   def ports: Traversable[Int] = connectorProviders.reverse.map(_.port)
+
   /** Starts server in the background */
   def start() = {
     underlying.setStopAtShutdown(true)
@@ -66,9 +80,9 @@ case class Server(
 }
 
 /** Base object that used to construct Server instances.
-  * ConnectorBuilder provides convenience methods for attaching
+  * ConnectorBuilder provides convenience methods for adding
   * connectors. */
 object Server extends ConnectorBuilder {
-  def attach(connector: ConnectorProvider) =
-    Server(connector :: Nil, DefaultServletContextAdder("/", Nil) :: Nil)
+  def connector(connector: ConnectorProvider) =
+    Server(connector :: Nil, DefaultServletContextAdder("/", Nil, None) :: Nil)
 }

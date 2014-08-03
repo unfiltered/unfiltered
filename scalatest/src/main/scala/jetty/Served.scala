@@ -11,7 +11,7 @@ trait Planned extends Served { self: Hosted =>
 
 trait Served extends Suite { self: Hosted =>
   def setup: Server => Server
-  def getServer = setup(Http(port))
+  def getServer = setup(Server.http(port))
 
   override protected def withFixture(test: NoArgTest): Outcome = {
     val server = getServer
