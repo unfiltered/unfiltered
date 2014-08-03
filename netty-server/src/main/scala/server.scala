@@ -143,7 +143,7 @@ case class Server(
     new ChannelInitializer[SocketChannel] {
       def initChannel(channel: SocketChannel) =
         (binder.init(channel).pipeline
-          .addLast("housekeeping", new HouseKeepingChannelHandler(channelGrp))
+          .addLast("housekeeper", new HouseKeeper(channelGrp))
           .addLast("decoder", new HttpRequestDecoder)
           .addLast("encoder", new HttpResponseEncoder)
           .addLast("chunker", new HttpObjectAggregator(chunkSize))
