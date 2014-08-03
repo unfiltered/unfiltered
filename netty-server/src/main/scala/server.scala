@@ -19,9 +19,9 @@ import java.lang.{ Boolean => JBoolean, Integer => JInteger }
 
 import java.net.URL
 
-object Server extends Binders {  
-  def bind(binder: Binder): Server =
-    Server(binder :: Nil, Nil, () => (), 1048576, Engine.Default)
+object Server extends PortBindings {  
+  def bind(binding: PortBinding): Server =
+    Server(binding :: Nil, Nil, () => (), 1048576, Engine.Default)
 }
 
 /** Defines the set of resources used for process scheduling
@@ -46,19 +46,19 @@ object Engine {
 }
 
 /** A RunnableServer backed by a list of netty bootstrapped port bindings
- *  @param binders a list of port bindings
+ *  @param portBindings a list of port bindings
  *  @param handlers a list of functions which produce channel handlers
  *  @param beforeStopBlock a function to be invoked when the server is shutdown before channels are closed
  *  @param chunkSize the maximum size allowed for request body chunks */
 case class Server(
-  binders: List[Binder],
+  portBindings: List[PortBinding],
   handlers: List[() => ChannelHandler],
   beforeStopBlock: () => Unit,
   chunkSize: Int,
   engine: Engine
 ) extends RunnableServer
   with PlanServer[ChannelHandler]
-  with Binders {
+  with PortBindings {
   type ServerBuilder = Server
 
   private[this] lazy val acceptorGrp = engine.acceptor
@@ -86,9 +86,10 @@ case class Server(
     lazy val channels = group
   })
 
-  def bind(binder: Binder): Traversable = copy(binders = binder :: binders)
+  def bind(binding: PortBinding) =
+    copy(portBindings = binding :: portBindings)
 
-  def ports: Traversable[Int] = binders.map(_.port)
+  def ports: Traversable[Int] = portBindings.map(_.port)
 
   def makePlan(plan: => ChannelHandler) =
     copy(handlers = { () => plan } :: handlers)
@@ -101,13 +102,13 @@ case class Server(
   /** Starts server in the background after applying a function
    *  to each port bindings server bootstrap */
   def start(prebind: ServerBootstrap => ServerBootstrap) = {    
-    val bindings = binders.map { binder =>
+    val bindings = portBindings.map { binding =>
       val bootstrap = configure(
         new ServerBootstrap()
           .group(acceptorGrp, workerGrp)
           .channel(classOf[NioServerSocketChannel])
-          .childHandler(initializer(binder)))
-      binder.bind(prebind(bootstrap)).sync
+          .childHandler(initializer(binding)))
+      prebind(bootstrap).bind(binding.host, binding.port).sync
     }
     for (binding <- bindings)
       channelGrp.add(binding.channel)
@@ -158,10 +159,10 @@ case class Server(
       .option(ChannelOption.SO_BACKLOG, JInteger.valueOf(16384))
 
   /** @param binder a binder which may contribute to channel initialization */
-  def initializer(binder: Binder): ChannelInitializer[SocketChannel] =
+  def initializer(binding: PortBinding): ChannelInitializer[SocketChannel] =
     new ChannelInitializer[SocketChannel] {
       def initChannel(channel: SocketChannel) =
-        (binder.init(channel).pipeline
+        (binding.init(channel).pipeline
           .addLast("housekeeper", new HouseKeeper(channelGrp))
           .addLast("decoder", new HttpRequestDecoder)
           .addLast("encoder", new HttpResponseEncoder)
