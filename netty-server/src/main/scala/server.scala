@@ -86,6 +86,8 @@ case class Server(
   def makePlan(plan: => ChannelHandler) =
     copy(handlers = { () => plan } :: handlers)
 
+  def handler(h: ChannelHandler) = makePlan(h)
+
   def start() = start(identity)
 
   def start(prebind: ServerBootstrap => ServerBootstrap) = {    
