@@ -21,12 +21,14 @@ case class Server(
     contextAdders = contextAdder :: contextAdders
   )
 
-  /** attaches to first-added (last) context */
-  def attach(filterAdder: FilterAdder) = copy(
+  def originalContext(replace: ContextAdder => ContextAdder) = copy(
     contextAdders = contextAdders.reverse match {
-      case head :: tail => (head.attach(filterAdder) :: tail).reverse
+      case head :: tail => (replace(head) :: tail).reverse
       case _ => contextAdders
     })
+
+  /** attaches to first-added (last) context */
+  def attach(filterAdder: FilterAdder) = originalContext(_.attach(filterAdder))
 
   lazy val underlying = {
     val server = new org.eclipse.jetty.server.Server()
@@ -38,11 +40,17 @@ case class Server(
     server.setHandler(contextHandlers)
     server
   }
+
   def context(path: String)(block: ContextAdder => ContextAdder) = attach(
-    block(DefaultServletContextAdder(path, Nil))
+    block(DefaultServletContextAdder(path, Nil, None))
   )
+
   def filter(filter: => Filter) = attach(FilterAdder(BasicFilterHolder(filter)))
+
   def makePlan(plan: => Filter) = filter(plan)
+
+  def resources(path: java.net.URL) = originalContext(_.resources(path))
+
 
   def ports: Traversable[Int] = connectorProviders.reverse.map(_.port)
   /** Starts server in the background */
@@ -70,5 +78,5 @@ case class Server(
   * connectors. */
 object Server extends ConnectorBuilder {
   def attach(connector: ConnectorProvider) =
-    Server(connector :: Nil, DefaultServletContextAdder("/", Nil) :: Nil)
+    Server(connector :: Nil, DefaultServletContextAdder("/", Nil, None) :: Nil)
 }
