@@ -55,6 +55,7 @@ trait Ssl { self: JettyBase =>
   * A trustStore and trustStorePassword are required and default
   * to the System property values "jetty.ssl.trustStore" and
   * "jetty.ssl.trustStorePassword" respectively */
+@deprecated("Use unfiltered.jetty.Server", since="0.8.1")
 trait Trusted { self: Ssl =>
   lazy val trustStore = tryProperty("jetty.ssl.trustStore")
   lazy val trustStorePassword = tryProperty("jetty.ssl.trustStorePassword")

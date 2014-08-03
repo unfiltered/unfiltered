@@ -45,13 +45,14 @@ case class Server(
       block(DefaultServletContextAdder(path, Nil, None)) :: contextAdders
   )
 
-  /** Add a filter to the original (root) context of this builder. */
-  def filter(filter: => Filter) = originalContext(
-    _.filterAdder(FilterAdder(BasicFilterHolder(filter)))
-  )
+  @deprecated("Use `plan(filter)`", "0.8.1")
+  def filter(filter: Filter) = plan(filter)
 
-  /** Definition used by super-trait to implement `plan()`. */
-  def makePlan(plan: => Filter) = filter(plan)
+  /** Add a filter as a by-name parameter. Generally you should use
+    * `plan(plan)` instead. */
+  def makePlan(plan: => Filter) = originalContext(
+    _.filterAdder(FilterAdder(BasicFilterHolder(plan)))
+  )
 
   /** Add a resource path to the original, root context */
   def resources(path: java.net.URL) = originalContext(_.resources(path))

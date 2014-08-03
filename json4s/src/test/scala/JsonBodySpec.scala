@@ -18,7 +18,7 @@ with unfiltered.specs2.jetty.Served {
     }
   }
 
-  def setup = { _.filter(new TestPlan) }
+  def setup = { _.plan(new TestPlan) }
 
   "JsonBody should" should {
     "produce a json parsed representation of the body with accept application/json header" in {

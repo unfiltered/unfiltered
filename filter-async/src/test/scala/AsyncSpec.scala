@@ -14,7 +14,7 @@ object AsyncSpec extends Specification with unfiltered.specs2.jetty.Served {
     }
   }
 
-  def setup = _.filter(APlan).filter(Planify {
+  def setup = _.plan(APlan).plan(Planify {
     case GET(UFPath("/pass")) => ResponseString("pass") ~> Ok
   })
 

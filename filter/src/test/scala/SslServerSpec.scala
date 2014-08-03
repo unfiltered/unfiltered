@@ -28,9 +28,9 @@ object SslServerSpec extends Specification with unfiltered.specs2.Hosted with Se
     "0.0.0.0",
     keyStorePath = keyStorePath,
     keyStorePassword = keyStorePasswd
-  ).filter(filt)
+  ).plan(filt)
 
-  lazy val httpServer = Server.http(httpPort, "0.0.0.0").filter(filt)
+  lazy val httpServer = Server.http(httpPort, "0.0.0.0").plan(filt)
 
   override def xhttp[T](handler: Handler[T]): T =
     super[SecureClient].xhttp(handler)

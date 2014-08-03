@@ -29,7 +29,7 @@ object JsonpSpec extends Specification  with unfiltered.specs2.jetty.Served {
     }
   }
 
-  def setup = { _.filter(new TestPlan) }
+  def setup = { _.plan(new TestPlan) }
 
   "Jsonp should" should {
     "match an text/javascript accepts request with callback, wrapping response body in callback" in {

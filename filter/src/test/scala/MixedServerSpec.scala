@@ -29,7 +29,7 @@ object MixedServerSpec extends Specification with unfiltered.specs2.jetty.Served
     )
   )
 
-  def setup = { _.filter(unfiltered.filter.Planify {
+  def setup = { _.plan(unfiltered.filter.Planify {
     case GET(UFPath("/")) => ResponseString("public") ~> Ok
     case HTTP(GET(UFPath("/https_only"))) => Redirect("https://localhost/https_only")
     case HTTPS(GET(UFPath("/https_only"))) => ResponseString("secret") ~> Ok
