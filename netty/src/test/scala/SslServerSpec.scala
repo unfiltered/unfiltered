@@ -62,7 +62,7 @@ object SslServerSpec
     Server.httpsEngine(
       port = securePort,
       host = "localhost",
-      ssl  = SslEngineFromPath.Simple(
+      ssl  = SslEngineProvider.path(
         keyStorePath,
         keyStorePasswd
       ))

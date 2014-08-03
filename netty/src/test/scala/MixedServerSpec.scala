@@ -22,7 +22,7 @@ object MixedServerSpec extends Specification with unfiltered.specs2.netty.Served
   override lazy val server = setup(
     Server.http(port).httpsEngine(
       port = securePort,
-      ssl = SslEngineFromPath.Simple(
+      ssl = SslEngineProvider.path(
       keyStorePath,
       keyStorePasswd
     ))
