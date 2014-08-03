@@ -65,35 +65,41 @@ case class Server(
   private[this] lazy val workerGrp  = engine.workers
   private[this] lazy val channelGrp = engine.channels
 
+  /** Specifies the EventLoopGroup use to handle incoming connections */
   def acceptor(group: EventLoopGroup) = copy(engine = new Engine {
       lazy val acceptor = group
       lazy val workers = engine.workers
       lazy val channels = engine.channels
   })
 
+  /** Specifies the EventLoopGroup use to handle processing of registered channels */
   def workers(group: EventLoopGroup) = copy(engine = new Engine {
     lazy val acceptor = engine.acceptor
     lazy val workers = group
     lazy val channels = engine.channels
   })
 
+  /** Specifies the ChannelGroup used for collecting connected channels */
   def channels(group: ChannelGroup) = copy(engine = new Engine {
     lazy val acceptor = engine.acceptor
     lazy val workers = engine.workers
     lazy val channels = group
   })
 
-  def bind(binder: Binder) = copy(binders = binder :: binders)
+  def bind(binder: Binder): Traversable = copy(binders = binder :: binders)
 
-  def ports = binders.map(_.port)
+  def ports: Traversable[Int] = binders.map(_.port)
 
   def makePlan(plan: => ChannelHandler) =
     copy(handlers = { () => plan } :: handlers)
 
   def handler(h: ChannelHandler) = makePlan(h)
 
+  /** Starts server in the background */
   def start() = start(identity)
 
+  /** Starts server in the background after applying a function
+   *  to each port bindings server bootstrap */
   def start(prebind: ServerBootstrap => ServerBootstrap) = {    
     val bindings = binders.map { binder =>
       val bootstrap = configure(
@@ -109,6 +115,11 @@ case class Server(
     this
   }
 
+  /** Stops server running the background. If provided,
+   *  the beforeStop block will be invoked before
+   *  closing channel connections. Any listed cycle plans
+   *  will be shutdown in the order provided. Lastly
+   *  shared thread resources will be released. */
   def stop() = {
     beforeStopBlock()
     closeConnections()
@@ -119,6 +130,8 @@ case class Server(
     destroy()
   }
 
+  /** Destroys the provided worker event loop group
+   *  before destroying the acceptors event loop group */
   def destroy() = {
     workerGrp.shutdownGracefully()
     acceptorGrp.shutdownGracefully()
