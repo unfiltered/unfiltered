@@ -58,11 +58,6 @@ object SslServerSpec
   override def xhttp[T](handler: Handler[T]): T =
     super[SecureClient].xhttp(handler)
 
-  step {
-    System.setProperty("netty.ssl.keyStore", keyStorePath)
-    System.setProperty("netty.ssl.keyStorePassword", keyStorePasswd)
-  }
-
   lazy val server =
     Server.httpsEngine(
       port = securePort,
@@ -80,10 +75,5 @@ object SslServerSpec
     "refuse connection to unsecure requests" in {
       https(host as_str) must throwA[NoHttpResponseException]
     }
-  }
-
-  step {
-    System.clearProperty("netty.ssl.keyStore")
-    System.clearProperty("netty.ssl.keyStorePassword")
   }
 }
