@@ -104,7 +104,7 @@ object AsyncUploadSpec extends Specification
           }
         }
     })
-    _.handler(plan).handler(planify {
+    _.plan(plan).plan(planify {
       case _ => NotFound
     })
   }

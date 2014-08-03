@@ -104,7 +104,7 @@ object CycleUploadSpec extends Specification
             }
         }
     })
-    _.handler(plan).handler(cycle.Planify {
+    _.plan(plan).plan(cycle.Planify {
       case _ => NotFound
     })
   }

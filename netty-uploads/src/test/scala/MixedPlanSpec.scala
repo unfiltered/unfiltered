@@ -23,7 +23,7 @@ object MixedPlanSpec extends Specification
       </html>
 
   def setup = {
-    _.handler(cycle.MultiPartDecoder {
+    _.plan(cycle.MultiPartDecoder {
       case POST(UFPath("/cycle/passnotfound")) =>
         cycle.MultipartPlan.Pass
       case POST(UFPath("/cycle/pass")) =>
@@ -59,7 +59,7 @@ object MixedPlanSpec extends Specification
             case _ =>  ResponseString("what's f?")
           }
       }
-    }).handler(cycle.MultiPartDecoder {
+    }).plan(cycle.MultiPartDecoder {
       case POST(UFPath("/cycle/pass")) & MultiPart(req) => {
         case Decode(binding) =>
           val disk = MultiPartParams.Disk(binding)
@@ -71,7 +71,7 @@ object MixedPlanSpec extends Specification
             case _ => ResponseString("what's f?")
         }
       }
-    }).handler(async.MultiPartDecoder {
+    }).plan(async.MultiPartDecoder {
       case POST(UFPath("/async/passnotfound")) =>
         async.MultipartPlan.Pass
       case POST(UFPath("/async/pass")) =>
@@ -107,7 +107,7 @@ object MixedPlanSpec extends Specification
             case _ => binding.respond(ResponseString("what's f?"))
           }
       }
-    }).handler(async.MultiPartDecoder{
+    }).plan(async.MultiPartDecoder{
       case POST(UFPath("/async/pass") & MultiPart(req)) => {
         case Decode(binding) =>
           val disk = MultiPartParams.Disk(binding)
@@ -119,7 +119,7 @@ object MixedPlanSpec extends Specification
             case _ => binding.respond(ResponseString("what's f?"))
           }
       }
-    }).handler(cycle.Planify{
+    }).plan(cycle.Planify{
       case POST(UFPath("/end")) & MultiPart(req) =>
         ResponseString("")
       case UFPath("/") =>
