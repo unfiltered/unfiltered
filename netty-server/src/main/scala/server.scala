@@ -97,7 +97,8 @@ case class Server(
           .childHandler(initializer(binder)))
       binder.bind(prebind(bootstrap)).sync
     }
-    bindings.foreach(b => channelGrp.add(b.channel))
+    for (binding <- bindings)
+      channelGrp.add(binding.channel)
 
     this
   }
@@ -105,11 +106,9 @@ case class Server(
   def stop() = {
     beforeStopBlock()
     closeConnections()
-    handlers.foreach { handler =>
-      handler() match {
-        case p: unfiltered.netty.cycle.Plan => p.shutdown()
-        case _ => ()
-      }
+    for (handler <- handlers) handler() match {
+      case p: unfiltered.netty.cycle.Plan => p.shutdown()
+      case _ => ()
     }
     destroy()
   }
