@@ -64,17 +64,17 @@ object NoChunkAggregatorSpec extends Specification
   }
 
   def setup = {
-    _.handler(new ExpectedErrorAsyncPlan)
-    .handler(netty.cycle.Planify({
+    _.plan(new ExpectedErrorAsyncPlan)
+    .plan(netty.cycle.Planify({
       case POST(UFPath("/cycle/upload")) => Pass
     }))
-    .handler(netty.cycle.MultiPartDecoder({
+    .plan(netty.cycle.MultiPartDecoder({
       case POST(UFPath("/cycle/upload") & MultiPart(req)) => netty.cycle.MultipartPlan.Pass
     }))
-    .handler(netty.async.MultiPartDecoder({
+    .plan(netty.async.MultiPartDecoder({
       case POST(UFPath("/async/upload") & MultiPart(req)) => netty.async.MultipartPlan.Pass
     }))
-    .handler(netty.async.Planify {
+    .plan(netty.async.Planify {
       case r@POST(UFPath("/async/upload") & MultiPart(req)) =>
         MultiPartParams.Disk(req).files("f") match {
           case Seq(f, _*) => r.respond(ResponseString(
@@ -83,7 +83,7 @@ object NoChunkAggregatorSpec extends Specification
           case f =>  r.respond(ResponseString("what's f?"))
         }
     })
-    .handler(new ExpectedErrorCyclePlan)
+    .plan(new ExpectedErrorCyclePlan)
   }
 
   "When receiving multipart requests with no chunk aggregator, regular netty plans" should {
