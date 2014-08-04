@@ -6,7 +6,7 @@ import org.eclipse.jetty.server.ssl.SslSocketConnector
 import org.eclipse.jetty.util.ssl.SslContextFactory
 
 /** Convenience methods for adding connector providers. */
-trait ConnectorBuilder {
+trait PortBindings {
   val allInterfacesHost = "0.0.0.0"
   val localInterfaceHost = "127.0.0.1"
   val defaultHttpPort = 80
@@ -14,10 +14,10 @@ trait ConnectorBuilder {
   val defaultKeystorePathProperty = "jetty.ssl.keyStore"
   val defaultKeystorePasswordProperty = "jetty.ssl.keyStorePassword"
 
-  def connector(connector: ConnectorProvider): Server
+  def portBinding(portBinding: PortBinding): Server
 
   def http(port: Int = defaultHttpPort, host: String = allInterfacesHost) =
-    connector(SocketConnectorProvider(port, host))
+    portBinding(SocketPortBinding(port, host))
 
   def local(port: Int): Server =
     http(port, localInterfaceHost)
@@ -29,8 +29,8 @@ trait ConnectorBuilder {
     host: String = allInterfacesHost,
     keyStorePath: String,
     keyStorePassword: String
-  ) = connector(
-    SslSocketConnectorProvider(
+  ) = portBinding(
+    SslSocketPortBinding(
       port,
       host,
       SslContextProvider.Simple(
@@ -45,8 +45,8 @@ trait ConnectorBuilder {
     host: String = allInterfacesHost,
     keyStorePathProperty: String = defaultKeystorePathProperty,
     keyStorePasswordProperty: String = defaultKeystorePasswordProperty
-  ) = connector(
-    SslSocketConnectorProvider(
+  ) = portBinding(
+    SslSocketPortBinding(
       port,
       host,
       PropertySslContextProvider(
@@ -57,16 +57,16 @@ trait ConnectorBuilder {
   )
 }
 
-trait ConnectorProvider {
+trait PortBinding {
   def connector: Connector
   def port: Int
   def host: String
 }
 
-case class SocketConnectorProvider (
+case class SocketPortBinding (
   port: Int,
   host: String
-) extends ConnectorProvider {
+) extends PortBinding {
   lazy val connector = {
     val c = new SocketConnector
     c.setPort(port)
@@ -102,11 +102,11 @@ case class PropertySslContextProvider(
   lazy val keyStorePassword = props(keyStorePasswordProperty)
 }
 
-case class SslSocketConnectorProvider (
+case class SslSocketPortBinding (
   port: Int,
   host: String,
   sslContextProvider: SslContextProvider
-) extends ConnectorProvider {
+) extends PortBinding {
 
   lazy val connector = {
     val c = new SslSocketConnector(sslContextProvider.sslContextFactory)

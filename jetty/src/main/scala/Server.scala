@@ -4,19 +4,19 @@ import javax.servlet.Filter
 
 import org.eclipse.jetty.server.handler.ContextHandlerCollection
 
-/** Holds connector providers that listen to selected ports and interfaces.
-  * ConnectorBuilder provides convenience methods for adding connectors. */
+/** Holds port bindings for selected ports and interfaces. The
+  * PortBindings trait provides convenience methods for bindings. */
 case class Server(
-  connectorProviders: List[ConnectorProvider],
+  portBindings: List[PortBinding],
   contextAdders: List[ContextAdder]
 ) extends unfiltered.util.RunnableServer
     with unfiltered.util.PlanServer[Filter]
-    with ConnectorBuilder {
+    with PortBindings {
   type ServerBuilder = Server
 
-  /** Add a connector to this server. */
-  def connector(connector: ConnectorProvider) = copy(
-    connectorProviders = connector :: connectorProviders
+  /** Add a port binding to this server. */
+  def portBinding(binding: PortBinding) = copy(
+    portBindings = binding :: portBindings
   )
 
   /** Update the server's first-added context. */
@@ -30,8 +30,8 @@ case class Server(
     * on-demand according to the discribed configuration. */
   lazy val underlying = {
     val server = new org.eclipse.jetty.server.Server()
-    for (provider <- connectorProviders.reverseIterator)
-      server.addConnector(provider.connector)
+    for (binding <- portBindings.reverseIterator)
+      server.addConnector(binding.connector)
     val contextHandlers = new ContextHandlerCollection
     for (adder <- contextAdders.reverseIterator)
       adder.addToParent(contextHandlers)
@@ -58,7 +58,7 @@ case class Server(
   def resources(path: java.net.URL) = originalContext(_.resources(path))
 
   /** Ports used by this server, reported by super-trait */
-  def ports: Traversable[Int] = connectorProviders.reverse.map(_.port)
+  def ports: Traversable[Int] = portBindings.reverse.map(_.port)
 
   /** Starts server in the background */
   def start() = {
@@ -80,10 +80,10 @@ case class Server(
   }
 }
 
-/** Base object that used to construct Server instances.
-  * ConnectorBuilder provides convenience methods for adding
-  * connectors. */
-object Server extends ConnectorBuilder {
-  def connector(connector: ConnectorProvider) =
-    Server(connector :: Nil, DefaultServletContextAdder("/", Nil, None) :: Nil)
+/** Base object that used to construct Server instances.  The
+  * PortBindings trait provides convenience methods for adding
+  * bindings. */
+object Server extends PortBindings {
+  def portBinding(portBinding: PortBinding) =
+    Server(portBinding :: Nil, DefaultServletContextAdder("/", Nil, None) :: Nil)
 }
