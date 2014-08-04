@@ -11,26 +11,22 @@ import java.io.{ File, FileInputStream }
 import java.security.{ KeyStore, SecureRandom }
 import javax.net.ssl.{ KeyManagerFactory, SSLContext, SSLEngine }
 
-/** A binder defines a port binding for a ServerBootstrap */
-trait Binder {
-  /** @return port to listen on */
+/** A PortBinding defines a binding for a ServerBootstrap for a given address  and port */
+trait PortBinding {
+  /** Port to listen on */
   def port: Int
+  /** Host address */
+  def host: String
   /** contribute to a channel's initialization before defaults are applied */
   def init(channel: SocketChannel): SocketChannel
-  /** bind to a ServerBootstrap returning the resulting ChannelFuture */
-  def bind(bootstap: ServerBootstrap): ChannelFuture
 }
 
-object Binder {
-  trait Simple extends Binder {
-    def host: String
+object PortBinding {
+  trait Simple extends PortBinding {
     def init(channel: SocketChannel) = channel
-    def bind(boot: ServerBootstrap) =
-      boot.bind(host, port)
   }
 
-  trait Secure extends Binder {
-    def host: String
+  trait Secure extends PortBinding {
     def handler(channel: SocketChannel): SslHandler
     def init(channel: SocketChannel) = {
       channel.pipeline.addLast(handler(channel))
@@ -41,20 +37,20 @@ object Binder {
   }
 }
 
-/** A mixin for binding Binders to an instance of a netty Server */
-trait Binders {
+/** A mixin for binding ports to an instance of a netty Server */
+trait PortBindings {
   val allInterfacesHost = "0.0.0.0"
   val localInterfaceHost = "127.0.0.1"
   val defaultHttpPort = 80
   val defaultHttpsPort = 443
 
-  def bind(binder: Binder): Server
+  def bind(binding: PortBinding): Server
 
   def http(
     port: Int = defaultHttpPort,
     host: String = allInterfacesHost
   ) = bind(
-    SocketBinder(port, host)
+    SocketBinding(port, host)
   )
 
   def local(port: Int) =
@@ -68,7 +64,7 @@ trait Binders {
     host: String = allInterfacesHost,
     ssl: SslContextProvider
   ) = bind(
-    SecureContextSocketBinder(port, host, ssl)
+    SecureContextSocketBinding(port, host, ssl)
   )
 
   def httpsEngine(
@@ -76,30 +72,30 @@ trait Binders {
     host: String = allInterfacesHost,
     ssl: SslEngineProvider
   ) = bind(
-    SecureEngineSocketBinder(port, host, ssl)
+    SecureEngineSocketBinding(port, host, ssl)
   )
 }
 
-/** A basic binder for socket addresses */
-case class SocketBinder(port: Int, host: String) extends Binder.Simple
+/** A basic port binding for a socket addresses */
+case class SocketBinding(port: Int, host: String) extends PortBinding.Simple
 
-/** A binder for secure socket addresses backed by a netty SslContext */
-case class SecureContextSocketBinder(
+/** A port binding for secure socket addresses backed by a netty SslContext */
+case class SecureContextSocketBinding(
   port: Int,
   host: String,
   ssl: SslContextProvider
-) extends Binder.Secure {
+) extends PortBinding.Secure {
   def handler(channel: SocketChannel) =
     ssl.context.newHandler(channel.alloc)
 }
 
-/** A binder for secure socket addresses backed by
+/** A port binding for secure socket addresses backed by
  *  an implementation of a SSLEngine */
-case class SecureEngineSocketBinder(
+case class SecureEngineSocketBinding(
   port: Int,
   host: String,
   ssl: SslEngineProvider
-) extends Binder.Secure {
+) extends PortBinding.Secure {
   def handler(channel: SocketChannel) =
     new SslHandler(ssl.engine)
 }
