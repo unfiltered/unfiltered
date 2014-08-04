@@ -6,12 +6,15 @@ import org.specs2.mutable._
 import unfiltered.response._
 import unfiltered.request._
 import unfiltered.request.{Path => UFPath}
+import unfiltered.filter.WritableServletResponse
 
 object WriterSafetySpec extends Specification with unfiltered.specs2.jetty.Served {
 
   case class WriteString(text: String) extends Responder[HttpServletResponse] {
     override def respond(res: HttpResponse[HttpServletResponse]) {
-      res.underlying.getWriter.print(text)
+      val writer = WritableServletResponse(res).getWriter
+      writer.print(text)
+      writer.close()
     }
   }
 
