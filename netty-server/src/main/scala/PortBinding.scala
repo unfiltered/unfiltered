@@ -5,7 +5,7 @@ import unfiltered.util.IO
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelFuture
 import io.netty.channel.socket.SocketChannel
-import io.netty.handler.ssl.{ SslContext, SslHandler }
+import io.netty.handler.ssl.{ SslContext, SslProvider, SslHandler }
 import io.netty.handler.ssl.util.SelfSignedCertificate
 import java.io.{ File, FileInputStream }
 import java.security.{ KeyStore, SecureRandom }
@@ -192,9 +192,10 @@ object SslContextProvider {
   def keys(
     certChain: File,
     key: File,
-    password: Option[String] = None
+    password: Option[String] = None,
+    nettyProvider: Option[SslProvider] = None
   ) = new SslContextProvider {
     def context = SslContext.newServerContext(
-      certChain, key, password.orNull)
+      nettyProvider.orNull, certChain, key, password.orNull)
   }
 }
