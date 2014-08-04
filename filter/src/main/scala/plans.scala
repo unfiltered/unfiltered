@@ -34,9 +34,8 @@ trait Plan extends InittedFilter {
                response: ServletResponse,
                chain: FilterChain) {
     (request, response) match {
-      case (hreq: HttpServletRequest, _hres: HttpServletResponse) =>
+      case (hreq: HttpServletRequest, hres: HttpServletResponse) =>
         val request = new RequestBinding(hreq)
-        val hres = new ResponseWrapper(_hres)
         val response = new ResponseBinding(hres)
         Pass.fold(
           intent,
@@ -44,8 +43,8 @@ trait Plan extends InittedFilter {
             chain.doFilter(request.underlying, response.underlying),
           (_: HttpRequest[HttpServletRequest], 
            rf: ResponseFunction[HttpServletResponse]) => {
-            rf(response)
-            hres.complete()
+            val res = rf(response)
+            res.outputStream.close()
           }
         )(request)
      }
