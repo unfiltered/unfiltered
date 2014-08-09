@@ -4,7 +4,7 @@ import unfiltered.Async
 import unfiltered.response.{ ResponseFunction, HttpResponse, Pass }
 import unfiltered.request.{ Charset, HttpRequest, POST, PUT, RequestContentType, & }
 
-import io.netty.buffer.{ ByteBufInputStream, Unpooled }
+import io.netty.buffer.{ ByteBufInputStream, ByteBufOutputStream, Unpooled }
 import io.netty.channel.{ ChannelFuture, ChannelFutureListener, ChannelHandlerContext }
 import io.netty.handler.codec.http.{
   DefaultHttpResponse, DefaultFullHttpResponse, HttpContent,
@@ -149,22 +149,15 @@ case class ReceivedMessage(
  *  FullHttpResponses may be writen to by calling respond with a response writer */
 class ResponseBinding[U <: NettyHttpResponse](res: U)
   extends HttpResponse(res) {
+  /** available when serving non-chunked responses */
   private[netty] lazy val content: Option[HttpContent] =
     Content.unapply(res)
 
-  private[this] lazy val byteOutputStream = new ByteArrayOutputStream {
-    // fixme: the docs state http://docs.oracle.com/javase/6/docs/api/java/io/ByteArrayOutputStream.html#close()
-    //  should have no effect. we are breaking that rule here if close is called more than once
-    override def close = {
-      val bytes = this.toByteArray
-      content match {
-        case Some(buf) =>
-          buf.content.clear().writeBytes(Unpooled.copiedBuffer(bytes))
-        case _ => if (bytes.nonEmpty) System.err.println(
-          "Attempt made to write to a partial http response. This is not a supported operation.")
-      }
-    }
-  }
+  /** Relays to httpContent, if defined. Otherwise this stream goes nowhere */
+  private lazy val outStream =
+    content.map(httpContent =>
+      new ByteBufOutputStream(httpContent.content)
+    ).getOrElse(new ByteArrayOutputStream)
 
   def status(code: Int) =
     res.setStatus(HttpResponseStatus.valueOf(code))
@@ -175,7 +168,7 @@ class ResponseBinding[U <: NettyHttpResponse](res: U)
   def redirect(url: String) =
     res.setStatus(HttpResponseStatus.FOUND).headers.add(HttpHeaders.Names.LOCATION, url)
 
-  def outputStream = byteOutputStream
+  def outputStream = outStream
 }
 
 private [netty] object URLParser {
