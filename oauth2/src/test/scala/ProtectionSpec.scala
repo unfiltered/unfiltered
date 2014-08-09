@@ -46,8 +46,8 @@ object ProtectionSpec extends Specification with org.specs2.matcher.ThrownMessag
 
       override def realm: Option[String] = Some("Mock Source")
     }
-    server.filter(Protection(source))
-    .filter(unfiltered.filter.Planify {
+    server.plan(Protection(source))
+    .plan(unfiltered.filter.Planify {
       case User(user) => ResponseString(user.id)
     })
   }

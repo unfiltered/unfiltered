@@ -18,10 +18,7 @@ object ChunkAggregatedUploadSpec extends Specification
   with Served {
 
   def setup = {
-    /** Use of a HttpChunkAggregator is mandatory if not using a MultiPartDecoder plan.
-     *  note(doug): for netty4 releases. this is not true */
-    _.chunked()
-    .handler(netty.async.Planify({
+    _.plan(netty.async.Planify({
       case POST(UFPath("/async/disk-upload") & MultiPart(req)) =>
         MultiPartParams.Disk(req).files("f") match {
         case Seq(f, _*) => req.respond(ResponseString(
@@ -89,7 +86,7 @@ object ChunkAggregatedUploadSpec extends Specification
             }
           case _ => req.respond(ResponseString("what's f?"))
         }
-    })).handler(netty.cycle.Planify({
+    })).plan(netty.cycle.Planify({
       case POST(UFPath("/cycle/disk-upload") & MultiPart(req)) =>
         MultiPartParams.Disk(req).files("f") match {
         case Seq(f, _*) => ResponseString(
@@ -156,7 +153,7 @@ object ChunkAggregatedUploadSpec extends Specification
             }
           case _ => ResponseString("what's f?")
         }
-    })).handler(planify {
+    })).plan(planify {
       case _ => NotFound
     })
   }

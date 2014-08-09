@@ -18,7 +18,7 @@ object WriterSafetySpec extends Specification with unfiltered.specs2.jetty.Serve
     }
   }
 
-  def setup = _.filter(unfiltered.filter.Planify {
+  def setup = _.plan(unfiltered.filter.Planify {
     case GET(UFPath("/writer")) => WriteString("written") ~> Ok
   })
 

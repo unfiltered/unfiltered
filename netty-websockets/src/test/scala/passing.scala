@@ -13,10 +13,10 @@ import unfiltered.netty
 object PassingSpec extends Specification with unfiltered.specs2.netty.Served {
 
   def setup =
-    _.handler(planify {
+    _.plan(planify {
       case UFPath("/a") => ResponseString("http response a")
     })
-    .handler(netty.websockets.Planify({
+    .plan(netty.websockets.Planify({
       case UFPath("/b") => {
         case Open(s) => s.send("socket opened b")
         case Message(s, Text(msg)) => s.send(msg)
@@ -24,7 +24,7 @@ object PassingSpec extends Specification with unfiltered.specs2.netty.Served {
       case UFPath("/c") => Pass
     })
     .onPass(_.fireChannelRead(_)))
-    .handler(netty.cycle.Planify {
+    .plan(netty.cycle.Planify {
       case UFPath("/b") => ResponseString("http response b")
       case UFPath("/c") => ResponseString("http response c")
     })

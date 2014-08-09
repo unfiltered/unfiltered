@@ -81,7 +81,7 @@ object UploadsSpec extends Specification with unfiltered.specs2.jetty.Served {
     }
   }
 
-  def setup = { _.filter(new TestPlan) }
+  def setup = { _.plan(new TestPlan) }
 
   "MultiPartParams" should {
     step {

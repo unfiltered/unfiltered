@@ -22,7 +22,7 @@ object CustomAuthorizationSpec
   def setup = { server =>
     val authProvider = new MockAuthServerProvider(client, owner)
     server.context("/oauth") {
-      _.filter(new OAuthorization(authProvider.auth) {
+      _.plan(new OAuthorization(authProvider.auth) {
         // this authorization module configuration 
         // does not support a client credentials flow
         override def onClientCredentials(
@@ -32,7 +32,7 @@ object CustomAuthorizationSpec
       })
     }
     .context("/echo") {
-      _.filter(unfiltered.filter.Planify {
+      _.plan(unfiltered.filter.Planify {
         case UFPath(p) => ResponseString("echo: %s" format p)
       })
     }

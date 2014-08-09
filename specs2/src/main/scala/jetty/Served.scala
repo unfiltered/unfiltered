@@ -27,7 +27,7 @@ trait Served extends Hosted with BaseSpecification {
 
   def setup: (Server => Server)
 
-  lazy val server = setup(Http(port))
+  lazy val server = setup(Server.http(port))
 
   override def map(fs: =>Fragments) = Step(before) ^ fs ^ Step(after)
 }

@@ -26,10 +26,10 @@ object AuthorizationSpec
   def setup = { server =>
     val authProvider = new MockAuthServerProvider(client, owner)
     server.context("/oauth") {
-      _.filter(OAuthorization(authProvider.auth))
+      _.plan(OAuthorization(authProvider.auth))
     }
     .context("/echo") {
-      _.filter(unfiltered.filter.Planify {
+      _.plan(unfiltered.filter.Planify {
         case UFPath(p) => ResponseString("echo: %s" format p)
       })
     }

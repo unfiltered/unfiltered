@@ -7,7 +7,7 @@ object ServerSpec extends Specification with unfiltered.specs2.jetty.Served {
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
 
-  def setup = _.filter(unfiltered.filter.Planify {
+  def setup = _.plan(unfiltered.filter.Planify {
     case GET(UFPath("/")) => ResponseString("test") ~> Ok
     case r @ GET(UFPath("/addr")) => ResponseString(r.remoteAddr) ~> Ok
     case GET(UFPath("/addr_extractor") & RemoteAddr(addr)) => ResponseString(addr) ~> Ok

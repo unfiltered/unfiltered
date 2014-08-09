@@ -41,10 +41,10 @@ object OAuthSpec extends Specification with unfiltered.specs2.jetty.Served {
     }
 
     server.context("/oauth") {
-      _.filter(new OAuth(stores) with CustomPaths)
+      _.plan(new OAuth(stores) with CustomPaths)
     }
-    .filter(Protection(stores))
-    .filter(unfiltered.filter.Planify {
+    .plan(Protection(stores))
+    .plan(unfiltered.filter.Planify {
       case request =>
         ResponseString(request.underlying.getAttribute(unfiltered.oauth.OAuth.XAuthorizedIdentity) match {
           case null => "unknown user. abort! abort!"

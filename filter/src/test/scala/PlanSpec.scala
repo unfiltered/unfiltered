@@ -10,43 +10,43 @@ object PlanSpec extends Specification with unfiltered.specs2.jetty.Served {
   import request.ContextPath
 
   def setup = {
-    _.filter(Planify {
+    _.plan(Planify {
       case UFPath("/filter") => Pass
-    }).filter(Planify {
+    }).plan(Planify {
       case UFPath("/filter") => ResponseString("test")
     }).context("/filter2") {
-      _.filter(Planify {
+      _.plan(Planify {
         case ContextPath(_, "/test2") => ResponseString("test2")
       })
     }.context("/filter3") {
-      _.filter(new Plan { def intent = {
+      _.plan(new Plan { def intent = {
         case ContextPath(_, Seg("aplan" :: Nil)) => ResponseString("Plan A")
       }})
-      .filter(new Plan { def intent = {
+      .plan(new Plan { def intent = {
         case ContextPath(_, Seg("bplan" :: Nil)) => ResponseString("Plan B")
       }})
     }.context("/filter4") {
-      _.filter(new unfiltered.filter.Planify({
+      _.plan(new unfiltered.filter.Planify({
         case ContextPath(_, Seg("aplan" :: Nil)) =>  ResponseString("Plan A")
       }))
-      .filter(new unfiltered.filter.Planify({
+      .plan(new unfiltered.filter.Planify({
         case ContextPath(_, Seg("bplan" :: Nil)) => ResponseString("Plan B")
       }))
-      .filter(new unfiltered.filter.Planify({
+      .plan(new unfiltered.filter.Planify({
         case ContextPath(_, Seg("cplan" :: Nil)) => ResponseString("Plan C")
       }))
     }.context("/filter5") {
-      _.filter(unfiltered.filter.Planify {
+      _.plan(unfiltered.filter.Planify {
         case ContextPath(_, Seg("aplan" :: Nil)) => ResponseString("Plan A")
       })
-      .filter(unfiltered.filter.Planify {
+      .plan(unfiltered.filter.Planify {
         case ContextPath(_, Seg("bplan" :: Nil)) => ResponseString("Plan B")
       })
-      .filter(unfiltered.filter.Planify {
+      .plan(unfiltered.filter.Planify {
         case ContextPath(_, Seg("cplan" :: Nil)) => ResponseString("Plan C")
       })
     }.context("/query") {
-      _.filter(unfiltered.filter.Planify {
+      _.plan(unfiltered.filter.Planify {
         case ContextPath(_, "/qplan") & QueryString(qs) => ResponseString(qs)
       })
     }

@@ -4,39 +4,30 @@ import unfiltered.util.{ RunnableServer, PlanServer }
 
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.{
-  ChannelFutureListener,
   ChannelHandler,
-  ChannelHandlerContext,
-  ChannelInboundHandlerAdapter,
   ChannelInitializer,
   ChannelOption,
   ChannelPipeline,
   EventLoopGroup
 }
-import io.netty.channel.ChannelHandler.Sharable
 import io.netty.channel.group.{ ChannelGroup, DefaultChannelGroup }
 import io.netty.channel.nio.{ NioEventLoop, NioEventLoopGroup }
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.codec.http.{
-  DefaultHttpResponse,
-  HttpContent,
-  HttpMessage,
   HttpObjectAggregator,
   HttpRequestDecoder,
-  HttpResponseEncoder,
-  HttpResponseStatus }
+  HttpResponseEncoder
+}
 import io.netty.handler.stream.ChunkedWriteHandler
-import io.netty.util.ReferenceCountUtil
 import io.netty.util.concurrent.GlobalEventExecutor
 
 import java.lang.{ Boolean => JBoolean, Integer => JInteger }
 import java.net.{ InetSocketAddress, URL }
-import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicInteger
 
 /** Default implementation of the Server trait. If you want to use a
  * custom pipeline factory it's better to extend Server directly. */
+@deprecated("Use unfiltered.netty.Server", since="0.8.1")
 case class Http(
   port: Int, host: String,
   handlers: List[() => ChannelHandler],
@@ -65,6 +56,7 @@ case class Http(
 }
 
 /** Factory for creating Http servers */
+@deprecated("Use unfiltered.netty.Server", since="0.8.1")
 object Http {
   def apply(port: Int, host: String): Http =
     Http(port, host, Nil, () => ())
@@ -78,7 +70,8 @@ object Http {
 }
 
 /** An HTTP or HTTPS server */
-trait HttpServer extends Server with PlanServer[ChannelHandler] {
+@deprecated("Use unfiltered.netty.Server", since="0.8.1")
+trait HttpServer extends NettyBase with PlanServer[ChannelHandler] {
 
   /** block of code to be invoked when the server is stopped,
    *  before connectons are closed */
@@ -109,9 +102,12 @@ trait HttpServer extends Server with PlanServer[ChannelHandler] {
 }
 
 /** Base Netty server trait for http and websockets */
-trait Server extends RunnableServer {
+@deprecated("Use unfiltered.netty.Server", since="0.8.1")
+trait NettyBase extends RunnableServer {
   /** port to listen on */
   val port: Int
+
+  def ports = port :: Nil
 
   /** host to bind to */
   val host: String
@@ -171,6 +167,7 @@ trait Server extends RunnableServer {
   }
 }
 
+@deprecated("Use unfiltered.netty.Server", since="0.8.1")
 class ServerInit(
   protected val channels: ChannelGroup,
   protected val handlers: List[() => ChannelHandler],
@@ -182,6 +179,7 @@ class ServerInit(
 
 /**  HTTP Netty pipline builder. Uses Netty defaults: maxInitialLineLength 4096, maxHeaderSize 8192 and
  *   maxChunkSize 8192 */
+@deprecated("Use unfiltered.netty.Server", since="0.8.1")
 trait DefaultServerInit {
 
   /** A ChannelGroup used to manage cleanup with,
@@ -202,38 +200,4 @@ trait DefaultServerInit {
        case (pl, (handler, idx)) =>
          pl.addLast("handler-%s" format idx, handler())
     }.addLast("notfound", new NotFoundHandler)
-}
-
-/**
- * Channel handler that keeps track of channels in a ChannelGroup for controlled
- * shutdown.
- */
-@Sharable
-class HouseKeepingChannelHandler(channels: ChannelGroup)
-  extends ChannelInboundHandlerAdapter {
-  override def channelActive(ctx: ChannelHandlerContext) = {
-    // Channels are automatically removed from the group on close
-    channels.add(ctx.channel)
-    ctx.fireChannelActive()
-  }
-}
-
-@Sharable
-class NotFoundHandler
-  extends ChannelInboundHandlerAdapter {
-  override def channelRead(
-    ctx: ChannelHandlerContext, msg: java.lang.Object): Unit =
-    (msg match {
-      case req: HttpMessage =>
-        ReferenceCountUtil.release(req)
-        Some(req.getProtocolVersion)
-        // fixme(doug): this may no be unessessary
-      case chunk: HttpContent =>
-        ReferenceCountUtil.release(chunk)
-        None
-      case ue => sys.error("Unexpected message type from upstream: %s".format(ue))
-    }).map { version =>
-      ctx.channel.writeAndFlush(new DefaultHttpResponse(version, HttpResponseStatus.NOT_FOUND))
-         .addListener(ChannelFutureListener.CLOSE)
-    }.getOrElse(ctx.fireChannelRead(msg))
 }

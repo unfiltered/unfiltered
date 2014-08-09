@@ -14,7 +14,7 @@ object MacSpec extends Specification with ThrownMessages with unfiltered.specs2.
   val MacKey = "489dks293j39"
 
   def setup = {
-    _.filter(unfiltered.filter.Planify {
+    _.plan(unfiltered.filter.Planify {
       case UFPath("/echo") & MacAuthorization(id, nonce, bodyhash, ext, mac) =>
         ResponseString("id %s nonce %s bodyhash %s ext %s mac %s" format(id, nonce, bodyhash, ext, mac))
       case UFPath("/echo") => Mac.challenge

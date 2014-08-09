@@ -1,19 +1,19 @@
 package unfiltered.specs2.netty
 
-import unfiltered.netty.{ Http, Server, ServerErrorResponse }
+import unfiltered.netty.{ Server, ServerErrorResponse }
 import unfiltered.netty.cycle.{ DeferralExecutor, DeferredIntent, Plan }
 import org.specs2.specification.{ BaseSpecification, Fragments, Step }
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.util.ResourceLeakDetector
 
 trait Planned extends Served {
-  def setup = _.chunked().handler(planify(intent))
+  def setup = _.plan(planify(intent))
   def intent[A,B]: unfiltered.Cycle.Intent[A,B]
 }
 
 trait Served extends Started {
-  def setup: Http => Http
-  lazy val server = setup(Http(port))
+  def setup: Server => Server
+  lazy val server = setup(Server.http(port))
 }
 
 trait Started extends unfiltered.specs2.Hosted with BaseSpecification {
