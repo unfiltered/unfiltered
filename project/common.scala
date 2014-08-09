@@ -35,6 +35,8 @@ object Common {
     scalacOptions ++=
       Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked", "-feature"),
 
+    javacOptions in Compile ++= Seq("-source", "1.6", "-target", "1.6"),
+
     incOptions := incOptions.value.withNameHashing(true),
 
     parallelExecution in Test := false, // :( test servers collide on same port
