@@ -1,6 +1,6 @@
 package unfiltered.netty
 
-import unfiltered.util.{ RunnableServer, PlanServer }
+import unfiltered.util.{ HttpPortBindingShim, PlanServer, Port, RunnableServer }
 
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.{
@@ -66,7 +66,7 @@ object Http {
   def local(port: Int): Http =
     Http(port, "127.0.0.1")
   /** bind to any available port on the loopback interface */
-  def anylocal = local(unfiltered.util.Port.any)
+  def anylocal = local(Port.any)
 }
 
 /** An HTTP or HTTPS server */
@@ -107,7 +107,7 @@ trait NettyBase extends RunnableServer {
   /** port to listen on */
   val port: Int
 
-  def portBindings = unfiltered.util.HttpPortBindingShim(host, port) :: Nil
+  def portBindings = HttpPortBindingShim(host, port) :: Nil
 
   /** host to bind to */
   val host: String

@@ -1,6 +1,6 @@
 package unfiltered.netty
 
-import unfiltered.util.{ IO, RunnableServer }
+import unfiltered.util.{ IO, Port, RunnableServer }
 
 import java.net.InetSocketAddress
 
@@ -23,7 +23,7 @@ object Https {
   def local(port: Int): Https =
     Https(port, "127.0.0.1")
   /** bind to any available port on the loopback interface */
-  def anylocal = local(unfiltered.util.Port.any)
+  def anylocal = local(Port.any)
 }
 
 /** Http + Ssl implementation of the Server trait. */
