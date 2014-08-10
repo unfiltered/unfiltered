@@ -32,7 +32,7 @@ interface for adding aggregating handlers to your pipeline:
 [agg]: http://docs.jboss.org/netty/3.2/api/org/jboss/netty/handler/codec/http/HttpChunkAggregator.html
 
 ```scala
-unfiltered.netty.Http(8080).chunked(1048576).plan(hello).run()
+unfiltered.netty.Server(8080).chunked(1048576).plan(hello).run()
 ```
 
 If you want quick, easy, and limited support for chunked requests,

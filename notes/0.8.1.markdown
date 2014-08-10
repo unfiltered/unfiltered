@@ -1,0 +1,55 @@
+This release includes a **refactoring of Jetty and Netty server
+builders** (pull request [#242][242]). The new builders use immutable
+configuration objects and are more extensible. The old builders have
+been deprecated.
+
+Migration in many cases is simply changing to the new `Server`
+constructors. Most of the old builder methods exist on the new
+builders, although notably `filter` and `handler` are **deprecated in
+favor of `plan`**.
+
+Some examples:
+
+    // listen to http on port 8080, all network interfaces
+    unfiltered.jetty.Server.http(8080).plan(myFilter).run()
+
+    // listen to http on port 8080, local network interfaces
+    unfiltered.jetty.Server.local(8080).plan(myFilter).run()
+
+    // listen to http on some available port, local interfaces
+    unfiltered.jetty.Server.anylocal.plan(myFilter).run()
+
+    // listen to http on 80, https on 443, all interfaces
+    unfiltered.jetty.Server.http().https(
+      keyStorePath=myKeyStorePath, keyStorePassword=myKeyStorePassword
+    ).plan(myFilter).run()
+
+    // run a *netty* http server on 80, all interfaces
+    unfiltered.netty.Server.http()
+
+Etc!
+
+Other improvements include:
+
+*  Get rid of the multiple close problem and remove some overhead [#195][195]
+*  Avoid reflective calls (and scalac's warnings about them) [#216][216]
+*  Send a LastHttpContent marker after a ChunkedStream [#219][219]
+*  compare last modified times using 1 second resolution [#220][220]
+*  Resource leak and keep alive fixes for netty [#222][222]
+*  Flush out HTTP headers for 304 responses [#228][228]
+*  Support X-Forwarded-Proto and X-Forwarded-Port [#235][235]
+*  Cycle and async plans should push websocket frames through the pipeline [#237][237]
+* Add an `andThen` alias for the `~>` method of `ResponseFunction` [#241][241]
+* Scalatest 2.2.0 + updated module [#243][243]
+
+[195]: https://github.com/unfiltered/unfiltered/pull/195
+[216]: https://github.com/unfiltered/unfiltered/pull/216
+[219]: https://github.com/unfiltered/unfiltered/pull/219
+[220]: https://github.com/unfiltered/unfiltered/pull/220
+[222]: https://github.com/unfiltered/unfiltered/pull/222
+[228]: https://github.com/unfiltered/unfiltered/pull/228
+[235]: https://github.com/unfiltered/unfiltered/pull/235
+[237]: https://github.com/unfiltered/unfiltered/pull/237
+[241]: https://github.com/unfiltered/unfiltered/pull/241
+[242]: https://github.com/unfiltered/unfiltered/pull/242
+[243]: https://github.com/unfiltered/unfiltered/pull/243

@@ -24,7 +24,7 @@ import unfiltered.response._
 val hello = unfiltered.netty.cycle.Planify {
    case _ => ResponseString("hello world")
 }
-unfiltered.netty.Http(8080).plan(hello).run()
+unfiltered.netty.Server(8080).plan(hello).run()
 ```
 
 Direct a web browser to [http://127.0.0.1:8080/][local] and you'll

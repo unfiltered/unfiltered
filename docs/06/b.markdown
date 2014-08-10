@@ -32,7 +32,7 @@ sequence of strings `"", "3", ""`. You can check this yourself by
 querying the plan defined above:
 
 ```scala
-unfiltered.jetty.Http.anylocal.filter(pEcho).run()
+unfiltered.jetty.Server.anylocal.plan(pEcho).run()
 ```
 
 ### Routing by Parameter
@@ -114,7 +114,7 @@ val intEcho = unfiltered.filter.Planify {
   case Params(Pos(pos) & Neg(neg)) =>
     ResponseString("%d %d".format(pos,neg))
 }
-unfiltered.jetty.Http.anylocal.filter(intEcho).run()
+unfiltered.jetty.Server.anylocal.plan(intEcho).run()
 ```
 
 > The `&` extractor matches when the extractor to its left and right

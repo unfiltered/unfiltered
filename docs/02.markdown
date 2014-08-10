@@ -41,7 +41,7 @@ Since this kind of plan is an implementation of the servlet filter
 interface, we can pass it directly to a servlet container.
 
 ```scala
-unfiltered.jetty.Http.anylocal.filter(Echo).run()
+unfiltered.jetty.Server.anylocal.plan(Echo).run()
 ```
 
 ### Passing on That

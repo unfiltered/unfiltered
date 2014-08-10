@@ -82,7 +82,7 @@ interpreter, we can use the `&` method of `Directive` to join them, as
 well as an unapply method of `unfiltered.request.&` to split them.
 
 ```scala
-unfiltered.jetty.Http(8080).filter(
+unfiltered.jetty.Server(8080).plan(
   unfiltered.filter.Planify { Directive.Intent {
     case Path("/") =>
       for {

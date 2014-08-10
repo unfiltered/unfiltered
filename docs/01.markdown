@@ -53,7 +53,7 @@ This filter `echo` would work with any servlet container. We can
 use it in a Jetty server right now.
 
 ```scala
-unfiltered.jetty.Http.anylocal.filter(echo).run()
+unfiltered.jetty.Server.anylocal.plan(echo).run()
 ```
 The startup message tells you which open port was selected, and by
 default it is only listening to requests from 127.0.0.1. So on the
@@ -76,7 +76,7 @@ val echoNice = unfiltered.filter.Planify {
     "I can echo exactly one path element."
   )
 }
-unfiltered.jetty.Http.anylocal.filter(echoNice).run()
+unfiltered.jetty.Server.anylocal.plan(echoNice).run()
 ```
 Or we could define another filter chain it to the first.
 
@@ -86,6 +86,6 @@ val nice = unfiltered.filter.Planify {
     "I can echo exactly one path element."
   )
 }
-unfiltered.jetty.Http.anylocal.filter(echo).filter(nice).run()
+unfiltered.jetty.Server.anylocal.plan(echo).plan(nice).run()
 ```
 Happy now?

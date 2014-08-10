@@ -46,7 +46,7 @@ implicit val intValue =
 Then it's just a matter of using `evenInt` like any other interpreter.
 
 ```scala
-unfiltered.jetty.Http(8080).filter(
+unfiltered.jetty.Server(8080).plan(
   unfiltered.filter.Planify { Directive.Intent {
     case Path("/") =>
       for {
@@ -90,7 +90,7 @@ we defined a complete, error-capable interpreter so that it's easy and
 clean to turn input parameters into tools.
 
 ```scala
-unfiltered.jetty.Http(8080).filter(
+unfiltered.jetty.Server(8080).plan(
   unfiltered.filter.Planify { Directive.Intent {
     case Path("/") =>
       for {

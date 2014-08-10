@@ -36,7 +36,7 @@ execute the plan with a server, adjusting the port if your system does
 not have 8080 available.
 
 ```scala
-unfiltered.jetty.Http.local(8080).filter(SillyStore).run()
+unfiltered.jetty.Server.local(8080).plan(SillyStore).run()
 ```
 
 The method `local`, like `anylocal`, binds only to the loopback
