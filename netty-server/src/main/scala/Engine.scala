@@ -3,7 +3,7 @@ package unfiltered.netty
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.group.{ ChannelGroup, DefaultChannelGroup }
 import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.util.concurrent.ImmediateEventExecutor
+import io.netty.util.concurrent.{EventExecutor, GlobalEventExecutor}
 
 /** Defines the set of resources used for process scheduling
  *  and collecting active channels needed for graceful shutdown */
@@ -20,10 +20,10 @@ object Engine {
   object Default extends Engine {
     def acceptor = new NioEventLoopGroup()
     def workers = new NioEventLoopGroup()
-    def channels = new DefaultChannelGroup(
-      "Netty Unfiltered Server Channel Group",
-      ImmediateEventExecutor.INSTANCE)
+    def channels = defaultChannels(GlobalEventExecutor.INSTANCE)
   }
+  private [Engine] def defaultChannels(executor: EventExecutor) =
+    new DefaultChannelGroup("Netty Unfiltered Server Channel Group", executor)
 
   /** An interface building netty server engines */
   trait Builder[T] {
@@ -51,5 +51,9 @@ object Engine {
       lazy val workers = engine.workers
       lazy val channels = group
     })
+
+    /** Sets channels to a DefaultChannelGroup using the given executor */
+    def channelsExecutor(executor: EventExecutor) =
+      channels(defaultChannels(executor))
   }
 }
