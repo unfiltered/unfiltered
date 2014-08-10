@@ -15,8 +15,8 @@ case class Https(port: Int, host: String) extends JettyBase with Ssl {
   type ServerBuilder = Https
   val url = "https://%s:%d/" format (host, port)
   def sslPort = port
-  def ports = port :: sslPort :: Nil
   sslConn.setHost(host)
+  def portBindings = unfiltered.util.HttpsPortBindingShim(host, port) :: Nil
 }
 
 /** Provides ssl support for Servers. This trait only requires a x509 keystore cert.
