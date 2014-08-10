@@ -1,6 +1,7 @@
 package unfiltered.jetty
 
-import java.util.EnumSet
+import unfiltered.util.{ HttpPortBindingShim, PlanServer, Port, RunnableServer }
+
 import org.eclipse.jetty.server.{Server => JettyServer, Connector, Handler}
 import org.eclipse.jetty.server.handler.{
   ContextHandlerCollection, ResourceHandler}
@@ -8,6 +9,8 @@ import org.eclipse.jetty.servlet.{
   FilterHolder, FilterMapping, ServletContextHandler, ServletHolder}
 import org.eclipse.jetty.server.bio.SocketConnector
 import org.eclipse.jetty.util.resource.Resource
+
+import java.util.EnumSet
 import java.util.concurrent.atomic.AtomicInteger
 import javax.servlet.{ Filter, DispatcherType }
 
@@ -18,7 +21,7 @@ object Http {
   /** bind to a the loopback interface only */
   def local(port: Int) = Http(port, "127.0.0.1")
   /** bind to any available port on the loopback interface */
-  def anylocal = local(unfiltered.util.Port.any)
+  def anylocal = local(Port.any)
 }
 
 @deprecated("Use unfiltered.jetty.Server", since="0.8.1")
@@ -29,7 +32,7 @@ case class Http(port: Int, host: String) extends JettyBase {
   conn.setPort(port)
   conn.setHost(host)
   underlying.addConnector(conn)
-  def portBindings = unfiltered.util.HttpPortBindingShim(host, port) :: Nil
+  def portBindings = HttpPortBindingShim(host, port) :: Nil
 }
 
 trait ContextBuilder {
@@ -55,8 +58,8 @@ trait ContextBuilder {
 @deprecated("Use unfiltered.jetty.Server", since="0.8.1")
 trait JettyBase
 extends ContextBuilder
-with unfiltered.util.PlanServer[Filter]
-with unfiltered.util.RunnableServer { self =>
+with PlanServer[Filter]
+with RunnableServer { self =>
   type ServerBuilder >: self.type <: JettyBase
 
   val underlying = new JettyServer()

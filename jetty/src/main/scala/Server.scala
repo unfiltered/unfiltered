@@ -1,5 +1,6 @@
 package unfiltered.jetty
 
+import unfiltered.util.{ PlanServer, RunnableServer }
 import javax.servlet.Filter
 
 import org.eclipse.jetty.server.handler.ContextHandlerCollection
@@ -9,8 +10,8 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection
 case class Server(
   portBindings: List[PortBinding],
   contextAdders: List[ContextAdder]
-) extends unfiltered.util.RunnableServer
-    with unfiltered.util.PlanServer[Filter]
+) extends RunnableServer
+    with PlanServer[Filter]
     with PortBindings {
   type ServerBuilder = Server
 
