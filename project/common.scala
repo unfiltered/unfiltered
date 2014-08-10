@@ -26,7 +26,7 @@ object Common {
   val settings: Seq[Setting[_]] = Seq(
     organization := "net.databinder",
 
-    version := "0.8.1-SNAPSHOT",
+    version := "0.8.1",
 
     crossScalaVersions := Seq("2.11.2", "2.10.4"),
 
