@@ -14,16 +14,11 @@ object Port {
 }
 
 object Browser {
-  /** Tries to open a browser window, returns Some(exception) on failure */
+  /** Tries to open a web browser session, returns Some(exception) on failure */
   def open(loc: String) =
-    try {
-      import java.net.URI
-      val dsk = Class.forName("java.awt.Desktop")
-      dsk.getMethod("browse", classOf[URI]).invoke(
-        dsk.getMethod("getDesktop").invoke(null), new URI(loc)
-      )
-      None
-    } catch { case NonFatal(e) => Some(e) }
+    util.Try(
+      java.awt.Desktop.getDesktop.browse(new java.net.URI(loc))
+    ).toOption
 }
 
 /** Extractors that match on strings that can be converted to types. */
