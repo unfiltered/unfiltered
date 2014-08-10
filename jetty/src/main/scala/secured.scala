@@ -1,5 +1,9 @@
 package unfiltered.jetty
 
+import unfiltered.util.{ HttpsPortBindingShim, Port }
+import org.eclipse.jetty.server.ssl.SslSocketConnector
+import org.eclipse.jetty.util.ssl.SslContextFactory
+
 @deprecated("Use unfiltered.jetty.Server", since="0.8.1")
 object Https {
   /** bind to the given port for any host */
@@ -7,7 +11,7 @@ object Https {
   /** bind to a the loopback interface only */
   def local(port: Int) = Https(port, "127.0.0.1")
   /** bind to any available port on the loopback interface */
-  def anylocal = local(unfiltered.util.Port.any)
+  def anylocal = local(Port.any)
 }
 
 @deprecated("Use unfiltered.jetty.Server", since="0.8.1")
@@ -16,7 +20,7 @@ case class Https(port: Int, host: String) extends JettyBase with Ssl {
   val url = "https://%s:%d/" format (host, port)
   def sslPort = port
   sslConn.setHost(host)
-  def portBindings = unfiltered.util.HttpsPortBindingShim(host, port) :: Nil
+  def portBindings = HttpsPortBindingShim(host, port) :: Nil
 }
 
 /** Provides ssl support for Servers. This trait only requires a x509 keystore cert.
@@ -25,8 +29,6 @@ case class Https(port: Int, host: String) extends JettyBase with Ssl {
   * For added trust store support, mix in the Trusted trait */
 @deprecated("Use unfiltered.jetty.Server", since="0.8.1")
 trait Ssl { self: JettyBase =>
-  import org.eclipse.jetty.server.ssl.SslSocketConnector
-  import org.eclipse.jetty.util.ssl.SslContextFactory
 
   def tryProperty(name: String) = System.getProperty(name) match {
     case null => sys.error("required system property not set %s" format name)
