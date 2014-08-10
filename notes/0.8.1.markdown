@@ -32,7 +32,7 @@ Etc!
 Other improvements include:
 
 *  Get rid of the multiple close problem and remove some overhead [#195][195]
-*  Avoid reflective calls (and scalac's warnings about them) [#217][217]
+*  Avoid reflective calls (and scalac's warnings about them) [#216][216]
 *  Send a LastHttpContent marker after a ChunkedStream [#219][219]
 *  compare last modified times using 1 second resolution [#220][220]
 *  Resource leak and keep alive fixes for netty [#222][222]
@@ -43,7 +43,7 @@ Other improvements include:
 * Scalatest 2.2.0 + updated module [#243][243]
 
 [195]: https://github.com/unfiltered/unfiltered/pull/195
-[217]: https://github.com/unfiltered/unfiltered/pull/216
+[216]: https://github.com/unfiltered/unfiltered/pull/216
 [219]: https://github.com/unfiltered/unfiltered/pull/219
 [220]: https://github.com/unfiltered/unfiltered/pull/220
 [222]: https://github.com/unfiltered/unfiltered/pull/222
