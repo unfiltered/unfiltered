@@ -38,7 +38,7 @@ object JimsAuth extends Users {
   def auth(u: String, p: String) =
     u == "jim" && p == "j@m"
 }
-unfiltered.jetty.Http(8080).filter(
+unfiltered.jetty.Server(8080).plan(
   App(JimsAuth)
 ).run
 ```

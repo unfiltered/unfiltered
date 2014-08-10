@@ -36,7 +36,7 @@ object AsyncPlan extends unfiltered.filter.async.Plan  {
     }   
 }
 //then you can register this plan with jetty as usual
-unfiltered.jetty.Http.local(8080).filter(AsyncPlan).run()
+unfiltered.jetty.Server.local(8080).plan(AsyncPlan).run()
 ```
 
 #### Netty Channel Handlers (unfiltered-netty)
@@ -68,9 +68,9 @@ import unfiltered.response._
 val hello = unfiltered.filter.Planify {
   case _ => ResponseString("hello world")
 }
-unfiltered.jetty.Http.anylocal.plan(hello).run { s =>
+unfiltered.jetty.Server.anylocal.plan(hello).run { s =>
   unfiltered.util.Browser.open(
-    "http://127.0.0.1:%d/".format(s.port)
+    s.portBindings.head.url
   )
 }
 ```
@@ -91,5 +91,5 @@ import unfiltered.response._
 val hello = unfiltered.netty.cycle.Planify {
   case _ => ResponseString("hello world")
 }
-unfiltered.netty.Http(8080).plan(hello).run()
+unfiltered.netty.Server(8080).plan(hello).run()
 ```

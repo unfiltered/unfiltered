@@ -18,7 +18,7 @@ import unfiltered.request._
 import unfiltered.response._
 import unfiltered.directives._, Directives._
 
-unfiltered.jetty.Http(8080).filter(
+unfiltered.jetty.Server(8080).plan(
   unfiltered.filter.Planify { Directive.Intent {
     case Path("/") =>
       for {
@@ -50,7 +50,7 @@ package. Interpreters define abstract operations on data; we can
 produce directives for a particular request parameter with `named`.
 
 ```scala
-unfiltered.jetty.Http(8080).filter(
+unfiltered.jetty.Server(8080).plan(
   unfiltered.filter.Planify { Directive.Intent {
     case Path("/") =>
       for {
@@ -77,7 +77,7 @@ into one that produces a failure response by passing an error handler
 to its `fail` method.
 
 ```scala
-unfiltered.jetty.Http(8080).filter(
+unfiltered.jetty.Server(8080).plan(
   unfiltered.filter.Planify { Directive.Intent {
     case Path("/") =>
       for {

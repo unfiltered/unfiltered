@@ -32,7 +32,7 @@ interpreters also in scope. The `data.as.String` interpreter is
 imported from the `Directives` object, so we can use it immediately.
 
 ```scala
-unfiltered.jetty.Http(8080).filter(
+unfiltered.jetty.Server(8080).plan(
   unfiltered.filter.Planify { Directive.Intent {
     case Path("/") =>
       for {
@@ -64,7 +64,7 @@ Required is itself an interpreter which unboxes from the `Option`, so
 it generally must be the last interpreter in a chain.
 
 ```scala
-unfiltered.jetty.Http(8080).filter(
+unfiltered.jetty.Server(8080).plan(
   unfiltered.filter.Planify { Directive.Intent {
     case Path("/") =>
       for {
@@ -92,7 +92,7 @@ To be more specific, we can supply a failure to the integer
 interpreter.
 
 ```scala
-unfiltered.jetty.Http(8080).filter(
+unfiltered.jetty.Server(8080).plan(
   unfiltered.filter.Planify { Directive.Intent {
     case Path("/") =>
       for {

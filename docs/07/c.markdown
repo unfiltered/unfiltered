@@ -19,7 +19,7 @@ val intValue = data.as.Int.fail { (k,v) =>
   )
 }
 
-unfiltered.jetty.Http(8080).filter(
+unfiltered.jetty.Server(8080).plan(
   unfiltered.filter.Planify { Directive.Intent {
     case Path("/") =>
       for {
@@ -56,7 +56,7 @@ implicit val implyIntValue =
     )
   }
 
-unfiltered.jetty.Http(8080).filter(
+unfiltered.jetty.Server(8080).plan(
   unfiltered.filter.Planify { Directive.Intent {
     case Path("/") =>
       for {

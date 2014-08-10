@@ -25,7 +25,7 @@ val Simple = unfiltered.filter.Planify {
   case Path("/") & Accepts.Json(_) =>
     JsonContent ~> ResponseString("""{ "response": "Ok" }""")
 }
-unfiltered.jetty.Http(8080).filter(Simple).run()
+unfiltered.jetty.Server(8080).plan(Simple).run()
 ```
 
 You can use curl to inspect the different responses:
@@ -47,7 +47,7 @@ val Smart = unfiltered.filter.Planify { Directive.Intent {
       _ <- Accepts.Json
     } yield JsonContent ~> ResponseString("""{ "response": "Ok" }""")
 } }
-unfiltered.jetty.Http(8080).filter(Smart).run()
+unfiltered.jetty.Server(8080).plan(Smart).run()
 ```
 
 And with that you'll see a 406 Not Acceptable response when appropriate.
@@ -75,7 +75,7 @@ val Sweet = unfiltered.filter.Planify { Directive.Intent.Path {
       _ <- Accepts.Json
     } yield JsonContent ~> ResponseString("""{ "response": "Ok" }""")
 } }
-unfiltered.jetty.Http(8080).filter(Sweet).run()
+unfiltered.jetty.Server(8080).plan(Sweet).run()
 ```
 
 It looks pretty different, but remember that here still composes to a
