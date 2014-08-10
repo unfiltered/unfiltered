@@ -1,6 +1,6 @@
 package unfiltered.netty
 
-import unfiltered.util.IO
+import unfiltered.util
 
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelFuture
@@ -12,21 +12,17 @@ import java.security.{ KeyStore, SecureRandom }
 import javax.net.ssl.{ KeyManagerFactory, SSLContext, SSLEngine }
 
 /** A PortBinding defines a binding for a ServerBootstrap for a given address  and port */
-trait PortBinding {
-  /** Port to listen on */
-  def port: Int
-  /** Host address */
-  def host: String
+trait PortBinding extends util.PortBindingInfo {
   /** contribute to a channel's initialization before defaults are applied */
   def init(channel: SocketChannel): SocketChannel
 }
 
 object PortBinding {
-  trait Simple extends PortBinding {
+  trait Simple extends PortBinding with util.HttpPortBinding {
     def init(channel: SocketChannel) = channel
   }
 
-  trait Secure extends PortBinding {
+  trait Secure extends PortBinding with util.HttpsPortBinding {
     def handler(channel: SocketChannel): SslHandler
     def init(channel: SocketChannel) = {
       channel.pipeline.addLast(handler(channel))
@@ -57,7 +53,7 @@ trait PortBindings {
     http(port, localInterfaceHost)
 
   def anylocal =
-    local(unfiltered.util.Port.any)
+    local(util.Port.any)
 
   def https(
     port: Int = defaultHttpsPort,
@@ -130,7 +126,7 @@ object SslEngineProvider {
           KeyStore.getDefaultType
         )
       )
-      IO.use(new FileInputStream(keyStorePath)) { in =>
+      util.IO.use(new FileInputStream(keyStorePath)) { in =>
         keys.load(in, password)
       }
       val factory = KeyManagerFactory.getInstance(

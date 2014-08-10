@@ -5,6 +5,8 @@ import org.eclipse.jetty.server.bio.SocketConnector
 import org.eclipse.jetty.server.ssl.SslSocketConnector
 import org.eclipse.jetty.util.ssl.SslContextFactory
 
+import unfiltered.util
+
 /** Convenience methods for adding connector providers. */
 trait PortBindings {
   val allInterfacesHost = "0.0.0.0"
@@ -22,7 +24,7 @@ trait PortBindings {
   def local(port: Int): Server =
     http(port, localInterfaceHost)
 
-  def anylocal: Server = local(unfiltered.util.Port.any)
+  def anylocal: Server = local(util.Port.any)
 
   def https(
     port: Int = defaultHttpsPort,
@@ -57,16 +59,14 @@ trait PortBindings {
   )
 }
 
-trait PortBinding {
+trait PortBinding extends util.PortBindingInfo {
   def connector: Connector
-  def port: Int
-  def host: String
 }
 
 case class SocketPortBinding (
   port: Int,
   host: String
-) extends PortBinding {
+) extends PortBinding with util.HttpPortBinding {
   lazy val connector = {
     val c = new SocketConnector
     c.setPort(port)
@@ -106,8 +106,7 @@ case class SslSocketPortBinding (
   port: Int,
   host: String,
   sslContextProvider: SslContextProvider
-) extends PortBinding {
-
+) extends PortBinding with util.HttpsPortBinding {
   lazy val connector = {
     val c = new SslSocketConnector(sslContextProvider.sslContextFactory)
     c.setPort(port)

@@ -11,11 +11,34 @@ trait PlanServer[T] extends Server { self =>
   def plan(plan: T): ServerBuilder = makePlan(plan)
   def makePlan(plan: => T): ServerBuilder
 }
+
+/** Describes a server's host and port bindings. */
+trait PortBindingInfo {
+  def host: String
+  def port: Int
+  def scheme: String
+  def url = s"$scheme://$host:$port"
+}
+trait HttpPortBinding {
+  val scheme = "http"
+}
+trait HttpsPortBinding {
+  val scheme = "https"
+}
+@deprecated("Info-only binding for older server builders", since="0.8.1")
+case class HttpPortBindingShim(host: String, port: Int)
+extends PortBindingInfo with HttpPortBinding
+
+@deprecated("Info-only binding for older server builders", since="0.8.1")
+case class HttpsPortBindingShim(host: String, port: Int)
+extends PortBindingInfo with HttpsPortBinding
+
 trait StartableServer extends Server {
   def start(): ServerBuilder
   def stop(): ServerBuilder
   def destroy(): ServerBuilder
-  def ports:  Traversable[Int]
+  /** network interface/host name and port bound for a server */
+  def portBindings:  Traversable[PortBindingInfo]
 }
 trait RunnableServer extends StartableServer { self =>
   /** Calls run with no afterStart or afterStop functions */
@@ -49,7 +72,10 @@ trait RunnableServer extends StartableServer { self =>
       case _ =>
         start()
         afterStart(RunnableServer.this)
-        println(s"Embedded server listening on port ${ports.mkString(", ")}. Press any key to stop.")
+        println("Embedded server listening at")
+        for (binding <- portBindings)
+          println(s"  ${binding.url}")
+        println("Press any key to stop.")
         def doWait() {
           try { Thread.sleep(1000) } catch { case _: InterruptedException => () }
           if(System.in.available() <= 0)

@@ -29,7 +29,7 @@ case class Http(port: Int, host: String) extends JettyBase {
   conn.setPort(port)
   conn.setHost(host)
   underlying.addConnector(conn)
-  def ports = port :: Nil
+  def portBindings = unfiltered.util.HttpPortBindingShim(host, port) :: Nil
 }
 
 trait ContextBuilder {
