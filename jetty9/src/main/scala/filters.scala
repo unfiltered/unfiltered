@@ -1,4 +1,4 @@
-package unfiltered.jetty
+package unfiltered.jetty9
 
 import java.util.EnumSet
 import java.util.concurrent.atomic.AtomicInteger

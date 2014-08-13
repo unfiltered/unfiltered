@@ -1,8 +1,7 @@
-package unfiltered.jetty
+package unfiltered.jetty9
 
 import org.eclipse.jetty.server.Connector
-import org.eclipse.jetty.server.bio.SocketConnector
-import org.eclipse.jetty.server.ssl.SslSocketConnector
+import org.eclipse.jetty.server.ServerConnector
 import org.eclipse.jetty.util.ssl.SslContextFactory
 
 import unfiltered.util.{ HttpPortBinding, HttpsPortBinding, Port, PortBindingInfo }
@@ -60,15 +59,15 @@ trait PortBindings {
 }
 
 trait PortBinding extends PortBindingInfo {
-  def connector: Connector
+  def connector(server: org.eclipse.jetty.server.Server): Connector
 }
 
 case class SocketPortBinding (
   port: Int,
   host: String
 ) extends PortBinding with HttpPortBinding {
-  lazy val connector = {
-    val c = new SocketConnector
+  def connector(server: org.eclipse.jetty.server.Server) = {
+    val c = new ServerConnector(server)
     c.setPort(port)
     c.setHost(host)
     c
@@ -107,8 +106,8 @@ case class SslSocketPortBinding (
   host: String,
   sslContextProvider: SslContextProvider
 ) extends PortBinding with HttpsPortBinding {
-  lazy val connector = {
-    val c = new SslSocketConnector(sslContextProvider.sslContextFactory)
+  def connector(server: org.eclipse.jetty.server.Server) = {
+    val c = new ServerConnector(server, sslContextProvider.sslContextFactory)
     c.setPort(port)
     c.setHost(host)
     c

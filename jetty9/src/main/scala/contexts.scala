@@ -1,4 +1,4 @@
-package unfiltered.jetty
+package unfiltered.jetty9
 
 import javax.servlet.Filter
 
