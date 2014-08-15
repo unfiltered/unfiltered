@@ -4,6 +4,6 @@ unmanagedClasspath in (local("netty"), Test) <++=
   (fullClasspath in (local("specs2"), Compile))
 
 libraryDependencies <++= scalaVersion(v =>
-  ("io.netty" % "netty-codec-http" % "4.0.22.Final") +:
+  ("io.netty" % "netty-codec-http" % "4.0.23.Final") +:
   Common.integrationTestDeps(v)
 )
