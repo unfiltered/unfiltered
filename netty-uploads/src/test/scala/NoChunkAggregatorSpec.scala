@@ -10,7 +10,7 @@ import unfiltered.specs2.netty.Served
 import dispatch.classic._
 import dispatch.classic.mime.Mime._
 
-import java.io.{ File => JFile }
+import java.io.File
 
 import io.netty.buffer.Unpooled
 import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext }
@@ -88,14 +88,14 @@ object NoChunkAggregatorSpec extends Specification
 
   "When receiving multipart requests with no chunk aggregator, regular netty plans" should {
     step {
-      val out = new JFile("netty-upload-test-out.txt")
+      val out = new File("netty-upload-test-out.txt")
       if (out.exists) out.delete
     }
 
     // note(doug): in netty3 versions of unfiltered this would result in a 500 error
     "respond with a 200 when no chunk aggregator is used in a cycle plan" in {
       val http = new dispatch.classic.Http with NoLogging
-      val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
+      val file = new File(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       try {
         http x (host / "cycle" / "upload" <<* ("f", file, "text/plain") >| ) {
@@ -109,7 +109,7 @@ object NoChunkAggregatorSpec extends Specification
     // note(doug): in netty3 versions of unfiltered this would result in a 500 error
     "respond with a 200 when no chunk aggregator is used in an async plan" in {
       val http = new dispatch.classic.Http with NoLogging
-      val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
+      val file = new File(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       try {
         http x (host / "async" / "upload" <<* ("f", file, "text/plain") >| ) {
@@ -122,7 +122,7 @@ object NoChunkAggregatorSpec extends Specification
 
     "handle multipart uploads which are not chunked" in {
       /** This assumes Dispatch doesn't build a chunked request because the data is small */
-      val file = new JFile(getClass.getResource("/netty-upload-test.txt").toURI)
+      val file = new File(getClass.getResource("/netty-upload-test.txt").toURI)
       file.exists must_==true
       http(host / "async" / "upload" <<* ("f", file, "text/plain") as_str) must_== "disk read file f named netty-upload-test.txt with content type text/plain"
       http(host / "cycle" / "upload" <<* ("f", file, "text/plain") as_str) must_== "disk read file f named netty-upload-test.txt with content type text/plain"

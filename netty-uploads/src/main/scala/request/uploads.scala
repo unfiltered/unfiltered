@@ -6,7 +6,6 @@ import unfiltered.request.{
   AbstractDiskFile,  
   AbstractStreamedFile,  
   DiskExtractor,
-  HttpRequest,
   MultiPartMatcher,
   MultipartData,
   RequestContentType,
@@ -24,7 +23,7 @@ import io.netty.handler.codec.http.multipart.{
 
 import scala.util.control.Exception.allCatch
 
-import java.io.{ File => JFile, FileInputStream, InputStream }
+import java.io.{ File, FileInputStream, InputStream }
 
 // fixme(doug): there's only one concrete impl. is this really needed?
 trait MultiPartCallback
@@ -152,7 +151,7 @@ class StreamedFileWrapper(item: FileUpload)
 
   val bstm = new FileInputStream(item.getFile)
 
-  def write(out: JFile): Option[JFile] = allCatch.opt {
+  def write(out: File): Option[File] = allCatch.opt {
     stream { stm =>
       toFile(stm)(out)
       out
@@ -167,7 +166,7 @@ class StreamedFileWrapper(item: FileUpload)
 
 class DiskFileWrapper(item: FileUpload)
   extends AbstractDiskFile {
-  def write(out: JFile): Option[JFile] = try {
+  def write(out: File): Option[File] = try {
     item.renameTo(out)
     Some(out)
   } catch {
@@ -184,7 +183,7 @@ class DiskFileWrapper(item: FileUpload)
 /** Wrapper for an uploaded file with write functionality disabled. */
 class MemoryFileWrapper(item: FileUpload)
   extends StreamedFileWrapper(item) {  
-  override def write(out: JFile) = { 
+  override def write(out: File) = { 
     //error("File writing is not permitted") // todo: remove this
     None
   }

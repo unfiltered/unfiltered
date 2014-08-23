@@ -8,10 +8,10 @@ import unfiltered.util.control.NonFatal
 
 import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter }
 import io.netty.channel.ChannelHandler.Sharable
-import io.netty.handler.codec.http.{ HttpObject, HttpResponse }
+import io.netty.handler.codec.http.HttpResponse
 
 /** Provides useful defaults for Passing
- *  note(*): perhaps this could be reimplemented in terms of a kit */
+ *  note(*): perhaps this could be re-implemented in terms of a kit */
 object MultipartPlan {
   type Intent = PartialFunction[HttpRequest[ReceivedMessage], MultiPartIntent] //unfiltered.Cycle.Intent[ReceivedMessage, MultiPartIntent]
   type MultiPartIntent = PartialFunction[MultiPartCallback, ResponseFunction[HttpResponse]]
@@ -19,7 +19,7 @@ object MultipartPlan {
   val PassAlong: Intent = { case _ => Pass }
 }
 
-/** Enriches an async netty plan with multipart decoding capabilities. */
+/** Enriches an async netty plan with multi-part decoding capabilities. */
 @Sharable
 trait MultiPartDecoder extends ChannelInboundHandlerAdapter
   with AbstractMultiPartDecoder
