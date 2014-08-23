@@ -43,7 +43,11 @@ object MultiPart extends MultiPartMatcher[RequestBinding] {
       case _ => None
     }
 
-  /** Check the ContentType header value to determine whether the request is multipart */
+  /** Check the ContentType header value to determine whether the request is multipart
+   *  note(doug) - future versions of netty define HttpPostRequestDecoder.isMultipart(_)
+   *               https://github.com/netty/netty/blob/netty-4.1.0.Beta1/codec-http/src/main/java/io/netty/handler/codec/http/multipart/HttpPostRequestDecoder.java#L141
+   *               we should eventually prefer that and do away with alot of this code
+   */
   private def isMultipart(contentType: String) = {
     // Check if the Post is using "multipart/form-data; boundary=--89421926422648"
     splitContentTypeHeader(contentType) match {
