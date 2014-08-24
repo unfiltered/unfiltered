@@ -34,8 +34,9 @@ class MultiPartBinding(val decoder: Option[PostDecoder], msg: ReceivedMessage) e
 
 /** Matches requests that have multipart content */
 object MultiPart extends MultiPartMatcher[RequestBinding] {  
-  val Type = "multipart/form-data"
-  val Boundary = "boundary"
+  private[this] val Type = "multipart/form-data"
+  private[this] val Boundary = "boundary"
+
   def unapply(req: RequestBinding) =
     RequestContentType(req) match {
       case Some(r) if isMultipart(r) => Some(req)
