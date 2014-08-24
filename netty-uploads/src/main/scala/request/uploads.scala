@@ -75,7 +75,7 @@ object MultiPartParams {
 
       val decoder = req match {
         case r: MultiPartBinding => r.decoder
-        case _ => PostDecoder(req.underlying.request)
+        case _ => PostDecoder(req)
       }
       val params = decoder.map(_.parameters).getOrElse(Nil)
       val files = decoder.map(_.fileUploads).getOrElse(Nil)
@@ -106,7 +106,7 @@ object MultiPartParams {
 
       val decoder = req match {
         case r: MultiPartBinding => r.decoder
-        case _ => PostDecoder(req.underlying.request)
+        case _ => PostDecoder(req)
       }
       val params = decoder.map(_.parameters).getOrElse(Nil)
       val files = decoder.map(_.fileUploads).getOrElse(Nil)
@@ -132,7 +132,7 @@ trait AbstractDisk
   def apply(req: RequestBinding) = {
     val items = req match {
       case r: MultiPartBinding => r.decoder.map(_.items).getOrElse(Nil).toIterator
-      case _ => PostDecoder(req.underlying.request).map(_.items).getOrElse(Nil).toIterator 
+      case _ => PostDecoder(req).map(_.items).getOrElse(Nil).toIterator
     }  
 
     val (params, files) = genTuple[String, DiskFileWrapper, InterfaceHttpData](items) ((maps, item) => item match {

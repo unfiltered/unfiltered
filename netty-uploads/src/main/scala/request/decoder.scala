@@ -5,6 +5,7 @@ import unfiltered.request.POST
 import unfiltered.response.Pass
 import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandler }
 import io.netty.handler.codec.http.{
+  HttpConstants,
   HttpRequest,
   HttpContent,
   HttpHeaders,
@@ -21,14 +22,14 @@ import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.NotEnoughDat
 import io.netty.util.AttributeKey
 import scala.collection.JavaConverters._
 import scala.util.control.NonFatal
+import java.nio.charset.Charset
 
 /** A PostDecoder wraps a HttpPostRequestDecoder.
  *  Defaults to using disk to store data. Set useDisk to file for memory only */
-class PostDecoder(req: HttpRequest, useDisk: Boolean = true) {
-
+class PostDecoder(req: HttpRequest, useDisk: Boolean = true, charset: Charset = HttpConstants.DEFAULT_CHARSET) {
   /** Build a post decoder and parse the request. This only works with POST requests. */
   private lazy val decoder: Option[HttpPostRequestDecoder] = // [InterfaceHttpPostRequestDecoder] in 4.0.1
-    try Some(new HttpPostRequestDecoder(new DefaultHttpDataFactory(useDisk), req)) catch {
+    try Some(new HttpPostRequestDecoder(new DefaultHttpDataFactory(useDisk), req, charset)) catch {
       case _: HttpPostRequestDecoder.ErrorDataDecoderException
          | _: HttpPostRequestDecoder.IncompatibleDataDecoderException => // GET method. Can't create a decoder.
         None
@@ -68,8 +69,8 @@ object PostDecoder {
   // todo(doug): reduce scope
   val State = AttributeKey.valueOf[MultiPartChannelState]("PostDecoder.state")
 
-  def apply(req: HttpRequest, useDisk: Boolean = true): Option[PostDecoder] = {
-    val postDecoder = new PostDecoder(req, useDisk)
+  def apply(req: RequestBinding, useDisk: Boolean = true): Option[PostDecoder] = {
+    val postDecoder = new PostDecoder(req.underlying.request, useDisk, req.charset)
     // only return ref if we were able to successfully create an netty decoder
     postDecoder.decoder.map(_ => postDecoder)
   }
@@ -119,7 +120,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
             // Determine whether the request is destined for this plan's intent and if not, pass
             handleOrPass(ctx, request, binding) {
               // The request is destined for this intent, so start to handle it
-              start(request, Helpers.channelStateOrCreate(ctx), ctx, request)
+              start(binding, Helpers.channelStateOrCreate(ctx), ctx)
             }
           // The request is not valid for this plan so send sendUpstream
           case _ =>
@@ -136,7 +137,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
             // Determine whether the chunk is destined for this plan's intent and if not, pass
             handleOrPass(ctx, chunk, binding) {
               // The chunk is destined for this intent, so handle it
-              continue(chunk, channelState, ctx, chunk)
+              continue(chunk, channelState, ctx)
             }
           case _ =>
             pass(ctx, chunk)
@@ -145,13 +146,13 @@ trait AbstractMultiPartDecoder extends CleanUp {
 
   /** Sets up for handling a multipart request */
   protected def start(
-    request: HttpRequest,
+    binding: RequestBinding,
     channelState: MultiPartChannelState,
-    ctx: ChannelHandlerContext,
-    msg: java.lang.Object) = { // TODO: remove msg param. its probably not needed
+    ctx: ChannelHandlerContext) = {
+    val request = binding.underlying.request
     if (!channelState.readingChunks) {
       // Initialise the decoder
-      val decoder = PostDecoder(request, useDisk)
+      val decoder = PostDecoder(binding, useDisk)
       // Store the initial state
       ctx.attr(PostDecoder.State).set(MultiPartChannelState(channelState.readingChunks, Some(request), decoder))
       if (HttpHeaders.isTransferEncodingChunked(request)) {
@@ -160,7 +161,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
       } else {
         // This is not a chunked request (could be an aggregated multipart request),
         // so we should have received it all. Behave like a regular netty plan.
-        complete(ctx, msg)(cleanUp(ctx))
+        complete(ctx, request)(cleanUp(ctx))
       }
     } else {
       // Shouldn't get here
@@ -172,8 +173,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
   protected def continue(
     chunk: HttpContent,
     channelState: MultiPartChannelState,
-    ctx: ChannelHandlerContext,
-    msg: java.lang.Object) = { // todo: remove msg param, its probably no longer needed
+    ctx: ChannelHandlerContext) = {
     // Should be reading chunks here
     if (channelState.readingChunks) {
       // Give the chunk to the decoder
@@ -182,7 +182,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
       if (chunk.isInstanceOf[LastHttpContent]) {
         // This was the last chunk so we can complete
         ctx.attr(PostDecoder.State).set(channelState.copy(readingChunks=false))
-        complete(ctx, msg)(cleanUp(ctx))
+        complete(ctx, chunk)(cleanUp(ctx))
       }
     } else {
       // It shouldn't be possible to get here
