@@ -182,11 +182,10 @@ class DiskFileWrapper(item: FileUpload)
 
 /** Wrapper for an uploaded file with write functionality disabled. */
 class MemoryFileWrapper(item: FileUpload)
-  extends StreamedFileWrapper(item) {  
-  override def write(out: File) = { 
-    //error("File writing is not permitted") // todo: remove this
-    None
-  }
+  extends StreamedFileWrapper(item) {
+  /** in memory file uploads never write to disk. calling this method
+   *  has no effect*/
+  override def write(out: File) = None
   def isInMemory = item.isInMemory
   def bytes = item.get
   def size = item.length
