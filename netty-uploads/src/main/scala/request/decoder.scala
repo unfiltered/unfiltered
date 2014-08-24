@@ -20,18 +20,17 @@ import io.netty.handler.codec.http.multipart.{
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.NotEnoughDataDecoderException
 import io.netty.util.AttributeKey
 import scala.collection.JavaConverters._
+import scala.util.control.NonFatal
 
-/** A PostDecoder wraps a HttpPostRequestDecoder. */
+/** A PostDecoder wraps a HttpPostRequestDecoder.
+ *  Defaults to using disk to store data. Set useDisk to file for memory only */
 class PostDecoder(req: HttpRequest, useDisk: Boolean = true) {
 
   /** Build a post decoder and parse the request. This only works with POST requests. */
-  private lazy val decoder: Option[HttpPostRequestDecoder] =// [InterfaceHttpPostRequestDecoder] in 4.0.14
+  private lazy val decoder: Option[HttpPostRequestDecoder] = // [InterfaceHttpPostRequestDecoder] in 4.0.1
     try Some(new HttpPostRequestDecoder(new DefaultHttpDataFactory(useDisk), req)) catch {
-      /** Would it be more useful to throw errors here? */
-      case e: HttpPostRequestDecoder.ErrorDataDecoderException =>
-        None
-      /** GET method. Can't create a decoder. */
-      case e: HttpPostRequestDecoder.IncompatibleDataDecoderException =>
+      case _: HttpPostRequestDecoder.ErrorDataDecoderException
+         | _: HttpPostRequestDecoder.IncompatibleDataDecoderException => // GET method. Can't create a decoder.
         None
     }
 
@@ -39,14 +38,13 @@ class PostDecoder(req: HttpRequest, useDisk: Boolean = true) {
   lazy val isMultipart: Boolean = decoder.map(_.isMultipart).getOrElse(false)
 
   /** Returns a collection containing all the parts of the parsed request */
-  lazy val items: List[InterfaceHttpData] = {
+  lazy val items: List[InterfaceHttpData] =
     try decoder.map(_.getBodyHttpDatas.asScala.toList).getOrElse(Nil) catch {
       case e: NotEnoughDataDecoderException =>
         sys.error("Tried to decode a multipart request before it was fully received. Make sure there is either a HttpChunkAggregator in the handler pipeline e.g. _.chunked() or use a MultiPartDecoder plan.")
-      case e: Exception /*potentially thrown if items is called after destroy is called*/ =>
-        sys.error("unexpected error in items %s" format e)
+      case is: IllegalStateException /*potentially thrown if items is called after destroy is called*/ =>
+        sys.error(s"unexpected error in items: ${is.getMessage}")
     }
-  }
 
   /** Returns a collection of uploaded files found in the parsed request */
   lazy val fileUploads = items collect { case file: FileUpload => file }
