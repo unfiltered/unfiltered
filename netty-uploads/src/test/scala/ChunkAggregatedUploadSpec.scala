@@ -132,7 +132,7 @@ object ChunkAggregatedUploadSpec extends Specification
     })
   }
 
- "MultiPartParams used in netty.cycle.Plan and netty.async.Plan with a chunk aggregator" should {
+  "MultiPartParams used in netty.cycle.Plan and netty.async.Plan with a chunk aggregator" should {
     step {
       val out = new File("netty-upload-test-out.txt")
       if (out.exists) out.delete
