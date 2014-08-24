@@ -8,7 +8,7 @@ import io.netty.buffer.{ ByteBufInputStream, ByteBufOutputStream, Unpooled }
 import io.netty.channel.{ ChannelFuture, ChannelFutureListener, ChannelHandlerContext }
 import io.netty.handler.codec.http.{
   DefaultHttpResponse, DefaultFullHttpResponse, HttpContent,
-  HttpHeaders, HttpMessage, HttpRequest => NettyHttpRequest, HttpResponse => NettyHttpResponse,
+  HttpConstants, HttpHeaders, HttpMessage, HttpRequest => NettyHttpRequest, HttpResponse => NettyHttpResponse,
   HttpResponseStatus, HttpVersion }
 import io.netty.handler.ssl.SslHandler
 import io.netty.util.{ CharsetUtil, ReferenceCountUtil }
@@ -18,8 +18,10 @@ import java.nio.charset.{ Charset => JNIOCharset }
 
 import scala.collection.JavaConverters._
 
+@deprecated("use io.netty.handler.codec.http.HttpConstants.DEFAULT_CHARSET.name()", since="0.8.3")
 object HttpConfig {
-   val DEFAULT_CHARSET = CharsetUtil.UTF_8.name()
+  @deprecated("use io.netty.handler.codec.http.HttpConstants.DEFAULT_CHARSET.name()", since="0.8.3")
+  val DEFAULT_CHARSET = HttpConstants.DEFAULT_CHARSET
 }
 
 object Content {
@@ -47,14 +49,15 @@ class RequestBinding(msg: ReceivedMessage)
   private def bodyParams = (this, content) match {
     case ((POST(_) | PUT(_)) & RequestContentType(ct), Some(content))
       if ct.contains(HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED) =>
-      URLParser.urldecode(content.content.toString(JNIOCharset.forName(charset)))
+      URLParser.urldecode(content.content.toString(charset))
     case _ =>
       Map.empty[String,Seq[String]]
   }
 
-  private def charset = Charset(this).getOrElse {
-    HttpConfig.DEFAULT_CHARSET
-  }
+  protected[netty] lazy val charset: JNIOCharset =
+    Charset(this).map(JNIOCharset.forName).getOrElse {
+      HttpConstants.DEFAULT_CHARSET
+    }
 
   lazy val inputStream =
     new ByteBufInputStream(content.map(_.content).getOrElse(Unpooled.EMPTY_BUFFER))
@@ -173,7 +176,7 @@ class ResponseBinding[U <: NettyHttpResponse](res: U)
 
 private [netty] object URLParser {
   def urldecode(enc: String) : Map[String, Seq[String]] = {
-    def decode(raw: String) = URLDecoder.decode(raw, HttpConfig.DEFAULT_CHARSET)
+    def decode(raw: String) = URLDecoder.decode(raw, HttpConstants.DEFAULT_CHARSET.name())
     val pairs = enc.split('&').flatMap {
       _.split('=') match {
         case Array(key, value) => List((decode(key), decode(value)))
