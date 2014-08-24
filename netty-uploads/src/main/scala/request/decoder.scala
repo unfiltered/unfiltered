@@ -76,7 +76,7 @@ object PostDecoder {
 }
 
 /** Provides storage for state when attached to a ChannelHandlerContext.
- *  todo(doug): this this be better represented as cases of a sealed trait? */
+ *  todo(doug): this may be better represented as cases of a sealed trait? */
 private [netty] case class MultiPartChannelState(
   readingChunks: Boolean = false,
   originalReq: Option[HttpRequest] = None,
