@@ -22,9 +22,13 @@ trait DirectivesSpec extends Specification with unfiltered.specs2.Hosted {
 
   import dispatch._, Defaults._
 
-  // it's simple to define your own directives
+  // create a directive for a particular content type
   def contentType(tpe:String) =
-    when{ case RequestContentType(`tpe`) => } orElse UnsupportedMediaType
+    when { case RequestContentType(`tpe`) => } orElse UnsupportedMediaType
+
+  // create a directive for any content type
+  def someContentType =
+    when { case RequestContentType(t) => t } orElse UnsupportedMediaType
 
   // enables `===` in awesome_json case
   implicit val contentTypeAwesome =
@@ -73,6 +77,13 @@ trait DirectivesSpec extends Specification with unfiltered.specs2.Hosted {
       for {
         _ <- POST
         _ <- contentType("application/json")
+        _ <- Accepts.Json
+        r <- request[Any]
+      } yield Ok ~> JsonContent ~> ResponseBytes(Body.bytes(r))
+    case Seg(List("if_json", id)) =>
+      for {
+        _ <- POST
+        contentType <- someContentType if contentType == "application/json"
         _ <- Accepts.Json
         r <- request[Any]
       } yield Ok ~> JsonContent ~> ResponseBytes(Body.bytes(r))
@@ -179,6 +190,28 @@ trait DirectivesSpec extends Specification with unfiltered.specs2.Hosted {
     }
     "respond with unsupported media if content-type missing" in {
       val resp = Http(localhost / "awesome_json" / "123"
+        <:< Map("Accept" -> "application/json")
+        << someJson)
+      resp().getStatusCode must_== 415
+    }
+  }
+  "Directives if filtering" should {
+    "respond with json if accepted" in {
+      val resp = Http(localhost / "if_json" / "123"
+        <:< Map("Accept" -> "application/json")
+        <:< Map("Content-Type" -> "application/json")
+        << someJson OK as.String)
+      resp() must_== someJson
+    }
+    "respond with unsupported media if content-type wrong" in {
+      val resp = Http(localhost / "if_json" / "123"
+        <:< Map("Accept" -> "application/json")
+        <:< Map("Content-Type" -> "text/plain")
+        << someJson)
+      resp().getStatusCode must_== 415
+    }
+    "respond with unsupported media if content-type missing" in {
+      val resp = Http(localhost / "if_json" / "123"
         <:< Map("Accept" -> "application/json")
         << someJson)
       resp().getStatusCode must_== 415
