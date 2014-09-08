@@ -9,6 +9,8 @@ abstract class HttpResponse[+T](val underlying: T) {
 
   def status(statusCode: Int)
 
+  def status: Int
+
   def outputStream : OutputStream
 
   /** Sets a redirect */

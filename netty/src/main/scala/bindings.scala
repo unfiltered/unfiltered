@@ -162,6 +162,9 @@ class ResponseBinding[U <: NettyHttpResponse](res: U)
   def status(code: Int) =
     res.setStatus(HttpResponseStatus.valueOf(code))
 
+  def status: Int =
+    res.getStatus.code()
+
   def header(name: String, value: String) =
     res.headers.add(name, value)
 
