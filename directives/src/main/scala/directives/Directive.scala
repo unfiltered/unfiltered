@@ -99,7 +99,7 @@ extends (HttpRequest[T] => Result[R, A]) {
 }
 
 /** Supports filtering by requiring a handler for when success is filtered away.
-    The onEmtpy handler may produce a success or failure; typically the latter. */
+    The onEmpty handler may produce a success or failure; typically the latter. */
 class FilterDirective[-T, +R, +A](
   run: HttpRequest[T] => Result[R, A],
   onEmpty: HttpRequest[T] => Result[R, A]
