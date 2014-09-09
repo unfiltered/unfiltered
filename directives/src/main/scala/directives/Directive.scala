@@ -70,24 +70,24 @@ extends (HttpRequest[T] => Result[R, A]) {
   def flatMap[TT <: T, RR >: R, B](f:A => Directive[TT, RR, B]):Directive[TT, RR, B] =
     Directive(r => run(r).flatMap(a => f(a)(r)))
 
-  /** Doesn't filter. Scala requires something to be defined for pattern matching in for
-      expressions, and we do use that. */
-  def withFilter(f:A => Boolean): Directive[T, R, A] = this
-  /** Doesn't filter. Scala requires something to be defined for pattern matching in for
-      expressions, and we do use that. */
-  def filter(f:A => Boolean): Directive[T, R, A] = this
-
   def orElse[TT <: T, RR >: R, B >: A](next: => Directive[TT, RR, B]): Directive[TT, RR, B] =
-    Directive(r => run(r).orElse(next(r)))
+    new FilterDirective(r => run(r).orElse(next(r)), next)
 
   def | [TT <: T, RR >: R, B >: A](next: => Directive[TT, RR, B]): Directive[TT, RR, B] =
     orElse(next)
 
   def and[TT <: T, E, B, RF](other: => Directive[TT, JoiningResponseFunction[E,RF], B])
-    (implicit ev: R <:< JoiningResponseFunction[E,RF]) =
-    new Directive[TT, JoiningResponseFunction[E,RF], (A,B)] ( req =>
-      this(req) and other(req)
-    )
+    (implicit ev: R <:< JoiningResponseFunction[E,RF]) = {
+      val runner = (req: HttpRequest[TT]) => this(req) and other(req)
+      // A `filter` implementation is required for pattern matching, which we
+      // use to extract joined successes. This is a no-op filter; an improved
+      // response joining system would make `toResponseFunction` available
+      // to use here with an empty Seq.
+      new FilterDirective[TT, JoiningResponseFunction[E,RF], (A,B)](
+        runner,
+        runner
+      )
+    }
 
   def &[TT <: T, E, B, RF](other: => Directive[TT, JoiningResponseFunction[E,RF], B])
     (implicit ev: R <:< JoiningResponseFunction[E,RF]) = this and other
@@ -96,6 +96,21 @@ extends (HttpRequest[T] => Result[R, A]) {
     def map[B](f: R => B) =
       Directive(run(_).fail.map(f))
   }
+}
+
+/** Supports filtering by requiring a handler for when success is filtered away.
+    The onEmpty handler may produce a success or failure; typically the latter. */
+class FilterDirective[-T, +R, +A](
+  run: HttpRequest[T] => Result[R, A],
+  onEmpty: HttpRequest[T] => Result[R, A]
+) extends Directive[T,R,A](run) {
+  def withFilter(filt: A => Boolean): Directive[T, R, A] =
+    new FilterDirective({ req =>
+      run(req).flatMap { a =>
+        if (filt(a)) Result.Success(a)
+        else onEmpty(req)
+      }
+    }, onEmpty)
 }
 
 class JoiningResponseFunction[E,A]
