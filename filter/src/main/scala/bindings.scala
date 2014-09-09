@@ -31,12 +31,8 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
 }
 
 class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
-  private[this] var _statusCode = 200 // Servlets have default status code of 200 (SC_OK) if nothing is set
-  def status(statusCode: Int) = {
-    res.setStatus(statusCode)
-    _statusCode = statusCode
-  }
-  def status: Int = _statusCode
+  def status(statusCode: Int) = res.setStatus(statusCode)
+  def status: Int = res.getStatus
   def outputStream() = res.getOutputStream
   def redirect(url: String) = res.sendRedirect(url)
   def header(name: String, value: String) = res.addHeader(name, value)
