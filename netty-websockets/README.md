@@ -27,7 +27,7 @@ The above example is equivalent to a handler of the format
      netty.websockets.Planify({
        case GET(Path("/")) => {
          case Open(socket) => ...
-         case Message(s, Text(str) => ..
+         case Message(s, Text(str)) => ..
          ...
        }
     })
@@ -60,7 +60,7 @@ An example of a subscription based service where clients receive msgs as they ar
 
 To mix in websockets in with a Netty HTTP server, use the full `Plan.Intent` function to build a `Plan` with `Planify`
 
-    netty.Http(8080)
+    netty.Server.http(8080)
        .handler(netty.websockets.Planify({
           case Path("/foo") => {
              case Open(socket) =>
