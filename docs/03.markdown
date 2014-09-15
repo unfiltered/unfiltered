@@ -39,7 +39,8 @@ object AsyncPlan extends unfiltered.filter.async.Plan  {
 unfiltered.jetty.Server.local(8080).plan(AsyncPlan).run()
 ```
 
-Note that `local(8080)` will bind the loopback network interface; alternately, `http(8080)` will bind to all interfaces.
+> **Note:** `local(8080)` binds to the loopback network
+    interface. Alternately, `http(8080)` binds to all interfaces.
 
 #### Netty Channel Handlers (unfiltered-netty)
 
