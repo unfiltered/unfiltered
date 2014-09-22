@@ -1,0 +1,12 @@
+This [release][0.8.2] includes several improvements and dependency updates:
+
+* Ad-hoc success filtering for directives [258][258]
+* Ability to retrieve HTTP status code from HttpResponse [259][259]
+* Netty 4.0.23 [251][251]
+* ScalaTest 2.2.1 [252][252]
+
+[259]: https://github.com/unfiltered/unfiltered/pull/259
+[258]: https://github.com/unfiltered/unfiltered/pull/258
+[251]: https://github.com/unfiltered/unfiltered/pull/251
+[252]: https://github.com/unfiltered/unfiltered/pull/252
+[0.8.2]: https://github.com/unfiltered/unfiltered/issues?q=milestone%3A0.8.2+is%3Aclosed
