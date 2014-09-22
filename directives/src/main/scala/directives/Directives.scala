@@ -45,7 +45,11 @@ trait Directives {
 
   /* HttpRequest has to be of type Any because of type-inference (SLS 8.5) */
   case class when[A](f:PartialFunction[HttpRequest[Any], A]){
-    def orElse[R](fail:ResponseFunction[R]) = Directive[Any, ResponseFunction[R], A](r => if(f.isDefinedAt(r)) Success(f(r)) else Failure(fail))
+    def orElse[R](fail:ResponseFunction[R]) =
+      new FilterDirective[Any, ResponseFunction[R], A](r =>
+        if(f.isDefinedAt(r)) Success(f(r)) else Failure(fail),
+        _ => Failure(fail)
+      )
   }
 
   def request[T] = Directive[T, Nothing, HttpRequest[T]](Success(_))

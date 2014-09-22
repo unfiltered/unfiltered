@@ -3,7 +3,7 @@ import sbt._
 object Common {
   import Keys._
 
-  val servletApiDep = "javax.servlet" % "servlet-api" % "2.3" % "provided"
+  val servletApiDep = "javax.servlet" % "javax.servlet-api" % "3.0.1" % "provided"
   val jettyVersion = "8.1.13.v20130916"
 
   def specs2Dep(sv: String) =
@@ -26,7 +26,7 @@ object Common {
   val settings: Seq[Setting[_]] = Seq(
     organization := "net.databinder",
 
-    version := "0.8.1",
+    version := "0.8.2",
 
     crossScalaVersions := Seq("2.11.2", "2.10.4"),
 

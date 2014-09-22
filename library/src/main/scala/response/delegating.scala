@@ -6,6 +6,8 @@ extends HttpResponse[T](delegate.underlying) {
   def status(statusCode: Int) {
     delegate.status(statusCode)
   }
+  def status: Int =
+    delegate.status
   def redirect(url: String) {
     delegate.redirect(url)
   }

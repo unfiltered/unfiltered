@@ -2,6 +2,8 @@
 
 See the the [Unfiltered documentation](http://unfiltered.databinder.net/) for instructions on using the project.
 
+[![Build Status](https://travis-ci.org/unfiltered/unfiltered.svg?branch=0.8.2)](https://travis-ci.org/unfiltered/unfiltered)
+
 ## Modules
 
 ### library

@@ -32,6 +32,7 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
 
 class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
   def status(statusCode: Int) = res.setStatus(statusCode)
+  def status: Int = res.getStatus
   def outputStream() = res.getOutputStream
   def redirect(url: String) = res.sendRedirect(url)
   def header(name: String, value: String) = res.addHeader(name, value)
