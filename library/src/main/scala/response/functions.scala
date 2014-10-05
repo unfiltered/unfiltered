@@ -6,9 +6,8 @@ trait ResponseFunction[-A] { self =>
   def apply[B <: A](res: HttpResponse[B]): HttpResponse[B]
 
   /** Like Function1#andThen. Composes another response function around this one */
-  def andThen[B <: A](that: ResponseFunction[B]) = new ResponseFunction[B] {
-    def apply[C <: B](res: HttpResponse[C]) = that(self(res))
-  }
+  def andThen[B <: A](that: ResponseFunction[B]): ResponseFunction[B] =
+    ComposedResponseFunction(self, that)
 
   /** Symbolic alias for andThen */
   def ~>[B <: A](that: ResponseFunction[B]) = andThen(that)
@@ -23,8 +22,17 @@ trait Responder[A] extends ResponseFunction[A] {
   def respond(res: HttpResponse[A])
 }
 
-/** Base class for composing a response function from others */
+/** Convenience base class for response function classes defined as a
+  * constructor paramater. */
 class ComposeResponse[A](rf: ResponseFunction[A]) extends 
     Responder[A] {
   def respond(res: HttpResponse[A]) { rf(res) }
 }
+
+/** Composes two response functions. As a case class it recognizes
+  * equivalence, so that (a ~> b == a ~> b) */
+private case class ComposedResponseFunction[F, G <: F]
+(f: ResponseFunction[F], g: ResponseFunction[G]) extends ResponseFunction[G] {
+    def apply[R <: G](res: HttpResponse[R]) = g(f(res))
+}
+
