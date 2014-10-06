@@ -94,7 +94,7 @@ object NoChunkAggregatorSpec extends Specification
 
     // note(doug): in netty3 versions of unfiltered this would result in a 500 error
     "respond with a 200 when no chunk aggregator is used in a cycle plan" in {
-      val http = new dispatch.classic.Http with NoLogging
+      val http = new dispatch.classic.Http //with NoLogging
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       try {
