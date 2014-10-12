@@ -5,7 +5,7 @@ package unfiltered.response.link
     is specified as a parameter,
     [[https://tools.ietf.org/html/rfc5988#section-3 section-3]] states that it
     is required and so it is implemented as a `Ref` member. */
-final case class Ref(uri: String, rel: Rel, params: Param*) {
+final case class Ref private (uri: String, rel: Rel, params: List[Param]) {
   /** Yield "link-value" clause. */
   def refClause = s"<$uri>; $paramsClause"
 
@@ -17,6 +17,21 @@ final case class Ref(uri: String, rel: Rel, params: Param*) {
 }
 
 object Ref {
+
+  def apply(uri: String, rel: Rel, params: Param*): Ref = {
+    val (actualRel, _, actualParams) =
+      params.foldLeft((rel, Set.empty[Param.Type], List.empty[Param])) {
+        case ((r, pt, ps), p: Rel) =>
+          (r :+ p, pt, ps)
+        case ((r, pt, ps), Param.Singular(p)) =>
+          if (! pt.contains(p.paramType)) (r, pt + p.paramType, p :: ps)
+          else (r, pt, ps)
+        case ((r, pt, ps), p) =>
+          (r, pt, p :: ps)
+      }
+    Ref(uri, actualRel, actualParams)
+  }
+
   def refClauses(rs: Ref*) = rs.map(_.refClause).mkString(", ")
 
   /** Yield "link-param" clause. */
