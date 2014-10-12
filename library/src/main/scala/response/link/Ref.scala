@@ -23,7 +23,7 @@ object Ref {
       params.foldLeft((rel, Set.empty[Param.Type], List.empty[Param])) {
         case ((r, pt, ps), p: Rel) =>
           (r :+ p, pt, ps)
-        case ((r, pt, ps), Param.Singular(p)) =>
+        case ((r, pt, ps), Param.NonRepeatable(p)) =>
           if (! pt.contains(p.paramType)) (r, pt + p.paramType, p :: ps)
           else (r, pt, ps)
         case ((r, pt, ps), p) =>

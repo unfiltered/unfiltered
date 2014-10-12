@@ -30,7 +30,7 @@ object Param {
   case object ContentType extends SpecifiedType("type")
 
   /** Extractor for parameter types that cannot repeat within a `Ref`. */
-  object Singular {
+  object NonRepeatable {
     def unapply(param: Param) =
       param.paramType match {
         case Rel | Media | Title | TitleStar | ContentType => Some(param)
