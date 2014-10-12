@@ -14,10 +14,10 @@ abstract class HttpResponse[+T](val underlying: T) {
   def outputStream : OutputStream
 
   /** Sets a redirect */
-  def redirect(url: String) : Unit
+  def redirect(url: String): Unit
 
   /** Adds a header */
-  def header(name: String, value: String)
+  def header(name: String, value: String): Unit
 }
 
 object HttpResponse {
