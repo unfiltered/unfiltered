@@ -1,6 +1,5 @@
 package unfiltered.response.link
 
-import unfiltered.response.link.{Tag => TagRel}
 import org.scalacheck.Gen
 
 object ParamGen {
@@ -14,7 +13,7 @@ object ParamGen {
     PredecessorVersion :: Prefetch :: Prev :: Preview :: Previous ::
     PrevArchive :: PrivacyPolicy :: Profile :: Related :: Replies ::
     Search :: Section :: Self :: Service :: Start :: Stylesheet ::
-    Subsection :: SuccessorVersion :: TagRel :: TermsOfService :: Timegate ::
+    Subsection :: SuccessorVersion :: Tag :: TermsOfService :: Timegate ::
     Timemap :: Type :: Up :: VersionHistory :: Via :: WorkingCopy ::
     WorkingCopyOf :: Nil
 
@@ -46,6 +45,5 @@ object ParamGen {
     param <- Gen.oneOf(rel, media, title, titleStar, mediaType)
   } yield param
   val genParams: Gen[List[Param]] = Gen.listOf(genParam)
-
 
 }
