@@ -1,33 +1,24 @@
 package unfiltered.response.link
 
-/** Root type for all implementations of `link-param` as specified in
-    [[https://tools.ietf.org/html/rfc5988#section-5 section-5]]. New parameter
-    types can be added as `link-extension` parameters so this trait
-    is unsealed. */
-trait Param {
-  def paramType: Param.Type
-  def value: String
-}
-
 object Param {
-  /** Parameters are well-typed. As parameter types are extensible this trait
-      is also unsealed. */
-  trait Type {
-    def name: String
-    override def toString = s"Type($name)"
-  }
-
   /** Predefined parameter types as specified in
       [[http://tools.ietf.org/html/rfc5988#section-5 section-5]]. Note that
       `rev` is omitted as it has been deprecated by the specification. */
-  sealed abstract class SpecifiedType(val name: String) extends Type
-  case object Rel extends SpecifiedType("rel")
-  case object Anchor extends SpecifiedType("anchor")
-  case object Hreflang extends SpecifiedType("hreflang")
-  case object Media extends SpecifiedType("media")
-  case object Title extends SpecifiedType("title")
-  case object TitleStar extends SpecifiedType("title*")
-  case object ContentType extends SpecifiedType("type")
+  sealed abstract class Type(val name: String)
+  case object Rel extends Type("rel")
+  case object Anchor extends Type("anchor")
+  case object Hreflang extends Type("hreflang")
+  case object Media extends Type("media")
+  case object Title extends Type("title")
+  case object TitleStar extends Type("title*")
+  case object ContentType extends Type("type")
+
+  /** The extension type supporting `link-extension` parameters. */
+  private [link] final case class ExtensionType (override val name: String) extends Type(name)
+
+  /** Construct an extension parameter. */
+  def extension(paramType: String): String => Extension =
+    value => Extension(ExtensionType(paramType), value)
 
   /** Extractor for parameter types that cannot repeat within a `Ref`. */
   object NonRepeatable {
@@ -39,22 +30,27 @@ object Param {
   }
 }
 
-/** Predefined parameter values as specified in various documents linked to
-    [[https://tools.ietf.org/html/rfc5988 rfc5988]]. Specified documents are
-    linked from the appropriate root types; see [[Media]] and [[Rel]]. */
-sealed abstract class SpecifiedParam(val paramType: Param.Type, val value: String) extends Param
-
-final case class Anchor(uri: String) extends SpecifiedParam(Param.Anchor, uri)
-final case class Hreflang(lang: String) extends SpecifiedParam(Param.Hreflang, lang)
-final case class Title(title: String) extends SpecifiedParam(Param.Title, title)
-final case class TitleStar(titleStar: String) extends SpecifiedParam(Param.TitleStar, titleStar)
-final case class MediaType(typeName: String, subTypeName: String) extends SpecifiedParam(Param.ContentType, s"$typeName/$subTypeName")
+/** Root type for all implementations of `link-param` as specified in
+    [[https://tools.ietf.org/html/rfc5988#section-5 section-5]].
+    Predefined parameter values are specified in various documents linked or
+    referred to in the [[https://tools.ietf.org/html/rfc5988 rfc5988]];
+    see [[Media]] and [[Rel]].
+    New parameter types can be added to `Link` headers as `link-extension`
+    parameters. Extension parameters can be constructed
+    via [[Param.extension)]]. */
+sealed abstract class Param(val paramType: Param.Type, val value: String)
+final case class Anchor(uri: String) extends Param(Param.Anchor, uri)
+final case class Hreflang(lang: String) extends Param(Param.Hreflang, lang)
+final case class Title(title: String) extends Param(Param.Title, title)
+final case class TitleStar(titleStar: String) extends Param(Param.TitleStar, titleStar)
+final case class MediaType(typeName: String, subTypeName: String) extends Param(Param.ContentType, s"$typeName/$subTypeName")
+final case class Extension private[link] (override val paramType: Param.ExtensionType, override val value: String) extends Param(paramType, value)
 
 /** Target media types as described in
     [[https://tools.ietf.org/html/rfc5988#section-5.4 section-5.4]] The meaning
     and set of possible values for this parameter are specified in the
     [[http://www.w3.org/TR/html401/types.html#h-6.13 HTML 401 Types]] specification. */
-sealed abstract class Media(val mediaType: String) extends SpecifiedParam(Param.Media, mediaType) {
+sealed abstract class Media(val mediaType: String) extends Param(Param.Media, mediaType) {
   /** According to
       [[http://www.w3.org/TR/html401/types.html#h-6.13 HTML 401 Types]],
       `Media` is a monoid resulting in the accumulated media for a single
@@ -63,6 +59,7 @@ sealed abstract class Media(val mediaType: String) extends SpecifiedParam(Param.
 
   final override def toString = s"Media($mediaType)"
 }
+
 private [link] final case class CompositeMedia (a: Media, b: Media) extends Media(a.mediaType + ", " + b.mediaType)
 case object Screen extends Media("screen")
 case object Tty extends Media("tty")
@@ -77,9 +74,11 @@ case object All extends Media("all")
 /** A link relation type as described in
     [[https://tools.ietf.org/html/rfc5988#section-5.3 section-5.3]].
     The relation type is specified as link parameter for which a global set
-    of possible values exist. The specification also permits extension types to
-    be provided as absolute URLs (see the [[Extension]] type). */
-sealed abstract class Rel(val relType: String) extends SpecifiedParam(Param.Rel, relType) {
+    of possible values is catalogued at
+    [[http://www.iana.org/assignments/link-relations/link-relations.xml]].
+    The specification also permits extension types to
+    be provided as absolute URLs (see the [[ExtensionRel]] type). */
+sealed abstract class Rel(val relType: String) extends Param(Param.Rel, relType) {
   /** According to
       [[https://tools.ietf.org/html/rfc5988#section-5.5 section-5.5]], `Rel`
       is a monoid resulting in the accumulated relation types for a single
@@ -88,12 +87,14 @@ sealed abstract class Rel(val relType: String) extends SpecifiedParam(Param.Rel,
 
   final override def toString = s"Rel($relType)"
 }
+
 private [link] final case class CompositeRel (a: Rel, b: Rel) extends Rel(a.relType + " " + b.relType)
+
 /** Support for extension relation types as specified in
     [[https://tools.ietf.org/html/rfc5988#section-4.2 section-4.2]] */
-final case class Extension (uri: String) extends Rel(uri)
-/* Relation types as catalogued at
-   http://www.iana.org/assignments/link-relations/link-relations.xml. */
+final case class ExtensionRel (uri: String) extends Rel(uri)
+
+/* The complete set of catalogued relation types. */
 case object About extends Rel("about")
 case object Alternate extends Rel("alternate")
 case object Appendix extends Rel("appendix")
