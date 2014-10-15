@@ -1,6 +1,6 @@
 package unfiltered.response.link
 
-/** A URI-Reference as described in
+/** A `link-value` as described in
     [[https://tools.ietf.org/html/rfc5988#section-5 section-5]]. While `Rel` is
     is specified as a parameter,
     [[https://tools.ietf.org/html/rfc5988#section-3 section-3]] states that it
@@ -18,14 +18,18 @@ final case class Ref private (uri: String, rel: Rel, params: List[Param]) {
 
 object Ref {
 
+  /** Construct a `link-value` from a URI, its relation to the resource, and
+      any additional parameters as `link-param` values. */
   def apply(uri: String, rel: Rel, params: Param*): Ref = {
     val (actualRel, _, actualParams) =
       params.foldLeft((rel, Set.empty[Param.Type], List.empty[Param])) {
         case ((r, pt, ps), p: Rel) =>
           (r :+ p, pt, ps)
         case ((r, pt, ps), Param.NonRepeatable(p)) =>
-          if (! pt.contains(p.paramType)) (r, pt + p.paramType, p :: ps)
-          else (r, pt, ps)
+          if (! pt.contains(p.paramType))
+            (r, pt + p.paramType, p :: ps)
+          else
+            (r, pt, ps)
         case ((r, pt, ps), p) =>
           (r, pt, p :: ps)
       }
