@@ -88,6 +88,7 @@ object QueryParams {
 
 /** Fined-grained error reporting for arbitrarily many failing parameters.
  * Import QParams._ to use; see ParamsSpec for examples. */
+@deprecated("This validation scheme is deprecated, use Directives instead", since="0.8.3")
 object QParams {
   type Log[E] = List[Fail[E]]
   type QueryFn[E,A] = (Params.Map, Option[String], Log[E]) =>
