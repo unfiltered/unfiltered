@@ -1,28 +1,16 @@
 package unfiltered.response
 
-case class ResponseHeader(name: String, values: Iterable[String]) extends Responder[Any] {
-  def respond(res: HttpResponse[Any]) {
-    values.foreach { v => res.header(name, v) } 
-  }
-}
-
-class HeaderName(val name: String) {
-  def apply(value: String*) = ResponseHeader(name, value)
-}
-
 // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.10
 
 object AcceptRanges extends HeaderName("Accept-Ranges")
 object Age extends HeaderName("Age")
 object Allow extends HeaderName("Allow")
 object CacheControl extends HeaderName("Cache-Control")
-object Connection extends HeaderName("Connection")
 object ContentDisposition extends HeaderName("Content-Disposition")
 object ContentEncoding extends HeaderName("Content-Encoding") {
   val GZip = apply("gzip")
 }
 object ContentLanguage extends HeaderName("Content-Language")
-object ContentLength extends HeaderName("Content-Length")
 object ContentLocation extends HeaderName("Content-Location")
 object ContentMD5 extends HeaderName("Content-MD5")
 object ContentRange extends HeaderName("Content-Range")

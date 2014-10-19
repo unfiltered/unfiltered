@@ -10,7 +10,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketFrame
 import unfiltered.Async
 import unfiltered.netty.{ ExceptionHandler, ReceivedMessage, RequestBinding, ServerErrorResponse }
 import unfiltered.request.HttpRequest
-import unfiltered.response._ // for intent.onPass(...) lift
+import unfiltered.response.Pass
 
 object Plan {
   /** Note: The only return object a channel plan acts on is Pass */
@@ -34,7 +34,7 @@ trait Plan extends RequestPlan {
 trait RequestPlan extends ChannelInboundHandlerAdapter with ExceptionHandler {
   def requestIntent: Plan.Intent
   private lazy val guardedIntent =
-    requestIntent.onPass(
+    Pass.onPass(requestIntent,
       { req: HttpRequest[ReceivedMessage] =>
         req.underlying.context.fireChannelRead(req.underlying.message) }
     )
