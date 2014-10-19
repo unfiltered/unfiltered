@@ -23,7 +23,6 @@ object MacAuthorization {
   val MacKey = "mac"
 
   object MacHeader {
-    import QParams._
     val NonceFormat = """^(\d+)[:](\S+)$""".r
     val KeyVal = """(\w+)="([\w|=|:|\/|.|%|-|+]+)" """.trim.r
     val keys = Id :: Nonce :: BodyHash :: Ext :: MacKey :: Nil
@@ -31,23 +30,19 @@ object MacAuthorization {
 
     def unapply(hvals: List[String]) = hvals match {
       case x :: xs if x startsWith headerSpace =>
-        val map = Map(hvals map { _.replace(headerSpace, "") } flatMap {
-          case KeyVal(k, v) if(keys.contains(k)) => Seq((k -> Seq(v)))
+        val headers = Map(hvals map { _.replace(headerSpace, "") } flatMap {
+          case KeyVal(k, v) if(keys.contains(k)) => Seq((k -> v))
           case e =>
             Nil
         }: _*)
-        val expect = for {
-          id <- lookup(Id) is nonempty("id is empty") is required("id is required")
-          nonce <- lookup(Nonce) is nonempty("nonce is empty") is required("nonce is required") is
-            pred({NonceFormat.findFirstIn(_).isDefined}, _ + " is an invalid format")
-          bodyhash <- lookup(BodyHash) is optional[String, String]
-          ext <- lookup(Ext) is optional[String, String]
-          mac <- lookup(MacKey) is nonempty("mac is nempty") is required("mac is required")
+        for {
+          id <- headers.get(Id) if !id.isEmpty
+          nonce <- headers.get(Nonce) if NonceFormat.findFirstIn(nonce).isDefined
+          bodyhash <- Some(headers.get(BodyHash))
+          ext <- Some(headers.get(Ext))
+          mac <- headers.get(MacKey) if !mac.isEmpty
         } yield {
-          Some(id.get, nonce.get, bodyhash.get, ext.get, mac.get)
-        }
-        expect(map) orFail { f =>
-          None
+          (id, nonce, bodyhash, ext, mac)
         }
       case _ => None
     }
