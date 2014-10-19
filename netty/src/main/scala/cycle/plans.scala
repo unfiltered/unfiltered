@@ -46,7 +46,7 @@ trait Plan extends ChannelInboundHandlerAdapter
     }
   }
 
-  private lazy val guardedIntent = intent.fold(
+  private lazy val guardedIntent = Pass.fold(intent,
     (req: HttpRequest[ReceivedMessage]) =>
       req.underlying.context.fireChannelRead(req.underlying.message),
     (req: HttpRequest[ReceivedMessage],

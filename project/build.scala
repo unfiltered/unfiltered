@@ -50,13 +50,13 @@ object Unfiltered extends Build {
             oauth2, agents, directives)
 
   lazy val core: Project =
-    module("core")()
+    module("core")().dependsOn(util)
 
   lazy val library: Project =
     module("unfiltered")(
       dirName = "library",
       projectId = "unfiltered"
-   ).dependsOn(util, core)
+   ).dependsOn(core)
 
   lazy val directives =
     module("directives")().dependsOn(library)
@@ -89,9 +89,9 @@ object Unfiltered extends Build {
   lazy val nettyServer =
     module("netty-server")(
       srcPath = "unfiltered/netty"
-    ).dependsOn(netty, util)
+    ).dependsOn(netty, library)
 
-  lazy val netty = module("netty")().dependsOn(library)
+  lazy val netty = module("netty")().dependsOn(core)
 
   lazy val specs2Helpers =
     module("specs2")().dependsOn(filters, jetty, nettyServer)
