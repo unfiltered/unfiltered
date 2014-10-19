@@ -43,22 +43,25 @@ object Unfiltered extends Build {
             file("."),
             settings = Defaults.defaultSettings ++ Common.settings
     ).aggregate(
-            library, filters, filtersAsync , uploads, filterUploads,
+            core, library, filters, filtersAsync , uploads, filterUploads,
             nettyUploads, util, jetty,
             jettyAjpProject, netty, nettyServer, json4s,
             specs2Helpers, scalaTestHelpers, websockets, oauth,  mac,
             oauth2, agents, directives)
 
+  lazy val core: Project =
+    module("core")()
+
   lazy val library: Project =
     module("unfiltered")(
       dirName = "library",
       projectId = "unfiltered"
-   ).dependsOn(util)
+   ).dependsOn(util, core)
 
   lazy val directives =
     module("directives")().dependsOn(library)
 
-  lazy val filters = module("filter")().dependsOn(library)
+  lazy val filters = module("filter")().dependsOn(core)
 
   lazy val filtersAsync = module("filter-async")().dependsOn(filters)
 
@@ -104,7 +107,7 @@ object Unfiltered extends Build {
   lazy val websockets =
     module("netty-websockets")().dependsOn(nettyServer)
 
-  lazy val oauth = module("oauth")().dependsOn(jetty, filters)
+  lazy val oauth = module("oauth")().dependsOn(library, jetty, filters)
 
   lazy val mac = module("mac")().dependsOn(library)
 
