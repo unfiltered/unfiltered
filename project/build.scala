@@ -73,7 +73,7 @@ object Unfiltered extends Build {
   lazy val uploads =
     module("uploads")(
       srcPath = "unfiltered/request"
-    ).dependsOn(library)
+    ).dependsOn(core)
 
   lazy val filterUploads =
     module("filter-uploads")(
