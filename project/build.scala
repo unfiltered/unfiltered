@@ -31,8 +31,7 @@ object Unfiltered extends Build {
     dirName: String = moduleName,
     srcPath: String = "unfiltered/" + moduleName.replace("-","/")
   ) = Project(projectId, file(dirName),
-              settings = (Defaults.defaultSettings ++
-                          Common.settings ++
+              settings = (Common.settings ++
                           ls.Plugin.lsSettings ++
                           ciSettings ++
                           srcPathSetting(projectId, srcPath)
@@ -41,7 +40,7 @@ object Unfiltered extends Build {
   lazy val unfiltered =
     Project("unfiltered-all",
             file("."),
-            settings = Defaults.defaultSettings ++ Common.settings
+            settings = Common.settings
     ).aggregate(
             core, library, filters, filtersAsync , uploads, filterUploads,
             nettyUploads, util, jetty,

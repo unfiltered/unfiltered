@@ -23,7 +23,7 @@ object Common {
 
   def integrationTestDeps(sv: String) = (specs2Dep(sv) :: dispatchDeps) map { _ % "test" }
 
-  val settings: Seq[Setting[_]] = Seq(
+  val settings: Seq[Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "net.databinder",
 
     version := "0.8.3-SNAPSHOT",
