@@ -66,6 +66,23 @@ trait Messages {
   case class BadParam(msg: String) extends ResponseJoiner(msg)( messages =>
       BadRequest ~> ResponseString(messages.mkString(". "))
   )
+
+  /** Combined header and parameter input */
+  case class Inputs(request: HttpRequest[Any]) {
+    val headers = Authorization(request) match {
+       case Some(a) => OAuth.Header(a.split(","))
+       case _ => Map.empty[String, Seq[String]]
+    }
+    val Params(params) = request
+    val inputs = headers ++ params
+    def named(name: String) = inputs.get(name).flatMap(_.headOption)
+    def requiredNamed(name: String) =
+      (nonEmptyString ~> required).named(name, named(name))
+
+    val version =
+      (data.as.String.named(OAuth.Version, named(OAuth.Version).toSeq) orElse
+        failure(BadParam("invalid oauth version"))) filter (_.forall(_ == "1.0"))
+  }
 }
 
 trait DefaultMessages extends Messages {
@@ -79,29 +96,20 @@ trait Protected extends OAuthProvider with unfiltered.filter.Plan {
   import OAuth._
 
   def intent = Directive.Intent {
-    case Params(params) & request =>
-      val headers = Authorization(request) match {
-         case Some(a) => OAuth.Header(a.split(","))
-         case _ => Map.empty[String, Seq[String]]
-      }
-      val inputs = params ++ headers
-      def input(name: String) = inputs.get(name).flatMap(_.headOption)
-
-      def lookupRequired(name: String) =
-        nonEmptyString ~> required named (name, input(name))
+    case request =>
+      val in = Inputs(request)
 
       for {
-        oauth_consumer_key <- lookupRequired(ConsumerKey)
-        oauth_signature_method <- lookupRequired(SignatureMethod)
-        timestamp <- lookupRequired(Timestamp)
-        nonce <- lookupRequired(Nonce)
-        token <- lookupRequired(TokenKey)
-        signature <- lookupRequired(Sig)
-        version <- (data.as.String named(Version, input(Version).toSeq) orElse
-          failure(BadParam("invalid oauth version"))) if version.forall(_ == "1.0")
+        oauth_consumer_key <- in.requiredNamed(ConsumerKey)
+        oauth_signature_method <- in.requiredNamed(SignatureMethod)
+        timestamp <- in.requiredNamed(Timestamp)
+        nonce <- in.requiredNamed(Nonce)
+        token <- in.requiredNamed(TokenKey)
+        signature <- in.requiredNamed(Sig)
+        version <- in.version
         realm <- nonEmptyString named "realm"
       } yield {
-        protect(request.method, request.underlying.getRequestURL.toString, params ++ headers) match {
+        protect(request.method, request.underlying.getRequestURL.toString, in.inputs) match {
           case Failure(_, _) =>
             Unauthorized ~> WWWAuthenticate("OAuth realm=\"%s\"" format(realm match {
               case Some(value) => value
@@ -122,28 +130,19 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
 
   def intent = Directive.Intent {
     case POST(ContextPath(_, RequestTokenPath) & Params(params)) & request =>
-       val headers = Authorization(request) match {
-         case Some(a) => OAuth.Header(a.split(","))
-         case _ => Map.empty[String, Seq[String]]
-      }
-      val inputs = params ++ headers
-      def input(name: String) = inputs.get(name).flatMap(_.headOption)
-
-      def lookupRequired(name: String) =
-        nonEmptyString ~> required named (name, input(name))
+      val in = Inputs(request)
 
       for {
-        consumer_key <- lookupRequired(ConsumerKey)
-        oauth_signature_method <- lookupRequired(SignatureMethod)
-        timestamp <- lookupRequired(Timestamp)
-        nonce <- lookupRequired(Nonce)
-        callback <- lookupRequired(Callback)
-        signature <- lookupRequired(Sig)
-        version <- (data.as.String named(Version, input(Version).toSeq) orElse
-          failure(BadParam("invalid oauth version"))) if version.forall(_ == "1.0")
+        consumer_key <- in.requiredNamed(ConsumerKey)
+        oauth_signature_method <- in.requiredNamed(SignatureMethod)
+        timestamp <- in.requiredNamed(Timestamp)
+        nonce <- in.requiredNamed(Nonce)
+        callback <- in.requiredNamed(Callback)
+        signature <- in.requiredNamed(Sig)
+        version <- in.version
       } yield {
         // TODO how to extract the full url and not rely on underlying
-        requestToken(request.method, request.underlying.getRequestURL.toString, params ++ headers) match {
+        requestToken(request.method, request.underlying.getRequestURL.toString, in.inputs) match {
           case Failure(status, msg) => fail(status, msg)
           case resp: OAuthResponseWriter => resp ~> FormEncodedContent
         }
@@ -165,28 +164,19 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
       }
 
     case request @ POST(ContextPath(_, AccessTokenPath) & Params(params)) =>
-      val headers = Authorization(request) match {
-         case Some(a) => OAuth.Header(a.split(","))
-         case _ => Map.empty[String, Seq[String]]
-      }
-      val inputs = params ++ headers
-      def input(name: String) = inputs.get(name).flatMap(_.headOption)
-
-      def lookupRequired(name: String) =
-        nonEmptyString ~> required named (name, input(name))
+      val in = Inputs(request)
 
       for {
-        consumer_key <- lookupRequired(ConsumerKey)
-        oauth_signature_method <- lookupRequired(SignatureMethod)
-        timestamp <- lookupRequired(Timestamp)
-        nonce <- lookupRequired(Nonce)
-        token <- lookupRequired(TokenKey)
-        verifier <- lookupRequired(Verifier)
-        signature <- lookupRequired(Sig)
-        version <- (data.as.String named(Version, input(Version).toSeq) orElse
-          failure(BadParam("invalid oauth version"))) if version.forall(_ == "1.0")
+        consumer_key <- in.requiredNamed(ConsumerKey)
+        oauth_signature_method <- in.requiredNamed(SignatureMethod)
+        timestamp <- in.requiredNamed(Timestamp)
+        nonce <- in.requiredNamed(Nonce)
+        token <- in.requiredNamed(TokenKey)
+        verifier <- in.requiredNamed(Verifier)
+        signature <- in.requiredNamed(Sig)
+        version <- in.version
       } yield {
-        accessToken(request.method, request.underlying.getRequestURL.toString, params ++ headers) match {
+        accessToken(request.method, request.underlying.getRequestURL.toString, in.inputs) match {
           case Failure(code, msg) => fail(code, msg)
           case resp@AccessResponse(_, _) =>
             resp ~> FormEncodedContent
