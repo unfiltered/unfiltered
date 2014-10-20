@@ -104,7 +104,7 @@ object Unfiltered extends Build {
   lazy val websockets =
     module("netty-websockets")().dependsOn(nettyServer)
 
-  lazy val oauth = module("oauth")().dependsOn(jetty, filters)
+  lazy val oauth = module("oauth")().dependsOn(jetty, filters, directives)
 
   lazy val mac = module("mac")().dependsOn(library)
 
