@@ -70,10 +70,10 @@ extends (HttpRequest[T] => Result[R, A]) {
   def flatMap[TT <: T, RR >: R, B](f:A => Directive[TT, RR, B]):Directive[TT, RR, B] =
     Directive(r => run(r).flatMap(a => f(a)(r)))
 
-  def orElse[TT <: T, RR >: R, B >: A](next: => Directive[TT, RR, B]): Directive[TT, RR, B] =
+  def orElse[TT <: T, RR >: R, B >: A](next: => Directive[TT, RR, B]): FilterDirective[TT, RR, B] =
     new FilterDirective(r => run(r).orElse(next(r)), next)
 
-  def | [TT <: T, RR >: R, B >: A](next: => Directive[TT, RR, B]): Directive[TT, RR, B] =
+  def | [TT <: T, RR >: R, B >: A](next: => Directive[TT, RR, B]): FilterDirective[TT, RR, B] =
     orElse(next)
 
   def and[TT <: T, E, B, RF](other: => Directive[TT, JoiningResponseFunction[E,RF], B])
