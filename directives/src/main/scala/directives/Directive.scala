@@ -104,6 +104,7 @@ class FilterDirective[-T, +R, +A](
   run: HttpRequest[T] => Result[R, A],
   onEmpty: HttpRequest[T] => Result[R, A]
 ) extends Directive[T,R,A](run) {
+  def filter(filt: A => Boolean): Directive[T, R, A] = withFilter(filt)
   def withFilter(filt: A => Boolean): Directive[T, R, A] =
     new FilterDirective({ req =>
       run(req).flatMap { a =>
