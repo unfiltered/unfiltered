@@ -43,13 +43,6 @@ private [request] class SeqRequestHeader[T](val name: String)(parser: Iterator[S
   def apply[T](req: HttpRequest[T]) = parser(req.headers(name))
 }
 
-/** A header with a single value. Implementations of this extractor
- * will not match requests for which the header `name` is not present.*/
-private [request] class RequestHeader[A](val name: String)(parser: Iterator[String] => List[A]) extends RequestExtractor[A] {
-   def unapply[T](req: HttpRequest[T]) = parser(req.headers(name)).headOption
-   def apply[T](req: HttpRequest[T]) = parser(req.headers(name)).headOption
-}
-
 private [request] object DateValueParser extends (Iterator[String] => List[java.util.Date]) {
   import DateFormatting._
   def apply(values: Iterator[String]) =
@@ -60,11 +53,6 @@ private [request] object IntValueParser extends (Iterator[String] => List[Int]) 
    def tryInt(raw: String) = catching(classOf[NumberFormatException]).opt(raw.toInt)
    def apply(values: Iterator[String]) =
      values.toList.flatMap(tryInt)
-}
-
-private [request] object StringValueParser extends (Iterator[String] => List[String]) {
-  def apply(values: Iterator[String]) =
-    values.toList
 }
 
 private [request] object UriValueParser extends (Iterator[String] => List[java.net.URI]) {
@@ -126,8 +114,6 @@ class DateHeader(name: String) extends RequestHeader(name)(DateValueParser)
 class RepeatableHeader(name: String) extends SeqRequestHeader(name)(SeqValueParser)
 /** Header whose value should be a valid URI. */
 class UriHeader(name: String) extends RequestHeader(name)(UriValueParser)
-/** Header whose value can be any string. */
-class StringHeader(name: String) extends RequestHeader(name)(StringValueParser)
 /** Header whose value should be an integer. (Is stored in an Int.) */
 class IntHeader(name: String) extends RequestHeader(name)(IntValueParser)
 /* Header where the value needs to be sorted by the qualifier attribute. */
@@ -155,7 +141,6 @@ object RequestContentEncoding extends ConnegHeader("Content-Encoding") {
 
 object Authorization extends StringHeader("Authorization")
 object Connection extends StringHeader("Connection")
-object RequestContentType extends StringHeader("Content-Type")
 object Expect extends StringHeader("Expect")
 object From extends StringHeader("From")
 object Host extends StringHeader("Host")
@@ -175,18 +160,6 @@ object Via extends RepeatableHeader("Via")
 object XForwardedFor extends RepeatableHeader("X-Forwarded-For")
 object XForwardedPort extends IntHeader("X-Forwarded-Port")
 object XForwardedProto extends StringHeader("X-Forwarded-Proto")
-
-/** Extracts the charset value from the Content-Type header, if present */
-object Charset {
-  import unfiltered.util.MIMEType
-  def unapply[T](req: HttpRequest[T]) = {
-    for {
-      MIMEType(mimeType) <- RequestContentType(req)
-      charset <- mimeType.params.get("charset")
-    } yield charset
-  }
-  def apply[T](req: HttpRequest[T]) = unapply(req)
-}
 
 /** Extracts hostname and port separately from the Host header, setting
  * a default port of 80 or 443 when none is specified */

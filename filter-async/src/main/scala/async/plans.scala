@@ -3,7 +3,7 @@ package unfiltered.filter.async
 import org.eclipse.jetty.continuation.ContinuationSupport
 import org.eclipse.jetty.continuation.Continuation
 import unfiltered.filter.{AsyncBinding,RequestBinding,ResponseBinding}
-import unfiltered.response.{NotFound, Pass}
+import unfiltered.response.Pass
 import unfiltered.request.HttpRequest
 import javax.servlet.{Filter, FilterConfig, FilterChain, ServletRequest, ServletResponse}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
