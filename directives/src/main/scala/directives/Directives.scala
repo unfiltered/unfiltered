@@ -14,9 +14,9 @@ trait Directives {
    *  is required to satisfy an intent's interface but all requests are acceptable */
   def success[A](value:A) = result[Nothing, A](Success(value))
 
-  def failure[R](r:ResponseFunction[R]) = result[ResponseFunction[R], Nothing](Failure(r))
+  def failure[R](r:R) = result[R, Nothing](Failure(r))
 
-  def error[R](r:ResponseFunction[R]) = result[ResponseFunction[R], Nothing](Error(r))
+  def error[R](r:R) = result[R, Nothing](Error(r))
 
   object commit extends Directive[Any, Nothing, Unit](_ => Success(())){
     override def flatMap[T, R, A](f:Unit => Directive[T, R, A]):Directive[T, R, A] =
