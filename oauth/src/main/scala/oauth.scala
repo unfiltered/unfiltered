@@ -100,14 +100,23 @@ trait Protected extends OAuthProvider with unfiltered.filter.Plan {
       val in = Inputs(request)
 
       for {
-        oauth_consumer_key <- in.requiredNamed(ConsumerKey)
-        oauth_signature_method <- in.requiredNamed(SignatureMethod)
-        timestamp <- in.requiredNamed(Timestamp)
-        nonce <- in.requiredNamed(Nonce)
-        token <- in.requiredNamed(TokenKey)
-        signature <- in.requiredNamed(Sig)
-        version <- in.version
-        realm <- nonEmptyString named "realm"
+        ( oauth_consumer_key &
+          oauth_signature_method &
+          timestamp &
+          nonce &
+          token &
+          signature &
+          version &
+          realm
+        ) <-
+          in.requiredNamed(ConsumerKey) &
+          in.requiredNamed(SignatureMethod) &
+          in.requiredNamed(Timestamp) &
+          in.requiredNamed(Nonce) &
+          in.requiredNamed(TokenKey) &
+          in.requiredNamed(Sig) &
+          in.version &
+          (nonEmptyString named "realm")
       } yield {
         protect(request.method, request.underlying.getRequestURL.toString, in.inputs) match {
           case Failure(_, _) =>
@@ -133,13 +142,21 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
       val in = Inputs(request)
 
       for {
-        consumer_key <- in.requiredNamed(ConsumerKey)
-        oauth_signature_method <- in.requiredNamed(SignatureMethod)
-        timestamp <- in.requiredNamed(Timestamp)
-        nonce <- in.requiredNamed(Nonce)
-        callback <- in.requiredNamed(Callback)
-        signature <- in.requiredNamed(Sig)
-        version <- in.version
+        ( consumer_key &
+          oauth_signature_method &
+          timestamp &
+          nonce &
+          callback &
+          signature &
+          version
+        ) <-
+          in.requiredNamed(ConsumerKey) &
+          in.requiredNamed(SignatureMethod) &
+          in.requiredNamed(Timestamp) &
+          in.requiredNamed(Nonce) &
+          in.requiredNamed(Callback) &
+          in.requiredNamed(Sig) &
+          in.version
       } yield {
         // TODO how to extract the full url and not rely on underlying
         requestToken(request.method, request.underlying.getRequestURL.toString, in.inputs) match {
@@ -167,14 +184,23 @@ trait OAuthed extends OAuthProvider with unfiltered.filter.Plan {
       val in = Inputs(request)
 
       for {
-        consumer_key <- in.requiredNamed(ConsumerKey)
-        oauth_signature_method <- in.requiredNamed(SignatureMethod)
-        timestamp <- in.requiredNamed(Timestamp)
-        nonce <- in.requiredNamed(Nonce)
-        token <- in.requiredNamed(TokenKey)
-        verifier <- in.requiredNamed(Verifier)
-        signature <- in.requiredNamed(Sig)
-        version <- in.version
+        ( consumer_key &
+          oauth_signature_method &
+          timestamp &
+          nonce &
+          token &
+          verifier &
+          signature &
+          version
+        ) <-
+          in.requiredNamed(ConsumerKey) &
+          in.requiredNamed(SignatureMethod) &
+          in.requiredNamed(Timestamp) &
+          in.requiredNamed(Nonce) &
+          in.requiredNamed(TokenKey) &
+          in.requiredNamed(Verifier) &
+          in.requiredNamed(Sig) &
+          in.version
       } yield {
         accessToken(request.method, request.underlying.getRequestURL.toString, in.inputs) match {
           case Failure(code, msg) => fail(code, msg)
