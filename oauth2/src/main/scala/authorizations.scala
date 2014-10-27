@@ -4,6 +4,7 @@ import unfiltered.request._
 import unfiltered.response._
 import unfiltered.request.{ HttpRequest => Req }
 import unfiltered.filter.request.ContextPath // work on removing this dep
+import unfiltered.directives._, Directives._
 
 import scala.language.reflectiveCalls
 import scala.language.implicitConversions
@@ -97,7 +98,6 @@ trait Authorized extends AuthorizationProvider
   with AuthorizationEndpoints with Formatting
   with ValidationMessages with Flows
   with unfiltered.filter.Plan {
-  import QParams._
   import OAuthorization._
 
   /** Syntactic sugar for appending query strings to paths */
@@ -138,6 +138,10 @@ trait Authorized extends AuthorizationProvider
   protected def spaceDecoder(raw: String) = raw.replace("""\s+"""," ").split(" ").toSeq
 
   protected def spaceEncoder(scopes: Seq[String]) = scopes.mkString("+")
+
+  val spaceDecoded = data.Interpreter[Option[String],Option[Seq[String]]](
+    _.map(spaceDecoder)
+  )
 
   def onAuthCode(
     req: HttpRequest[Any], responseType: Seq[String], clientId: String,
@@ -257,32 +261,16 @@ trait Authorized extends AuthorizationProvider
           errorResponder(error, desc, euri, state)
       }
 
-  def intent = {
-    case req @ ContextPath(_, AuthorizePath) & Params(params) =>
-      val expected = for {
-        responseType <- lookup(ResponseType) is required(requiredMsg(ResponseType)) is
-                          watch(_.map(spaceDecoder), e => "")
-        clientId     <- lookup(ClientId) is required(requiredMsg(ClientId))
-        redirectURI  <- lookup(RedirectURI) is required(requiredMsg(RedirectURI))
-        scope        <- lookup(Scope) is watch(_.map(spaceDecoder), e => "")
-        state        <- lookup(State) is optional[String, String]
-      } yield {
-        (redirectURI.get, responseType.get) match {
-          case (ruri, rtx) if(rtx contains(Code)) =>
-            onAuthCode(req, rtx, clientId.get, ruri, scope.getOrElse(Nil), state.get)
-          case (ruri, rtx) if(rtx contains(TokenKey)) =>
-            onToken(req, rtx, clientId.get, ruri, scope.getOrElse(Nil), state.get)
-          case (ruri, unsupported) =>
-            onUnsupportedAuth(req, unsupported, clientId.get, ruri, scope.getOrElse(Nil), state.get)
-        }
-      }
-
-      expected(params) orFail { errs =>
+  def intent = Directive.Intent {
+    case req @ ContextPath(_, AuthorizePath) =>
+      case class BadParam(req: HttpRequest[Any], msg: String)
+      extends ResponseJoiner(msg)({ errs =>
+        val Params(params) = req
         params(RedirectURI) match {
           case Seq(uri) =>
             val qs = qstr(Map(
               Error -> InvalidRequest,
-              ErrorDescription -> errs.map { _.error }.mkString(", ")
+              ErrorDescription -> errs.mkString(", ")
             ))
             params(ResponseType) match {
               case Seq(TokenKey) =>
@@ -293,75 +281,38 @@ trait Authorized extends AuthorizationProvider
             }
           case _ => auth.mismatchedRedirectUri(req)
         }
-      }
+      })
 
-    case req @ POST(ContextPath(_, TokenPath)) & Params(params) =>
-      val expected = for {
-        grantType     <- lookup(GrantType) is required(requiredMsg(GrantType))
-        code          <- lookup(Code) is optional[String, String]
-        clientId      <- lookup(ClientId) is required(requiredMsg(ClientId))
-        redirectURI   <- lookup(RedirectURI) is optional[String, String]
-        // clientSecret is not recommended to be passed as a parameter by instead
-        // encoded in a basic auth header http://tools.ietf.org/html/draft-ietf-oauth-v2-16#section-3.1
-        clientSecret  <- lookup(ClientSecret) is required(requiredMsg(ClientSecret))
-        refreshToken  <- lookup(RefreshToken) is optional[String, String]
-        scope         <- lookup(Scope) is watch(_.map(spaceDecoder), e => "")
-        userName      <- lookup(Username) is optional[String, String]
-        password      <- lookup(Password) is optional[String, String]
+      def required[T](req: HttpRequest[Any]) = data.Requiring[T].fail(name =>
+        BadParam(req, requiredMsg(name))
+      )
+
+      for {
+        responseType <- spaceDecoded ~> required(req) named ResponseType
+        clientId     <- required(req) named ClientId
+        redirectURI  <- required(req) named RedirectURI
+        scope        <- spaceDecoded named Scope
+        state        <- data.as.Option[String] named State
       } yield {
-
-        grantType.get match {
-
-          case ClientCredentials =>
-            onClientCredentials(clientId.get, clientSecret.get, scope.getOrElse(Nil))
-
-          case Password =>
-            (userName.get, password.get) match {
-              case (Some(u), Some(pw)) =>
-                onPassword(u, pw, clientId.get, clientSecret.get, scope.getOrElse(Nil))
-              case _ =>
-                errorResponder(
-                  InvalidRequest,
-                  (requiredMsg(Username) :: requiredMsg(Password) :: Nil).mkString(" and "),
-                  auth.errUri(InvalidRequest), None
-                )
-            }
-
-          case RefreshToken =>
-            refreshToken.get match {
-              case Some(rtoken) =>
-                onRefresh(rtoken, clientId.get, clientSecret.get, scope.getOrElse(Nil))
-              case _ => errorResponder(InvalidRequest, requiredMsg(RefreshToken), None, None)
-            }
-
-          case AuthorizationCode =>
-            (code.get, redirectURI.get) match {
-              case (Some(c), Some(r)) =>
-                onGrantAuthCode(c, r, clientId.get, clientSecret.get)
-              case _ =>
-                errorResponder(
-                  InvalidRequest,
-                  (requiredMsg(Code) :: requiredMsg(RedirectURI) :: Nil).mkString(" and "),
-                  auth.errUri(InvalidRequest), None
-                )
-            }
-          case unsupported =>
-            // note the oauth2 spec does allow for extension grant types,
-            // this implementation currently does not
-            errorResponder(
-              UnsupportedGrantType, "%s is unsupported" format unsupported,
-              auth.errUri(UnsupportedGrantType), None)
+        (redirectURI, responseType) match {
+          case (ruri, rtx) if(rtx contains(Code)) =>
+            onAuthCode(req, rtx, clientId, ruri, scope.getOrElse(Nil), state)
+          case (ruri, rtx) if(rtx contains(TokenKey)) =>
+            onToken(req, rtx, clientId, ruri, scope.getOrElse(Nil), state)
+          case (ruri, unsupported) =>
+            onUnsupportedAuth(req, unsupported, clientId, ruri, scope.getOrElse(Nil), state)
         }
       }
 
-    // here, we are combining requests parameters with basic authentication headers
-    // the preferred way of providing client credentials is through 
-    // basic auth but this is not required. The following folds basic auth data
-    // into the params ensuring there is no conflict in transports
-     val combinedParams = (
-       (Right(params): Either[String, Map[String, Seq[String]]]) /: BasicAuth(req)
-     )((a,e) => e match {
-       case (clientId, clientSecret) =>
+    case req @ POST(ContextPath(_, TokenPath)) & Params(params) =>
+      // here, we are combining requests parameters with basic authentication headers
+      // the preferred way of providing client credentials is through
+      // basic auth but this is not required. The following folds basic auth data
+      // into the params ensuring there is no conflict in transports
+      val combinedParams = (
+        (Right(params): Either[String, Map[String, Seq[String]]]) /: BasicAuth(req)
+      )((a,e) => e match {
+        case (clientId, clientSecret) =>
          val preferred = Right(
            a.right.get ++ Map(ClientId -> Seq(clientId), ClientSecret-> Seq(clientSecret))
          )
@@ -370,15 +321,85 @@ trait Authorized extends AuthorizationProvider
              if(id == clientId) preferred else Left("client ids did not match")
            case _ => preferred
          }
-       case _ => a
-     })
+        case _ => a
+      })
 
      combinedParams fold({ err =>
-       errorResponder(InvalidRequest, err, None, None)
+       failure(errorResponder(InvalidRequest, err, None, None))
      }, { mixed =>
-       expected(mixed) orFail { errs =>
-         errorResponder(InvalidRequest, errs.map { _.error }.mkString(", "), None, None)
-       }
+        case class BadParam(req: HttpRequest[Any], msg: String)
+        extends ResponseJoiner(msg)({ errs =>
+          errorResponder(InvalidRequest, errs.mkString(", "), None, None)
+        })
+
+        def required[T](req: HttpRequest[Any]) = data.Requiring[T].fail(name =>
+          BadParam(req, requiredMsg(name))
+        )
+        def named(name: String) = mixed.get(name).flatMap(_.headOption)
+
+        def requiredNamed(name: String) =
+          data.as.String ~> required(req) named (name, named(name).toSeq)
+
+        def optionNamed(name: String) =
+          data.as.String.nonEmpty.named(name, named(name))
+
+        for {
+          grantType     <- requiredNamed(GrantType)
+          code          <- optionNamed(Code)
+          clientId      <- requiredNamed(ClientId)
+          redirectURI   <- optionNamed(RedirectURI)
+          // clientSecret is not recommended to be passed as a parameter by instead
+          // encoded in a basic auth header http://tools.ietf.org/html/draft-ietf-oauth-v2-16#section-3.1
+          clientSecret  <- requiredNamed(ClientSecret)
+          refreshToken  <- optionNamed(RefreshToken)
+          scope         <- spaceDecoded.named(Scope, named(Scope))
+          userName      <- optionNamed(Username)
+          password      <- optionNamed(Password)
+        } yield {
+
+          grantType match {
+
+            case ClientCredentials =>
+              onClientCredentials(clientId, clientSecret, scope.getOrElse(Nil))
+
+            case Password =>
+              (userName, password) match {
+                case (Some(u), Some(pw)) =>
+                  onPassword(u, pw, clientId, clientSecret, scope.getOrElse(Nil))
+                case _ =>
+                  errorResponder(
+                    InvalidRequest,
+                    (requiredMsg(Username) :: requiredMsg(Password) :: Nil).mkString(" and "),
+                    auth.errUri(InvalidRequest), None
+                  )
+              }
+
+            case RefreshToken =>
+              refreshToken match {
+                case Some(rtoken) =>
+                  onRefresh(rtoken, clientId, clientSecret, scope.getOrElse(Nil))
+                case _ => errorResponder(InvalidRequest, requiredMsg(RefreshToken), None, None)
+              }
+
+            case AuthorizationCode =>
+              (code, redirectURI) match {
+                case (Some(c), Some(r)) =>
+                  onGrantAuthCode(c, r, clientId, clientSecret)
+                case _ =>
+                  errorResponder(
+                    InvalidRequest,
+                    (requiredMsg(Code) :: requiredMsg(RedirectURI) :: Nil).mkString(" and "),
+                    auth.errUri(InvalidRequest), None
+                  )
+              }
+            case unsupported =>
+              // note the oauth2 spec does allow for extension grant types,
+              // this implementation currently does not
+              errorResponder(
+                UnsupportedGrantType, "%s is unsupported" format unsupported,
+                auth.errUri(UnsupportedGrantType), None)
+          }
+        }
      })
   }
 }
