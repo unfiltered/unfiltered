@@ -16,9 +16,12 @@ object Port {
 object Browser {
   /** Tries to open a web browser session, returns Some(exception) on failure */
   def open(loc: String) =
-    util.Try(
+    try {
       java.awt.Desktop.getDesktop.browse(new java.net.URI(loc))
-    ).toOption
+      None
+    } catch {
+      case NonFatal(e) => Some(e)
+    }
 }
 
 /** Extractors that match on strings that can be converted to types. */
