@@ -18,7 +18,7 @@ import java.net.URL
 
 object Server extends PortBindings {  
   def bind(binding: PortBinding): Server =
-    Server(binding :: Nil, Nil, () => (), 1048576, Engine.Default)
+    Server(binding :: Nil, Nil, () => (), Chunker(1048576), Engine.Default)
 }
 
 /** A RunnableServer backed by a list of netty bootstrapped port bindings
@@ -31,7 +31,7 @@ case class Server(
   portBindings: List[PortBinding],
   handlers: List[() => ChannelHandler],
   beforeStopBlock: () => Unit,
-  chunkSize: Int,
+  chunker: () => Chunker,
   engine: Engine
 ) extends RunnableServer
   with PlanServer[ChannelHandler]
@@ -45,6 +45,9 @@ case class Server(
 
   def use(engine: Engine) =
     copy(engine = engine)
+
+  def use(customChunker: () => Chunker) = 
+    copy(chunker = customChunker)
 
   def bind(binding: PortBinding) =
     copy(portBindings = binding :: portBindings)
@@ -126,14 +129,14 @@ case class Server(
           .addLast("housekeeper", new HouseKeeper(channelGrp))
           .addLast("decoder", new HttpRequestDecoder)
           .addLast("encoder", new HttpResponseEncoder)
-          .addLast("chunker", new HttpObjectAggregator(chunkSize))
+          .addLast("chunker", chunker())
            /: handlers.reverse.zipWithIndex) {
             case (pipe, (handler, index)) =>
               pipe.addLast(s"handler-$index", handler())
           }.addLast("notfound", new NotFoundHandler)
     }
 
-  def chunked(size: Int) = copy(chunkSize = size)
+  def chunked(size: Int) = copy(chunker = Chunker(size))
 
   def resources(
     path: URL,

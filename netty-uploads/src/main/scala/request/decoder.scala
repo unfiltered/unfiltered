@@ -30,9 +30,6 @@ class PostDecoder(req: HttpRequest, useDisk: Boolean = true) {
       /** Would it be more useful to throw errors here? */
       case e: HttpPostRequestDecoder.ErrorDataDecoderException =>
         None
-      /** GET method. Can't create a decoder. */
-      case e: HttpPostRequestDecoder.IncompatibleDataDecoderException =>
-        None
     }
 
   /** Whether the request is multi-part */
