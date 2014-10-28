@@ -2,8 +2,9 @@ description := "Library for describing requests and responses"
 
 unmanagedClasspath in (LocalProject("unfiltered"), Test) <++=
   (fullClasspath in (local("specs2"), Compile),
-   fullClasspath in (local("filter"), Compile)) map { (s, f) =>
-    s ++ f
+   fullClasspath in (local("scalatest"), Compile),
+   fullClasspath in (local("filter"), Compile)) map { (s, st, f) =>
+    s ++ st ++ f
 }
 
 libraryDependencies <++= scalaVersion(v => Seq(
