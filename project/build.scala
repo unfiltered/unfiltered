@@ -46,7 +46,7 @@ object Unfiltered extends Build {
             nettyUploads, util, jetty,
             jettyAjpProject, netty, nettyServer, json4s,
             specs2Helpers, scalaTestHelpers, websockets, oauth,  mac,
-            oauth2, agents, directives, links)
+            oauth2, agents, directives)
 
   lazy val library: Project =
     module("unfiltered")(
@@ -110,6 +110,4 @@ object Unfiltered extends Build {
   lazy val oauth2 = module("oauth2")().dependsOn(jetty, filters, mac)
 
   lazy val nettyUploads = module("netty-uploads")().dependsOn(nettyServer, uploads)
-
-  lazy val links = module("links")().dependsOn(library)
 }

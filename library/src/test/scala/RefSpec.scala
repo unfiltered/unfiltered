@@ -1,7 +1,7 @@
 package unfiltered.response.link
 
 import org.scalacheck.Gen
-import org.scalatest.{ Matchers, PropSpec }
+import org.scalatest._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
 class RefSpec extends PropSpec with GeneratorDrivenPropertyChecks with Matchers {
