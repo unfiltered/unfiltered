@@ -33,13 +33,13 @@ object Params {
   /**
    * Base class for parameter extractor objects, may be extended inline with
    * chained ParamMapper objects. */
-  class Extract[E,T](f: Map => Option[T]) {
+  class Extract[T](f: Map => Option[T]) {
     def this(name: String, f: Seq[String] => Option[T]) =
       this({ params: Map => f(params(name)) })
     def unapply(params: Map) = f(params)
   }
   /** Construct a parameter predicate */
-  def pred[E,A](p: A => Boolean): Option[A] => Option[A] =
+  def pred[A](p: A => Boolean): Option[A] => Option[A] =
     opt => opt filter p
 
   def int(os: Option[String]) =
