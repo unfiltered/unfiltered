@@ -38,7 +38,7 @@ trait Syntax extends Directives {
   implicit def defQueryParams(q:QueryParams.type) =
     queryParams
 
-  implicit def defExtract[A](Ex:Params.Extract[Nothing, A]) =
+  implicit def defExtract[A](Ex:Params.Extract[A]) =
     when{ case Params(Ex(a)) => a } orElse BadRequest
 
   implicit def defPathIntent(p:Path.type) = PathIntentions
