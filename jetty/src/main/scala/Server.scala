@@ -1,15 +1,17 @@
 package unfiltered.jetty
 
+import org.eclipse.jetty.server.{NCSARequestLog, Handler}
 import unfiltered.util.{ PlanServer, RunnableServer }
 import javax.servlet.Filter
 
-import org.eclipse.jetty.server.handler.ContextHandlerCollection
+import org.eclipse.jetty.server.handler.{ContextHandlerCollection, RequestLogHandler, HandlerCollection}
 
 /** Holds port bindings for selected ports and interfaces. The
   * PortBindings trait provides convenience methods for bindings. */
 case class Server(
   portBindings: List[PortBinding],
-  contextAdders: List[ContextAdder]
+  contextAdders: List[ContextAdder],
+  requestLogging: Option[RequestLogging] = None
 ) extends RunnableServer
     with PlanServer[Filter]
     with PortBindings {
@@ -36,8 +38,24 @@ case class Server(
     val contextHandlers = new ContextHandlerCollection
     for (adder <- contextAdders.reverseIterator)
       adder.addToParent(contextHandlers)
-    server.setHandler(contextHandlers)
+    server.setHandler(withLogging(contextHandlers, requestLogging))
     server
+  }
+
+  private def withLogging(contextHandlers: ContextHandlerCollection,
+                          requestLogging: Option[RequestLogging]) = {
+    requestLogging.fold[Handler](
+      contextHandlers)(rl => {
+      val handlers = new HandlerCollection()
+      val requestLogHandler = new RequestLogHandler()
+      val requestLog = new NCSARequestLog(rl.filename)
+      requestLog.setRetainDays(rl.retainDays);
+      requestLog.setExtended(rl.extended);
+      requestLog.setLogTimeZone(rl.timezone);
+      requestLogHandler.setRequestLog(requestLog);
+      handlers.setHandlers(Array(requestLogHandler, contextHandlers))
+      handlers
+    })
   }
 
   /** Add a servlet context with the given path */
@@ -57,6 +75,16 @@ case class Server(
 
   /** Add a resource path to the original, root context */
   def resources(path: java.net.URL) = originalContext(_.resources(path))
+
+  /** Configure global logging of requests to a logfile in Common or Extended log format.
+    * [[http://en.wikipedia.org/wiki/Category:Log_file_formats]] */
+  def requestLogging(filename: String,
+                     extended: Boolean = true,
+                     dateFormat: String = "dd/MMM/yyyy:HH:mm:ss Z",
+                     timezone: String = "GMT",
+                     retainDays: Int = 31) = copy(requestLogging = {
+    Some(RequestLogging(filename, extended, dateFormat, timezone, retainDays))
+  })
 
   /** Ports used by this server, reported by super-trait */
   def ports: Traversable[Int] = portBindings.reverse.map(_.port)
