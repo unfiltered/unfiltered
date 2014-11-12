@@ -3,16 +3,19 @@ package unfiltered.request
 
 import org.specs2.mutable._
 
+@deprecated("Deprecated until we remove its references to QParams", since="0.8.3")
 object ParamsSpecJetty
 extends Specification
 with unfiltered.specs2.jetty.Planned
 with ParamsSpec
 
+@deprecated("Deprecated until we remove its references to QParams", since="0.8.3")
 object ParamsSpecNetty
 extends Specification
 with unfiltered.specs2.netty.Planned
 with ParamsSpec
 
+@deprecated("Deprecated until we remove its references to QParams", since="0.8.3")
 trait ParamsSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
