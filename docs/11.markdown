@@ -1,0 +1,30 @@
+Jetty Extras
+------------
+
+### Serving Resources from a relative path
+
+Sometimes, you'll want to serve resources from a relative path, such as a sibling directory, 
+for example located at `../client`. But paths containing `..` are considered aliased and  disallowed by default by Jetty,
+as described in this [policy](http://www.eclipse.org/jetty/documentation/current/serving-aliased-files.html).
+
+If you've evaluated the security risks described in the link above, and wish to enable aliases in paths, you can do so 
+with `allowAliases(true)`, eg:
+
+```scala
+unfiltered.jetty.Server.http(8080).
+      context("/client"){ ctx: ContextAdder =>
+      ctx.resources(new java.net.URL(
+        """file:../client"""
+      )).allowAliases(true)
+      }.plan(myPlan).run()
+```
+
+### Enabling Request Logs
+
+Jetty can be configured to log all requests in Common or Extended formats with `requestLogging`. This is a global, not per-context, 
+[setting](http://www.eclipse.org/jetty/documentation/current/configuring-jetty-request-logs.html). 
+At minimum, you need to specify where to log to:
+
+```scala
+unfiltered.jetty.Server.http(8080).plan(myPlan).requestLogging(s"/tmp/access.log").run()
+```
