@@ -53,7 +53,7 @@ case class Server(
       requestLog.setExtended(rl.extended);
       requestLog.setLogTimeZone(rl.timezone);
       requestLogHandler.setRequestLog(requestLog);
-      handlers.setHandlers(Array(requestLogHandler, contextHandlers))
+      handlers.setHandlers(Array(contextHandlers, requestLogHandler))
       handlers
     })
   }
