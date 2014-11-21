@@ -66,10 +66,10 @@ class StreamedFileWrapper(fstm: fu.FileItemStream) extends AbstractStreamedFile
 object MultiPartParams extends TupleGenerator {
 
   object Streamed extends StreamedExtractor[HttpRequest[HttpServletRequest]] {
-    import fu.{FileItemIterator, FileItemStream}
+    import fu.FileItemStream
     import fu.util.Streams
     def apply(req: HttpRequest[HttpServletRequest]) = {
-      def items = new ServletFileUpload().getItemIterator(req.underlying).asInstanceOf[FileItemIterator]
+      def items = new ServletFileUpload().getItemIterator(req.underlying)
       /** attempt to extract the first named param from the stream */
       def extractParam(name: String): Seq[String] = {
          items.find(f => f.getFieldName == name && f.isFormField) match {
@@ -112,8 +112,9 @@ object MultiPartParams extends TupleGenerator {
       val name: String,
       val sizeThreshold: Int) extends fu.FileItem {
 
-      import java.io.{InputStream, ByteArrayInputStream,
-        OutputStream, ByteArrayOutputStream}
+      import java.io.{InputStream, ByteArrayInputStream, ByteArrayOutputStream}
+
+      var headers: fu.FileItemHeaders = new fu.util.FileItemHeadersImpl
 
       var cache: Option[Array[Byte]] = None
       val out = new ByteArrayOutputStream()
@@ -126,6 +127,7 @@ object MultiPartParams extends TupleGenerator {
 
       override def getContentType = contentType
       override def getFieldName = fieldName
+      override def getHeaders = headers
       override def getInputStream: InputStream = new ByteArrayInputStream(get)
       override def getName = name
       override def getOutputStream = out
@@ -136,6 +138,7 @@ object MultiPartParams extends TupleGenerator {
       override def isInMemory = true
       override def setFieldName(value: String) { fieldName = value }
       override def setFormField(state: Boolean) { formField = state }
+      override def setHeaders(value: fu.FileItemHeaders) { headers = value }
       override def write(file: JFile) { sys.error("File writing is not permitted") }
     }
 
@@ -153,17 +156,16 @@ object MultiPartParams extends TupleGenerator {
 
   trait AbstractDisk extends AbstractDiskExtractor[HttpRequest[HttpServletRequest]] {
     import fu.{FileItemFactory, FileItem => ACFileItem}
-    import java.util.{Iterator => JIterator}
-    import fu.disk.{DiskFileItemFactory}
+    import fu.disk.DiskFileItemFactory
 
      /** @return a configured FileItemFactory to parse a request */
     def factory(writeAfter: Int, writeDir: JFile): FileItemFactory =
       new DiskFileItemFactory(writeAfter, writeDir)
 
     def apply(req: HttpRequest[HttpServletRequest]) = {
-      val items =  new ServletFileUpload(factory(memLimit, tempDir)).parseRequest(
-        req.underlying
-      ).iterator.asInstanceOf[JIterator[ACFileItem]]
+      val items =  new ServletFileUpload(factory(memLimit, tempDir))
+        .parseRequest(req.underlying).iterator
+
       val (params, files) = genTuple[String, DiskFileWrapper, ACFileItem](items) ((maps, item) =>
         if(item.isFormField) (maps._1 + (item.getFieldName -> (item.getString :: maps._1(item.getFieldName))), maps._2)
         else (maps._1, maps._2 + (item.getFieldName -> (new DiskFileWrapper(item) :: maps._2(item.getFieldName))))

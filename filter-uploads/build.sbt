@@ -5,5 +5,5 @@ unmanagedClasspath in (local("filter-uploads"), Test) <++=
 
 libraryDependencies <++= scalaVersion(v => Seq(
   Common.servletApiDep,
-  "commons-fileupload" % "commons-fileupload" % "1.2.1"
+  "commons-fileupload" % "commons-fileupload" % "1.3.1"
 ) ++ Common.integrationTestDeps(v))
