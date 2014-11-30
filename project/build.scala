@@ -44,7 +44,7 @@ object Unfiltered extends Build {
     ).aggregate(
             library, filters, filtersAsync , uploads, filterUploads,
             nettyUploads, util, jetty,
-            jettyAjpProject, jetty9, netty, nettyServer, json4s,
+            jettyAjpProject, netty, nettyServer, json4s,
             specs2Helpers, scalaTestHelpers, websockets, oauth,  mac,
             oauth2, agents, directives)
 
@@ -81,8 +81,6 @@ object Unfiltered extends Build {
   lazy val jetty = module("jetty")().dependsOn(util)
 
   lazy val jettyAjpProject = module("jetty-ajp")().dependsOn(jetty)
-
-  lazy val jetty9 = module("jetty9")().dependsOn(util)
 
   lazy val nettyServer =
     module("netty-server")(

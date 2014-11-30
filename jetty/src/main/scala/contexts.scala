@@ -13,14 +13,12 @@ trait ContextAdder {
   @deprecated("Use `plan(filter)`", "0.8.1")
   def filter(filter: Filter) = plan(filter)
   def resources(path: java.net.URL): ContextAdder
-  def allowAliases(aliases: Boolean): ContextAdder
 }
 
 case class DefaultServletContextAdder(
   path: String,
   filterAdders: List[FilterAdder],
-  resourcePath: Option[java.net.URL],
-  aliases: Boolean = false
+  resourcePath: Option[java.net.URL]
 ) extends ContextAdder {
   def addToParent(parent: ContextHandlerCollection) = {
     val ctx = new ServletContextHandler(parent, path, false, false)
@@ -33,13 +31,9 @@ case class DefaultServletContextAdder(
 
     for (path <- resourcePath)
       ctx.setBaseResource(Resource.newResource(path))
-
-    ctx.setAliases(aliases)
   }
 
   def filterAdder(filter: FilterAdder) = copy(filterAdders = filter :: filterAdders)
 
   def resources(path: java.net.URL) = copy(resourcePath = Some(path))
-
-  def allowAliases(aliases: Boolean) = copy(aliases = aliases)
 }

@@ -1,7 +1,7 @@
 package unfiltered.scalatest.jetty
 
 import org.scalatest.{ Suite, Outcome }
-import unfiltered.jetty.{Http, Server}
+import unfiltered.jetty.Server
 import unfiltered.scalatest.Hosted
 
 trait Planned extends Served { self: Hosted =>
