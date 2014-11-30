@@ -7,19 +7,19 @@ import javax.servlet.http.HttpServletResponse
 trait AsyncBinding extends Async.Responder[HttpServletResponse] {
   self: RequestBinding =>
 
-  private[filter] val con: org.eclipse.jetty.continuation.Continuation
+  private[filter] val async: javax.servlet.AsyncContext
   private[filter] val filterChain: javax.servlet.FilterChain
 
   def respond(rf: ResponseFunction[HttpServletResponse]) {
     rf match {
       case Pass =>
-        filterChain.doFilter(self.underlying, con.getServletResponse)
+        filterChain.doFilter(self.underlying, async.getResponse)
       case rf =>
         rf(new ResponseBinding(
-          con.getServletResponse.asInstanceOf[HttpServletResponse]
+          async.getResponse.asInstanceOf[HttpServletResponse]
         ))
     }
-    con.complete
+    async.complete
   }
 
 }

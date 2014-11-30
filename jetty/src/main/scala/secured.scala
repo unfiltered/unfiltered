@@ -37,7 +37,6 @@ trait Ssl { self: JettyBase =>
 
   def sslPort: Int
   val sslMaxIdleTime = 90000
-  val sslHandshakeTimeout = 120000
   lazy val keyStore = tryProperty("jetty.ssl.keyStore")
   lazy val keyStorePassword = tryProperty("jetty.ssl.keyStorePassword")
 
@@ -45,11 +44,17 @@ trait Ssl { self: JettyBase =>
       setKeyStorePath(keyStore)
       setKeyStorePassword(keyStorePassword)
   }
-  val sslConn = new SslSocketConnector(sslContextFactory) {
-    setPort(sslPort)
-    setMaxIdleTime(sslMaxIdleTime)
-    setHandshakeTimeout(sslHandshakeTimeout)
-  }
+
+  val httpsConfig = new HttpConfiguration
+  httpsConfig.setSecurePort(sslPort)
+  httpsConfig.addCustomizer(new SecureRequestCustomizer)
+
+  val sslConn = new ServerConnector(underlying,
+    new SslConnectionFactory(sslContextFactory, "http/1.1"),
+    new HttpConnectionFactory(httpsConfig))
+  sslConn.setPort(sslPort)
+  sslConn.setIdleTimeout(sslMaxIdleTime)
+
   underlying.addConnector(sslConn)
 }
 
@@ -61,6 +66,6 @@ trait Ssl { self: JettyBase =>
 trait Trusted { self: Ssl =>
   lazy val trustStore = tryProperty("jetty.ssl.trustStore")
   lazy val trustStorePassword = tryProperty("jetty.ssl.trustStorePassword")
-  sslContextFactory.setTrustStore(trustStore)
+  sslContextFactory.setTrustStore(java.security.KeyStore.getInstance(trustStore))
   sslContextFactory.setTrustStorePassword(trustStorePassword)
 }

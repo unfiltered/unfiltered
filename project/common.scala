@@ -4,7 +4,7 @@ object Common {
   import Keys._
 
   val servletApiDep = "javax.servlet" % "javax.servlet-api" % "3.0.1" % "provided"
-  val jettyVersion = "8.1.13.v20130916"
+  val jettyVersion = "9.1.2.v20140210"
 
   def specs2Dep(sv: String) =
     sv.split("[.-]").toList match {

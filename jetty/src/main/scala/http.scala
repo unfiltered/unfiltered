@@ -7,7 +7,7 @@ import org.eclipse.jetty.server.handler.{
   ContextHandlerCollection, ResourceHandler}
 import org.eclipse.jetty.servlet.{
   FilterHolder, FilterMapping, ServletContextHandler, ServletHolder}
-import org.eclipse.jetty.server.bio.SocketConnector
+import org.eclipse.jetty.server.{HttpConfiguration, HttpConnectionFactory, ServerConnector}
 import org.eclipse.jetty.util.resource.Resource
 
 import java.util.EnumSet
@@ -28,7 +28,7 @@ object Http {
 case class Http(port: Int, host: String) extends JettyBase {
   type ServerBuilder = Http
   val url = "http://%s:%d/" format (host, port)
-  val conn = new SocketConnector()
+  val conn = new ServerConnector(underlying, new HttpConnectionFactory(new HttpConfiguration))
   conn.setPort(port)
   conn.setHost(host)
   underlying.addConnector(conn)
