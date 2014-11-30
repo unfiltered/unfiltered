@@ -33,13 +33,13 @@ object Params {
   /**
    * Base class for parameter extractor objects, may be extended inline with
    * chained ParamMapper objects. */
-  class Extract[E,T](f: Map => Option[T]) {
+  class Extract[T](f: Map => Option[T]) {
     def this(name: String, f: Seq[String] => Option[T]) =
       this({ params: Map => f(params(name)) })
     def unapply(params: Map) = f(params)
   }
   /** Construct a parameter predicate */
-  def pred[E,A](p: A => Boolean): Option[A] => Option[A] =
+  def pred[A](p: A => Boolean): Option[A] => Option[A] =
     opt => opt filter p
 
   def int(os: Option[String]) =
@@ -88,6 +88,7 @@ object QueryParams {
 
 /** Fined-grained error reporting for arbitrarily many failing parameters.
  * Import QParams._ to use; see ParamsSpec for examples. */
+@deprecated("This validation scheme is deprecated, use Directives instead", since="0.8.3")
 object QParams {
   type Log[E] = List[Fail[E]]
   type QueryFn[E,A] = (Params.Map, Option[String], Log[E]) =>

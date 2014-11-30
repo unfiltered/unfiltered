@@ -1,0 +1,15 @@
+### Enhancements, upgrades, refactorings
+
+* remove unused type parameters [#281](https://github.com/unfiltered/unfiltered/pull/281) by xuwei-k
+* update to latest version of netty [#280](https://github.com/unfiltered/unfiltered/pull/280) by softprops
+* Jetty supports for global request logging [#277](https://github.com/unfiltered/unfiltered/pull/277) by benhutchison
+* Deprecate `QParams` validation so that we can later remove it. Also includes refactorings of the mac, oauth, and oauth2 modules to use Directives. [#274](https://github.com/unfiltered/unfiltered/pull/274) by n8han
+* ContextAdder support for specifying aliases flag on ContextHandler [#271](https://github.com/unfiltered/unfiltered/pull/271) by benhutchison
+* Comprehensive Link support [#268](https://github.com/unfiltered/unfiltered/pull/268) by chrislewis
+* Implement equals() for unfiltered.response.ResponseFunction.andThen() [#260](https://github.com/unfiltered/unfiltered/pull/260) by benhutchison
+
+### Fixes
+
+* Browser.open should agree with its documentation & prior behavior. [#279](https://github.com/unfiltered/unfiltered/pull/279) by n8han 0.8.3
+* FilterDirective fixes [#276](https://github.com/unfiltered/unfiltered/pull/276) by n8han
+* Remove reference to deprecated `defaultSettings` in build. [#273](https://github.com/unfiltered/unfiltered/pull/273) by n8han

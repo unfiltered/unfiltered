@@ -31,8 +31,7 @@ object Unfiltered extends Build {
     dirName: String = moduleName,
     srcPath: String = "unfiltered/" + moduleName.replace("-","/")
   ) = Project(projectId, file(dirName),
-              settings = (Defaults.defaultSettings ++
-                          Common.settings ++
+              settings = (Common.settings ++
                           ls.Plugin.lsSettings ++
                           ciSettings ++
                           srcPathSetting(projectId, srcPath)
@@ -41,7 +40,7 @@ object Unfiltered extends Build {
   lazy val unfiltered =
     Project("unfiltered-all",
             file("."),
-            settings = Defaults.defaultSettings ++ Common.settings
+            settings = Common.settings
     ).aggregate(
             library, filters, filtersAsync , uploads, filterUploads,
             nettyUploads, util, jetty,
@@ -106,11 +105,11 @@ object Unfiltered extends Build {
   lazy val websockets =
     module("netty-websockets")().dependsOn(nettyServer)
 
-  lazy val oauth = module("oauth")().dependsOn(jetty, filters)
+  lazy val oauth = module("oauth")().dependsOn(jetty, filters, directives)
 
   lazy val mac = module("mac")().dependsOn(library)
 
-  lazy val oauth2 = module("oauth2")().dependsOn(jetty, filters, mac)
+  lazy val oauth2 = module("oauth2")().dependsOn(jetty, filters, mac, directives)
 
   lazy val nettyUploads = module("netty-uploads")().dependsOn(nettyServer, uploads)
 }
