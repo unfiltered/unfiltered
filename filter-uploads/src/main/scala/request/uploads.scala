@@ -1,22 +1,17 @@
 package unfiltered.filter.request
 
-import unfiltered.request._
-import unfiltered.request.{
-  MultiPartMatcher, MultipartData,AbstractDiskFile,
-  TupleGenerator, AbstractStreamedFile, StreamedExtractor,
-  AbstractDiskExtractor, DiskExtractor }
-
-import unfiltered.filter.util.IteratorConversions
+import unfiltered.request.{AbstractDiskExtractor, AbstractDiskFile, AbstractStreamedFile, DiskExtractor, HttpRequest, MultiPartMatcher, MultipartData, StreamedExtractor, TupleGenerator}
 import unfiltered.util.control.NonFatal
-import scala.util.control.Exception.allCatch
 
+import org.apache.commons.fileupload.{FileItem, FileItemFactory, FileItemHeaders, FileItemStream}
+import org.apache.commons.fileupload.disk.DiskFileItemFactory
+import org.apache.commons.fileupload.servlet.ServletFileUpload
+import org.apache.commons.fileupload.util.{FileItemHeadersImpl, Streams}
+
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File ⇒ JFile, InputStream}
 import javax.servlet.http.HttpServletRequest
 
-import org.apache.commons.{fileupload => fu}
-import fu.servlet.ServletFileUpload
-import java.io.{File => JFile}
-
-import IteratorConversions._
+import scala.util.control.Exception.allCatch
 
 /** Matches requests that have multipart content */
 object MultiPart extends MultiPartMatcher[HttpRequest[HttpServletRequest]] {
@@ -27,7 +22,7 @@ object MultiPart extends MultiPartMatcher[HttpRequest[HttpServletRequest]] {
 }
 
 /** Represents an uploaded file loaded into memory (and possibly written to disk) */
-class DiskFileWrapper(item: fu.FileItem) extends AbstractDiskFile {
+class DiskFileWrapper(item: FileItem) extends AbstractDiskFile {
   def write(out: JFile): Option[JFile] = try {
     item.write(out)
     Some(out)
@@ -43,7 +38,7 @@ class DiskFileWrapper(item: fu.FileItem) extends AbstractDiskFile {
 }
 
 /** Represents an uploaded file exposing a stream to read its contents */
-class StreamedFileWrapper(fstm: fu.FileItemStream) extends AbstractStreamedFile
+class StreamedFileWrapper(fstm: FileItemStream) extends AbstractStreamedFile
   with unfiltered.request.io.FileIO {
 
   def write(out: JFile): Option[JFile] = allCatch.opt {
@@ -66,8 +61,8 @@ class StreamedFileWrapper(fstm: fu.FileItemStream) extends AbstractStreamedFile
 object MultiPartParams extends TupleGenerator {
 
   object Streamed extends StreamedExtractor[HttpRequest[HttpServletRequest]] {
-    import fu.FileItemStream
-    import fu.util.Streams
+    import unfiltered.filter.util.IteratorConversions.acfi2si
+
     def apply(req: HttpRequest[HttpServletRequest]) = {
       def items = new ServletFileUpload().getItemIterator(req.underlying)
       /** attempt to extract the first named param from the stream */
@@ -110,11 +105,9 @@ object MultiPartParams extends TupleGenerator {
       val contentType: String,
       var formField: Boolean,
       val name: String,
-      val sizeThreshold: Int) extends fu.FileItem {
+      val sizeThreshold: Int) extends FileItem {
 
-      import java.io.{InputStream, ByteArrayInputStream, ByteArrayOutputStream}
-
-      var headers: fu.FileItemHeaders = new fu.util.FileItemHeadersImpl
+      var headers: FileItemHeaders = new FileItemHeadersImpl
 
       var cache: Option[Array[Byte]] = None
       val out = new ByteArrayOutputStream()
@@ -138,11 +131,11 @@ object MultiPartParams extends TupleGenerator {
       override def isInMemory = true
       override def setFieldName(value: String) { fieldName = value }
       override def setFormField(state: Boolean) { formField = state }
-      override def setHeaders(value: fu.FileItemHeaders) { headers = value }
+      override def setHeaders(value: FileItemHeaders) { headers = value }
       override def write(file: JFile) { sys.error("File writing is not permitted") }
     }
 
-    class ByteArrayFileItemFactory extends fu.FileItemFactory {
+    class ByteArrayFileItemFactory extends FileItemFactory {
       override def createItem(fieldName: String , contentType: String ,
                             isFormField: Boolean , fileName: String ) = new ByteArrayFileItem(
                               fieldName, contentType, isFormField, fileName, Int.MaxValue
@@ -155,8 +148,7 @@ object MultiPartParams extends TupleGenerator {
   }
 
   trait AbstractDisk extends AbstractDiskExtractor[HttpRequest[HttpServletRequest]] {
-    import fu.{FileItemFactory, FileItem => ACFileItem}
-    import fu.disk.DiskFileItemFactory
+    import unfiltered.filter.util.IteratorConversions.ji2si
 
      /** @return a configured FileItemFactory to parse a request */
     def factory(writeAfter: Int, writeDir: JFile): FileItemFactory =
@@ -166,7 +158,7 @@ object MultiPartParams extends TupleGenerator {
       val items =  new ServletFileUpload(factory(memLimit, tempDir))
         .parseRequest(req.underlying).iterator
 
-      val (params, files) = genTuple[String, DiskFileWrapper, ACFileItem](items) ((maps, item) =>
+      val (params, files) = genTuple[String, DiskFileWrapper, FileItem](items) ((maps, item) =>
         if(item.isFormField) (maps._1 + (item.getFieldName -> (item.getString :: maps._1(item.getFieldName))), maps._2)
         else (maps._1, maps._2 + (item.getFieldName -> (new DiskFileWrapper(item) :: maps._2(item.getFieldName))))
       )
