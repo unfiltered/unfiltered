@@ -140,6 +140,6 @@ case class Server(
     cacheSeconds: Int   = 60,
     passOnFail: Boolean = true) = {
     val resources = Resources(path, cacheSeconds, passOnFail)
-    this.plan(resources).makePlan(new ChunkedWriteHandler)
+    this.makePlan(new ChunkedWriteHandler).plan(resources)
   }
 }
