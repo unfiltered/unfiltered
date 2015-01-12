@@ -1,0 +1,8 @@
+* Fileupload dependency bump, with FileItemHeaders-support [#283][283]
+* Fix problem where jetty access logs record status 200 even for
+  non-200 requests [#284][284]
+* Reposition ChunkedWriteHandler to fix resource serving failure. [#286][286]
+
+[283]: https://github.com/unfiltered/unfiltered/pull/283
+[284]: https://github.com/unfiltered/unfiltered/pull/284
+[286]: https://github.com/unfiltered/unfiltered/pull/286
