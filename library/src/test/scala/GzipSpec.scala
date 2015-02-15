@@ -81,7 +81,7 @@ trait GZipSpec extends Specification with unfiltered.specs2.Hosted {
     "echo an zipped request" in {
       val msg = http((host / "echo")
         <:< Map("Content-Encoding" -> "gzip")
-        << bos.toByteArray as_str)
+        << ubos.toByteArray as_str)
       msg must_== expected
     }
     "pass an non-matching request" in {
