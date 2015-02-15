@@ -1,6 +1,7 @@
 package unfiltered.request
 
-import java.io.{InputStreamReader, Closeable}
+import java.io.InputStreamReader
+import unfiltered.util.IO
 
 import scala.io.Codec
 
@@ -22,7 +23,7 @@ object Body {
     bos.toByteArray
   }
   def string[T](req: HttpRequest[T])(implicit codec: Codec = Codec.UTF8) = {
-    loan(new InputStreamReader(req.inputStream, codec.charSet)) { reader =>
+    IO.use(new InputStreamReader(req.inputStream, codec.charSet)) { reader =>
       val writer = new java.io.StringWriter
       val ca = new Array[Char](4096)
       @scala.annotation.tailrec def read() {
@@ -33,10 +34,5 @@ object Body {
       read()
       writer.toString
     }
-  }
-  
-  def loan[C <: Closeable, B](c: => C)(f: (C) => B): B = {
-    val cached = c
-    try { f(cached) } finally { cached.close() }
   }
 }
