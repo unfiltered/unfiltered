@@ -34,7 +34,7 @@ case class Server(
   lazy val underlying = {
     val server = new org.eclipse.jetty.server.Server()
     for (binding <- portBindings.reverseIterator)
-      server.addConnector(binding.connector)
+      server.addConnector(binding.connector(server))
     val contextHandlers = new ContextHandlerCollection
     for (adder <- contextAdders.reverseIterator)
       adder.addToParent(contextHandlers)
