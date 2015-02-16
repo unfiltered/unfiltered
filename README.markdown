@@ -12,7 +12,7 @@ The core application library for Unfiltered. This module provides interfaces and
 
 ### filter
 
-Binds the core library to filters in the servlet 2.3 API.
+Binds the core library to filters in the servlet 3.0 API.
 
 ### filter-async
 

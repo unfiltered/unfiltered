@@ -36,11 +36,11 @@ object AsyncPlan extends unfiltered.filter.async.Plan  {
     }   
 }
 //then you can register this plan with jetty as usual
-unfiltered.jetty.Server.local(8080).plan(AsyncPlan).run()
+unfiltered.jetty.Server.http(8080).plan(AsyncPlan).run()
 ```
 
-> **Note:** `local(8080)` binds to the loopback network
-    interface. Alternately, `http(8080)` binds to all interfaces.
+> **Note:** Alternately, `local(8080)` binds to the loopback network
+    interface only. 
 
 #### Netty Channel Handlers (unfiltered-netty)
 
@@ -94,5 +94,5 @@ import unfiltered.response._
 val hello = unfiltered.netty.cycle.Planify {
   case _ => ResponseString("hello world")
 }
-unfiltered.netty.Server.local(8080).plan(hello).run()
+unfiltered.netty.Server.http(8080).plan(hello).run()
 ```
