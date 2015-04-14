@@ -3,7 +3,7 @@
 If you're handling HTTP POSTs, it's very possible that your browser or
 non-browser clients will send requests using
 [chunked transfer encoding][chunked]. This part of HTTP 1.1 is great
-for keeping messages short, but not so great for short short and
+for keeping messages short, but not so great for short and
 simple NIO servers.
 
 [chunked]: https://en.wikipedia.org/wiki/Chunked_transfer_encoding
