@@ -52,7 +52,7 @@ executor that consumes a limited amount of memory and blocks on
 incoming requests when that limit is reached. If you've defined a
 simple local base plan (like the `MyPlan` above), you can customize it
 later (ideally, before your server throws an out of memory exception)
-with with a memory-aware thread pool executor.
+with a memory-aware thread pool executor.
 
 ```scala
 trait MyPlan extends cycle.Plan with
