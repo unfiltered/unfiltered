@@ -7,8 +7,9 @@ Helps creating feature tests for Unfiltered apps with [scalatest](http://www.sca
 Here is a test written using this support. For a complete example see https://github.com/ppurang/unfiltered-scalatest-example
 
     class ExampleFeature extends FeatureSpec with unfiltered.scalatest.jetty.Served
+                                                  with unfiltered.scalatest.Hosted 
                                                   with GivenWhenThen with ShouldMatchers {
-      import dispatch._
+      import dispatch.classic._
 
       def setup = {
         _.filter(new App)
