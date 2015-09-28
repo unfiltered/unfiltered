@@ -7,10 +7,10 @@ unmanagedClasspath in (LocalProject("unfiltered"), Test) <++=
     s ++ st ++ f
 }
 
-libraryDependencies <++= scalaVersion(v => Seq(
-  "commons-codec" % "commons-codec" % "1.4",
-  Common.specs2Dep(v) % "test"
-))
+libraryDependencies <++= scalaVersion(v =>
+  "commons-codec" % "commons-codec" % "1.4" ::
+  Common.specs2Deps(v).map{_ % "test"}
+)
 
 libraryDependencies <<= (libraryDependencies, scalaVersion){
   (dependencies, scalaVersion) =>
