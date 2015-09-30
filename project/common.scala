@@ -6,14 +6,12 @@ object Common {
   val servletApiDep = "javax.servlet" % "javax.servlet-api" % "3.0.1" % "provided"
   val jettyVersion = "9.2.5.v20141112"
 
-  val specs2Version = "3.6.4"
-
-  def specs2Deps(sv: String) =
+  def specs2Dep(sv: String) =
     sv.split("[.-]").toList match {
-      case _ =>
-        "org.specs2" %% "specs2-core" % specs2Version ::
-        "org.specs2" %% "specs2-scalacheck" % specs2Version :: Nil
+      case "2" :: "9" :: _ => "org.specs2" %% "specs2" % "1.12.4.1"
+      case _ => "org.specs2" %% "specs2" % "2.3.11"
     }
+
 
   val dispatchVersion = "0.8.10"
   def dispatchDeps =
@@ -23,7 +21,7 @@ object Common {
   def dispatchOAuthDep =
     "net.databinder" %% "dispatch-oauth" % dispatchVersion
 
-  def integrationTestDeps(sv: String) = (specs2Deps(sv) ::: dispatchDeps) map { _ % "test" }
+  def integrationTestDeps(sv: String) = (specs2Dep(sv) :: dispatchDeps) map { _ % "test" }
 
   val settings: Seq[Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "net.databinder",

@@ -2,9 +2,7 @@ package unfiltered.specs2
 package jetty
 
 import unfiltered.specs2.Hosted
-import org.specs2.mutable.{Specification, SpecificationLike}
-import org.specs2.specification.core.Fragments
-import org.specs2.specification.Step
+import org.specs2.specification.{BaseSpecification, Step, Fragments}
 
 
 trait Planned extends Served {
@@ -14,7 +12,7 @@ trait Planned extends Served {
   def intent[A, B]: unfiltered.Cycle.Intent[A, B]
 }
 
-trait Served extends Specification with Hosted {
+trait Served extends Hosted with BaseSpecification {
 
   import unfiltered.jetty._
 
