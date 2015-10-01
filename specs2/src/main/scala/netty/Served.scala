@@ -2,9 +2,7 @@ package unfiltered.specs2.netty
 
 import unfiltered.netty.{ Server, ServerErrorResponse }
 import unfiltered.netty.cycle.{ DeferralExecutor, DeferredIntent, Plan }
-import org.specs2.mutable.{Specification, SpecificationLike}
-import org.specs2.specification.core.Fragments
-import org.specs2.specification.Step
+import org.specs2.specification.{ BaseSpecification, Fragments, Step }
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.util.ResourceLeakDetector
 
@@ -18,14 +16,14 @@ trait Served extends Started {
   lazy val server = setup(Server.http(port))
 }
 
-trait Started extends Specification with unfiltered.specs2.Hosted {
+trait Started extends unfiltered.specs2.Hosted with BaseSpecification {
 
   // Enables paranoid resource leak detection which reports where the leaked object was accessed recently,
   // at the cost of the highest possible overhead (for testing purposes only).
   ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID)
-
+	
   def server: Server
-
+  
   def after = {
     server.stop()
     server.destroy()
