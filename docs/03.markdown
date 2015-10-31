@@ -27,6 +27,8 @@ should provide a general purpose API that will work asynchronously on any servle
 (Continuations will also work in blocking mode with any servlet 2.5 container.)
 
 ```scala
+import unfiltered.request.{Path => UFPath}
+
 object AsyncPlan extends unfiltered.filter.async.Plan  {
     def intent = { 
       case GET(UFPath("/pass")) => Pass
