@@ -81,7 +81,9 @@ case class Server(
     Some(FileRequestLogging(filename, extended, dateFormat, timezone, retainDays))
   })
 
-  /** Configure global logging of requests to a logfile using logbackConfig. */
+  /** Configure global logging of requests to a logfile using logbackConfig in the class path.
+    * If you do not provide the filename, default of logback-access.xml will be used
+    * [[http://logback.qos.ch/access.html]] */
   def logbackRequestLogging(logbackConfigFileName: String = "logback-access.xml") = copy(requestLogging = {
     Some(LogbackRequestLogging(logbackConfigFileName))
   })
