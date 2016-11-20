@@ -9,7 +9,10 @@ unmanagedClasspath in (LocalProject("unfiltered"), Test) <++=
 
 libraryDependencies <++= scalaVersion(v => Seq(
   "commons-codec" % "commons-codec" % "1.4",
-  Common.specs2Dep(v) % "test"
+  Common.specs2Dep(v) % "test",
+  "org.scalacheck" %% "scalacheck" % "1.12.6" % "test",
+  "joda-time" % "joda-time" % "2.9.6" % "test",
+  "org.joda" % "joda-convert" % "1.8.1" % "test"
 ))
 
 libraryDependencies <<= (libraryDependencies, scalaVersion){

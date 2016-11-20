@@ -7,21 +7,11 @@ object Common {
   val jettyVersion = "9.2.5.v20141112"
 
   def specs2Dep(sv: String) =
-    sv.split("[.-]").toList match {
-      case "2" :: "9" :: _ => "org.specs2" %% "specs2" % "1.12.4.1"
-      case _ => "org.specs2" %% "specs2" % "2.3.11"
-    }
+    "org.specs2" %% "specs2-core" % "3.8.6"
 
+  def okHttp = "com.squareup.okhttp3" % "okhttp" % "3.4.2" :: Nil
 
-  val dispatchVersion = "0.8.10"
-  def dispatchDeps =
-    "net.databinder" %% "dispatch-mime" % dispatchVersion ::
-    "net.databinder" %% "dispatch-http" % dispatchVersion :: Nil
-
-  def dispatchOAuthDep =
-    "net.databinder" %% "dispatch-oauth" % dispatchVersion
-
-  def integrationTestDeps(sv: String) = (specs2Dep(sv) :: dispatchDeps) map { _ % "test" }
+  def integrationTestDeps(sv: String) = (specs2Dep(sv) :: okHttp) map { _ % "test" }
 
   val settings: Seq[Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "net.databinder",

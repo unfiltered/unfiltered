@@ -1,6 +1,6 @@
 package unfiltered.server
 
-import unfiltered.spec.SecureClient
+import unfiltered.specs2.SecureClient
 import org.specs2.mutable._
 
 object SslServerSpec extends Specification with unfiltered.specs2.Hosted with SecureClient {
@@ -10,18 +10,12 @@ object SslServerSpec extends Specification with unfiltered.specs2.Hosted with Se
   import unfiltered.request.{Path => UFPath}
   import unfiltered.jetty.Server
   import unfiltered.util.Port
-  import org.apache.http.client.ClientProtocolException
-
-  import dispatch.classic._
 
   // generated keystore for localhost
   // keytool -keystore keystore -alias unfiltered -genkey -keyalg RSA
   val keyStorePath = getClass.getResource("/keystore").getPath
   val keyStorePasswd = "unfiltered"
   val securePort = Port.any
-  val httpPort = Port.any
-
-  override val host = :/("localhost", httpPort)
 
   lazy val server = Server.https(
     securePort,
@@ -30,15 +24,12 @@ object SslServerSpec extends Specification with unfiltered.specs2.Hosted with Se
     keyStorePassword = keyStorePasswd
   ).plan(filt)
 
-  lazy val httpServer = Server.http(httpPort, "0.0.0.0").plan(filt)
-
-  override def xhttp[T](handler: Handler[T]): T =
-    super[SecureClient].xhttp(handler)
+  lazy val httpServer = Server.http(port, "0.0.0.0").plan(filt)
 
   step { server.start(); httpServer.start() }
 
   val filt = unfiltered.filter.Planify(secured.onPass(whatever))
-  def secured = 
+  def secured =
     unfiltered.kit.Secure.redir[Any,Any]( {
       case req @ UFPath(Seg("unprotected" :: Nil)) =>
         Pass
@@ -52,13 +43,13 @@ object SslServerSpec extends Specification with unfiltered.specs2.Hosted with Se
 
   "A Secure Server" should {
     "redirect and serve to secure requests" in {
-      https(host / "protected" as_str) must_== "true"
+      https(host / "protected").as_string must_== "true"
     }
     "explicit pass to insecure" in {
-      https(host / "unprotected" as_str) must_== "false"
+      https(host / "unprotected").as_string must_== "false"
     }
     "nonmatching pass to insecure" in {
-      https(host as_str) must_== "false"
+      https(host).as_string must_== "false"
     }
   }
 

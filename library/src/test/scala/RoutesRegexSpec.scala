@@ -48,19 +48,19 @@ trait RoutesRegexSpec extends Specification with unfiltered.specs2.Hosted {
 
   "Routes.specify" should {
     "match a path" in {
-      http(host / "widgets" as_str) must_==
+      http(host / "widgets").as_string must_==
         "allTheWidgets"
     }
     "match a parameter" in {
-      http(host / "widgets" / "123" as_str) must_==
+      http(host / "widgets" / "123").as_string must_==
         "widget:123"
     }
     "match a parameter and path" in {
-      http(host / "widgets" / "123" / "sprockets" as_str) must_==
+      http(host / "widgets" / "123" / "sprockets").as_string must_==
         "sprocketsOf:123"
     }
     "match two parameters" in {
-      http(host / "widgets" / "123" / "sprockets" / "456" as_str) must_==
+      http(host / "widgets" / "123" / "sprockets" / "456").as_string must_==
         "123:456"
     }
   }

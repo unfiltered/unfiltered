@@ -3,13 +3,11 @@ package unfiltered.filter.request
 import org.specs2.mutable._
 
 object UploadsSpec extends Specification with unfiltered.specs2.jetty.Served {
-  import java.io.{File => JFile,FileInputStream => FIS}
+  import java.io.{FileInputStream => FIS}
   import org.apache.commons.io.{IOUtils => IOU}
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath, _}
 
-  import dispatch.classic.mime.Mime._
-  import scala.io.Source
   import java.io.{File => JFile}
 
   class TestPlan extends unfiltered.filter.Plan {
@@ -91,32 +89,32 @@ object UploadsSpec extends Specification with unfiltered.specs2.jetty.Served {
     "handle file uploads written to disk" in {
       val file = new JFile(getClass.getResource("/upload-test.txt").toURI)
       file.exists must_==true
-      http(host / "disk-upload" <<* ("f", file, "text/plain") as_str) must_== "disk read file f named upload-test.txt with content type text/plain"
+      http(req(host / "disk-upload") <<* ("f", file, "text/plain")).as_string must_== "disk read file f named upload-test.txt with content type text/plain"
     }
     "handle writing file uploads written to disk" in {
       val file = new JFile(getClass.getResource("/upload-test.txt").toURI)
       file.exists must_==true
-      http(host / "disk-upload" / "write" <<* ("f", file, "text/plain") as_str) must_== "wrote disk read file f named upload-test.txt with content type text/plain with correct contents"
+      http(req(host / "disk-upload" / "write") <<* ("f", file, "text/plain")).as_string must_== "wrote disk read file f named upload-test.txt with content type text/plain with correct contents"
     }
     "handle file uploads streamed" in {
       val file = new JFile(getClass.getResource("/upload-test.txt").toURI)
       file.exists must_==true
-      http(host / "stream-upload" <<* ("f", file, "text/plain") as_str) must_== "stream read file f is named upload-test.txt with content type text/plain"
+      http(req(host / "stream-upload") <<* ("f", file, "text/plain")).as_string must_== "stream read file f is named upload-test.txt with content type text/plain"
     }
     "handle writing file uploads streamed" in {
       val file = new JFile(getClass.getResource("/upload-test.txt").toURI)
       file.exists must_==true
-      http(host / "stream-upload" / "write" <<* ("f", file, "text/plain") as_str) must_== "wrote stream read file f named upload-test.txt with content type text/plain with correct contents"
+      http(req(host / "stream-upload" / "write") <<* ("f", file, "text/plain")).as_string must_== "wrote stream read file f named upload-test.txt with content type text/plain with correct contents"
     }
     "handle file uploads all in memory" in {
       val file = new JFile(getClass.getResource("/upload-test.txt").toURI)
       file.exists must_==true
-      http(host / "mem-upload" <<* ("f", file, "text/plain") as_str) must_== "memory read file f is named upload-test.txt with content type text/plain"
+      http(req(host / "mem-upload") <<* ("f", file, "text/plain")).as_string must_== "memory read file f is named upload-test.txt with content type text/plain"
     }
     "not write memory read files" in {
       val file = new JFile(getClass.getResource("/upload-test.txt").toURI)
       file.exists must_==true
-      http(host / "mem-upload" / "write" <<* ("f", file, "text/plain") as_str) must_== "did not write memory read file f is named upload-test.txt with content type text/plain"
+      http(req(host / "mem-upload" / "write") <<* ("f", file, "text/plain")).as_string must_== "did not write memory read file f is named upload-test.txt with content type text/plain"
     }
   }
 }

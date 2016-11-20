@@ -1,7 +1,11 @@
 package unfiltered.request
 
+import java.nio.charset.StandardCharsets
+import java.util.zip.GZIPInputStream
+
+import okio.ByteString
 import org.specs2.mutable._
-import unfiltered.spec
+import okhttp3.{MediaType, RequestBody}
 
 object GzipSpecJetty
 extends Specification
@@ -24,37 +28,41 @@ trait GZipSpec extends Specification with unfiltered.specs2.Hosted {
 
   val message = "message"
 
-  def intent[A,B]: unfiltered.Cycle.Intent[A,B] = 
+  def intent[A,B]: unfiltered.Cycle.Intent[A,B] =
     unfiltered.kit.GZip {
       unfiltered.kit.GZip.Requests {
-        case UFPath(Seg("empty" :: Nil)) => Ok
-        case req @ UFPath(Seg("echo" :: Nil)) => 
-          new ResponseString(Body.string(req))
-        case UFPath(Seg("test" :: Nil)) => ResponseString(message)
+        case UFPath(Seg("empty" :: Nil)) => Ok ~> ResponseString("")
+        case req @ UFPath(Seg("echo" :: Nil)) => {
+          ResponseString(Body.string(req))
+        }
+        case req@UFPath(Seg("test" :: Nil)) => ResponseString(message)
       }
     }
 
+  def gzipDecode(response: okhttp3.Response) = {
+    val body = response.body()
+    try {
+      scala.io.Source.fromInputStream(new GZIPInputStream(body.byteStream())).mkString
+    } finally {
+      body.close()
+    }
+  }
+
   "GZip response kit should" should {
     "gzip-encode a response when accepts header is present" in {
-      val (resp, enc) = http((host / "test").gzip  >+ { req =>
-        (req as_str, req >:> { _("Content-Encoding") })
-      })
-      resp must_== message
-      enc must_== Set("gzip")
+      val resp = http(req(host / "test") <:< Map("Accept-Encoding" -> "gzip"))
+      resp.header("Content-Encoding") must_== "gzip"
+      gzipDecode(resp) must_== message
     }
     "gzip-encode an empty response when accepts header is present" in {
-      val (resp, enc) = http((host / "empty").gzip  >+ { req =>
-        (req as_str, req >:> { _("Content-Encoding") })
-      })
-      resp must_== ""
-      enc must_== Set("gzip")
+      val resp = http(req(host / "empty") <:< Map("Accept-Encoding" -> "gzip"))
+      resp.header("Content-Encoding") must_== "gzip"
+      gzipDecode(resp) must_== ""
     }
     "serve unencoded response when accepts header is not present" in {
-      val (resp, enc) = http((host / "test")  >+ { req =>
-        (req as_str, req >:> { _("Content-Encoding") })
-      })
-      resp must_== message
-      enc must_== Set.empty
+      val resp = http(req(host / "test"))
+      Option(resp.header("Content-Encoding")) must_== None
+      resp.as_string must_== message
     }
   }
   "GZip request kit should" should {
@@ -64,50 +72,46 @@ trait GZipSpec extends Specification with unfiltered.specs2.Hosted {
       val zipped = new GZOS(bos)
       zipped.write(expected.getBytes("iso-8859-1"))
       zipped.close()
-      bos
+      val arr = bos.toByteArray
+      ByteString.of(arr, 0, arr.length)
     }
     val ubos = {
       val ubos = new ByteArrayOutputStream
       val zipped = new GZOS(ubos)
       zipped.write(expected.getBytes("utf-8"))
       zipped.close()
-      ubos
+      val arr = ubos.toByteArray
+      ByteString.of(arr, 0, arr.length)
     }
 
     "echo an unencoded request" in {
-      val msg = http((host / "echo") << expected as_str)
+      val isobody = RequestBody.create(MediaType.parse("text/plain; charset=iso-8859-1"), expected.getBytes(StandardCharsets.ISO_8859_1))
+      val msg = http(req(host / "echo").POST(isobody)).as_string
       msg must_== expected
     }
     "echo an zipped request" in {
-      val msg = http((host / "echo")
-        <:< Map("Content-Encoding" -> "gzip")
-        << bos.toByteArray as_str)
+      val msg = http((req(host / "echo") <:< Map("Content-Encoding" -> "gzip")).POST(bos, MediaType.parse("text/plain"))).as_string
       msg must_== expected
     }
     "pass an non-matching request" in {
-      val status = xhttp(((host / "unknown")
-        << expected >|) ((status, _, _, _) => status))
-      status must_== 404
+      val resp = httpx(host / "unknown")
+      resp.code() must_== 404
     }
     "pass an non-matching zipped request" in {
-      val status = xhttp(((host / "unknown")
+      val resp = httpx(req(host / "unknown")
         <:< Map("Content-Encoding" -> "gzip")
-        << bos.toByteArray >|) ((status, _, _, _) => status))
-      status must_== 404
+        POST(bos, MediaType.parse("text/plain")))
+      resp.code() must_== 404
     }
     "echo a utf-8 request" in {
-      val msg = http((host / "echo")
-        <:< Map(
-          "Content-Type" -> "text/plain; charset=utf-8")
-        << expected as_str)
+      val msg = http(req(host / "echo")
+        POST(expected, MediaType.parse("text/plain; charset=utf-8"))).as_string
       msg must_== expected
     }
     "echo a utf-8 zipped request" in {
-      val msg = http((host / "echo")
-        <:< Map(
-          "Content-Encoding" -> "gzip",
-          "Content-Type" -> "text/plain; charset=utf-8")
-        << ubos.toByteArray as_str)
+      val msg = http(req(host / "echo")
+        <:< Map("Content-Encoding" -> "gzip")
+        POST(ubos, MediaType.parse("text/plain; charset=utf-8"))).as_string
       msg must_== expected
     }
   }

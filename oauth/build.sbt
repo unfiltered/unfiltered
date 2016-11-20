@@ -4,6 +4,7 @@ unmanagedClasspath in (local("oauth"), Test) <++=
   (fullClasspath in (local("specs2"), Compile))
 
 libraryDependencies <++= scalaVersion(v =>
-  Seq(Common.dispatchOAuthDep % "test") ++
   Common.integrationTestDeps(v)
 )
+
+libraryDependencies += "com.github.scribejava" % "scribejava-core" % "3.2.0" % "test"

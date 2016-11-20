@@ -22,19 +22,19 @@ with unfiltered.specs2.jetty.Served {
 
   "JsonBody should" should {
     "produce a json parsed representation of the body with accept application/json header" in {
-      val resp = http(host <:< Map("Accept" -> "application/json") << "[4,2]" as_str)
+      val resp = http(req(host) <:< Map("Accept" -> "application/json") POST("[4,2]")).as_string
       resp must_== "array of 2"
     }
     "produce a json parsed representation of the body without accept application/json header" in {
-      val resp = http(host << "[4,2]" as_str)
+      val resp = http(req(host).POST("[4,2]")).as_string
       resp must_== "array of 2"
     }
     "not produce a json parsed representation of a nonjson body" in {
-      val resp = http(host <:< Map("Accept" -> "application/json") << Map("foo" -> "bar") as_str)
+      val resp = http(req(host) <:< Map("Accept" -> "application/json") << Map("foo" -> "bar")).as_string
       resp must_== "expected json array of 2"
     }
     "not produce a json parse representation of a request body when there is no body" in {
-      val resp = http(host.POST <:< Map("Accept" -> "application/json") as_str)
+      val resp = http(req(host) <:< Map("Accept" -> "application/json") POST("")).as_string
       resp must_== "expected json array of 2"
     }
   }

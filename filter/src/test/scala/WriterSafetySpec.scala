@@ -24,7 +24,7 @@ object WriterSafetySpec extends Specification with unfiltered.specs2.jetty.Serve
 
   "An Responder[HttpServletResponse]" should {
     "have reliable access to the underlying writer" in {
-      http(host / "writer" as_str) must_== "written"
+      http(host / "writer").as_string must_== "written"
     }
   }
 }

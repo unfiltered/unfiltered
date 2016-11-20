@@ -14,10 +14,10 @@ object PlannedResourcesSpec extends Specification with unfiltered.specs2.netty.S
 
    "A server with resources and plans" should {
      "respond to a resources path" in {
-       http(host / "foo.css" as_str) must_==("* { margin:0; }")
+       http(host / "foo.css").as_string must_==("* { margin:0; }")
      }
      "respond to a plans path" in {
-       http(host as_str) must_==("planned")
+       http(host).as_string must_==("planned")
      }
    }
 }

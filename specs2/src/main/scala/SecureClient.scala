@@ -1,50 +1,44 @@
-package unfiltered.spec
+package unfiltered.specs2
 
-import dispatch.classic._
-import org.apache.http.client.HttpClient
-
+import okhttp3._
 import java.security.KeyStore
 import java.io.FileInputStream
-import org.apache.http.conn.ssl.SSLSocketFactory
-import org.apache.http.conn.scheme.Scheme
+import javax.net.ssl._
 
 /** Provides an Http client configured to handle ssl certs */
-trait SecureClient {
+trait SecureClient extends Hosted {
   val keyStorePath: String
   val keyStorePasswd: String
   val securePort: Int
   val secureScheme = "https"
-  val logHttpsRequests = false
 
-  /** Silent, resource-managed http request executor which accepts
-   *  non-ok status */
-  def xhttp[T](handler: Handler[T]): T  = {
-    val h = if(logHttpsRequests) new Http else new Http with NoLogging
-    try { h.x(handler) }
-    finally { h.shutdown() }
-  }
-
-  private def secure(cli: HttpClient) = {
+  private def secure() = {
     val keys  = KeyStore.getInstance(KeyStore.getDefaultType)
     unfiltered.util.IO.use(new FileInputStream(keyStorePath)) { in =>
       keys.load(in, keyStorePasswd.toCharArray)
     }
-    cli.getConnectionManager.getSchemeRegistry.register(
-      new Scheme(secureScheme, securePort, new SSLSocketFactory(keys))
-    )
-    cli
+    val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
+    trustManagerFactory.init(keys)
+    val trustManagers = trustManagerFactory.getTrustManagers
+    val trustManager = trustManagers.head.asInstanceOf[X509TrustManager]
+
+    val sslContext = SSLContext.getInstance("TLS")
+    sslContext.init(null, Array(trustManager), null)
+    val sslSocketFactory = sslContext.getSocketFactory
+    new OkHttpClient.Builder().sslSocketFactory(sslSocketFactory, trustManager).build()
   }
 
-  /** Slient, resource-managed tls-enabled http request executor */
-  def https[T](handler: => Handler[T]): T = {
-    val h = if(logHttpsRequests) new Http {
-      override def make_client =
-        secure(super.make_client)
-    } else new Http with NoLogging {
-      override def make_client =
-        secure(super.make_client)
+
+  def https(req: Request): Response = {
+    val response = httpsx(req)
+    if (response.code() == 200) {
+      response
+    } else {
+      throw StatusCode(response.code())
     }
-    try { h(handler) }
-    finally { h.shutdown() }
+  }
+
+  def httpsx[T](req: Request): Response = {
+    requestWithNewClient(req, secure())
   }
 }
