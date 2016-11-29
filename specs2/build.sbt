@@ -1,5 +1,5 @@
 description := "Facilitates testing Unfiltered servers with Specs2"
 
-libraryDependencies <++= scalaVersion { v =>
-  Common.specs2Dep(v) :: Common.okHttp
+libraryDependencies ++= {
+  Common.specs2Dep(scalaVersion.value) :: Common.okHttp
 }

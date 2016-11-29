@@ -1,11 +1,10 @@
 description := "User-Agent request matchers"
 
-unmanagedClasspath in (local("agents"), Test) <++=
-  (fullClasspath in (local("scalatest"), Compile),
-   fullClasspath in (local("filter"), Compile)) map {
-     (s, f) => s ++ f
-   }
+unmanagedClasspath in (local("agents"), Test) ++= {
+  (fullClasspath in (local("scalatest"), Compile)).value ++
+  (fullClasspath in (local("filter"), Compile)).value
+}
 
-libraryDependencies <++= scalaVersion { v =>
-  Seq(Common.servletApiDep) ++ Common.integrationTestDeps(v)
+libraryDependencies ++= {
+  Seq(Common.servletApiDep) ++ Common.integrationTestDeps(scalaVersion.value)
 }
