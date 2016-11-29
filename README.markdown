@@ -44,7 +44,7 @@ Provides helpers for testing Intents with [specs2](http://etorreborre.github.io/
 
 Provides extractors for multipart posts using the servlet API.
 
-### json
+### json4s
 
 Provides extractors for working with jsonp and transforming json request bodies.
 
