@@ -21,10 +21,10 @@ object JsonSpec extends Specification  with unfiltered.specs2.jetty.Served {
   "Json Response should" should {
     "produce a json response" in {
       val resp = http(req(host) <:< Map("Accept" -> "application/json"))
-      val headers = resp.headers.toMultimap.asScala.mapValues(_.asScala.toSet)
+      val headers = resp.headers
 
       resp.as_string must_== """{"foo":"bar","baz":"boom"}"""
-      headers("content-type") must_==(Set("application/json; charset=utf-8"))
+      headers("content-type") must_==(List("application/json; charset=utf-8"))
     }
   }
 }

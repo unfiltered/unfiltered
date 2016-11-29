@@ -50,17 +50,17 @@ trait GZipSpec extends Specification with unfiltered.specs2.Hosted {
   "GZip response kit should" should {
     "gzip-encode a response when accepts header is present" in {
       val resp = http(req(host / "test") <:< Map("Accept-Encoding" -> "gzip"))
-      resp.header("Content-Encoding") must_== "gzip"
+      resp.firstHeader("Content-Encoding") must_== Some("gzip")
       gzipDecode(resp) must_== message
     }
     "gzip-encode an empty response when accepts header is present" in {
       val resp = http(req(host / "empty") <:< Map("Accept-Encoding" -> "gzip"))
-      resp.header("Content-Encoding") must_== "gzip"
+      resp.firstHeader("Content-Encoding") must_== Some("gzip")
       gzipDecode(resp) must_== ""
     }
     "serve unencoded response when accepts header is not present" in {
       val resp = http(req(host / "test"))
-      Option(resp.header("Content-Encoding")) must_== None
+      resp.firstHeader("Content-Encoding") must_== None
       resp.as_string must_== message
     }
   }

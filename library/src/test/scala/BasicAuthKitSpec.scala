@@ -32,7 +32,7 @@ trait BasicAuthKitSpec extends Specification with unfiltered.specs2.Hosted {
     "not authenticate an invalid user and return a www-authenticate header" in {
       val resp = httpx(req(host / "secret").as_!("joe", "shmo"))
       resp.code must_== 401
-      val headers = resp.headersAsScala
+      val headers = resp.headers
       headers must haveKey("www-authenticate")
       val authenticate = headers("www-authenticate")
       authenticate.headOption must beSome("""Basic realm="secret"""")

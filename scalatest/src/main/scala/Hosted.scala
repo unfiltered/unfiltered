@@ -1,7 +1,6 @@
 package unfiltered
 package scalatest
 
-
 import okhttp3._
 import okio.ByteString
 import unfiltered.request.Method
@@ -26,10 +25,13 @@ trait Hosted {
   }
 
   def requestWithNewClient(req: Request, clientF: => OkHttpClient): Response = {
+    import collection.JavaConverters._
+
     val client = clientF
     try {
       val res = client.newCall(req).execute()
-      val transformed = Response(res.code(), res.headers(), Option(res.body()).map{ body =>
+      val headers = res.headers.toMultimap.asScala.mapValues(_.asScala.toList).toMap
+      val transformed = Response(res.code(), headers, Option(res.body()).map{ body =>
         val bytes = body.bytes()
         ByteString.of(bytes, 0, bytes.length)
       })
@@ -101,13 +103,10 @@ trait Hosted {
   }
 
 
-  case class Response(code: Int, headers: Headers, body: Option[ByteString]) {
-    import collection.JavaConverters._
-
+  case class Response(code: Int, headers: Map[String, List[String]], body: Option[ByteString]) {
     def as_string = body.map(_.utf8()).getOrElse("")
-    def header(name: String): String = headers.get(name)
-
-    def headersAsScala(): Map[String, List[String]] = headers.toMultimap.asScala.mapValues(_.asScala.toList).toMap
+    def header(name: String): Option[List[String]] = headers.get(name.toLowerCase)
+    def firstHeader(name: String): Option[String] = header(name).flatMap(_.headOption)
   }
 
   trait ByteStringToConverter[A] {

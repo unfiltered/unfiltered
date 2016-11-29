@@ -92,7 +92,7 @@ object ProtectionSpec extends Specification with org.specs2.matcher.ThrownMessag
       resp1.as_string must_== """error="%s" error_description="%s" """.trim.format("invalid_token", "bad token")
       val resp2 = httpx(req(host / "user") <:< bearer_header)
       resp1.code must_== 401
-      val head = resp2.headersAsScala()
+      val head = resp2.headers
       head.get("www-authenticate") must_!= (None)
       val wwwAuth = head("www-authenticate")
       val expected = "Bearer error=\"%s\",error_description=\"%s\"".trim.format("invalid_token", "bad token")
@@ -102,7 +102,7 @@ object ProtectionSpec extends Specification with org.specs2.matcher.ThrownMessag
     // see http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-08#section-2.4.1
     "fail without returning an error code and description on missing authentication information" in {
       val resp = httpx(host / "user")
-      val head = resp.headersAsScala()
+      val head = resp.headers
       resp.code must_== 401
       head.get("www-authenticate") must_!= (None)
       val wwwAuth = head("www-authenticate")
@@ -112,7 +112,7 @@ object ProtectionSpec extends Specification with org.specs2.matcher.ThrownMessag
     "fail on a bad MAC header" in {
       val macHeader = Map("Authorization" -> """MAC id="bogus",nonce="123:y",bodyhash="bogus",mac="bogus"""")
       val resp = httpx(req(host / "user") <:< macHeader)
-      val head = resp.headersAsScala()
+      val head = resp.headers
       resp.code must_== 401
       head.get("www-authenticate") must_!= (None)
       val wwwAuth = head("www-authenticate")

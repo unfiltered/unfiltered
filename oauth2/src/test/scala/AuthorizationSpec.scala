@@ -66,7 +66,7 @@ object AuthorizationSpec
        val head = http(authorize <<? Map(
           "client_id" -> client.id,
           "redirect_uri" -> client.redirectUri
-       )).headers.toMultimap.asScala.mapValues(_.asScala.toList)
+       )).headers
       head must haveKey("location")
       new URI(head("location").head).getQuery match {
         case ErrorQueryString(err, desc) =>
@@ -80,7 +80,7 @@ object AuthorizationSpec
        val head = http(authorize <<? Map(
          "response_type" -> "token",
          "redirect_uri" -> client.redirectUri
-       )).headers.toMultimap.asScala.mapValues(_.asScala.toList)
+       )).headers
        head must haveKey("location")
        new URI(head("location").head).getFragment match {
          case ErrorQueryString(err, desc) =>
@@ -120,7 +120,7 @@ object AuthorizationSpec
          "client_id" -> client.id,
          "redirect_uri" -> client.redirectUri,
          "state" -> "test_state"
-       )).headers.toMultimap.asScala.mapValues(_.asScala.toList)
+       )).headers
        head must haveKey("location")
        val responseParams = Map(new URI(head("location").head).getFragment.split("&").map(_.split("=") match {
           case Array(k,v) => (k, v)
@@ -202,11 +202,11 @@ object AuthorizationSpec
          "client_id" -> client.id,
          "client_secret" -> client.secret,
          "redirect_uri" -> client.redirectUri
-      )).headers.toMultimap.asScala.mapValues(_.asScala.toSet)
+      )).headers
       headers must haveKey("cache-control")
       headers must haveKey("pragma")
-      headers("cache-control") must be_==(Set("no-store"))
-      headers("pragma") must be_==(Set("no-cache"))
+      headers("cache-control") must be_==(List("no-store"))
+      headers("pragma") must be_==(List("no-cache"))
     }
   }
 
@@ -290,11 +290,11 @@ object AuthorizationSpec
          "client_secret" -> client.secret,
          "username" -> owner.id,
          "password" -> password
-      )).headers.toMultimap.asScala.mapValues(_.asScala.toSet)
+      )).headers
       headers must haveKey("cache-control")
       headers must haveKey("pragma")
-      headers("cache-control") must be_==(Set("no-store"))
-      headers("pragma") must be_==(Set("no-cache"))
+      headers("cache-control") must be_==(List("no-store"))
+      headers("pragma") must be_==(List("no-cache"))
     }
   }
 
@@ -306,7 +306,7 @@ object AuthorizationSpec
        val head = http(authorize <<? Map(
          "client_id" -> client.id,
          "redirect_uri" -> client.redirectUri
-       )).headers.toMultimap.asScala.mapValues(_.asScala.toList)
+       )).headers
        head must haveKey("location")
        val uri = new URI(head("location").head)
        uri.getQuery match {
@@ -320,7 +320,7 @@ object AuthorizationSpec
        val head = http(authorize <<? Map(
          "response_type" -> "code",
          "redirect_uri" -> client.redirectUri
-       )).headers.toMultimap.asScala.mapValues(_.asScala.toList)
+       )).headers
        head must haveKey("location")
        val uri = new URI(head("location").head)
        uri.getQuery match {
@@ -344,7 +344,7 @@ object AuthorizationSpec
          "response_type" -> "code",
          "client_id" -> client.id,
          "redirect_uri" -> client.redirectUri
-       )).headers.toMultimap.asScala.mapValues(_.asScala.toList)
+       )).headers
        val Code = """code=(\S+)""".r
        new java.net.URI(head("location").head).getQuery match {
           case Code(code) =>
@@ -367,7 +367,7 @@ object AuthorizationSpec
          "client_id" -> client.id,
          "redirect_uri" -> client.redirectUri,
          "state" -> "test_state"
-       )).headers.toMultimap.asScala.mapValues(_.asScala.toList)
+       )).headers
        head must haveKey("location")
        val uri = new java.net.URI(head("location").head)
        val Code = """code=(\S+)""".r
@@ -386,7 +386,7 @@ object AuthorizationSpec
            // requesting access token
            val resp = http(request)
            val ares = resp.as_string
-           val header = resp.headers.toMultimap.asScala.mapValues(_.asScala.toSet)
+           val header = resp.headers
            // http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-4.2.2:
            header must haveKey("cache-control")
            header must haveKey("pragma")

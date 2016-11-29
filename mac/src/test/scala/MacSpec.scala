@@ -32,22 +32,22 @@ object MacSpec extends Specification with ThrownMessages with unfiltered.specs2.
     "respond with a challege when client omits authorization" in {
       val resp = httpx(req(host / "echo"))
       resp.code must_== 401
-      val headers = resp.headers.toMultimap.asScala.mapValues(_.asScala.toSet)
-      headers must havePair(("www-authenticate", Set("MAC")))
+      val headers = resp.headers
+      headers must havePair(("www-authenticate", List("MAC")))
      }
     "respond with a challenge when required authorization params are missing" in {
       val resp = httpx(host / "echo")
       resp.code must_== 401
-      val headers = resp.headers.toMultimap.asScala.mapValues(_.asScala.toSet)
-      headers must havePair(("www-authenticate", Set("MAC")))
+      val headers = resp.headers
+      headers must havePair(("www-authenticate", List("MAC")))
 
     }
     "respond with a challege with a malformed nonce" in {
       val resp = httpx(req(host / "echo") <:< Map(
         "Authorization" -> """MAC id="%s",nonce="%s",mac="%s" """.format("test_id", "test:test", "asdfasdf")))
       resp.code must_== 401
-      val headers = resp.headers.toMultimap.asScala.mapValues(_.asScala.toSet)
-      headers must havePair(("www-authenticate", Set("MAC")))
+      val headers = resp.headers
+      headers must havePair(("www-authenticate", List("MAC")))
      }
     "respond with a body when authorization is valid" in {
        val body = httpx(req(host / "echo") <:<  Map(

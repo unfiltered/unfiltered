@@ -1,7 +1,6 @@
 package unfiltered.request
 
 import org.specs2.mutable._
-import scala.collection.JavaConverters._
 
 object JsonpSpec extends Specification  with unfiltered.specs2.jetty.Served {
   import unfiltered.response._
@@ -56,14 +55,14 @@ object JsonpSpec extends Specification  with unfiltered.specs2.jetty.Served {
           <:< Map("Accept" -> "text/javascript"))
 
       resp.as_string must_== """onResp([42])"""
-      val headers = resp.headers.toMultimap.asScala.mapValues(_.asScala.toSet)
+      val headers = resp.headers
       headers("content-type") must_==(Set("text/javascript; charset=utf-8"))
     }
     "optionally produce a json response when callback is missing" in {
       val resp = http(req(host / "jsonp" / "lift-json" / "optional")
           <:< Map("Accept" -> "application/json"))
 
-      val headers = resp.headers.toMultimap.asScala.mapValues(_.asScala.toSet)
+      val headers = resp.headers
 
       resp.as_string must_== """{"answer":[42]}"""
       headers("content-type") must_==(Set("application/json; charset=utf-8"))

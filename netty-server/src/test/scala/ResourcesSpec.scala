@@ -12,14 +12,14 @@ object ResourcesSpec extends Specification with unfiltered.specs2.netty.Served {
      }
      "respond with an expected Content-Type" in {
        def mustHaveType(path: String, `type`: String) =
-         httpx(req(host / path)).header("Content-Type") must_== `type`
+         httpx(req(host / path)).firstHeader("Content-Type") must_== Some(`type`)
        mustHaveType("foo.html", "text/html")
        mustHaveType("foo.css", "text/css")
        mustHaveType("foo.txt", "text/plain")
        mustHaveType("foo.js", "application/javascript")
      }
      "respond with useful headers" in {
-       val headers = httpx(req(host / "foo.css")).headers.toMultimap.asScala
+       val headers = httpx(req(host / "foo.css")).headers
        headers must haveKey("date")
        headers must haveKey("expires")
        headers must haveKey("last-modified")
