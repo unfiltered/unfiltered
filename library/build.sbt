@@ -7,9 +7,9 @@ unmanagedClasspath in (LocalProject("unfiltered"), Test) ++= {
 }
 
 libraryDependencies ++= Seq(
-  "commons-codec" % "commons-codec" % "1.4",
+  "commons-codec" % "commons-codec" % "1.10",
   Common.specs2Dep(scalaVersion.value) % "test",
-  "org.scalacheck" %% "scalacheck" % "1.12.6" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
   "joda-time" % "joda-time" % "2.9.6" % "test",
   "org.joda" % "joda-convert" % "1.8.1" % "test"
 )
