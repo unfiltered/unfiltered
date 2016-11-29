@@ -9,7 +9,7 @@ object Common {
   def specs2Dep(sv: String) =
     sv.split("[.-]").toList match {
       case "2" :: "9" :: _ => "org.specs2" %% "specs2" % "1.12.4.1"
-      case _ => "org.specs2" %% "specs2" % "2.3.11"
+      case _ => "org.specs2" %% "specs2" % "2.4.17"
     }
 
 
@@ -28,7 +28,7 @@ object Common {
 
     version := "0.9.0-beta1",
 
-    crossScalaVersions := Seq("2.11.2", "2.10.4"),
+    crossScalaVersions := Seq("2.11.8", "2.12.0"),
 
     scalaVersion := crossScalaVersions.value.head,
 
