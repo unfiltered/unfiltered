@@ -9,7 +9,7 @@ object Common {
   def specs2Dep(sv: String) =
     sv.split("[.-]").toList match {
       case "2" :: "9" :: _ => "org.specs2" %% "specs2" % "1.12.4.1"
-      case _ => "org.specs2" %% "specs2" % "2.3.11"
+      case _ => "org.specs2" %% "specs2" % "2.4.17"
     }
 
 
