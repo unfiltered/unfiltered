@@ -28,7 +28,7 @@ names are as follows:
 * unfiltered-util_$scalaBinary$
 * unfiltered-specs2_$scalaBinary$
 * unfiltered-scalatest_$scalaBinary$
-* unfiltered-json_$scalaBinary$
+* unfiltered-json4s_$scalaBinary$
 * unfiltered-oauth_$scalaBinary$
 
 [sonatype]: https://oss.sonatype.org/content/repositories/releases/net/databinder/
