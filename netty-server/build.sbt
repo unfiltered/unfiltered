@@ -1,6 +1,6 @@
 description := "Netty server embedding module"
 
-unmanagedClasspath in (local("netty-server"), Test) <++=
-  (fullClasspath in (local("specs2"), Compile))
+unmanagedClasspath in (local("netty-server"), Test) ++=
+  (fullClasspath in (local("specs2"), Compile)).value
 
-libraryDependencies <<= scalaVersion(Common.integrationTestDeps _)
+libraryDependencies ++= Common.integrationTestDeps(scalaVersion.value)
