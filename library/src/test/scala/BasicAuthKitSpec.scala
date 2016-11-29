@@ -12,11 +12,11 @@ extends Specification
 with unfiltered.specs2.netty.Planned
 with BasicAuthKitSpec
 
+import scala.collection.JavaConverters._
+
 trait BasicAuthKitSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
-
-  import dispatch.classic._
 
   def valid(u: String, p: String) = (u,p) match { case ("test", "secret") => true case _ => false }
 
@@ -26,13 +26,15 @@ trait BasicAuthKitSpec extends Specification with unfiltered.specs2.Hosted {
 
   "Basic Auth kit" should {
     "authenticate a valid user" in {
-      val resp = http(host / "secret" as_!("test", "secret") as_str)
+      val resp = http(req(host / "secret").as_!("test", "secret")).as_string
       resp must_== "we're in"
     }
     "not authenticate an invalid user and return a www-authenticate header" in {
-      val hdrs = Http.when(_ == 401)((host / "secret" as_!("joe", "shmo")) >:> { h => h })
-      hdrs must haveKey("WWW-Authenticate")
-      val authenticate = hdrs("WWW-Authenticate")
+      val resp = httpx(req(host / "secret").as_!("joe", "shmo"))
+      resp.code() must_== 401
+      val headers = resp.headers().toMultimap.asScala.mapValues(_.asScala.toList)
+      headers must haveKey("www-authenticate")
+      val authenticate = headers("www-authenticate")
       authenticate.headOption must beSome("""Basic realm="secret"""")
     }
   }

@@ -1,11 +1,13 @@
 package unfiltered.oauth2
 
+import okhttp3.OkHttpClient
 import org.specs2.mutable._
+
+import scala.collection.JavaConverters._
 
 object ProtectionSpec extends Specification with org.specs2.matcher.ThrownMessages with unfiltered.specs2.jetty.Served {
   import unfiltered.response._
   import unfiltered.request._
-  import dispatch.classic._
 
   class User(val id: String) extends ResourceOwner {
     override val password = None
@@ -16,6 +18,15 @@ object ProtectionSpec extends Specification with org.specs2.matcher.ThrownMessag
     def secret = "client_secret"
     def id = "test_client"
   }
+
+  override def http(req: okhttp3.Request): okhttp3.Response = {
+    requestWithNewClient(req, new OkHttpClient().newBuilder().followRedirects(false).followSslRedirects(false).build())
+  }
+
+  override def httpx(req: okhttp3.Request): okhttp3.Response = {
+    http(req)
+  }
+
 
   object User {
     import javax.servlet.http.{HttpServletRequest}
@@ -56,19 +67,19 @@ object ProtectionSpec extends Specification with org.specs2.matcher.ThrownMessag
     "authenticate a valid access token via query parameter" in {
       val oauth_token = Map("access_token" -> GoodBearerToken)
       try {
-        Http.x(host / "user" <<? oauth_token as_str) must_== "test_user"
+        http(req(host / "user") <<? oauth_token).as_string must_== "test_user"
       } catch {
-        case dispatch.classic.StatusCode(code, _) =>
-          fail("got unexpected status code %s" format code)
+        case StatusCode(code) =>
+          fail("got unexpected status code %s".format(code))
       }
     }
 
     "authenticate a valid access token via Bearer header" in {
       val bearer_header = Map("Authorization" -> "Bearer %s".format(GoodBearerToken))
       try {
-        Http.x(host / "user" <:< bearer_header as_str) must_== "test_user"
+        http(req(host / "user") <:< bearer_header).as_string must_== "test_user"
       } catch {
-        case dispatch.classic.StatusCode(code, _) =>
+        case StatusCode(code) =>
           fail("got unexpected status code %s" format code)
       }
     }
@@ -76,35 +87,37 @@ object ProtectionSpec extends Specification with org.specs2.matcher.ThrownMessag
     // see http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-08#section-2.4.1
     "fail on a bad Bearer header" in {
       val bearer_header = Map("Authorization" -> "Bearer bad_token")
-      Http.when(_ == 401)(host / "user" <:< bearer_header as_str) must_== """error="%s" error_description="%s" """.trim.format("invalid_token", "bad token")
-      val head = Http.when(_ == 401)(host / "user" <:< bearer_header >:> { h => h })
+      val resp1 = httpx(req(host / "user") <:< bearer_header)
+      resp1.code() must_== 401
+      resp1.as_string must_== """error="%s" error_description="%s" """.trim.format("invalid_token", "bad token")
+      val resp2 = httpx(req(host / "user") <:< bearer_header)
+      resp1.code() must_== 401
+      val head = resp2.headers().toMultimap.asScala.mapValues(_.asScala.toList)
       head.get("WWW-Authenticate") must_!= (None)
-      val wwwAuth = head("WWW-Authenticate")
+      val wwwAuth = head("www-authenticate")
       val expected = "Bearer error=\"%s\",error_description=\"%s\"".trim.format("invalid_token", "bad token")
       wwwAuth.head must_== expected
     }
 
     // see http://tools.ietf.org/html/draft-ietf-oauth-v2-bearer-08#section-2.4.1
     "fail without returning an error code and description on missing authentication information" in {
-      val head = Http.when(_ == 401)(host / "user" >:> { h => h })
+      val resp = httpx(host / "user")
+      val head = resp.headers().toMultimap.asScala.mapValues(_.asScala.toList)
+      resp.code() must_== 401
       head.get("WWW-Authenticate") must_!= (None)
-      val wwwAuth = head("WWW-Authenticate")
+      val wwwAuth = head("www-authenticate")
       wwwAuth.head must_== "Bearer"
     }
     // see http://tools.ietf.org/html/draft-ietf-oauth-v2-http-mac-00#section-4.1
     "fail on a bad MAC header" in {
       val macHeader = Map("Authorization" -> """MAC id="bogus",nonce="123:y",bodyhash="bogus",mac="bogus"""")
-      val head = Http.when(_ == 401)(host / "user" <:< macHeader >:> { h => h })
+      val resp = httpx(req(host / "user") <:< macHeader)
+      val head = resp.headers().toMultimap.asScala.mapValues(_.asScala.toList)
+      resp.code() must_== 401
       head.get("WWW-Authenticate") must_!= (None)
-      val wwwAuth = head("WWW-Authenticate")
+      val wwwAuth = head("www-authenticate")
       val expected = "MAC error=\"%s\"".trim.format("invalid token")
       wwwAuth.head must_== expected
     }
-
-/*
-    "authenticate a valid access token via MAC header" in {
-      val mac_header = Map("Authorization" -> """MAC id="%s",nonce="123:x",bodyhash="x",mac="x" """.format(GoodMacToken).trim)
-      Http(host / "user" <:< mac_header as_str) must_== "test_user"
-    }*/
   }
 }

@@ -10,8 +10,6 @@ import unfiltered.request.{ Path => UFPath, POST, & }
 import unfiltered.response.{ NotFound, ResponseString }
 import unfiltered.specs2.netty.Served
 
-import dispatch.classic._
-import dispatch.classic.mime.Mime._
 import java.io.{File => JFile,FileInputStream => FIS}
 import org.apache.commons.io.{IOUtils => IOU}
 
@@ -117,39 +115,33 @@ object AsyncUploadSpec extends Specification
     "handle file uploads written to disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(host / "disk-upload" <<* ("f", file, "text/plain") as_str) must_== "disk read file f named netty-upload-big-text-test.txt with content type text/plain"
+      http(req(host / "disk-upload") <<* ("f", file, "text/plain")).as_string must_== "disk read file f named netty-upload-big-text-test.txt with content type text/plain"
     }
     "handle file uploads streamed" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(host / "stream-upload" <<* ("f", file, "text/plain") as_str) must_== "stream read file f is named netty-upload-big-text-test.txt with content type text/plain"
+      http(req(host / "stream-upload") <<* ("f", file, "text/plain")).as_string must_== "stream read file f is named netty-upload-big-text-test.txt with content type text/plain"
     }
     "handle writing file uploads streamed" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(host / "stream-upload" / "write" <<* ("f", file, "text/plain") as_str) must_== "wrote stream read file f named netty-upload-big-text-test.txt with content type text/plain with correct contents"
+      http(req(host / "stream-upload" / "write") <<* ("f", file, "text/plain")).as_string must_== "wrote stream read file f named netty-upload-big-text-test.txt with content type text/plain with correct contents"
     }
     "handle file uploads all in memory" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(host / "mem-upload" <<* ("f", file, "text/plain") as_str) must_== "memory read file f is named netty-upload-big-text-test.txt with content type text/plain"
+      http(req(host / "mem-upload") <<* ("f", file, "text/plain")).as_string must_== "memory read file f is named netty-upload-big-text-test.txt with content type text/plain"
     }
     "not write memory read files" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(host / "mem-upload" / "write" <<* ("f", file, "text/plain") as_str) must_== "did not write memory read file f is named netty-upload-big-text-test.txt with content type text/plain"
+      http(req(host / "mem-upload" / "write") <<* ("f", file, "text/plain")).as_string must_== "did not write memory read file f is named netty-upload-big-text-test.txt with content type text/plain"
     }
     "respond with a 404" in {
-      val http = new dispatch.classic.Http with NoLogging
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      try {
-        http x (host / "notfound" <<* ("f", file, "text/plain") >| ) {
-          case (code,_,_,_) =>
-            code must_== 404
-        }
-      } finally { http.shutdown }
-      success
+      val resp = httpx(req(host / "notfound") <<* ("f", file, "text/plain"))
+      resp.code() must_== 404
     }
   }
 }

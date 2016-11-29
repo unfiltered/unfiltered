@@ -1,10 +1,10 @@
 package unfiltered.directives
 
 import org.specs2.mutable._
-
 import unfiltered.request._
-
 import java.util.concurrent.atomic.AtomicLong
+
+import okhttp3.MediaType
 
 object DirectivesSpecJetty
 extends Specification
@@ -16,11 +16,9 @@ extends Specification
 with unfiltered.specs2.netty.Planned
 with DirectivesSpec
 
-trait DirectivesSpec extends Specification with unfiltered.specs2.Hosted {
+trait DirectivesSpec extends SpecificationLike with unfiltered.specs2.Hosted {
   import unfiltered.response._
-  import unfiltered.directives._, Directives._
-
-  import dispatch._, Defaults._
+  import Directives._
 
   // create a directive for a particular content type
   def contentType(tpe:String) =
@@ -123,163 +121,155 @@ trait DirectivesSpec extends Specification with unfiltered.specs2.Hosted {
 
   val someJson = """{"a": 1}"""
 
-  def localhost = dispatch.host("127.0.0.1", port)
+  //def localhost = dispatch.host("127.0.0.1", port)
+  val JSONContentType = MediaType.parse("application/json")
+
 
   "Directives commit" should {
     "respond with expected commited error" in {
-      Http(localhost / "commit_or").apply().getStatusCode must_== 400
+      httpx(host / "commit_or").code() must_== 400
     }
     "try alternative when failing before commit" in {
-      Http((localhost / "commit_or").POST).apply().getStatusCode must_== 200
+      http(req(host / "commit_or").POST("")).code() must_== 200
     }
   }
   "Directives" should {
     "response with a condition that is always true" in {
-      Http(localhost / "affirmation" OK as.String).apply() must_==(
-        "this request needs no validation"
-      )
+      http(host / "affirmation").as_string must_== "this request needs no validation"
     }
     "respond with expected response given named value" in {
       def expect(n: Int) = {
-        val resp = Http(localhost / "limited_offer" > as.String)
+        val resp = httpx(host / "limited_offer").as_string
         val expected = if (n < MaxPrizes) "Congratulations. You won prize %d".format(n + 1) else "prizes are out of stock"
-        resp() must_== expected
+        resp must_== expected
       }
       (0 to MaxPrizes + 10).forall(expect(_))
     }
     "respond with json if accepted" in {
-      val resp = Http(localhost / "accept_json" / "123"
-        <:< Map("Accept" -> "application/json")
-        <:< Map("Content-Type" -> "application/json")
-        << someJson OK as.String)
-      resp() must_== someJson
+      val resp = http((req(host / "accept_json" / "123")
+        <:< Map("Accept" -> "application/json", "Content-Type" -> "application/json"))
+        POST(someJson, null)).as_string
+      resp must_== someJson
     }
     "respond with not acceptable accepts header missing" in {
-      val resp = Http(localhost / "accept_json" / "123"
-        <:< Map("Content-Type" -> "application/json")
-        << someJson)
-      resp().getStatusCode must_== 406
+      val resp = httpx(req(host / "accept_json" / "123")
+        //<:< Map("Content-Type" -> "application/json")
+        POST(someJson, JSONContentType))
+      resp.code() must_== 406
     }
     "respond with unsupported media if content-type wrong" in {
-      val resp = Http(localhost / "accept_json" / "123"
-        <:< Map("Accept" -> "application/json")
-        <:< Map("Content-Type" -> "text/plain")
-        << someJson)
-      resp().getStatusCode must_== 415
+      val resp = httpx((req(host / "accept_json" / "123")
+        <:< Map("Accept" -> "application/json")).POST(someJson))
+      resp.code() must_== 415
     }
     "respond with 404 if not matching" in {
-      val resp = Http(localhost / "accept_other" / "123"
-        << someJson)
-      resp().getStatusCode must_== 404
+      val resp = httpx(req(host / "accept_other" / "123").POST(someJson))
+      resp.code() must_== 404
     }
   }
   "Directives decorated" should {
     "respond with json if accepted" in {
-      val resp = Http(localhost / "awesome_json" / "123"
+      val resp = http(req(host / "awesome_json" / "123")
         <:< Map("Accept" -> "application/json")
-        <:< Map("Content-Type" -> "application/json")
-        << someJson OK as.String)
-      resp() must_== someJson
+        POST(someJson, JSONContentType)).as_string
+      resp must_== someJson
     }
     "respond with unsupported media if content-type wrong" in {
-      val resp = Http(localhost / "awesome_json" / "123"
+      val resp = httpx(req(host / "awesome_json" / "123")
         <:< Map("Accept" -> "application/json")
-        <:< Map("Content-Type" -> "text/plain")
-        << someJson)
-      resp().getStatusCode must_== 415
+        POST(someJson))
+      resp.code() must_== 415
     }
     "respond with unsupported media if content-type missing" in {
-      val resp = Http(localhost / "awesome_json" / "123"
+      val resp = httpx(req (host / "awesome_json" / "123")
         <:< Map("Accept" -> "application/json")
-        << someJson)
-      resp().getStatusCode must_== 415
+        POST(someJson, null))
+      resp.code() must_== 415
     }
   }
   "Directives if filtering" should {
     "respond with json if accepted" in {
-      val resp = Http(localhost / "if_json" / "123"
+      val resp = http(req(host / "if_json" / "123")
         <:< Map("Accept" -> "application/json")
-        <:< Map("Content-Type" -> "application/json")
-        << someJson OK as.String)
-      resp() must_== someJson
+        POST(someJson, JSONContentType)).as_string
+      resp must_== someJson
     }
     "respond with unsupported media if content-type wrong" in {
-      val resp = Http(localhost / "if_json" / "123"
+      val resp = httpx(req(host / "if_json" / "123")
         <:< Map("Accept" -> "application/json")
-        <:< Map("Content-Type" -> "text/plain")
-        << someJson)
-      resp().getStatusCode must_== 415
+        POST(someJson))
+      resp.code() must_== 415
     }
     "respond with unsupported media if content-type missing" in {
-      val resp = Http(localhost / "if_json" / "123"
+      val resp = httpx(req(host / "if_json" / "123")
         <:< Map("Accept" -> "application/json")
-        << someJson)
-      resp().getStatusCode must_== 415
+        POST(someJson, null))
+      resp.code() must_== 415
     }
   }
   "Directive parameters" should {
     "respond with parameter if accepted" in {
-      val resp = Http(localhost / "valid_parameters"
+      val resp = http(req(host / "valid_parameters")
         << Map(
           "option_int" -> 3.toString,
           "require_int" -> 4.toString,
           "even_int" -> 8.toString
-        ) OK as.String)
-      resp() must_== "15"
+        )).as_string
+      resp must_== "15"
     }
     "respond if optional parameters are missing" in {
-      val resp = Http(localhost / "valid_parameters"
+      val resp = http(req(host / "valid_parameters")
         << Map(
           "require_int" -> 4.toString,
           "even_int" -> 8.toString
-        ) OK as.String)
-      resp() must_== "12"
+        )).as_string
+      resp must_== "12"
     }
     "fail if even format is wrong" in {
-      val resp = Http(localhost / "valid_parameters"
+      val resp = httpx(req(host / "valid_parameters")
         << Map(
           "require_int" -> 4.toString,
           "even_int" -> 7.toString
         ))
-      resp().getStatusCode must_== 400
-      resp().getResponseBody must_== "even_int is not even: 7"
+      resp.code() must_== 400
+      resp.body().string() must_== "even_int is not even: 7"
     }
     "fail if int format is wrong" in {
-      val resp = Http(localhost / "valid_parameters"
+      val resp = httpx(req(host / "valid_parameters")
         << Map(
           "require_int" -> 4.toString,
           "even_int" -> "eight"
         ))
-      resp().getStatusCode must_== 400
-      resp().getResponseBody must_== "even_int is not an int: eight"
+      resp.code() must_== 400
+      resp.body().string() must_== "even_int is not an int: eight"
     }
     "fail if required parameter is missing" in {
-      val resp = Http(localhost / "valid_parameters"
+      val resp = httpx(req(host / "valid_parameters")
         << Map(
           "require_int" -> 4.toString
         ))
-      resp().getStatusCode must_== 400
-      resp().getResponseBody must_== "even_int is missing"
+      resp.code() must_== 400
+      resp.body().string() must_== "even_int is missing"
     }
   }
   "Directive independent parameters" should {
     "respond with parameter if accepted" in {
-      val resp = Http(localhost / "independent_parameters"
+      val resp = http(req(host / "independent_parameters")
         << Map(
           "option_int" -> 3.toString,
           "require_int" -> 4.toString,
           "even_int" -> 8.toString
-        ) OK as.String)
-      resp() must_== "15"
+        )).as_string
+      resp must_== "15"
     }
     "respond with all errors" in {
-      val resp = Http(localhost / "independent_parameters"
+      val resp = httpx(req(host / "independent_parameters")
         << Map(
           "option_int" -> "four",
           "even_int" -> 7.toString
         ))
-      resp().getStatusCode must_== 400
-      resp().getResponseBody must_== """option_int is not an int: four
+      resp.code() must_== 400
+      resp.body().string() must_== """option_int is not an int: four
 require_int is missing
 even_int is not even: 7"""
     }

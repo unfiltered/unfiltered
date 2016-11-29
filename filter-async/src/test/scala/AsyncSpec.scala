@@ -20,10 +20,10 @@ object AsyncSpec extends Specification with unfiltered.specs2.jetty.Served {
 
   "An Async Filter Server" should {
     "respond to requests" in {
-      http(host as_str) must_== "test"
+      http(host).as_string must_== "test"
     }
     "pass upstream on Pass, respond in last handler" in {
-      http(host / "pass" as_str) must_== "pass"
+      http(req(host / "pass")).as_string must_== "pass"
     }
   }
 }

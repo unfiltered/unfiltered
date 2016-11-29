@@ -35,11 +35,11 @@ trait RoutesStartsWithSpec extends Specification with unfiltered.specs2.Hosted {
 
   "Routes.specify" should {
     "match the beginning" in {
-      http(host / "the_best_stuff.html" as_str) must_==
+      http(host / "the_best_stuff.html").as_string must_==
         "_best_stuff.html"
     }
     "match a thing" in {
-      http(host / "things" / "thingone.html" as_str) must_==
+      http(host / "things" / "thingone.html").as_string must_==
         "thingone.html"
     }
   }

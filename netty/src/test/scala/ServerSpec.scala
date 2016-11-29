@@ -28,31 +28,31 @@ object ServerSpec extends Specification with unfiltered.specs2.netty.Served {
 
   "A Server" should {
     "respond to requests" in {
-      http(host as_str) must_== "test"
+      http(req(host)).as_string must_== "test"
     }
     "provide a remote address" in {
-      http(host / "addr" as_str) must_== "127.0.0.1"
+      http(req(host / "addr")).as_string must_== "127.0.0.1"
     }
     "provide a remote address accounting for X-Forwared-For header" in {
-      http(host / "addr_extractor" <:< Map("X-Forwarded-For" -> "66.108.150.228") as_str) must_== "66.108.150.228"
+      http(req(host / "addr_extractor") <:< Map("X-Forwarded-For" -> "66.108.150.228")).as_string must_== "66.108.150.228"
     }
     "provide a remote address accounting for X-Forwared-For header filtering private addresses" in {
-      http(host / "addr_extractor" <:< Map("X-Forwarded-For" -> "172.31.255.255") as_str) must_== "127.0.0.1"
+      http(req(host / "addr_extractor") <:< Map("X-Forwarded-For" -> "172.31.255.255")).as_string must_== "127.0.0.1"
     }
     "respond to requests in ustream channel plan" in {
-      http(host / "planc" as_str) must_== "planc"
+      http(req(host / "planc")).as_string must_== "planc"
     }
     "respond to requests in last channel handler" in {
-      http(host / "planb" as_str) must_== "planb"
+      http(req(host / "planb")).as_string must_== "planb"
     }
     "pass upstream on Pass, respond in last handler" in {
-      http(host / "pass" as_str) must_== "pass"
+      http(req(host / "pass")).as_string must_== "pass"
     }
     "echo POST parameters encoded in the entity body" in {
-      http(host / "params" << Map("n0" -> "v0") as_str) must_== "POST:n0=v0"
+      http(req(host / "params") << Map("n0" -> "v0") ).as_string must_== "POST:n0=v0"
     }
     "echo PUT paremters encoded in the entity body" in {
-      http((host / "params" << Map("n0" -> "v0") PUT) as_str) must_== "PUT:n0=v0"
+      http(req(host / "params").<<(Map("n0" -> "v0"), PUT)).as_string must_== "PUT:n0=v0"
     }
   }
 }

@@ -1,16 +1,17 @@
 package unfiltered.oauth
 
+import com.github.scribejava.core.builder.ServiceBuilder
+import com.github.scribejava.core.builder.api.DefaultApi10a
+import com.github.scribejava.core.model.{OAuth1RequestToken, OAuthRequest, SignatureType, Verb}
+import okhttp3.HttpUrl
 import org.specs2.mutable._
 
 object OAuthSpec extends Specification with unfiltered.specs2.jetty.Served {
 
   import unfiltered.response._
-  import unfiltered.request.{Path => UFPath}
-  import dispatch.classic.oauth._
-  import OAuth._
 
   System.setProperty("file.encoding", "UTF-8")
-  val consumer = Consumer("key", "secret")
+  //val consumer = Consumer("key", "secret")
 
   def setup = { server =>
 
@@ -25,8 +26,8 @@ object OAuthSpec extends Specification with unfiltered.specs2.jetty.Served {
 
       override val consumers = new ConsumerStore {
         def get(key: String) = Some(new unfiltered.oauth.Consumer {
-          val key = consumer.key
-          val secret = consumer.secret
+          val key = "key"
+          val secret = "secret"
         })
       }
 
@@ -55,18 +56,33 @@ object OAuthSpec extends Specification with unfiltered.specs2.jetty.Served {
 
   "oauth" should {
     "authorize a valid consumer's request using a HMAC-SHA1 signature with oob workflow" in {
-      val payload = Map("identité" -> "caché",
-        "identi+y" -> "hidden+",
-        "アイデンティティー" -> "秘密",
-        "pita" -> "-._~*+%20")
-      val request_token = http(host.POST / "oauth" / "requests" <<? payload << Map("rand" -> scala.util.Random.nextString(1024)) <@(consumer, OAuth.oob) as_token)
+      val service = new ServiceBuilder()
+        .signatureType(SignatureType.Header)
+        .apiKey("key")
+        .apiSecret("secret")
+        .build(new DefaultApi10a {
+          override def getAccessTokenEndpoint: String = (host / "oauth" / "access").toString
+
+          override def getAuthorizationUrl(requestToken: OAuth1RequestToken): String = {
+            (host / "oauth" / "auth").newBuilder().addQueryParameter("oauth_token", requestToken.getToken).build().toString
+          }
+
+          override def getRequestTokenEndpoint: String = (host / "oauth" / "requests").toString
+        })
+
+      val requestToken = service.getRequestToken
       val VerifierRE = """<p id="verifier">(.+)</p>""".r
-      val verifier = http(host / "oauth" / "auth" with_token request_token as_str) match {
+      val verifier = http(HttpUrl.parse(service.getAuthorizationUrl(requestToken))).as_string match {
         case VerifierRE(v) => v
         case _ => "?"
       }
-      val access_token = http(host.POST / "oauth" / "access" <@ (consumer, request_token, verifier) as_token)
-      val user = http(host / "user" <@(consumer, access_token, verifier) as_str)
+
+      val accessToken = service.getAccessToken(requestToken, verifier)
+      val request = new OAuthRequest(Verb.GET, (host / "user").toString, service)
+      service.signRequest(accessToken, request)
+
+      val user = request.send().getBody
+
       user must_== "test_user"
     }
   }

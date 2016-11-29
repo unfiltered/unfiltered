@@ -2,12 +2,12 @@ package unfiltered.mac
 
 import org.specs2.mutable._
 import org.specs2.matcher.ThrownMessages
+import scala.collection.JavaConverters._
 
 object MacSpec extends Specification with ThrownMessages with unfiltered.specs2.jetty.Served {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
-  import dispatch.classic._
 
   System.setProperty("file.encoding", "UTF-8")
 
@@ -30,38 +30,39 @@ object MacSpec extends Specification with ThrownMessages with unfiltered.specs2.
 
   "Mac" should {
     "respond with a challege when client omits authorization" in {
-       Http.when(_ == 401)(host / "echo" >:> { h =>
-         h must havePair(("WWW-Authenticate", Set("MAC")))
-       })
-       success
+      val resp = httpx(req(host / "echo"))
+      resp.code() must_== 401
+      val headers = resp.headers().toMultimap.asScala.mapValues(_.asScala.toSet)
+      headers must havePair(("www-authenticate", Set("MAC")))
      }
     "respond with a challenge when required authorization params are missing" in {
-      Http.when(_ == 401)(host / "echo" >:> { h =>
-        h must havePair(("WWW-Authenticate", Set("MAC")))
-      })
-      success
+      val resp = httpx(host / "echo")
+      resp.code() must_== 401
+      val headers = resp.headers().toMultimap.asScala.mapValues(_.asScala.toSet)
+      headers must havePair(("www-authenticate", Set("MAC")))
+
     }
     "respond with a challege with a malformed nonce" in {
-       Http.when(_ == 401)(host / "echo" <:< Map(
-         "Authorization" -> """MAC id="%s",nonce="%s",mac="%s" """.format("test_id", "test:test", "asdfasdf")) >:> { h =>
-         h must havePair(("WWW-Authenticate", Set("MAC")))
-       })
-       success
+      val resp = httpx(req(host / "echo") <:< Map(
+        "Authorization" -> """MAC id="%s",nonce="%s",mac="%s" """.format("test_id", "test:test", "asdfasdf")))
+      resp.code() must_== 401
+      val headers = resp.headers().toMultimap.asScala.mapValues(_.asScala.toSet)
+      headers must havePair(("www-authenticate", Set("MAC")))
      }
     "respond with a body when authorization is valid" in {
-       val body = Http(host / "echo" <:<  Map(
-         "Authorization" -> """MAC id="%s",nonce="%s",mac="%s" """.format("test_id", "123:test", "asdfasdf")) as_str)
-       body must_== "id test_id nonce 123:test bodyhash None ext None mac asdfasdf" 
+       val body = httpx(req(host / "echo") <:<  Map(
+         "Authorization" -> """MAC id="%s",nonce="%s",mac="%s" """.format("test_id", "123:test", "asdfasdf"))).as_string
+       body must_== "id test_id nonce 123:test bodyhash None ext None mac asdfasdf"
     }
     "respond with a body when authorization is valid" in {
-       val body = Http(host / "echo" <:<  Map(
+       val body = httpx(req(host / "echo") <:<  Map(
          "Authorization" -> """MAC id="%s",nonce="%s",mac="%s",bodyhash="%s",ext="%s" """.format(
-           "test_id", "123:test", "asdfasdf","asdfasf", java.net.URLEncoder.encode("a,b,c", "utf8"))) as_str)
+           "test_id", "123:test", "asdfasdf","asdfasf", java.net.URLEncoder.encode("a,b,c", "utf8")))).as_string
        body must_== "id test_id nonce 123:test bodyhash Some(asdfasf) ext Some(a%2Cb%2Cc) mac asdfasdf"
     }
     "respond ok with with a valid mac signed request" in {
        val (key, nonce, method,  uri, hostname, hport, bodyhash, ext) = (
-         MacKey, "264095:dj83hs9s", "GET", "/resource/1?b=1&a=2",  host.to_uri.getHost, port, "", "")
+         MacKey, "264095:dj83hs9s", "GET", "/resource/1?b=1&a=2", host.host(), port, "", "")
 
        val normalizedRequest = Mac.requestString(nonce, "GET", uri, hostname, hport, bodyhash, ext)
        Mac.macHash("hmac-sha-1", key)(normalizedRequest).fold({
@@ -70,9 +71,7 @@ object MacSpec extends Specification with ThrownMessages with unfiltered.specs2.
          val auth = Map("Authorization" -> """MAC id="%s",nonce="%s",mac="%s"""".format(
             "h480djs93hd8", nonce, mac
           ))
-         val body = Http(
-           host / "resource" / "1" <:< auth <<? Map("b"->"1", "a"->"2") as_str
-         )
+         val body = http(req(host / "resource" / "1" <<? Map("b"->"1", "a"->"2")) <:< auth).as_string
          body must_== mac
        })
     }

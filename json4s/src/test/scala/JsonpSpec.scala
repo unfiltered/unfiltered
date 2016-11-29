@@ -1,13 +1,12 @@
 package unfiltered.request
 
 import org.specs2.mutable._
+import scala.collection.JavaConverters._
 
 object JsonpSpec extends Specification  with unfiltered.specs2.jetty.Served {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
-
-  import dispatch.classic._
 
   class TestPlan extends unfiltered.filter.Plan {
     def intent = {
@@ -33,42 +32,41 @@ object JsonpSpec extends Specification  with unfiltered.specs2.jetty.Served {
 
   "Jsonp should" should {
     "match an text/javascript accepts request with callback, wrapping response body in callback" in {
-      val resp = http(host / "jsonp" <:< Map("Accept" -> "text/javascript") <<? Map("callback" -> "onResp") as_str)
+      val resp = http(req(host / "jsonp" <<? Map("callback" -> "onResp")) <:< Map("Accept" -> "text/javascript")).as_string
       resp must_== "onResp([42])"
     }
     "match an */* accepts request with path extension and callback, wrapping response body in callback" in {
-      val resp = http(host / "jsonp.json" <:< Map("Accept" -> "*/*") <<? Map("callback" -> "onResp") as_str)
+      val resp = http(req(host / "jsonp.json" <<? Map("callback" -> "onResp")) <:< Map("Accept" -> "*/*")).as_string
       resp must_== "onResp([42])"
     }
    "not match an text/javascript accepts request without a callback" in {
-      val resp = http(host / "jsonp" <:< Map("Accept" -> "text/javascript") as_str)
+      val resp = http(req(host / "jsonp") <:< Map("Accept" -> "text/javascript")).as_string
       resp must_== "bad req"
     }
     "optionally match an text/javascript accepts request with callback, wrapping response body in callback" in {
-      val resp = http(host / "jsonp" / "optional" <:< Map("Accept" -> "text/javascript") <<? Map("callback" -> "onResp") as_str)
+      val resp = http(req(host / "jsonp" / "optional" <<? Map("callback" -> "onResp")) <:< Map("Accept" -> "text/javascript")).as_string
       resp must_== "onResp([42])"
     }
     "optionaly match an application/json accepts request without a callback, return unwrapped response body" in {
-      val resp = http(host / "jsonp" / "optional" <:< Map("Accept" -> "application/json") as_str)
+      val resp = http(req(host / "jsonp" / "optional") <:< Map("Accept" -> "application/json")).as_string
       resp must_== "[42]"
     }
     "produce a jsonp response, wrapping response body in callback" in {
-      val (body, contentType) = http(host / "jsonp" / "lift-json"
-          <:< Map("Accept" -> "text/javascript") <<? Map("callback" -> "onResp") >+ { r =>
-        (r as_str, r >:> { _.filterKeys { _ == "Content-Type" } })
-      })
+      val resp = http(req(host / "jsonp" / "lift-json" <<? Map("callback" -> "onResp"))
+          <:< Map("Accept" -> "text/javascript"))
 
-      body must_== """onResp([42])"""
-      contentType must haveValue(Set("text/javascript; charset=utf-8"))
+      resp.as_string must_== """onResp([42])"""
+      val headers = resp.headers.toMultimap.asScala.mapValues(_.asScala.toSet)
+      headers("content-type") must_==(Set("text/javascript; charset=utf-8"))
     }
     "optionally produce a json response when callback is missing" in {
-      val (body, contentType) = http(host / "jsonp" / "lift-json" / "optional"
-          <:< Map("Accept" -> "application/json") >+ { r =>
-        (r as_str, r >:> { _.filterKeys { _ == "Content-Type" } })
-      })
+      val resp = http(req(host / "jsonp" / "lift-json" / "optional")
+          <:< Map("Accept" -> "application/json"))
 
-      body must_== """{"answer":[42]}"""
-      contentType must haveValue(Set("application/json; charset=utf-8"))
+      val headers = resp.headers.toMultimap.asScala.mapValues(_.asScala.toSet)
+
+      resp.as_string must_== """{"answer":[42]}"""
+      headers("content-type") must_==(Set("application/json; charset=utf-8"))
     }
   }
 }

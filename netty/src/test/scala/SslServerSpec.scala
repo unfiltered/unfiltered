@@ -1,6 +1,6 @@
 package unfiltered.netty
 
-import unfiltered.spec
+import unfiltered.specs2.SecureClient
 import unfiltered.response.{ Ok, ResponseString }
 import unfiltered.request.{ GET, Path => UFPath}
 import unfiltered.netty.cycle.{ Plan, SynchronousExecution }
@@ -11,16 +11,12 @@ import io.netty.handler.ssl.{
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelHandler.Sharable
 
-import org.apache.http.NoHttpResponseException
-
 import org.specs2.mutable.{ BeforeAfter, Specification }
 
-import dispatch.classic._
-
 object SslServerSpec
-  extends Specification 
+  extends Specification
   with unfiltered.specs2.netty.Started
-  with spec.SecureClient {  
+  with SecureClient {
 
   @Sharable
   class SecurePlan extends Plan
@@ -48,15 +44,12 @@ object SslServerSpec
         ctx.fireUserEventTriggered(e)
     }
   }
-    
+
   // generated keystore for localhost
   // keytool -keystore keystore -alias unfiltered -genkey -keyalg RSA
   val keyStorePath = getClass.getResource("/keystore").getPath
   val keyStorePasswd = "unfiltered"
   val securePort = port
-
-  override def xhttp[T](handler: Handler[T]): T =
-    super[SecureClient].xhttp(handler)
 
   lazy val server =
     Server.httpsEngine(
@@ -70,10 +63,10 @@ object SslServerSpec
 
   "A Secure Server" should {
     "respond to secure requests" in {
-      https(host.secure as_str) must_== "secret"
+      https(host.newBuilder().scheme("https").build()).as_string must_== "secret"
     }
     "refuse connection to unsecure requests" in {
-      https(host as_str) must throwA[NoHttpResponseException]
+      https(host) must throwA[java.net.ConnectException]
     }
   }
 }

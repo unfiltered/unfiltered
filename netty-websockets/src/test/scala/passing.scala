@@ -31,9 +31,9 @@ object PassingSpec extends Specification with unfiltered.specs2.netty.Served {
 
   "A websocket server" should {
     "not block standard http requests" in {
-      http(host / "b" as_str) must_==("http response b")
-      http(host / "a" as_str) must_==("http response a")
-      http(host / "c" as_str) must_==("http response c")
+      http(host / "b").as_string must_==("http response b")
+      http(host / "a").as_string must_==("http response a")
+      http(host / "c").as_string must_==("http response c")
     }
   }
 }

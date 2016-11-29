@@ -1,35 +1,34 @@
 package unfiltered.request
 
+import org.joda.time.DateTime
+import java.util
+
+import okhttp3.{Cookie, HttpUrl, OkHttpClient}
 import org.specs2.mutable._
 
 object CookiesSpecJetty
-extends Specification
-with unfiltered.specs2.jetty.Planned
-with CookiesSpec
+  extends Specification
+    with unfiltered.specs2.jetty.Planned
+    with CookiesSpec
 
 object CookiesSpecNetty
-extends Specification
-with unfiltered.specs2.netty.Planned
-with CookiesSpec
+  extends Specification
+    with unfiltered.specs2.netty.Planned
+    with CookiesSpec
 
 trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
+
   import scala.collection.JavaConversions._
 
   import unfiltered.response._
-  import unfiltered.request.{ Path => UFPath }
+  import unfiltered.request.{Path => UFPath}
   import unfiltered.Cookie
   import unfiltered.Cycle.Intent
 
-  import dispatch.classic._
+  def intent[A, B]: Intent[A, B] = {
 
-  import org.apache.http.client.CookieStore
-  import org.apache.http.impl.client.{ AbstractHttpClient, BasicCookieStore }
-  import org.apache.http.client.params.{ ClientPNames, CookiePolicy }
-
-  def intent[A,B]: Intent[A,B] = {
-
-    case UFPath("/") & Cookies(cs) if(cs("foo").isDefined) =>
-      ResponseString("foo %s!" format(cs("foo").map(_.value).getOrElse("?")))
+    case UFPath("/") & Cookies(cs) if (cs("foo").isDefined) =>
+      ResponseString("foo %s!" format (cs("foo").map(_.value).getOrElse("?")))
 
     case UFPath("/") & Cookies(cs) =>
       ResponseString("foo who?")
@@ -40,11 +39,11 @@ trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
     case UFPath("/clear") =>
       SetCookies.discarding("foo") andThen Redirect("/")
 
-    case UFPath("/multi") & Cookies(cs) if(cs("foo").isDefined && cs("baz").isDefined) =>
+    case UFPath("/multi") & Cookies(cs) if (cs("foo").isDefined && cs("baz").isDefined) =>
       ResponseString("foo %s baz %s!" format(
         cs("foo").map(_.value).getOrElse("?"),
         cs("baz").map(_.value).getOrElse("?")
-      ))
+        ))
 
     case UFPath("/multi") & Cookies(cs) =>
       ResponseString("who and the what now?")
@@ -58,67 +57,76 @@ trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
 
   "Cookies" should {
     "start with nothing" in {
-      http(host as_str) must_== "foo who?"
+      http(req(host)).as_string must_== "foo who?"
     }
     "then add a cookie" in {
-      http(host.POST / "save" << Map("foo" -> "bar") as_str) must_== "foo bar!"
+      withCookieJar{jar =>
+        val h = httpWithCookies(jar)
+        h(req(host / "save") << Map("foo" -> "bar")).as_string must_== "foo bar!"
+      }
     }
 
     // http://hc.apache.org/httpcomponents-client-ga/tutorial/html/statemgmt.html#d5e746
 
-    "and finally clear it when requested" in {
+     "and finally clear it when requested" in {
       withCookieJar { jar =>
         val h = httpWithCookies(jar)
-        try {
-          h(host.POST / "save" << Map("foo" -> "bar") as_str) must_== "foo bar!"
-          val someCookies = jar.getCookies
-          someCookies.size must_== 1
-          someCookies.find(_.getName == "foo") must beSome
-          h(host / "clear" as_str) must_== "foo who?"
-          val noCookies = jar.getCookies
-          noCookies.size must_== 0
-          noCookies.find(_.getName == "foo") must beNone
-        } finally {
-          h.shutdown()
-        }
+        h(req(host / "save") << Map("foo" -> "bar")).as_string must_== "foo bar!"
+        val someCookies = jar.loadForRequest(host / "save")
+        someCookies.size must_== 1
+        someCookies.find(_.name == "foo") must beSome
+        h(host / "clear").as_string must_== "foo who?"
+        val noCookies = jar.loadForRequest(host / "clear")
+        noCookies.size must_== 0
+        noCookies.find(_.name == "foo") must beNone
       }
     }
     "saves and deletes multiple cookies" in {
       withCookieJar { jar =>
         val h = httpWithCookies(jar)
-        try {
-          h(host.POST / "save_multi" << Map("foo" -> "bar", "baz" -> "boom") as_str) must_== "foo bar baz boom!"
-          val someCookies = jar.getCookies
-          someCookies.size must_== 2
-          someCookies.find(_.getName == "foo") must beSome
-          someCookies.find(_.getName == "baz") must beSome
-          h(host / "clear_multi" as_str) must_== "foo who?"
-          val noCookies = jar.getCookies
-          noCookies.size must_== 0
-          noCookies.find(_.getName == "foo") must beNone
-          noCookies.find(_.getName == "baz") must beNone
-        } finally {
-          h.shutdown()
-        }
+        h(req(host/ "save_multi") << Map("foo" -> "bar", "baz" -> "boom")).as_string must_== "foo bar baz boom!"
+        val someCookies = jar.loadForRequest(host/ "save_multi")
+        someCookies.size must_== 2
+        someCookies.find(_.name == "foo") must beSome
+        someCookies.find(_.name == "baz") must beSome
+        h(host / "clear_multi").as_string must_== "foo who?"
+        val noCookies = jar.loadForRequest(host / "clear")
+        noCookies.size must_== 0
+        noCookies.find(_.name == "foo") must beNone
+        noCookies.find(_.name == "baz") must beNone
       }
     }
   }
 
-  def withCookieJar[T](f: CookieStore => T): T = {
-    val jar = new BasicCookieStore
+  def withCookieJar[T](f: okhttp3.CookieJar => T): T = {
+    val jar = new MemoryJar
     try { f(jar) }
     finally { jar.clear }
   }
 
-  def httpWithCookies(jar: CookieStore) =
-     new Http {
-        override def make_client =
-          super.make_client match {
-            case c: AbstractHttpClient =>
-              //c.getParams.setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.RFC_2965)
-              c.setCookieStore(jar)
-              c
-            case hc => sys.error("expected abstract http client but found %s" format hc.getClass)
-          }
-      }
+  def httpWithCookies(jar: okhttp3.CookieJar): (okhttp3.Request) => okhttp3.Response = { req =>
+    requestWithNewClient(req, new OkHttpClient.Builder().cookieJar(jar).build())
+  }
+}
+
+class MemoryJar extends okhttp3.CookieJar {
+
+  import scala.collection.JavaConverters._
+
+  val jar = collection.concurrent.TrieMap[String, List[Cookie]]()
+
+  override def saveFromResponse(url: HttpUrl, cookies: java.util.List[Cookie]): Unit = {
+    val list = cookies.asScala.flatMap(p =>
+      if (new DateTime(p.expiresAt()).isAfter(DateTime.now())) List(p) else Nil
+    )
+    if (list.isEmpty) jar -= url.host() else {
+      jar += (url.host() -> list.toList)
+    }
+  }
+
+  override def loadForRequest(url: HttpUrl): java.util.List[Cookie] = {
+    new java.util.ArrayList(jar.getOrElse(url.host(), Nil).asJavaCollection)
+  }
+
+  def clear: Unit = jar.clear()
 }

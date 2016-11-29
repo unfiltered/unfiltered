@@ -15,16 +15,16 @@ object ServerSpec extends Specification with unfiltered.specs2.jetty.Served {
 
   "A Server" should {
     "respond to requests" in {
-      http(host as_str) must_== "test"
+      http(host).as_string must_== "test"
     }
     "provide a remote address" in {
-      http(host / "addr" as_str) must_== "127.0.0.1"
+      http(host / "addr").as_string must_== "127.0.0.1"
     }
     "provide a remote address accounting for X-Forwared-For header" in {
-      http(host / "addr_extractor" <:< Map("X-Forwarded-For" -> "66.108.150.228") as_str) must_== "66.108.150.228"
+      http(req(host / "addr_extractor") <:< Map("X-Forwarded-For" -> "66.108.150.228")).as_string must_== "66.108.150.228"
     }
     "provide a remote address accounting for X-Forwared-For header filtering private addresses" in {
-      http(host / "addr_extractor" <:< Map("X-Forwarded-For" -> "172.31.255.255") as_str) must_== "127.0.0.1"
+      http(req(host / "addr_extractor") <:< Map("X-Forwarded-For" -> "172.31.255.255")).as_string must_== "127.0.0.1"
     }
   }
 }
