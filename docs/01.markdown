@@ -11,18 +11,18 @@ projects based on templates stored in github. Assuming you don't have
 giter8 installed and you are on a network-connected Linux or Mac, it's
 easy to fix that.
 
-[g8]: https://github.com/n8han/giter8#readme
+[g8]: https://github.com/foundweekends/giter8#readme
 
-    curl https://raw.githubusercontent.com/n8han/conscript/master/setup.sh | sh
+    curl https://raw.githubusercontent.com/foundweekends/conscript/master/setup.sh | sh
 
 That is [conscript][conscript]. Its `setup.sh` places a permanent
 (assuming you don't delete it) executable script in `~/bin/cs`. At
 some point you may want to add `~/bin` to your executable search path,
 but these instructions will not assume it is.
 
-[conscript]: https://github.com/n8han/conscript#readme
+[conscript]: https://github.com/foundweekends/conscript#readme
 
-    ~/bin/cs n8han/giter8
+    ~/bin/cs foundweekends/giter8
 
 That installs a `g8`. Now you have a script to run giter8. The next
 step creates a sbt project under the current working directory.
@@ -32,7 +32,7 @@ step creates a sbt project under the current working directory.
 Okay, finally we can use this project with sbt to get a console for
 Unfiltered. You do have [sbt setup][sbt], don't you?
 
-[sbt]: https://github.com/harrah/xsbt/wiki/Setup
+[sbt]: http://www.scala-sbt.org/
 
     cd justplayin
     sbt console
