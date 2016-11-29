@@ -44,11 +44,11 @@ trait HeadersSpec extends Specification with unfiltered.specs2.Hosted {
     // Note: `Connection` header sent by default
     // content-length is read in netty4 https://github.com/netty/netty/blob/netty-4.0.13.Final/codec-http/src/main/java/io/netty/handler/codec/http/HttpContentDecoder.java#L112-L125
     // but not in netty3 https://github.com/netty/netty/blob/netty-3.8.0.Final/src/main/java/org/jboss/netty/handler/codec/http/HttpMessageDecoder.java
-    case P("/names") & req if (req.headerNames.toSet.map((n:String) => n.toLowerCase) - "content-length") == Set("expect", "from", "host", "connection") => ResponseString("pass")
+    case P("/names") & req if (req.headerNames.toSet.map((n:String) => n.toLowerCase) - "content-length") == Set("expect", "user-agent", "accept-encoding", "from", "host", "connection") => ResponseString("pass")
   }
   def get(path: String, headers: (String, String)*) = {
-     val hmap =  Map(headers:_*)
-     http(host / path <:< hmap as_str)
+    val hmap =  Map(headers:_*)
+    http(req(host / path) <:< hmap).as_string
   }
   "Headers" should {
     "parse Accept-Charset" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.2

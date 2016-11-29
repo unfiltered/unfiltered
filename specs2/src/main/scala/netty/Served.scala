@@ -1,10 +1,11 @@
 package unfiltered.specs2.netty
 
-import unfiltered.netty.{ Server, ServerErrorResponse }
-import unfiltered.netty.cycle.{ DeferralExecutor, DeferredIntent, Plan }
-import org.specs2.specification.{ BaseSpecification, Fragments, Step }
+import unfiltered.netty.{Server, ServerErrorResponse}
+import unfiltered.netty.cycle.{DeferralExecutor, DeferredIntent, Plan}
+import org.specs2.mutable._
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.util.ResourceLeakDetector
+import org.specs2.specification.BeforeAfterAll
 
 trait Planned extends Served {
   def setup = _.plan(planify(intent))
@@ -16,25 +17,27 @@ trait Served extends Started {
   lazy val server = setup(Server.http(port))
 }
 
-trait Started extends unfiltered.specs2.Hosted with BaseSpecification {
+trait Started extends unfiltered.specs2.Hosted with SpecificationLike with BeforeAfterAll {
 
   // Enables paranoid resource leak detection which reports where the leaked object was accessed recently,
   // at the cost of the highest possible overhead (for testing purposes only).
   ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID)
-	
+
   def server: Server
-  
-  def after = {
+
+  override def afterAll: Unit = {
     server.stop()
     server.destroy()
     executor.shutdown()
+    ()
   }
 
-  def before = {
+  override def beforeAll: Unit = {
     server.start()
+    ()
   }
 
-  override def map(fs: =>Fragments) = Step(before) ^ fs ^ Step(after)
+ // override def map(fs: =>Fragments) = Step(before) ^ fs ^ Step(after)
 
   lazy val executor = java.util.concurrent.Executors.newCachedThreadPool()
 

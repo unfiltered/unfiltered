@@ -1,7 +1,7 @@
 package unfiltered.request
 
-class Method(method: String) {
-  def unapply[T](req: HttpRequest[T]) = 
+class Method(val method: String) {
+  def unapply[T](req: HttpRequest[T]) =
     if (req.method.equalsIgnoreCase(method)) Some(req)
     else None
 }

@@ -3,7 +3,7 @@ Who's Using Unfiltered?
 
 These are some projects and companies that have used Unfiltered. Are
 *you* using Unfiltered?
-[Fork this page](https://github.com/n8han/Unfiltered/blob/master/docs/99.markdown)
+[Fork this page](https://github.com/unfiltered/Unfiltered/blob/master/docs/99.markdown)
 on github.
 
 #### Meetup
@@ -36,7 +36,7 @@ The [event site](http://nescala.org/) for the North East Scala Symposium is writ
 
 #### pamflet
 
-The documentation preview server in [pamflet](https://github.com/n8han/pamflet/) is Unfiltered.
+The documentation preview server in [pamflet](https://github.com/foundweekends/pamflet/) is Unfiltered.
 
 #### picture show
 
@@ -48,7 +48,11 @@ The documentation preview server in [pamflet](https://github.com/n8han/pamflet/)
 
 #### unplanned
 
-A super simple run anywhere [adhoc HTTP server](https://github.com/softprops/unplanned#readme) using [conscript](https://github.com/n8han/conscript#readme) and the Unfiltered jetty module.
+A super simple run anywhere [adhoc HTTP server](https://github.com/softprops/unplanned#readme) using [conscript](https://github.com/foundweekends/conscript#readme) and the Unfiltered jetty module.
 
 #### penger.no
 [penger.no](https://www.penger.no/) is a Norwegian web based service whose aim is to help consumers compare the prices and terms of bank and insurance providers to find the best offer.
+
+#### REA Group
+
+[REA Group](https://www.rea-group.com/) is a digital advertising company that operates Australia's leading property websites and real estate websites in Europe, Asia and the US. Unfiltered is our default choice when building the Scala-based HTTP microservices that power sites like https://www.realestate.com.au.

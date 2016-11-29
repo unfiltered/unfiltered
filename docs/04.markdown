@@ -28,7 +28,7 @@ names are as follows:
 * unfiltered-util_$scalaBinary$
 * unfiltered-specs2_$scalaBinary$
 * unfiltered-scalatest_$scalaBinary$
-* unfiltered-json_$scalaBinary$
+* unfiltered-json4s_$scalaBinary$
 * unfiltered-oauth_$scalaBinary$
 
 [sonatype]: https://oss.sonatype.org/content/repositories/releases/net/databinder/
@@ -105,10 +105,10 @@ For a new project the easiest the easiest option to apply a
 So for example:
 
 ```sh
-g8 n8han/unfiltered-netty --name=justplayin
+g8 unfiltered/unfiltered-netty --name=justplayin
 cd justplayin
 sbt # *or whatever your 0.11.x command is
 > run
 ```
 
-[g8]: https://github.com/n8han/giter8
+[g8]: https://github.com/foundweekends/giter8

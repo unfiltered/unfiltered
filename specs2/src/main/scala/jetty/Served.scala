@@ -1,8 +1,8 @@
 package unfiltered.specs2
 package jetty
 
-import unfiltered.specs2.Hosted
-import org.specs2.specification.{BaseSpecification, Step, Fragments}
+import org.specs2.mutable._
+import org.specs2.specification.BeforeAfterAll
 
 
 trait Planned extends Served {
@@ -12,22 +12,20 @@ trait Planned extends Served {
   def intent[A, B]: unfiltered.Cycle.Intent[A, B]
 }
 
-trait Served extends Hosted with BaseSpecification {
+trait Served extends Hosted with SpecificationLike with BeforeAfterAll {
 
   import unfiltered.jetty._
-
-  def after = {
-    server.stop()
-    server.destroy()
-  }
-
-  def before = {
-    server.start()
-  }
 
   def setup: (Server => Server)
 
   lazy val server = setup(Server.http(port))
 
-  override def map(fs: =>Fragments) = Step(before) ^ fs ^ Step(after)
+  override def afterAll(): Unit = {
+    server.stop()
+    server.destroy()
+  }
+
+  override def beforeAll(): Unit = {
+    server.start()
+  }
 }

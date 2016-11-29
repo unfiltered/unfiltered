@@ -1,6 +1,5 @@
 import sbt._
 import Keys._
-import ls.Plugin.LsKeys
 
 object Unfiltered extends Build {
   import Common._
@@ -32,7 +31,6 @@ object Unfiltered extends Build {
     srcPath: String = "unfiltered/" + moduleName.replace("-","/")
   ) = Project(projectId, file(dirName),
               settings = (Common.settings ++
-                          ls.Plugin.lsSettings ++
                           ciSettings ++
                           srcPathSetting(projectId, srcPath)
             ))

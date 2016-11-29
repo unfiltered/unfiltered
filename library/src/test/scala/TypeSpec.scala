@@ -1,7 +1,6 @@
 package unfiltered.request
 
 import org.specs2.mutable._
-import unfiltered.spec
 
 object TypeSpecJetty extends Specification with unfiltered.specs2.jetty.Planned with TypeSpec
 object TypeSpecNetty extends Specification with unfiltered.specs2.netty.Planned with TypeSpec
@@ -23,18 +22,16 @@ trait TypeSpec extends Specification with unfiltered.specs2.Hosted {
 
   "ContentType should" should {
     "Correctly encode response in utf8 by default" in {
-      val (resp, enc) = http((host / "test").gzip  >+ { req =>
-        (req as_str, req >:> { _("Content-Type") })
-      })
-      resp must_== message
-      enc.map(_.toLowerCase) must containPattern("text/plain; ?charset=utf-8")
+      val resp = http(host / "test")
+
+      resp.body().string() must_== message
+      List(resp.header("Content-Type").toLowerCase) must containPattern("text/plain; ?charset=utf-8")
     }
     "Correctly encode response in iso-8859-1 if requested" in {
-      val (resp, enc) = http((host / "latin").gzip  >+ { req =>
-        (req as_str, req >:> { _("Content-Type") })
-      })
-      resp must_== message
-      enc.map(_.toLowerCase) must containPattern("text/plain; ?charset=iso-8859-1")
+      val resp = http(host / "latin")
+
+      resp.body().string() must_== message
+      List(resp.header("Content-Type").toLowerCase) must containPattern("text/plain; ?charset=iso-8859-1")
     }
   }
 }

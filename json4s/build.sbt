@@ -1,11 +1,10 @@
 description := "Json4s request matchers and response functions"
 
-unmanagedClasspath in (local("json4s"), Test) <++=
-  (fullClasspath in (local("specs2"), Compile),
-   fullClasspath in (local("filter"), Compile)) map { (s, f) =>
-     s ++ f
-   }
+unmanagedClasspath in (local("json4s"), Test) ++= {
+  (fullClasspath in (local("specs2"), Compile)).value ++
+  (fullClasspath in (local("filter"), Compile)).value
+}
 
-libraryDependencies <++= scalaVersion( sv =>
-  Seq("org.json4s" %% "json4s-native" % "3.3.0") ++ Common.integrationTestDeps(sv)
-)
+libraryDependencies ++= {
+  Seq("org.json4s" %% "json4s-native" % "3.5.0") ++ Common.integrationTestDeps(scalaVersion.value)
+}

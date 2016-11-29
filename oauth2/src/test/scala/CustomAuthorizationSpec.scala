@@ -9,8 +9,6 @@ object CustomAuthorizationSpec
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
 
-  import dispatch.classic._
-
   val client = MockClient(
     "mockclient", "mockserver",
     "http://localhost:%s/echo" format port
@@ -23,7 +21,7 @@ object CustomAuthorizationSpec
     val authProvider = new MockAuthServerProvider(client, owner)
     server.context("/oauth") {
       _.plan(new OAuthorization(authProvider.auth) {
-        // this authorization module configuration 
+        // this authorization module configuration
         // does not support a client credentials flow
         override def onClientCredentials(
           clientId: String, clientSecret: String,
@@ -43,13 +41,15 @@ object CustomAuthorizationSpec
   "A customized OAuthorization configuration" should {
     "permit overrided flow behavior" in {
 
-      val body = Http.when(_ == 403)(token << Map(
+      val resp = httpx(req(token) << Map(
          "grant_type" -> "client_credentials",
          "client_id" -> client.id,
          "client_secret" -> client.secret,
          "redirect_uri" -> client.redirectUri
-      ) as_str )
-      body must_== "client_credentials not supported"
+      ))
+
+      resp.code() must_== 403
+      resp.as_string must_== "client_credentials not supported"
     }
   }
 }

@@ -3,7 +3,7 @@ package unfiltered.netty
 import unfiltered.util.{ PlanServer, RunnableServer }
 
 import io.netty.bootstrap.ServerBootstrap
-import io.netty.channel.{ ChannelHandler, ChannelInitializer, ChannelOption }
+import io.netty.channel.{ ChannelHandler, ChannelInitializer, ChannelOption, WriteBufferWaterMark }
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.codec.http.{
@@ -110,8 +110,7 @@ case class Server(
   def configure(bootstrap: ServerBootstrap): ServerBootstrap =
      bootstrap.childOption(ChannelOption.TCP_NODELAY, JBoolean.TRUE)     
       /* http://normanmaurer.me/presentations/2014-facebook-eng-netty/slides.html#11.0 */
-      .childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, JInteger.valueOf(32 * 1024))
-      .childOption(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, JInteger.valueOf(8 * 1024))
+      .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(8 * 1024, 32 * 1024))
       .childOption(ChannelOption.SO_KEEPALIVE, JBoolean.TRUE)
       .option(ChannelOption.SO_RCVBUF, JInteger.valueOf(128 * 1024))
       .option(ChannelOption.SO_SNDBUF, JInteger.valueOf(128 * 1024))

@@ -1,14 +1,12 @@
 package unfiltered.netty.request
 
 import unfiltered.netty
-import unfiltered.netty.{ Http => NHttp, ExceptionHandler }
+import unfiltered.netty.{ ExceptionHandler }
 import unfiltered.netty.cycle.ThreadPool
 import unfiltered.request.{ Path => UFPath, POST, & }
 import unfiltered.response.{ Pass, ResponseString }
 import unfiltered.specs2.netty.Served
 
-import dispatch.classic._
-import dispatch.classic.mime.Mime._
 
 import java.io.{ File => JFile }
 
@@ -94,38 +92,26 @@ object NoChunkAggregatorSpec extends Specification
 
     // note(doug): in netty3 versions of unfiltered this would result in a 500 error
     "respond with a 200 when no chunk aggregator is used in a cycle plan" in {
-      val http = new dispatch.classic.Http with NoLogging
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      try {
-        http x (host / "cycle" / "upload" <<* ("f", file, "text/plain") >| ) {
-          case (code,_,_,_) =>
-            code must_== 200
-        }
-      } finally { http.shutdown }
-      success
+      val code = httpx(req(host / "cycle" / "upload") <<* ("f", file, "text/plain")).code()
+      code must_== 200
     }
 
     // note(doug): in netty3 versions of unfiltered this would result in a 500 error
     "respond with a 200 when no chunk aggregator is used in an async plan" in {
-      val http = new dispatch.classic.Http with NoLogging
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      try {
-        http x (host / "async" / "upload" <<* ("f", file, "text/plain") >| ) {
-          case (code,_,_,_) =>
-            code must_== 200
-        }
-      } finally { http.shutdown }
-      success
+      val code = httpx(req(host / "async" / "upload") <<* ("f", file, "text/plain")).code()
+      code must_== 200
     }
 
     "handle multipart uploads which are not chunked" in {
       /** This assumes Dispatch doesn't build a chunked request because the data is small */
       val file = new JFile(getClass.getResource("/netty-upload-test.txt").toURI)
       file.exists must_==true
-      http(host / "async" / "upload" <<* ("f", file, "text/plain") as_str) must_== "disk read file f named netty-upload-test.txt with content type text/plain"
-      http(host / "cycle" / "upload" <<* ("f", file, "text/plain") as_str) must_== "disk read file f named netty-upload-test.txt with content type text/plain"
+      http(req(host / "async" / "upload") <<* ("f", file, "text/plain")).as_string must_== "disk read file f named netty-upload-test.txt with content type text/plain"
+      http(req(host / "cycle" / "upload") <<* ("f", file, "text/plain")).as_string must_== "disk read file f named netty-upload-test.txt with content type text/plain"
     }
   }
 }

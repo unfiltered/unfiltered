@@ -1,6 +1,7 @@
 package unfiltered.response
 
 import org.specs2.mutable._
+import scala.collection.JavaConverters._
 
 object JsonSpec extends Specification  with unfiltered.specs2.jetty.Served {
   import unfiltered.response._
@@ -19,11 +20,11 @@ object JsonSpec extends Specification  with unfiltered.specs2.jetty.Served {
 
   "Json Response should" should {
     "produce a json response" in {
-      val (body, contentType) = http(host <:< Map("Accept" -> "application/json") >+ { r =>
-        (r as_str, r >:> { _.filterKeys { _ == "Content-Type" } })
-      })
-      body must_== """{"foo":"bar","baz":"boom"}"""
-      contentType must haveValue(Set("application/json; charset=utf-8"))
+      val resp = http(req(host) <:< Map("Accept" -> "application/json"))
+      val headers = resp.headers.toMultimap.asScala.mapValues(_.asScala.toSet)
+
+      resp.as_string must_== """{"foo":"bar","baz":"boom"}"""
+      headers("content-type") must_==(Set("application/json; charset=utf-8"))
     }
   }
 }

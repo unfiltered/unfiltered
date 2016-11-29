@@ -15,7 +15,7 @@ object FutureServerSpec extends Specification with org.specs2.matcher.ThrownMess
       Future.successful(ResponseString("pong"))
 
     case GET(UFPath("/future-ping")) =>
-      Future { ResponseString(http(host / "ping" as_str)) }
+      Future { ResponseString(http(host / "ping").as_string) }
 
     case GET(UFPath("/pass")) =>
       Future.successful(Pass)
@@ -24,10 +24,10 @@ object FutureServerSpec extends Specification with org.specs2.matcher.ThrownMess
   "A Server" should {
     "pass upstream on Pass, respond in last handler" in {
       skip("How to pass asynchronously?")
-      http(host / "pass" as_str) must_== "pass"
+      http(host / "pass").as_string must_== "pass"
     }
     "respond with future results" in {
-      http(host / "future-ping" as_str) must_== "pong"
+      http(host / "future-ping").as_string must_== "pong"
     }
   }
 }

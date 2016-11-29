@@ -1,7 +1,5 @@
 package unfiltered.filter.async
 
-import org.eclipse.jetty.continuation.ContinuationSupport
-import org.eclipse.jetty.continuation.Continuation
 import util._
 import unfiltered.filter.{AsyncBinding,RequestBinding,ResponseBinding}
 import unfiltered.response.{NotFound, Pass}
