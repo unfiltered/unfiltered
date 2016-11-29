@@ -25,3 +25,4 @@ project/plugins/project/
 .settings
 .cache
 upload-test-out.txt
+async-upload-test-out.txt
