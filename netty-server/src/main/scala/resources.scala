@@ -11,7 +11,7 @@ import unfiltered.response.{
 import io.netty.channel.{ ChannelFuture, ChannelFutureListener, DefaultFileRegion }
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{
-  LastHttpContent, HttpHeaders, HttpResponse }
+  LastHttpContent, HttpHeaders, HttpResponse, HttpUtil }
 import io.netty.handler.stream.{ ChunkedFile, ChunkedStream }
 import io.netty.util.{ CharsetUtil, ReferenceCountUtil }
 import java.io.{ File, FileNotFoundException, RandomAccessFile }
@@ -79,7 +79,7 @@ case class Resources(
 
         def lastly(future: ChannelFuture) = {
           // close channel if not keep alive
-          if (!HttpHeaders.isKeepAlive(req.underlying.request)) {
+          if (!HttpUtil.isKeepAlive(req.underlying.request)) {
             future.addListener(ChannelFutureListener.CLOSE)
           }
           // be sure to adjust reference count
@@ -87,7 +87,7 @@ case class Resources(
         }
 
         def setKeepAlive(headers: ResponseFunction[Any]) =
-          if (HttpHeaders.isKeepAlive(req.underlying.request))
+          if (HttpUtil.isKeepAlive(req.underlying.request))
             headers ~> Connection(HttpHeaders.Values.KEEP_ALIVE)
           else headers
 

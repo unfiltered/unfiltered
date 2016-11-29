@@ -8,8 +8,9 @@ import io.netty.buffer.{ ByteBufInputStream, ByteBufOutputStream, Unpooled }
 import io.netty.channel.{ ChannelFuture, ChannelFutureListener, ChannelHandlerContext }
 import io.netty.handler.codec.http.{
   DefaultHttpResponse, DefaultFullHttpResponse, HttpContent,
-  HttpHeaders, HttpMessage, HttpRequest => NettyHttpRequest, HttpResponse => NettyHttpResponse,
-  HttpResponseStatus, HttpVersion }
+  HttpHeaders, HttpMessage, HttpUtil,
+  HttpRequest => NettyHttpRequest, HttpResponse => NettyHttpResponse, HttpResponseStatus,
+  HttpVersion }
 import io.netty.handler.ssl.SslHandler
 import io.netty.util.{ CharsetUtil, ReferenceCountUtil }
 import java.io.{ BufferedReader, ByteArrayOutputStream, InputStreamReader }
@@ -39,7 +40,7 @@ class RequestBinding(msg: ReceivedMessage)
 
   private[this] lazy val params = queryParams ++ bodyParams
 
-  private def queryParams = req.getUri.split("\\?", 2) match {
+  private def queryParams = req.uri.split("\\?", 2) match {
     case Array(_, qs) => URLParser.urldecode(qs)
     case _ => Map.empty[String,Seq[String]]
   }
@@ -62,12 +63,12 @@ class RequestBinding(msg: ReceivedMessage)
   lazy val reader =
     new BufferedReader(new InputStreamReader(inputStream, charset))
 
-  def protocol = req.getProtocolVersion.text()
+  def protocol = req.protocolVersion.text()
 
-  def method = req.getMethod.toString.toUpperCase
+  def method = req.method.toString.toUpperCase
 
   // todo should we call URLDecoder.decode(uri, charset) on this here?
-  def uri = req.getUri
+  def uri = req.uri
 
   def parameterNames = params.keySet.iterator
 
@@ -117,7 +118,7 @@ case class ReceivedMessage(
     case Pass =>
       context.fireChannelRead(request)
     case rf =>
-      val keepAlive = HttpHeaders.isKeepAlive(request)
+      val keepAlive = HttpUtil.isKeepAlive(request)
       lazy val closer = new unfiltered.response.Responder[NettyHttpResponse] {
         def respond(res: HttpResponse[NettyHttpResponse]) {
           res.outputStream.close() // close() triggers writing content to response body
@@ -163,7 +164,7 @@ class ResponseBinding[U <: NettyHttpResponse](res: U)
     res.setStatus(HttpResponseStatus.valueOf(code))
 
   def status: Int =
-    res.getStatus.code()
+    res.status.code()
 
   def header(name: String, value: String) =
     res.headers.add(name, value)

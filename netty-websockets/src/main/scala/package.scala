@@ -2,7 +2,7 @@ package unfiltered.netty
 
 import io.netty.buffer.Unpooled
 import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext }
-import io.netty.handler.codec.http.{ DefaultFullHttpResponse, FullHttpRequest, HttpHeaders }
+import io.netty.handler.codec.http.{ DefaultFullHttpResponse, FullHttpRequest, HttpHeaders, HttpUtil }
 import io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN
 import io.netty.handler.codec.http.HttpVersion.HTTP_1_1
 import io.netty.util.{ CharsetUtil, ReferenceCountUtil }
@@ -38,7 +38,7 @@ package object websockets {
         val res = new DefaultFullHttpResponse(
           HTTP_1_1, FORBIDDEN, Unpooled.copiedBuffer(
             FORBIDDEN.toString, CharsetUtil.UTF_8))
-        HttpHeaders.setContentLength(res, res.content.readableBytes)
+        HttpUtil.setContentLength(res, res.content.readableBytes)
         ReferenceCountUtil.release(req)
         ctx.channel.writeAndFlush(res).addListener(
           ChannelFutureListener.CLOSE)
