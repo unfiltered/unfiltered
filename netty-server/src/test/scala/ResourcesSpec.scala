@@ -19,7 +19,7 @@ object ResourcesSpec extends Specification with unfiltered.specs2.netty.Served {
        mustHaveType("foo.js", "application/javascript")
      }
      "respond with useful headers" in {
-       val headers = httpx(req(host / "foo.css")).headers().toMultimap.asScala
+       val headers = httpx(req(host / "foo.css")).headers.toMultimap.asScala
        headers must haveKey("date")
        headers must haveKey("expires")
        headers must haveKey("last-modified")
@@ -28,16 +28,16 @@ object ResourcesSpec extends Specification with unfiltered.specs2.netty.Served {
        headers must haveKey("cache-control")
      }
      "respond sith Forbidden (403) for requests with questionable paths" in {
-       httpx(host / ".." / "..").code() must be_==(403)
+       httpx(host / ".." / "..").code must be_==(403)
      }
      "respond with NotFound (404) for requests for non-existant files" in {
-       httpx(host / "foo.bar").code() must be_==(404)
+       httpx(host / "foo.bar").code must be_==(404)
      }
      "respond with Forbidden (403) for requests for a directory by default" in {
-       httpx(host).code() must be_==(403)
+       httpx(host).code must be_==(403)
      }
      "respond with BadRequest (400) with a non GET request" in  {
-       httpx(req(host / "foo.css").POST("")).code() must be_==(400)
+       httpx(req(host / "foo.css").POST("")).code must be_==(400)
      }
      "respond with a NotModified (304) with a If-Modified-Since matches resources lastModified time" in {
        import java.util.{Calendar, Date, GregorianCalendar}
@@ -47,7 +47,7 @@ object ResourcesSpec extends Specification with unfiltered.specs2.netty.Served {
        cal.setTime(new Date(rsrc.lastModified))
        val ifmodsince = Map(
          "If-Modified-Since" -> Dates.format(cal.getTime))
-       httpx(req(host / "foo.css") <:< ifmodsince).code() must be_==(304)
+       httpx(req(host / "foo.css") <:< ifmodsince).code must be_==(304)
      }
    }
 }

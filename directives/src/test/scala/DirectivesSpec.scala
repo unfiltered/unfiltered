@@ -127,10 +127,10 @@ trait DirectivesSpec extends SpecificationLike with unfiltered.specs2.Hosted {
 
   "Directives commit" should {
     "respond with expected commited error" in {
-      httpx(host / "commit_or").code() must_== 400
+      httpx(host / "commit_or").code must_== 400
     }
     "try alternative when failing before commit" in {
-      http(req(host / "commit_or").POST("")).code() must_== 200
+      http(req(host / "commit_or").POST("")).code must_== 200
     }
   }
   "Directives" should {
@@ -155,16 +155,16 @@ trait DirectivesSpec extends SpecificationLike with unfiltered.specs2.Hosted {
       val resp = httpx(req(host / "accept_json" / "123")
         //<:< Map("Content-Type" -> "application/json")
         POST(someJson, JSONContentType))
-      resp.code() must_== 406
+      resp.code must_== 406
     }
     "respond with unsupported media if content-type wrong" in {
       val resp = httpx((req(host / "accept_json" / "123")
         <:< Map("Accept" -> "application/json")).POST(someJson))
-      resp.code() must_== 415
+      resp.code must_== 415
     }
     "respond with 404 if not matching" in {
       val resp = httpx(req(host / "accept_other" / "123").POST(someJson))
-      resp.code() must_== 404
+      resp.code must_== 404
     }
   }
   "Directives decorated" should {
@@ -178,13 +178,13 @@ trait DirectivesSpec extends SpecificationLike with unfiltered.specs2.Hosted {
       val resp = httpx(req(host / "awesome_json" / "123")
         <:< Map("Accept" -> "application/json")
         POST(someJson))
-      resp.code() must_== 415
+      resp.code must_== 415
     }
     "respond with unsupported media if content-type missing" in {
       val resp = httpx(req (host / "awesome_json" / "123")
         <:< Map("Accept" -> "application/json")
         POST(someJson, null))
-      resp.code() must_== 415
+      resp.code must_== 415
     }
   }
   "Directives if filtering" should {
@@ -198,13 +198,13 @@ trait DirectivesSpec extends SpecificationLike with unfiltered.specs2.Hosted {
       val resp = httpx(req(host / "if_json" / "123")
         <:< Map("Accept" -> "application/json")
         POST(someJson))
-      resp.code() must_== 415
+      resp.code must_== 415
     }
     "respond with unsupported media if content-type missing" in {
       val resp = httpx(req(host / "if_json" / "123")
         <:< Map("Accept" -> "application/json")
         POST(someJson, null))
-      resp.code() must_== 415
+      resp.code must_== 415
     }
   }
   "Directive parameters" should {
@@ -231,8 +231,8 @@ trait DirectivesSpec extends SpecificationLike with unfiltered.specs2.Hosted {
           "require_int" -> 4.toString,
           "even_int" -> 7.toString
         ))
-      resp.code() must_== 400
-      resp.body().string() must_== "even_int is not even: 7"
+      resp.code must_== 400
+      resp.as_string must_== "even_int is not even: 7"
     }
     "fail if int format is wrong" in {
       val resp = httpx(req(host / "valid_parameters")
@@ -240,16 +240,16 @@ trait DirectivesSpec extends SpecificationLike with unfiltered.specs2.Hosted {
           "require_int" -> 4.toString,
           "even_int" -> "eight"
         ))
-      resp.code() must_== 400
-      resp.body().string() must_== "even_int is not an int: eight"
+      resp.code must_== 400
+      resp.as_string must_== "even_int is not an int: eight"
     }
     "fail if required parameter is missing" in {
       val resp = httpx(req(host / "valid_parameters")
         << Map(
           "require_int" -> 4.toString
         ))
-      resp.code() must_== 400
-      resp.body().string() must_== "even_int is missing"
+      resp.code must_== 400
+      resp.as_string must_== "even_int is missing"
     }
   }
   "Directive independent parameters" should {
@@ -268,8 +268,8 @@ trait DirectivesSpec extends SpecificationLike with unfiltered.specs2.Hosted {
           "option_int" -> "four",
           "even_int" -> 7.toString
         ))
-      resp.code() must_== 400
-      resp.body().string() must_== """option_int is not an int: four
+      resp.code must_== 400
+      resp.as_string must_== """option_int is not an int: four
 require_int is missing
 even_int is not even: 7"""
     }

@@ -1,5 +1,6 @@
 package unfiltered.request
 
+import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 import java.util.zip.GZIPInputStream
 
@@ -39,13 +40,11 @@ trait GZipSpec extends Specification with unfiltered.specs2.Hosted {
       }
     }
 
-  def gzipDecode(response: okhttp3.Response) = {
-    val body = response.body()
-    try {
-      scala.io.Source.fromInputStream(new GZIPInputStream(body.byteStream())).mkString
-    } finally {
-      body.close()
-    }
+  def gzipDecode(response: Response) = {
+    val body = response.body
+    body.map(bs =>
+      scala.io.Source.fromInputStream(new GZIPInputStream(new ByteArrayInputStream(bs.toByteArray))).mkString
+    ).getOrElse("")
   }
 
   "GZip response kit should" should {
@@ -95,13 +94,13 @@ trait GZipSpec extends Specification with unfiltered.specs2.Hosted {
     }
     "pass an non-matching request" in {
       val resp = httpx(host / "unknown")
-      resp.code() must_== 404
+      resp.code must_== 404
     }
     "pass an non-matching zipped request" in {
       val resp = httpx(req(host / "unknown")
         <:< Map("Content-Encoding" -> "gzip")
         POST(bos, MediaType.parse("text/plain")))
-      resp.code() must_== 404
+      resp.code must_== 404
     }
     "echo a utf-8 request" in {
       val msg = http(req(host / "echo")

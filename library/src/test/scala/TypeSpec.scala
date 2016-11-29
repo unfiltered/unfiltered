@@ -1,5 +1,7 @@
 package unfiltered.request
 
+import java.nio.charset.StandardCharsets
+
 import org.specs2.mutable._
 
 object TypeSpecJetty extends Specification with unfiltered.specs2.jetty.Planned with TypeSpec
@@ -24,13 +26,13 @@ trait TypeSpec extends Specification with unfiltered.specs2.Hosted {
     "Correctly encode response in utf8 by default" in {
       val resp = http(host / "test")
 
-      resp.body().string() must_== message
+      resp.as_string must_== message
       List(resp.header("Content-Type").toLowerCase) must containPattern("text/plain; ?charset=utf-8")
     }
     "Correctly encode response in iso-8859-1 if requested" in {
       val resp = http(host / "latin")
 
-      resp.body().string() must_== message
+      resp.body.map(b => new String(b.toByteArray, StandardCharsets.ISO_8859_1)).getOrElse("") must_== message
       List(resp.header("Content-Type").toLowerCase) must containPattern("text/plain; ?charset=iso-8859-1")
     }
   }

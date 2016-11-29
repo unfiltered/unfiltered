@@ -197,7 +197,7 @@ object ChunkAggregatedUploadSpec extends Specification
       file.exists must_==true
 
       val resp = httpx(req(host / "async" / "notfound") <<* ("f", file, "text/plain"))
-      resp.code() must_== 404
+      resp.code must_== 404
     }
 
     // Cycle
@@ -236,7 +236,7 @@ object ChunkAggregatedUploadSpec extends Specification
       file.exists must_==true
 
       val resp = httpx(req(host / "cycle" / "notfound") <<* ("f", file, "text/plain"))
-      resp.code() must_== 404
+      resp.code must_== 404
     }
   }
 }

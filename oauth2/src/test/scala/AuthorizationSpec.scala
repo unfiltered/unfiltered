@@ -24,11 +24,11 @@ object AuthorizationSpec
   val owner = MockResourceOwner("doug")
   val password = "mockuserspassword"
 
-  override def http(req: okhttp3.Request): okhttp3.Response = {
+  override def http(req: okhttp3.Request): Response = {
     requestWithNewClient(req, new OkHttpClient().newBuilder().followRedirects(false).followSslRedirects(false).build())
   }
 
-  override def httpx(req: okhttp3.Request): okhttp3.Response = {
+  override def httpx(req: okhttp3.Request): Response = {
     http(req)
   }
 
@@ -66,7 +66,7 @@ object AuthorizationSpec
        val head = http(authorize <<? Map(
           "client_id" -> client.id,
           "redirect_uri" -> client.redirectUri
-       )).headers().toMultimap.asScala.mapValues(_.asScala.toList)
+       )).headers.toMultimap.asScala.mapValues(_.asScala.toList)
       head must haveKey("location")
       new URI(head("location").head).getQuery match {
         case ErrorQueryString(err, desc) =>
@@ -202,7 +202,7 @@ object AuthorizationSpec
          "client_id" -> client.id,
          "client_secret" -> client.secret,
          "redirect_uri" -> client.redirectUri
-      )).headers().toMultimap.asScala.mapValues(_.asScala.toSet)
+      )).headers.toMultimap.asScala.mapValues(_.asScala.toSet)
       headers must haveKey("cache-control")
       headers must haveKey("pragma")
       headers("cache-control") must be_==(Set("no-store"))
@@ -290,7 +290,7 @@ object AuthorizationSpec
          "client_secret" -> client.secret,
          "username" -> owner.id,
          "password" -> password
-      )).headers().toMultimap.asScala.mapValues(_.asScala.toSet)
+      )).headers.toMultimap.asScala.mapValues(_.asScala.toSet)
       headers must haveKey("cache-control")
       headers must haveKey("pragma")
       headers("cache-control") must be_==(Set("no-store"))
@@ -320,7 +320,7 @@ object AuthorizationSpec
        val head = http(authorize <<? Map(
          "response_type" -> "code",
          "redirect_uri" -> client.redirectUri
-       )).headers().toMultimap.asScala.mapValues(_.asScala.toList)
+       )).headers.toMultimap.asScala.mapValues(_.asScala.toList)
        head must haveKey("location")
        val uri = new URI(head("location").head)
        uri.getQuery match {

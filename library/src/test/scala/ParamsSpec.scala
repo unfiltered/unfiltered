@@ -97,7 +97,7 @@ trait ParamsSpec extends Specification with unfiltered.specs2.Hosted {
     }
     "not match on non-number" in {
       val resp = httpx(host / "int" <<? Map("number" -> "8a"))
-      resp.code() must_== 400
+      resp.code must_== 400
       resp.as_string must_== "number"
     }
     "return even number" in {
@@ -105,17 +105,17 @@ trait ParamsSpec extends Specification with unfiltered.specs2.Hosted {
     }
     "fail on non-number" in {
       val resp = httpx(host / "even" <<? Map("number"->"eight", "what"->""))
-      resp.code() must_== 400
+      resp.code must_== 400
       resp.as_string must_== "number:eight is not a number"
     }
     "fail on odd number" in {
       val resp = httpx(host / "even" <<? Map("number" -> "7"))
-      resp.code() must_== 400
+      resp.code must_== 400
       resp.as_string must_== "number:7 is odd,what:bad"
     }
     "fail on not present" in {
       val resp = httpx(host / "even")
-      resp.code() must_== 400
+      resp.code must_== 400
       resp.as_string must_== "number:missing,what:bad"
     }
     val strpoint = req(host / "str") <:< Map("User-Agent" -> "Tester")
@@ -124,7 +124,7 @@ trait ParamsSpec extends Specification with unfiltered.specs2.Hosted {
     }
     "fail 400 if param not an int" in {
       val resp = httpx(strpoint <<? Map("param" -> "one", "req"->"whew"))
-      resp.code() must_== 400
+      resp.code must_== 400
       resp.as_string must_== "param"
     }
     "return optional param if an int" in {
