@@ -52,3 +52,7 @@ A super simple run anywhere [adhoc HTTP server](https://github.com/softprops/unp
 
 #### penger.no
 [penger.no](https://www.penger.no/) is a Norwegian web based service whose aim is to help consumers compare the prices and terms of bank and insurance providers to find the best offer.
+
+#### REA Group
+
+[REA Group](https://www.rea-group.com/) is a digital advertising company that operates Australia's leading property websites and real estate websites in Europe, Asia and the US. Unfiltered is our default choice when building the Scala-based HTTP microservices that power sites like https://www.realestate.com.au.
