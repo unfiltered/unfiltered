@@ -18,7 +18,7 @@ object Common {
 
     version := "0.9.0-beta1",
 
-    crossScalaVersions := Seq("2.11.8", "2.10.4", "2.12.0"),
+    crossScalaVersions := Seq("2.11.8", "2.10.6", "2.12.0"),
 
     scalaVersion := crossScalaVersions.value.head,
 
