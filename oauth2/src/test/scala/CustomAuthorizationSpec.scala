@@ -48,7 +48,7 @@ object CustomAuthorizationSpec
          "redirect_uri" -> client.redirectUri
       ))
 
-      resp.code() must_== 403
+      resp.code must_== 403
       resp.as_string must_== "client_credentials not supported"
     }
   }

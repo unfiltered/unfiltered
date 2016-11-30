@@ -1,8 +1,6 @@
 package unfiltered
 package specs2
 
-import java.nio.charset.StandardCharsets
-
 import okhttp3._
 import okio.ByteString
 import unfiltered.request.Method
@@ -15,10 +13,10 @@ trait Hosted {
 
   def http(req: Request): Response = {
     val response = httpx(req)
-    if (response.code() == 200) {
+    if (response.code == 200) {
       response
     } else {
-      throw StatusCode(response.code())
+      throw StatusCode(response.code)
     }
   }
 
@@ -27,9 +25,18 @@ trait Hosted {
   }
 
   def requestWithNewClient(req: Request, clientF: => OkHttpClient): Response = {
+    import collection.JavaConverters._
+
     val client = clientF
     try {
-      client.newCall(req).execute()
+      val res = client.newCall(req).execute()
+      val headers = res.headers.toMultimap.asScala.mapValues(_.asScala.toList).toMap
+      val transformed = Response(res.code(), headers, Option(res.body()).map{ body =>
+        val bytes = body.bytes()
+        ByteString.of(bytes, 0, bytes.length)
+      })
+      res.close()
+      transformed
     } finally {
       client.dispatcher().executorService().shutdown()
     }
@@ -90,9 +97,16 @@ trait Hosted {
     def <<*(name: String, file: java.io.File, mt: String) = {
       val mp = new MultipartBody.Builder().
         setType(MultipartBody.FORM).
-        addFormDataPart(name, file.getName, RequestBody.create(MediaType.parse("text/plain"), file)).build()
+        addFormDataPart(name, file.getName, RequestBody.create(MediaType.parse(mt), file)).build()
       POST(mp)
     }
+  }
+
+
+  case class Response(code: Int, headers: Map[String, List[String]], body: Option[ByteString]) {
+    def as_string = body.map(_.utf8()).getOrElse("")
+    def header(name: String): Option[List[String]] = headers.get(name.toLowerCase)
+    def firstHeader(name: String): Option[String] = header(name).flatMap(_.headOption)
   }
 
   trait ByteStringToConverter[A] {
@@ -114,23 +128,4 @@ trait Hosted {
   }
 
   implicit def urlToGetRequest(url: HttpUrl): Request = req(url)
-
-  implicit class ResponseWrapper(res: Response) {
-    def as_string = as[String]
-    def as[T](implicit handler: ResponseHandler[T]) = handler.apply(res)
-  }
-
-  trait ResponseHandler[T] {
-    final def apply(res: Response): T = try { convert(res) } finally { res.close() }
-    def convert(res: Response): T
-  }
-
-  object ResponseHandler {
-    def lift[T](f: Response => T) = new ResponseHandler[T] {
-      def convert(res: Response) = f(res)
-    }
-
-    implicit val String: ResponseHandler[String] = lift((res) => res.body().string())
-    implicit val Response: ResponseHandler[Response] = lift(identity)
-  }
 }

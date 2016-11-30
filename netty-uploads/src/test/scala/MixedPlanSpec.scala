@@ -137,7 +137,7 @@ object MixedPlanSpec extends Specification
     // General
 
     "respond with a 404 when passing non-parameterised content type value" in {
-      val code = httpx(req(host / "ignored").POST("f", MediaType.parse("application/x-www-form-urlencoded"))).code()
+      val code = httpx(req(host / "ignored").POST("f", MediaType.parse("application/x-www-form-urlencoded"))).code
       code must_== 404
     }
 
@@ -146,7 +146,7 @@ object MixedPlanSpec extends Specification
     "respond with 404 when posting to a non-existent url" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      val code = httpx(req(host / "cycle" / "notexists") <<* ("f", file, "text/plain")).code()
+      val code = httpx(req(host / "cycle" / "notexists") <<* ("f", file, "text/plain")).code
       code must_== 404
     }
 
@@ -177,7 +177,7 @@ object MixedPlanSpec extends Specification
     "respond with a 404 when passing in a cycle plan with no matching intent" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      val code = httpx(req(host / "cycle" / "passnotfound") <<* ("f", file, "text/plain")).code()
+      val code = httpx(req(host / "cycle" / "passnotfound") <<* ("f", file, "text/plain")).code
       code must_== 404
     }
 
@@ -210,7 +210,7 @@ object MixedPlanSpec extends Specification
     "respond with a 404 when passing in an async plan with no matching intent" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      val code = httpx(req(host / "async" / "passnotfound") <<* ("f", file, "text/plain")).code()
+      val code = httpx(req(host / "async" / "passnotfound") <<* ("f", file, "text/plain")).code
       code must_== 404
     }
   }

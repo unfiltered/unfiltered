@@ -94,7 +94,7 @@ object NoChunkAggregatorSpec extends Specification
     "respond with a 200 when no chunk aggregator is used in a cycle plan" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      val code = httpx(req(host / "cycle" / "upload") <<* ("f", file, "text/plain")).code()
+      val code = httpx(req(host / "cycle" / "upload") <<* ("f", file, "text/plain")).code
       code must_== 200
     }
 
@@ -102,7 +102,7 @@ object NoChunkAggregatorSpec extends Specification
     "respond with a 200 when no chunk aggregator is used in an async plan" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      val code = httpx(req(host / "async" / "upload") <<* ("f", file, "text/plain")).code()
+      val code = httpx(req(host / "async" / "upload") <<* ("f", file, "text/plain")).code
       code must_== 200
     }
 

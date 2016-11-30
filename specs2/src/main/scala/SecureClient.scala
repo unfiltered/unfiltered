@@ -31,10 +31,10 @@ trait SecureClient extends Hosted {
 
   def https(req: Request): Response = {
     val response = httpsx(req)
-    if (response.code() == 200) {
+    if (response.code == 200) {
       response
     } else {
-      throw StatusCode(response.code())
+      throw StatusCode(response.code)
     }
   }
 

@@ -1,5 +1,6 @@
 package unfiltered.request
 
+import java.io.ByteArrayInputStream
 import java.nio.charset.StandardCharsets
 import java.util.zip.GZIPInputStream
 
@@ -39,29 +40,27 @@ trait GZipSpec extends Specification with unfiltered.specs2.Hosted {
       }
     }
 
-  def gzipDecode(response: okhttp3.Response) = {
-    val body = response.body()
-    try {
-      scala.io.Source.fromInputStream(new GZIPInputStream(body.byteStream())).mkString
-    } finally {
-      body.close()
-    }
+  def gzipDecode(response: Response) = {
+    val body = response.body
+    body.map(bs =>
+      scala.io.Source.fromInputStream(new GZIPInputStream(new ByteArrayInputStream(bs.toByteArray))).mkString
+    ).getOrElse("")
   }
 
   "GZip response kit should" should {
     "gzip-encode a response when accepts header is present" in {
       val resp = http(req(host / "test") <:< Map("Accept-Encoding" -> "gzip"))
-      resp.header("Content-Encoding") must_== "gzip"
+      resp.firstHeader("Content-Encoding") must_== Some("gzip")
       gzipDecode(resp) must_== message
     }
     "gzip-encode an empty response when accepts header is present" in {
       val resp = http(req(host / "empty") <:< Map("Accept-Encoding" -> "gzip"))
-      resp.header("Content-Encoding") must_== "gzip"
+      resp.firstHeader("Content-Encoding") must_== Some("gzip")
       gzipDecode(resp) must_== ""
     }
     "serve unencoded response when accepts header is not present" in {
       val resp = http(req(host / "test"))
-      Option(resp.header("Content-Encoding")) must_== None
+      resp.firstHeader("Content-Encoding") must_== None
       resp.as_string must_== message
     }
   }
@@ -95,13 +94,13 @@ trait GZipSpec extends Specification with unfiltered.specs2.Hosted {
     }
     "pass an non-matching request" in {
       val resp = httpx(host / "unknown")
-      resp.code() must_== 404
+      resp.code must_== 404
     }
     "pass an non-matching zipped request" in {
       val resp = httpx(req(host / "unknown")
         <:< Map("Content-Encoding" -> "gzip")
         POST(bos, MediaType.parse("text/plain")))
-      resp.code() must_== 404
+      resp.code must_== 404
     }
     "echo a utf-8 request" in {
       val msg = http(req(host / "echo")

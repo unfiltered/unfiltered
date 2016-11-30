@@ -37,7 +37,7 @@ trait PassSpec extends Specification with unfiltered.specs2.Hosted {
     }
     "not match with POST" in {
       val resp = httpx(req(host) << Map("what"-> "oh"))
-      resp.code() must_== 404
+      resp.code must_== 404
     }
   }
 }

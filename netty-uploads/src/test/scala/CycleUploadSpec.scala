@@ -140,7 +140,7 @@ object CycleUploadSpec extends Specification
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
       val resp = httpx(req(host / "notfound") <<* ("f", file, "text/plain"))
-      resp.code() must_== 404
+      resp.code must_== 404
     }
   }
 }
