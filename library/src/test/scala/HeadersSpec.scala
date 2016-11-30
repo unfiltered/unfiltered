@@ -97,7 +97,9 @@ trait HeadersSpec extends Specification with unfiltered.specs2.Hosted {
       get("te", ("TE","trailers, deflate;q=0.5")) must_== "pass"
     }
     "parse Upgrade" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.42
-      get("u", ("Upgrade","HTTP/2.0, SHTTP/1.3, IRC/6.9, RTA/x11")) must_== "pass"
+      // Connection: upgrade MUST be sent with Upgrade header
+      // https://tools.ietf.org/html/rfc7230#page-59
+      get("u", ("Connection", "upgrade"), ("Upgrade","HTTP/2.0, SHTTP/1.3, IRC/6.9, RTA/x11")) must_== "pass"
     }
     "parse User-Agent" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.43
       get("ua", ("User-Agent","CERN-LineMode/2.15 libwww/2.17b3")) must_== "pass"
