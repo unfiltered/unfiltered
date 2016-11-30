@@ -2,7 +2,6 @@ package unfiltered.mac
 
 import org.specs2.mutable._
 import org.specs2.matcher.ThrownMessages
-import scala.collection.JavaConverters._
 
 object MacSpec extends Specification with ThrownMessages with unfiltered.specs2.jetty.Served {
   import unfiltered.response._

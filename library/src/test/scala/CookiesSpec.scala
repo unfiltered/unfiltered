@@ -1,7 +1,6 @@
 package unfiltered.request
 
 import org.joda.time.DateTime
-import java.util
 
 import okhttp3.{Cookie, HttpUrl, OkHttpClient}
 import org.specs2.mutable._

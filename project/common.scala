@@ -13,6 +13,12 @@ object Common {
 
   def integrationTestDeps(sv: String) = (specs2Dep(sv) :: okHttp) map { _ % "test" }
 
+  private[this] val unusedWarnings = (
+    "-Ywarn-unused" ::
+    "-Ywarn-unused-import" ::
+    Nil
+  )
+
   val settings: Seq[Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "net.databinder",
 
@@ -24,6 +30,10 @@ object Common {
 
     scalacOptions ++=
       Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked", "-feature"),
+
+    scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)){
+      case Some((2, v)) if v >= 11 => unusedWarnings
+    }.toList.flatten,
 
     javacOptions in Compile ++= Seq("-source", "1.6", "-target", "1.6"),
 
@@ -63,5 +73,7 @@ object Common {
 
     // this should resolve artifacts recently published to sonatype oss not yet mirrored to maven central
     resolvers += "sonatype releases" at "https://oss.sonatype.org/content/repositories/releases"
+  ) ++ Seq(Compile, Test).flatMap(c =>
+    scalacOptions in (c, console) --= unusedWarnings
   )
 }

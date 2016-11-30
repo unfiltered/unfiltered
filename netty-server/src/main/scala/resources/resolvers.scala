@@ -1,8 +1,7 @@
 package unfiltered.netty.resources
 
-import java.io.{ File, FileInputStream, FileNotFoundException, FilterInputStream, InputStream }
-import java.net.{ JarURLConnection, URL, URLDecoder }
-import java.util.jar.{ JarEntry, JarFile }
+import java.io.{ File, FileInputStream, FileNotFoundException, InputStream }
+import java.net.{ JarURLConnection, URL }
 
 import scala.util.control.Exception.catching
 

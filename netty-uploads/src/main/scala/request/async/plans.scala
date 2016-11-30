@@ -3,8 +3,7 @@ package unfiltered.netty.async
 import unfiltered.netty.{ async, ReceivedMessage, RequestBinding, ServerErrorResponse }
 import unfiltered.netty.request.{ AbstractMultiPartDecoder, Decode, Helpers, MultiPartBinding, MultiPartCallback, MultiPartPass, TidyExceptionHandler }
 import unfiltered.request.HttpRequest
-import unfiltered.response.{ Pass => UPass, ResponseFunction }
-import unfiltered.Async
+import unfiltered.response.{ Pass => UPass }
 
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelHandler.Sharable

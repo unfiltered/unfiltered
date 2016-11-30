@@ -11,7 +11,7 @@ import io.netty.handler.ssl.{
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelHandler.Sharable
 
-import org.specs2.mutable.{ BeforeAfter, Specification }
+import org.specs2.mutable.Specification
 
 object SslServerSpec
   extends Specification

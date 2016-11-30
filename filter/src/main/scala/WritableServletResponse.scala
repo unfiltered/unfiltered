@@ -2,7 +2,7 @@ package unfiltered.filter
 
 import java.io.PrintWriter
 import javax.servlet.http.{HttpServletResponse, HttpServletResponseWrapper}
-import unfiltered.response.{HttpResponse, DelegatingResponse, ResponseFunction}
+import unfiltered.response.HttpResponse
 /**
  * The servlet API states that, for a given response, either the
  * getOutputStream or getWriter method may be called, but not both:

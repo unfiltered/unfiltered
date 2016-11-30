@@ -3,8 +3,6 @@ package unfiltered.oauth2
 import okhttp3.OkHttpClient
 import org.specs2.mutable._
 
-import scala.collection.JavaConverters._
-
 object ProtectionSpec extends Specification with org.specs2.matcher.ThrownMessages with unfiltered.specs2.jetty.Served {
   import unfiltered.response._
   import unfiltered.request._

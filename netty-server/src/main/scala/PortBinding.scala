@@ -3,7 +3,6 @@ package unfiltered.netty
 import unfiltered.util.{ HttpPortBinding, HttpsPortBinding, IO, Port, PortBindingInfo }
 
 import io.netty.bootstrap.ServerBootstrap
-import io.netty.channel.ChannelFuture
 import io.netty.channel.socket.SocketChannel
 import io.netty.handler.ssl.{ SslContext, SslContextBuilder, SslProvider, SslHandler }
 import io.netty.handler.ssl.util.SelfSignedCertificate

@@ -2,7 +2,6 @@
 package unfiltered.netty.cycle
 
 import io.netty.handler.codec.http.{
-  FullHttpRequest,
   HttpContent,
   HttpRequest => NettyHttpRequest,
   HttpResponse }
@@ -11,11 +10,9 @@ import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter }
 import io.netty.channel.ChannelHandler.Sharable
 
 import unfiltered.netty.{ ExceptionHandler, ReceivedMessage, RequestBinding, ServerErrorResponse }
-import unfiltered.response.{ Pass, ResponseFunction }
+import unfiltered.response.ResponseFunction
 import unfiltered.request.HttpRequest
 import unfiltered.util.control.NonFatal
-
-import scala.language.reflectiveCalls
 
 object Plan {
   type Intent = unfiltered.Cycle.Intent[ReceivedMessage, HttpResponse]

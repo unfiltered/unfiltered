@@ -6,7 +6,6 @@ import unfiltered.request.{
   AbstractDiskFile,  
   AbstractStreamedFile,  
   DiskExtractor,
-  HttpRequest,
   MultiPartMatcher,
   MultipartData,
   RequestContentType,

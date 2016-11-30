@@ -92,7 +92,6 @@ trait DefaultMessages extends Messages {
 
 trait Protected extends OAuthProvider with unfiltered.filter.Plan {
   self: OAuthStores with Messages =>
-  import unfiltered.filter.request.ContextPath
   import OAuth._
 
   def intent = Directive.Intent {

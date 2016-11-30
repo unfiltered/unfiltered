@@ -18,7 +18,6 @@ object JsonpSpec extends Specification  with unfiltered.specs2.jetty.Served {
       }
 
       case GET(UFPath("/jsonp/lift-json/optional") & Jsonp.Optional(callback)) => callback respond {
-        import org.json4s
         import org.json4s.JsonDSL._
         "answer" -> Seq(42)
       }

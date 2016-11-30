@@ -3,9 +3,7 @@ package unfiltered.netty.request
 
 import org.specs2.mutable.Specification
 
-import unfiltered.netty
 import unfiltered.netty.async
-import unfiltered.netty.{Http => NHttp}
 import unfiltered.request.{ Path => UFPath, POST, & }
 import unfiltered.response.{ NotFound, ResponseString }
 import unfiltered.specs2.netty.Served
