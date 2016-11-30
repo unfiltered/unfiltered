@@ -6,9 +6,6 @@ import unfiltered.request.{ HttpRequest => Req }
 import unfiltered.filter.request.ContextPath // work on removing this dep
 import unfiltered.directives._, Directives._
 
-import scala.language.reflectiveCalls
-import scala.language.implicitConversions
-
 object OAuthorization {
 
   val RedirectURI = "redirect_uri"
@@ -101,7 +98,7 @@ trait Authorized extends AuthorizationProvider
   import OAuthorization._
 
   /** Syntactic sugar for appending query strings to paths */
-  implicit def s2qs(uri: String) = new {
+  implicit class s2qs(uri: String) {
      def ?(qs: String) =
        "%s%s%s" format(uri, if(uri.indexOf("?") > 0) "&" else "?", qs)
   }
