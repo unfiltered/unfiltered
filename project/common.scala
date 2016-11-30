@@ -3,8 +3,8 @@ import sbt._
 object Common {
   import Keys._
 
-  val servletApiDep = "javax.servlet" % "javax.servlet-api" % "3.0.1" % "provided"
-  val jettyVersion = "9.2.5.v20141112"
+  val servletApiDep = "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided"
+  val jettyVersion = "9.2.19.v20160908"
 
   def specs2Dep(sv: String) =
     "org.specs2" %% "specs2-core" % "3.8.6"
