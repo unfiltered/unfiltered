@@ -9,7 +9,7 @@ object Common {
   def specs2Dep(sv: String) =
     sv.split("[.-]").toList match {
       case "2" :: "9" :: _ => "org.specs2" %% "specs2" % "1.12.4.1"
-      case _ => "org.specs2" %% "specs2" % "2.3.11"
+      case _ => "org.specs2" %% "specs2" % "2.4.17"
     }
 
 
@@ -21,14 +21,14 @@ object Common {
   def dispatchOAuthDep =
     "net.databinder" %% "dispatch-oauth" % dispatchVersion
 
-  def integrationTestDeps(sv: String) = (specs2Dep(sv) :: dispatchDeps) map { _ % "test" }
+  def integrationTestDeps(sv: String) = (specs2Dep(sv) :: Nil) map { _ % "test" }
 
   val settings: Seq[Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "net.databinder",
 
-    version := "0.8.4",
+    version := "0.8.4-RC1",
 
-    crossScalaVersions := Seq("2.11.2", "2.10.4"),
+    crossScalaVersions := Seq("2.12.0" ,"2.11.2", "2.10.4"),
 
     scalaVersion := crossScalaVersions.value.head,
 
