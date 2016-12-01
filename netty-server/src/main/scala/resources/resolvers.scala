@@ -53,9 +53,8 @@ case class JarResource(url: URL) extends Resource {
   val directory = path.endsWith("/")
   val hidden = false
   lazy val entry = jarfile.flatMap { jar =>
-    import scala.collection.JavaConversions.enumerationAsScalaIterator
-    enumerationAsScalaIterator(jar.entries)
-      .find(_.getName.replace("\\","/") == path)
+    import scala.collection.JavaConverters._
+    jar.entries.asScala.find(_.getName.replace("\\","/") == path)
   }
   lazy val exists = entry.isDefined
   lazy val lastModified = entry match  {
