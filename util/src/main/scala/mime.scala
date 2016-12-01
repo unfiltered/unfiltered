@@ -21,11 +21,11 @@ class MIMEType(val major: String,
 object MIMEType {
   def unapply(mt: String): Option[MIMEType] = {
     import javax.activation.MimeType
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
     util.control.Exception.allCatch.opt {
       val mimeType = new MimeType(mt)
       val names = mimeType.getParameters.getNames
-      val params = names.foldLeft(Map.empty[String, String]) {
+      val params = names.asScala.foldLeft(Map.empty[String, String]) {
         case (acc, p: String) =>
           acc + (p -> mimeType.getParameter(p))
       }

@@ -17,7 +17,7 @@ object CookiesSpecNetty
 
 trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
 
-  import scala.collection.JavaConversions._
+  import scala.collection.JavaConverters._
 
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
@@ -71,11 +71,11 @@ trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
       withCookieJar { jar =>
         val h = httpWithCookies(jar)
         h(req(host / "save") << Map("foo" -> "bar")).as_string must_== "foo bar!"
-        val someCookies = jar.loadForRequest(host / "save")
+        val someCookies = jar.loadForRequest(host / "save").asScala
         someCookies.size must_== 1
         someCookies.find(_.name == "foo") must beSome
         h(host / "clear").as_string must_== "foo who?"
-        val noCookies = jar.loadForRequest(host / "clear")
+        val noCookies = jar.loadForRequest(host / "clear").asScala
         noCookies.size must_== 0
         noCookies.find(_.name == "foo") must beNone
       }
@@ -84,12 +84,12 @@ trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
       withCookieJar { jar =>
         val h = httpWithCookies(jar)
         h(req(host/ "save_multi") << Map("foo" -> "bar", "baz" -> "boom")).as_string must_== "foo bar baz boom!"
-        val someCookies = jar.loadForRequest(host/ "save_multi")
+        val someCookies = jar.loadForRequest(host/ "save_multi").asScala
         someCookies.size must_== 2
         someCookies.find(_.name == "foo") must beSome
         someCookies.find(_.name == "baz") must beSome
         h(host / "clear_multi").as_string must_== "foo who?"
-        val noCookies = jar.loadForRequest(host / "clear")
+        val noCookies = jar.loadForRequest(host / "clear").asScala
         noCookies.size must_== 0
         noCookies.find(_.name == "foo") must beNone
         noCookies.find(_.name == "baz") must beNone
