@@ -9,7 +9,7 @@ object Common {
   def specs2Dep(sv: String) =
     "org.specs2" %% "specs2-core" % "3.8.6"
 
-  def okHttp = "com.squareup.okhttp3" % "okhttp" % "3.4.2" :: Nil
+  def okHttp = "com.squareup.okhttp3" % "okhttp" % "3.5.0" :: Nil
 
   def integrationTestDeps(sv: String) = (specs2Dep(sv) :: okHttp) map { _ % "test" }
 
