@@ -22,10 +22,10 @@ unfiltered.filter.Plan {
       })
     case Path("/prefer") & Params(p) =>
        // let's store it on the client
-       ResponseCookies(Cookie("pref", p("pref")(0))) ~>
+       SetCookies(Cookie("pref", p("pref")(0))) ~>
          Redirect("/")
     case Path("/forget") =>
-       ResponseCookies(Cookie("pref", "")) ~>
+       SetCookies(Cookie("pref", "")) ~>
          Redirect("/")
   }
 }
