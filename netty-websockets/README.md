@@ -74,3 +74,10 @@ To mix in websockets in with a Netty HTTP server, use the full `Plan.Intent` fun
           case Path("/bar") =>
              ...
        })
+
+
+# TEST
+
+The tests include code from https://github.com/softprops/tubesocks
+Original author is Doug Tangren.
+

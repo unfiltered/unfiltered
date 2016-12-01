@@ -5,4 +5,4 @@ unmanagedClasspath in (local("netty-websockets"), Test) ++=
 
 libraryDependencies ++= Common.integrationTestDeps(scalaVersion.value)
 
-libraryDependencies += "me.lessis" %% "tubesocks" % "0.1.0" % "test"// exclude("io.netty", "netty")
+libraryDependencies += "com.ning" % "async-http-client" % "1.8.12" % "test"
