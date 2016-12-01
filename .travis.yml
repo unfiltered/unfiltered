@@ -4,3 +4,5 @@ scala:
   - 2.12.0
 jdk:
   - oraclejdk8
+script:
+  - sbt ++2.12.0 publish
