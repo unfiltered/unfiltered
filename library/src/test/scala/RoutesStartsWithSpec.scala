@@ -16,9 +16,6 @@ with RoutesStartsWithSpec
 
 trait RoutesStartsWithSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
-  import unfiltered.request.{Path => UFPath}
-  import unfiltered.Cookie
-
 
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = Routes.startsWith(
     "/the" -> theFunction,

@@ -4,8 +4,6 @@ import org.specs2.mutable._
 
 object ToCookiesSpec extends Specification {
   import unfiltered.Cookie
-  import unfiltered.request.DateFormatting
-  import java.util.Date
 
   "ToCookies" should {
     "serialize a single version 0 cookie" in {

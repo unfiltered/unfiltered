@@ -1,6 +1,6 @@
 package unfiltered.oauth
 
-import unfiltered.response.{ResponseWriter, Html}
+import unfiltered.response.ResponseWriter
 import java.io.OutputStreamWriter
 
 trait OAuthResponse

@@ -3,8 +3,6 @@ package unfiltered.oauth2
 import okhttp3.OkHttpClient
 import org.specs2.mutable._
 
-import scala.collection.JavaConverters._
-
 object AuthorizationSpec
   extends Specification
   with org.specs2.matcher.ThrownMessages

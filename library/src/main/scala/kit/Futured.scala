@@ -2,7 +2,7 @@ package unfiltered.kit
 
 import unfiltered.Async
 import unfiltered.request.HttpRequest
-import unfiltered.response.{ResponseFunction,Pass,InternalServerError}
+import unfiltered.response.{ResponseFunction,Pass}
 
 import scala.concurrent.{Future,ExecutionContext}
 import scala.util.{Failure, Success}

@@ -2,13 +2,12 @@ package unfiltered.netty.future
 
 import unfiltered.netty.{ ReceivedMessage, ServerErrorResponse }
 import unfiltered.request.HttpRequest
-import unfiltered.response.{ Pass, InternalServerError, ResponseFunction }
+import unfiltered.response.ResponseFunction
 import unfiltered.netty.async
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{ HttpResponse => NettyHttpResponse }
 
 import scala.concurrent.{ Future, ExecutionContext }
-import scala.util.{ Failure, Success }
 
 object Plan {
   type Intent =

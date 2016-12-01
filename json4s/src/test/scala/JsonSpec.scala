@@ -1,7 +1,6 @@
 package unfiltered.response
 
 import org.specs2.mutable._
-import scala.collection.JavaConverters._
 
 object JsonSpec extends Specification  with unfiltered.specs2.jetty.Served {
   import unfiltered.response._

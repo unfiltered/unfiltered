@@ -1,7 +1,5 @@
 package unfiltered.netty
 
-import java.net.ConnectException
-
 import okhttp3.HttpUrl
 import org.specs2.mutable._
 import unfiltered.response.{Ok, Redirect, ResponseString}

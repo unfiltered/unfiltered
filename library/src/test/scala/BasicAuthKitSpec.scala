@@ -12,11 +12,9 @@ extends Specification
 with unfiltered.specs2.netty.Planned
 with BasicAuthKitSpec
 
-import scala.collection.JavaConverters._
 
 trait BasicAuthKitSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
-  import unfiltered.request.{Path => UFPath}
 
   def valid(u: String, p: String) = (u,p) match { case ("test", "secret") => true case _ => false }
 

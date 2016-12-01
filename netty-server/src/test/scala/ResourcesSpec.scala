@@ -1,7 +1,6 @@
 package unfiltered.netty
 
 import org.specs2.mutable.Specification
-import collection.JavaConverters._
 
 /** Tests a netty server configured to handle static resources only */
 object ResourcesSpec extends Specification with unfiltered.specs2.netty.Served {
@@ -40,7 +39,7 @@ object ResourcesSpec extends Specification with unfiltered.specs2.netty.Served {
        httpx(req(host / "foo.css").POST("")).code must be_==(400)
      }
      "respond with a NotModified (304) with a If-Modified-Since matches resources lastModified time" in {
-       import java.util.{Calendar, Date, GregorianCalendar}
+       import java.util.{Date, GregorianCalendar}
        import java.io.File
        val rsrc = new File(getClass().getResource("/files/foo.css").getFile)
        val cal = new GregorianCalendar()

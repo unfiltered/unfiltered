@@ -2,7 +2,6 @@ package unfiltered.netty.request
 
 import org.specs2.mutable.Specification
 
-import unfiltered.netty
 import unfiltered.netty.cycle
 import unfiltered.request.{ Path => UFPath, POST, & }
 import unfiltered.response.{ NotFound, ResponseString }

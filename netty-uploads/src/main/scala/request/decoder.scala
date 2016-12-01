@@ -2,12 +2,10 @@ package unfiltered.netty.request
 
 import unfiltered.netty.{ ExceptionHandler, ReceivedMessage, RequestBinding }
 import unfiltered.request.POST
-import unfiltered.response.{ Pass => UPass, ResponseFunction }
 import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandler }
 import io.netty.handler.codec.http.{
   HttpRequest,
   HttpContent,
-  HttpHeaders,
   HttpUtil,
   LastHttpContent
 }

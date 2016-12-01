@@ -4,8 +4,6 @@ import scala.util.control.Exception.allCatch
 import unfiltered.directives._
 import unfiltered.directives.data._
 
-import unfiltered.response.ResponseFunction
-
 object Int extends Fallible[String,Int](s => allCatch.opt { s.toInt })
 
 object Long extends Fallible[String,Long](s => allCatch.opt { s.toLong })

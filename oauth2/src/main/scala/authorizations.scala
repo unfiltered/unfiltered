@@ -2,7 +2,6 @@ package unfiltered.oauth2
 
 import unfiltered.request._
 import unfiltered.response._
-import unfiltered.request.{ HttpRequest => Req }
 import unfiltered.filter.request.ContextPath // work on removing this dep
 import unfiltered.directives._, Directives._
 

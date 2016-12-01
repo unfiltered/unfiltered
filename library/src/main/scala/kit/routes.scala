@@ -3,8 +3,6 @@ package unfiltered.kit
 import unfiltered.request._
 import unfiltered.response._
 
-import scala.util.matching.Regex
-
 /** Routing kits for directing requests to handlers based on paths  */
 object Routes {
 

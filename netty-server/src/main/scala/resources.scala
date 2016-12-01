@@ -13,7 +13,7 @@ import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{
   LastHttpContent, HttpHeaders, HttpResponse, HttpUtil }
 import io.netty.handler.stream.{ ChunkedFile, ChunkedStream }
-import io.netty.util.{ CharsetUtil, ReferenceCountUtil }
+import io.netty.util.CharsetUtil
 import java.io.{ File, FileNotFoundException, RandomAccessFile }
 import java.net.{ URL, URLDecoder }
 import java.text.SimpleDateFormat

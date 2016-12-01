@@ -11,7 +11,7 @@ import io.netty.channel.{
   EventLoopGroup
 }
 import io.netty.channel.group.{ ChannelGroup, DefaultChannelGroup }
-import io.netty.channel.nio.{ NioEventLoop, NioEventLoopGroup }
+import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.codec.http.{

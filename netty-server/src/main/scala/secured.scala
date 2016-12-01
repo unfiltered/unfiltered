@@ -1,8 +1,6 @@
 package unfiltered.netty
 
-import unfiltered.util.{ IO, Port, RunnableServer }
-
-import java.net.InetSocketAddress
+import unfiltered.util.{ IO, Port }
 
 import io.netty.channel.{ ChannelHandler, ChannelInitializer, ChannelPipeline }
 import io.netty.channel.socket.SocketChannel
@@ -11,7 +9,7 @@ import io.netty.handler.ssl.SslHandler
 
 import java.io.FileInputStream
 import java.security.{ KeyStore, SecureRandom }
-import javax.net.ssl.{ KeyManager, KeyManagerFactory, SSLEngine, SSLContext, TrustManager, TrustManagerFactory }
+import javax.net.ssl.{ KeyManagerFactory, SSLEngine, SSLContext, TrustManagerFactory }
 
 @deprecated("Use unfiltered.netty.Server", since="0.8.1")
 object Https {

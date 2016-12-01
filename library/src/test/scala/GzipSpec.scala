@@ -23,7 +23,7 @@ trait GZipSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
 
-  import java.io.{OutputStreamWriter,ByteArrayOutputStream}
+  import java.io.ByteArrayOutputStream
   import java.util.zip.{GZIPOutputStream => GZOS}
 
 

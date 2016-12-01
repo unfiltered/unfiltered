@@ -1,6 +1,6 @@
 package unfiltered.netty
 
-import org.specs2.mutable.{BeforeAfter, Specification}
+import org.specs2.mutable.Specification
 
 import unfiltered.response.{ Pass, Ok, ResponseString }
 import unfiltered.request.{ GET, Params, Path => UFPath, POST, PUT, RemoteAddr, & }

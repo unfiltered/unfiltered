@@ -1,6 +1,6 @@
 package unfiltered.response
 
-import java.io.{Writer,OutputStreamWriter}
+import java.io.OutputStreamWriter
 
 trait ResponseWriter extends Responder[Any] {
   def respond(res: HttpResponse[Any]) {

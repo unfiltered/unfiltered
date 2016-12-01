@@ -2,11 +2,6 @@ package unfiltered.response
 
 import unfiltered.Cookie
 
-/** Set-Cookie response header. See SetCookies */
-object ResponseCookies {
-  private val Name = "Set-Cookie"
-}
-
 /** Set-Cookie response header */
 object SetCookies {
   private val Name = "Set-Cookie"

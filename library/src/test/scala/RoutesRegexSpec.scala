@@ -4,8 +4,6 @@ import org.specs2.mutable._
 
 import unfiltered.request._
 
-import scala.util.matching.Regex
-
 object RoutesRegexSpecJetty
 extends Specification
 with unfiltered.specs2.jetty.Planned
@@ -18,9 +16,6 @@ with RoutesRegexSpec
 
 trait RoutesRegexSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
-  import unfiltered.request.{Path => UFPath}
-  import unfiltered.Cookie
-
 
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = Routes.regex(
     "/widgets/?" -> widgets,

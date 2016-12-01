@@ -3,7 +3,7 @@ package unfiltered.netty.websockets
 import unfiltered.request.{ GET, Host, HttpRequest }
 import unfiltered.netty.{ ExceptionHandler, ReceivedMessage, RequestBinding }
 import io.netty.channel.{
-  Channel, ChannelFuture, ChannelFutureListener,
+  ChannelFuture, ChannelFutureListener,
   ChannelHandlerContext, ChannelInboundHandlerAdapter
 }
 import io.netty.channel.ChannelHandler.Sharable
@@ -15,7 +15,7 @@ import io.netty.handler.codec.http.websocketx.{
   WebSocketServerHandshaker, WebSocketHandshakeException,
   WebSocketServerHandshakerFactory
 }
-import io.netty.util.{ CharsetUtil, ReferenceCountUtil }
+import io.netty.util.ReferenceCountUtil
 import scala.util.control.Exception.catching
 
 /** Serves the same purpose of unfiltered.netty.ServerErrorResponse, which is to

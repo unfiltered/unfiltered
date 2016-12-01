@@ -1,10 +1,9 @@
 package unfiltered.filter.async
 
-import util._
 import unfiltered.filter.{AsyncBinding,RequestBinding,ResponseBinding}
-import unfiltered.response.{NotFound, Pass}
+import unfiltered.response.Pass
 import unfiltered.request.HttpRequest
-import javax.servlet.{Filter, FilterConfig, FilterChain, ServletRequest, ServletResponse}
+import javax.servlet.{FilterChain, ServletRequest, ServletResponse}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import unfiltered.Async
 import Planify._
