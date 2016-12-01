@@ -37,7 +37,7 @@ object Param {
     see [[Media]] and [[Rel]].
     New parameter types can be added to `Link` headers as `link-extension`
     parameters. Extension parameters can be constructed
-    via [[Param.extension)]]. */
+    via [[Param.extension]]. */
 sealed abstract class Param(val paramType: Param.Type, val value: String)
 final case class Anchor(uri: String) extends Param(Param.Anchor, uri)
 final case class Hreflang(lang: String) extends Param(Param.Hreflang, lang)
