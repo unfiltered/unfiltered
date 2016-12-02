@@ -8,6 +8,7 @@ import unfiltered.response.{ NotFound, ResponseString }
 import unfiltered.specs2.netty.Served
 
 import java.io.{ File => JFile,FileInputStream => FIS }
+import java.util.Arrays
 
 import org.apache.commons.io.{ IOUtils => IOU }
 
@@ -31,7 +32,7 @@ object CycleUploadSpec extends Specification
             case Seq(f, _*) =>
               f.write(new JFile("upload-test-out.txt")) match {
                 case Some(outFile) =>
-                  if (IOU.toString(new FIS(outFile)) == new String(f.bytes)) ResponseString(
+                  if (Arrays.equals(IOU.toByteArray(new FIS(outFile)), f.bytes)) ResponseString(
                     "wrote disk read file f named %s with content type %s with correct contents" format(
                       f.name, f.contentType)
                   )
@@ -58,10 +59,10 @@ object CycleUploadSpec extends Specification
         case Decode(binding) =>
           MultiPartParams.Streamed(binding).files("f") match {
            case Seq(f, _*) =>
-              val src = IOU.toString(getClass.getResourceAsStream("/netty-upload-big-text-test.txt"))
+              val src = IOU.toByteArray(getClass.getResourceAsStream("/netty-upload-big-text-test.txt"))
               f.write(new JFile("upload-test-out.txt")) match {
                 case Some(outFile) =>
-                  if (IOU.toString(new FIS(outFile)) == src) ResponseString(
+                  if (Arrays.equals(IOU.toByteArray(new FIS(outFile)), src)) ResponseString(
                     "wrote stream read file f named %s with content type %s with correct contents" format(
                       f.name, f.contentType)
                   )
