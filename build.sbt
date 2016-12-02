@@ -2,9 +2,17 @@ import Common._
 import Unfiltered._
 import Dependencies._
 
-name := "Unfiltered"
-
 Common.settings
+
+unidocSettings
+
+// unidoc publish settings
+name := "unfiltered-all"
+artifacts := Classpaths.artifactDefs(Seq(packageDoc in Compile)).value
+packagedArtifacts := Classpaths.packaged(Seq(packageDoc in Compile)).value
+Defaults.packageTaskSettings(
+  packageDoc in Compile, (UnidocKeys.unidoc in Compile).map{_.flatMap(Path.allSubpaths)}
+)
 
 val specs2ProjectId = "specs2"
 val scalatestProjectId = "scalatest"
