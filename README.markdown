@@ -24,10 +24,6 @@ Provides asynchronous support for the filter module
 
 Provides an embedded web server abstraction for serving filters.
 
-### jetty-ajp
-
-An embedded server that adheres to the ajp protocol.
-
 ### netty
 
 Binds the core library to a Netty channel handler and provides an embedded server.
