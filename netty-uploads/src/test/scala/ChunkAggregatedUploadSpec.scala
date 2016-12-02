@@ -8,6 +8,7 @@ import unfiltered.response.{ NotFound, ResponseString }
 import unfiltered.specs2.netty.Served
 
 import java.io.{ File => JFile,FileInputStream => FIS }
+import java.util.Arrays
 
 import org.apache.commons.io.{ IOUtils => IOU }
 
@@ -27,7 +28,7 @@ object ChunkAggregatedUploadSpec extends Specification
         case Seq(f, _*) =>
           f.write(new JFile("async-upload-test-out.txt")) match {
             case Some(outFile) =>
-              if(IOU.toString(new FIS(outFile)) == new String(f.bytes)) req.respond(ResponseString(
+              if(Arrays.equals(IOU.toByteArray(new FIS(outFile)), f.bytes)) req.respond(ResponseString(
                 "wrote disk read file f named %s with content type %s with correct contents" format(
                   f.name, f.contentType))
               )
@@ -49,10 +50,10 @@ object ChunkAggregatedUploadSpec extends Specification
       case POST(UFPath("/async/stream-upload/write") & MultiPart(req)) =>
         MultiPartParams.Streamed(req).files("f") match {
          case Seq(f, _*) =>
-            val src = IOU.toString(getClass.getResourceAsStream("/netty-upload-big-text-test.txt"))
+            val src = IOU.toByteArray(getClass.getResourceAsStream("/netty-upload-big-text-test.txt"))
             f.write(new JFile("async-upload-test-out.txt")) match {
               case Some(outFile) =>
-                if (IOU.toString(new FIS(outFile)) == src) req.respond(ResponseString(
+                if (Arrays.equals(IOU.toByteArray(new FIS(outFile)), src)) req.respond(ResponseString(
                   "wrote stream read file f named %s with content type %s with correct contents" format(
                     f.name, f.contentType))
                 )
@@ -95,7 +96,7 @@ object ChunkAggregatedUploadSpec extends Specification
         case Seq(f, _*) =>
           f.write(new JFile("upload-test-out.txt")) match {
             case Some(outFile) =>
-              if (IOU.toString(new FIS(outFile)) == new String(f.bytes)) ResponseString(
+              if (Arrays.equals(IOU.toByteArray(new FIS(outFile)), f.bytes)) ResponseString(
                 "wrote disk read file f named %s with content type %s with correct contents" format(
                   f.name, f.contentType)
               )
@@ -117,10 +118,10 @@ object ChunkAggregatedUploadSpec extends Specification
       case POST(UFPath("/cycle/stream-upload/write") & MultiPart(req)) =>
         MultiPartParams.Streamed(req).files("f") match {
          case Seq(f, _*) =>
-            val src = IOU.toString(getClass.getResourceAsStream("/netty-upload-big-text-test.txt"))
+            val src = IOU.toByteArray(getClass.getResourceAsStream("/netty-upload-big-text-test.txt"))
             f.write(new JFile("upload-test-out.txt")) match {
               case Some(outFile) =>
-                if(IOU.toString(new FIS(outFile)) == src) ResponseString(
+                if(Arrays.equals(IOU.toByteArray(new FIS(outFile)), src)) ResponseString(
                   "wrote stream read file f named %s with content type %s with correct contents" format(
                     f.name, f.contentType))
                 else ResponseString(

@@ -9,6 +9,7 @@ object UploadsSpec extends Specification with unfiltered.specs2.jetty.Served {
   import unfiltered.request.{Path => UFPath, _}
 
   import java.io.{File => JFile}
+  import java.util.Arrays
 
   class TestPlan extends unfiltered.filter.Plan {
     def intent = {
@@ -21,7 +22,7 @@ object UploadsSpec extends Specification with unfiltered.specs2.jetty.Served {
         case Seq(f, _*) =>
           f.write(new JFile("upload-test-out.txt")) match {
             case Some(outFile) =>
-              if(IOU.toString(new FIS(outFile)) == new String(f.bytes)) ResponseString(
+              if(Arrays.equals(IOU.toByteArray(new FIS(outFile)), f.bytes)) ResponseString(
                 "wrote disk read file f named %s with content type %s with correct contents" format(
                   f.name, f.contentType)
               )
@@ -42,10 +43,10 @@ object UploadsSpec extends Specification with unfiltered.specs2.jetty.Served {
       case POST(UFPath("/stream-upload/write") & MultiPart(req)) =>
         MultiPartParams.Streamed(req).files("f") match {
          case Seq(f, _*) =>
-            val src = IOU.toString(getClass.getResourceAsStream("/upload-test.txt"))
+            val src = IOU.toByteArray(getClass.getResourceAsStream("/upload-test.txt"))
             f.write(new JFile("upload-test-out.txt")) match {
               case Some(outFile) =>
-                if(IOU.toString(new FIS(outFile)) == src) ResponseString(
+                if(Arrays.equals(IOU.toByteArray(new FIS(outFile)), src)) ResponseString(
                   "wrote stream read file f named %s with content type %s with correct contents" format(
                     f.name, f.contentType)
                 )
