@@ -3,16 +3,6 @@ import sbt._
 object Common {
   import Keys._
 
-  val servletApiDep = "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided"
-  val jettyVersion = "9.2.19.v20160908"
-
-  def specs2Dep(sv: String) =
-    "org.specs2" %% "specs2-core" % "3.8.6"
-
-  def okHttp = "com.squareup.okhttp3" % "okhttp" % "3.5.0" :: Nil
-
-  def integrationTestDeps(sv: String) = (specs2Dep(sv) :: okHttp) map { _ % "test" }
-
   private[this] val unusedWarnings = (
     "-Ywarn-unused" ::
     "-Ywarn-unused-import" ::
