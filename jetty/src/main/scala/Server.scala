@@ -5,7 +5,6 @@ import unfiltered.util.{ PlanServer, RunnableServer }
 import javax.servlet.Filter
 
 import org.eclipse.jetty.server.handler.{ContextHandlerCollection, RequestLogHandler, HandlerCollection}
-
 /** Holds port bindings for selected ports and interfaces. The
   * PortBindings trait provides convenience methods for bindings. */
 case class Server(
@@ -48,11 +47,7 @@ case class Server(
       contextHandlers)(rl => {
       val handlers = new HandlerCollection()
       val requestLogHandler = new RequestLogHandler()
-      val requestLog = new NCSARequestLog(rl.filename)
-      requestLog.setRetainDays(rl.retainDays);
-      requestLog.setExtended(rl.extended);
-      requestLog.setLogTimeZone(rl.timezone);
-      requestLogHandler.setRequestLog(requestLog);
+      requestLogHandler.setRequestLog(rl.requestLog);
       handlers.setHandlers(Array(contextHandlers, requestLogHandler))
       handlers
     })
@@ -83,7 +78,14 @@ case class Server(
                      dateFormat: String = "dd/MMM/yyyy:HH:mm:ss Z",
                      timezone: String = "GMT",
                      retainDays: Int = 31) = copy(requestLogging = {
-    Some(RequestLogging(filename, extended, dateFormat, timezone, retainDays))
+    Some(FileRequestLogging(filename, extended, dateFormat, timezone, retainDays))
+  })
+
+  /** Configure global logging of requests to a logfile using logbackConfig in the class path.
+    * If you do not provide the filename, default of logback-access.xml will be used
+    * [[http://logback.qos.ch/access.html]] */
+  def logbackRequestLogging(logbackConfigFileName: String = "logback-access.xml") = copy(requestLogging = {
+    Some(LogbackRequestLogging(logbackConfigFileName))
   })
 
   /** Ports used by this server, reported by super-trait */
