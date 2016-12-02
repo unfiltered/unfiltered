@@ -4,7 +4,7 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext, ChannelInboundHandler }
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{ DefaultFullHttpResponse, HttpVersion, HttpResponseStatus }
-import unfiltered.util.control.NonFatal
+import scala.util.control.NonFatal
 
 // note(doug): this type is a little dubious as there as exceptions passed around are no longer wrapped in events. we may wish to remove this
 @Sharable

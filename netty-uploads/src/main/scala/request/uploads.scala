@@ -13,7 +13,7 @@ import unfiltered.request.{
   TupleGenerator
 }
 import unfiltered.request.io.FileIO
-import unfiltered.util.control.NonFatal
+import scala.util.control.NonFatal
 
 import io.netty.handler.codec.http.multipart.{
   Attribute,

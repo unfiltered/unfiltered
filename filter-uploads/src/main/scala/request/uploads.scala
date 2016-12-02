@@ -1,7 +1,7 @@
 package unfiltered.filter.request
 
 import unfiltered.request.{AbstractDiskExtractor, AbstractDiskFile, AbstractStreamedFile, DiskExtractor, HttpRequest, MultiPartMatcher, MultipartData, StreamedExtractor, TupleGenerator}
-import unfiltered.util.control.NonFatal
+import scala.util.control.NonFatal
 
 import org.apache.commons.fileupload.{FileItem, FileItemFactory, FileItemHeaders, FileItemStream}
 import org.apache.commons.fileupload.disk.DiskFileItemFactory
