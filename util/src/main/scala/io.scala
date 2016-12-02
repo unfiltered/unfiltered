@@ -1,9 +1,8 @@
 package unfiltered.util
-import scala.language.reflectiveCalls
 
 trait IO {
   /** Manage the usage of some object that must be closed after use */
-  def use[C <: { def close() }, T](c: C)(f: C => T): T = try {
+  def use[C <: java.lang.AutoCloseable, T](c: C)(f: C => T): T = try {
     f(c)
   } finally {
     c.close()
