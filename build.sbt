@@ -1,5 +1,6 @@
 import Common._
 import Unfiltered._
+import Dependencies._
 
 name := "Unfiltered"
 
@@ -24,16 +25,16 @@ lazy val library: Project = module("unfiltered")(
   dependsOnInTest(scalatestProjectId),
   dependsOnInTest(filterProjectId),
   libraryDependencies ++= Seq(
-    "commons-codec" % "commons-codec" % "1.10",
+    "commons-codec" % "commons-codec" % commonsCodecVersion,
     specs2Dep(scalaVersion.value) % "test",
-    "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
-    "joda-time" % "joda-time" % "2.9.6" % "test",
-    "org.joda" % "joda-convert" % "1.8.1" % "test"
+    "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
+    "joda-time" % "joda-time" % jodaTimeVersion % "test",
+    "org.joda" % "joda-convert" % jodaConvertVersion % "test"
   ),
   libraryDependencies ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, v)) if v >= 11 =>
-        Seq("org.scala-lang.modules" %% "scala-xml" % "1.0.6")
+        Seq("org.scala-lang.modules" %% "scala-xml" % scalaXmlVersion)
       case _ =>
         Nil
     }
@@ -71,7 +72,7 @@ lazy val uploads = module("uploads")(
 ).settings(
   description := "Generic support for multi-part uploads",
   libraryDependencies ++= Seq(
-    "commons-io" % "commons-io" % "2.5"
+    "commons-io" % "commons-io" % commonsIoVersion
   ) ++ integrationTestDeps(scalaVersion.value)
 ).dependsOn(library, specs2 % "test")
 
@@ -81,7 +82,7 @@ lazy val filterUploads = module("filter-uploads")(
   description := "Support for multi-part uploads for servlet filters",
   libraryDependencies ++= Seq(
     servletApiDep,
-    "commons-fileupload" % "commons-fileupload" % "1.3.2"
+    "commons-fileupload" % "commons-fileupload" % commonsFileUploadVersion
   ) ++ integrationTestDeps(scalaVersion.value)
 ).dependsOn(uploads, filters, specs2 % "test")
 
@@ -102,8 +103,6 @@ lazy val nettyServer = module("netty-server")(
   libraryDependencies ++= integrationTestDeps(scalaVersion.value)
 ).dependsOn(netty, util)
 
-val nettyVersion = "4.1.6.Final"
-
 lazy val netty = module("netty")().settings(
   description := "Netty server binding module",
   dependsOnSpecs2InTest,
@@ -123,7 +122,7 @@ lazy val specs2: Project = module(specs2ProjectId)().settings(
 
 lazy val scalatest = module(scalatestProjectId)().settings(
   description := "Facilitates testing Unfiltered servers with ScalaTest",
-  libraryDependencies ++= okHttp :+ "org.scalatest" %% "scalatest" % "3.0.1"
+  libraryDependencies ++= okHttp :+ "org.scalatest" %% "scalatest" % scalatestVersion
 ).dependsOn(filters, jetty, nettyServer)
 
 lazy val json4s = module("json4s")(
@@ -131,19 +130,19 @@ lazy val json4s = module("json4s")(
 ).settings(
   description := "Json4s request matchers and response functions",
   libraryDependencies ++= {
-    Seq("org.json4s" %% "json4s-native" % "3.5.0") ++ integrationTestDeps(scalaVersion.value)
+    Seq("org.json4s" %% "json4s-native" % json4sVersion) ++ integrationTestDeps(scalaVersion.value)
   }
 ).dependsOn(library, filters % "test", specs2 % "test")
 
 lazy val websockets = module("netty-websockets")().settings(
   description := "WebSockets plan support using Netty",
   libraryDependencies ++= integrationTestDeps(scalaVersion.value),
-  libraryDependencies += "com.ning" % "async-http-client" % "1.8.17" % "test"
+  libraryDependencies += "com.ning" % "async-http-client" % asyncHttpClientVersion % "test"
 ).dependsOn(nettyServer, specs2 % "test")
 
 lazy val oauth = module("oauth")().settings(
   description := "OAuth plans for servlet filters",
-  libraryDependencies += "com.github.scribejava" % "scribejava-core" % "3.3.0" % "test",
+  libraryDependencies += "com.github.scribejava" % "scribejava-core" % scribeJavaVersion % "test",
   libraryDependencies ++= integrationTestDeps(scalaVersion.value)
 ).dependsOn(jetty, filters, directives, specs2 % "test")
 
