@@ -12,7 +12,7 @@ import io.netty.channel.ChannelHandler.Sharable
 import unfiltered.netty.{ ExceptionHandler, ReceivedMessage, RequestBinding, ServerErrorResponse }
 import unfiltered.response.ResponseFunction
 import unfiltered.request.HttpRequest
-import unfiltered.util.control.NonFatal
+import scala.util.control.NonFatal
 
 object Plan {
   type Intent = unfiltered.Cycle.Intent[ReceivedMessage, HttpResponse]

@@ -4,7 +4,7 @@ import unfiltered.netty.{ ReceivedMessage, RequestBinding, ServerErrorResponse }
 import unfiltered.netty.request.{ AbstractMultiPartDecoder, Decode, Helpers, MultiPartBinding, MultiPartCallback, MultiPartPass, TidyExceptionHandler }
 import unfiltered.request.HttpRequest
 import unfiltered.response.{ ResponseFunction, Pass => UPass }
-import unfiltered.util.control.NonFatal
+import scala.util.control.NonFatal
 
 import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter }
 import io.netty.channel.ChannelHandler.Sharable

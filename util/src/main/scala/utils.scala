@@ -1,7 +1,7 @@
 package unfiltered.util
 
 import scala.util.control.Exception.allCatch
-import unfiltered.util.control.NonFatal
+import scala.util.control.NonFatal
 
 object Port {
   /** Finds any available port and returns it */
