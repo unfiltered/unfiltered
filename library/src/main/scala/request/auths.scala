@@ -12,7 +12,7 @@ object BasicAuth {
       tok.nextToken match {
         case "Basic" =>
           new String(decodeBase64(tok.nextToken getBytes("utf8"))) split(":", 2) match {
-            case Array(u, p) => Some(u, p)
+            case Array(u, p) => Some((u, p))
             case _ => None
           }
         case _ => None

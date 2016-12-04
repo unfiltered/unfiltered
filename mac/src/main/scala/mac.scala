@@ -53,7 +53,7 @@ object MacAuthorization {
     case Authorization(value) =>
       value.split(",").toList match {
         case MacHeader(id, nonce, bodyhash, ext, mac) =>
-          Some(id, nonce, bodyhash, ext, mac)
+          Some((id, nonce, bodyhash, ext, mac))
         case p => None
       }
     case _ => None

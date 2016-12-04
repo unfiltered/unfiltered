@@ -195,8 +195,8 @@ object HostPort {
   def unapply[T](req: HttpRequest[T]): Option[(String, Int)] =
     req match {
       case Host(hostname) => hostname.split(':') match {
-        case Array(host, Of.Int(port)) => Some(host, port)
-        case _ => Some(hostname, if(req.isSecure) 443 else 80)
+        case Array(host, Of.Int(port)) => Some((host, port))
+        case _ => Some((hostname, if(req.isSecure) 443 else 80))
       }
       case _ => None
     }
