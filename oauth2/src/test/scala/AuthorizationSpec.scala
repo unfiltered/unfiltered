@@ -141,8 +141,8 @@ object AuthorizationSpec
          "client_secret" -> client.redirectUri
       )).as_string
       json(body) { map =>
-        map must havePair("error", "invalid_request")
-        map must havePair("error_description", "grant_type is required")
+        map must havePair("error" -> "invalid_request")
+        map must havePair("error_description" -> "grant_type is required")
       }
     }
     "require a client_id" in {
@@ -152,8 +152,8 @@ object AuthorizationSpec
        )).as_string
 
        json(body) { map =>
-         map must havePair("error", "invalid_request")
-         map must havePair("error_description", "client_id is required")
+         map must havePair("error" -> "invalid_request")
+         map must havePair("error_description" -> "client_id is required")
        }
     }
     "not redirect to an unknown client" in {
@@ -178,8 +178,8 @@ object AuthorizationSpec
          "client_id" -> client.id
        )).as_string
        json(body) { map =>
-         map must havePair("error", "invalid_request")
-         map must havePair("error_description", "client_secret is required")
+         map must havePair("error" -> "invalid_request")
+         map must havePair("error_description" -> "client_secret is required")
        }
     }
     "accept our mock client" in {
@@ -220,8 +220,8 @@ object AuthorizationSpec
          "password" -> password
       )).as_string
       json(body) { map =>
-        map must havePair("error", "invalid_request")
-        map must havePair("error_description", "grant_type is required")
+        map must havePair("error" -> "invalid_request")
+        map must havePair("error_description" -> "grant_type is required")
       }
     }
     "require a username" in {
@@ -232,8 +232,8 @@ object AuthorizationSpec
           "password" -> password
        )).as_string
        json(body) { map =>
-         map must havePair("error", "invalid_request")
-         map must havePair("error_description", "username is required and password is required")
+         map must havePair("error" -> "invalid_request")
+         map must havePair("error_description" -> "username is required and password is required")
        }
     }
     "require a password" in {
@@ -244,8 +244,8 @@ object AuthorizationSpec
          "username" -> owner.id
        )).as_string
        json(body) { map =>
-         map must havePair("error", "invalid_request")
-         map must havePair("error_description", "username is required and password is required")
+         map must havePair("error" -> "invalid_request")
+         map must havePair("error_description" -> "username is required and password is required")
        }
     }
     "require a client_id" in {
@@ -254,8 +254,8 @@ object AuthorizationSpec
           "client_secret" -> client.secret
        )).as_string
        json(body) { map =>
-         map must havePair("error", "invalid_request")
-         map must havePair("error_description", "client_id is required")
+         map must havePair("error" -> "invalid_request")
+         map must havePair("error_description" -> "client_id is required")
        }
     }
     "require a client_secret" in {
@@ -264,8 +264,8 @@ object AuthorizationSpec
          "client_id" -> client.id
        )).as_string
        json(body) { map =>
-         map must havePair("error", "invalid_request")
-         map must havePair("error_description", "client_secret is required")
+         map must havePair("error" -> "invalid_request")
+         map must havePair("error_description" -> "client_secret is required")
        }
     }
     "accept our mock user's password credentials" in {

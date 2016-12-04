@@ -35,7 +35,7 @@ sealed trait Result[+R, +A] { result =>
     (implicit ev: R <:< JoiningResponseFunction[E,RF])
     : Result[JoiningResponseFunction[E,RF], (A,B)] = {
     (this, other) match {
-      case (Success(a), Success(b)) => Success(a, b)
+      case (Success(a), Success(b)) => Success((a, b))
       case (Failure(fa), Failure(fb)) => Failure(fa.join(fb))
       case (Success(a), Failure(fb)) => Failure(fb)
       case (Failure(fa), Success(b)) => Failure(fa)

@@ -37,7 +37,7 @@ object HeaderSpec extends Specification {
         Verifier -> "asdfasdfasd",
         Version -> "1.0"
       )
-      extracted must not(havePair(ConsumerKey, "malformed"))
+      extracted must not(havePair(ConsumerKey -> "malformed"))
       extracted must not(haveKey("non_protocol_param"))
     }
   }
