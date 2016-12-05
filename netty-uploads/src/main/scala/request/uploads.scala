@@ -77,12 +77,12 @@ object MultiPartParams {
 
       /** attempt to extract the first named param from the stream */
       def extractParam(name: String): Seq[String] = {
-        params.filter(_.getName == name).map(_.getValue).toSeq
+        params.withFilter(_.getName == name).map(_.getValue)
       }
 
       /** attempt to extract the first named file from the stream */
       def extractFile(name: String): Seq[StreamedFileWrapper] = {
-         files.filter(_.getName == name).map(new StreamedFileWrapper(_)).toSeq
+        files.withFilter(_.getName == name).map(new StreamedFileWrapper(_))
       }
       MultipartData(extractParam _,extractFile _)
     }
@@ -108,12 +108,12 @@ object MultiPartParams {
 
       /** attempt to extract the first named param from the stream */
       def extractParam(name: String): Seq[String] = {
-        params.filter(_.getName == name).map(_.getValue).toSeq
+        params.withFilter(_.getName == name).map(_.getValue)
       }
 
       /** attempt to extract the first named file from the stream */
       def extractFile(name: String): Seq[StreamedFileWrapper] = {
-         files.filter(_.getName == name).map(new MemoryFileWrapper(_)).toSeq
+        files.withFilter(_.getName == name).map(new MemoryFileWrapper(_))
       }
       MultipartData(extractParam _, extractFile _)      
     }
