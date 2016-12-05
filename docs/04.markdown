@@ -32,7 +32,7 @@ names are as follows:
 * unfiltered-oauth_$scalaBinary$
 
 [sonatype]: https://oss.sonatype.org/content/repositories/releases/net/databinder/
-[sbt]: http://www.scala-sbt.org/release/docs/Detailed-Topics/Cross-Build.html
+[sbt]: http://www.scala-sbt.org/release/docs/Cross-Build.html
 
 ### Source Dependencies
 
@@ -100,7 +100,7 @@ For a new project the easiest the easiest option to apply a
 * **unfiltered/unfiltered-gae.g8** for Google App Engine
 * **unfiltered/unfiltered-slick.g8** using [Slick][slick] for database interaction
 
-[slick]: http://slick.typesafe.com/ 
+[slick]: http://slick.lightbend.com/
 
 So for example:
 
