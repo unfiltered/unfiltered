@@ -79,12 +79,6 @@ unfiltered.jetty.Server.anylocal.plan(hello).run { s =>
   )
 }
 ```
-#### unfiltered-jetty-ajp
-
-A Jetty server configured for the [Apache JServ Protocol][ajp], a
-binary protocol for proxying web requests.
-
-[ajp]: http://en.wikipedia.org/wiki/Apache_JServ_Protocol
 
 #### unfiltered-netty-server
 

@@ -22,7 +22,6 @@ names are as follows:
 * unfiltered-netty_$scalaBinary$
 * unfiltered-netty-websockets_$scalaBinary$
 * unfiltered-jetty_$scalaBinary$
-* unfiltered-jetty-ajp_$scalaBinary$
 * unfiltered-netty-server_$scalaBinary$
 * unfiltered-uploads_$scalaBinary$
 * unfiltered-util_$scalaBinary$
