@@ -10,9 +10,9 @@ object Common {
   )
 
   val settings: Seq[Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
-    organization := "net.databinder",
+    organization := "ws.unfiltered",
 
-    version := "0.9.0-beta1",
+    version := "0.9.0-beta2",
 
     crossScalaVersions := Seq("2.12.1", "2.11.8", "2.10.6"),
 
@@ -55,14 +55,34 @@ object Common {
       </scm>
       <developers>
         <developer>
+          <id>hamnis</id>
+          <name>Erlend Hamnaberg</name>
+          <url>https://twitter.com/hamnis</url>
+        </developer>
+        <developer>
+          <id>eed3si9n</id>
+          <name>Eugene Yokota</name>
+          <url>https://twitter.com/eed3si9n</url>
+        </developer>
+        <developer>
+          <id>xuwei-k</id>
+          <name>Kenji Yoshida</name>
+          <url>https://twitter.com/xuwei_k</url>
+        </developer>
+        <developer>
+          <id>omarkilani</id>
+          <name>Omar Kilani</name>
+          <url>https://twitter.com/omarkilani</url>
+        </developer>
+        <developer>
           <id>n8han</id>
           <name>Nathan Hamblen</name>
-          <url>http://twitter.com/n8han</url>
+          <url>https://twitter.com/n8han</url>
         </developer>
         <developer>
           <id>softprops</id>
           <name>Doug Tangren</name>
-          <url>http://twitter.com/softprops</url>
+          <url>https://twitter.com/softprops</url>
         </developer>
       </developers>
     ),
