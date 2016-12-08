@@ -36,6 +36,7 @@ This trait defines one method a provider must implement
 #### TokenStore: Storage for Tokens (Unauthorized, Authorized, and Access)
 
 This trait defines the following methods a provider must implement
+
        /** generate a new key and secret tuple */
        def generate: (String, String)
        /** generate a new oauth verifier */
@@ -51,6 +52,7 @@ This trait defines the following methods a provider must implement
 #### ConsumerStore: Storage for Consumers
 
 This trait defines the following methods a provider must implement
+
      /** @return Some(Consumer) if available, None otherwise */
      def get(key: String): Option[Consumer]
 
