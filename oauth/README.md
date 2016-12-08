@@ -30,6 +30,7 @@ From a high level
 #### NonceStore: Storage for nonces
 
 This trait defines one method a provider must implement
+
      /** @return true if this is a valid unique combination for a nonce, false otherwise */
      def put(consumer: String, timestamp: String, nonce: String): Boolean
 
