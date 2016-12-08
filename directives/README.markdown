@@ -8,7 +8,7 @@ Download / Use
 
 Directives is a standard Unfiltered module published to Maven central.
 
-    libraryDependencies += "net.databinder" %% "unfiltered-directives" % "0.6.8"
+    libraryDependencies += "ws.unfiltered" %% "unfiltered-directives" % "0.9.0-beta2"
 
 Why ?
 =====

@@ -10,4 +10,4 @@ Unfiltered
 
 This documentation walks through basic functionality of the
 library. You may also want to refer to Unfiltered's
-[scaladocs](http://www.javadoc.io/doc/net.databinder/unfiltered_$scalaBinary$/$version$)
+[scaladocs](http://www.javadoc.io/doc/ws.unfiltered/unfiltered_$scalaBinary$/$version$)

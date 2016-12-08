@@ -9,7 +9,7 @@ Provides extractors for working with multipart file uploads in your netty async 
 Add netty-uploads to your project, for example:
 
 ```scala
-libraryDependencies += "net.databinder" %% "unfiltered-netty-uploads" % "0.6.1-SNAPSHOT"
+libraryDependencies += "ws.unfiltered" %% "unfiltered-netty-uploads" % "0.9.0-beta2"
 ```
 
 There are a couple of different ways you can use the multipart extractors depending on your plan structure.

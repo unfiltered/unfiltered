@@ -12,7 +12,7 @@ unfiltered-jetty, you will also need to specify unfiltered-filter.
 
 Each module is [cross-built][sbt] against several versions of Scala
 and published to the [sonatype][sonatype] repository with the
-organization-id "net.databinder". The modules have the Scala version
+organization-id "ws.unfiltered". The modules have the Scala version
 they are built against appended. For Scala $scalaBinary$+, the full artifact
 names are as follows:
 
@@ -30,7 +30,7 @@ names are as follows:
 * unfiltered-json4s_$scalaBinary$
 * unfiltered-oauth_$scalaBinary$
 
-[sonatype]: https://oss.sonatype.org/content/repositories/releases/net/databinder/
+[sonatype]: https://oss.sonatype.org/content/repositories/releases/ws/unfiltered/
 [sbt]: http://www.scala-sbt.org/release/docs/Cross-Build.html
 
 ### Source Dependencies
@@ -56,7 +56,7 @@ Scala version [automatically appended][sbt] so it will always match
 your project's. In an sbt 0.12.x project:
 
 ```scala
-libraryDependencies += "net.databinder" %% "unfiltered-filter" % "$version$"
+libraryDependencies += "ws.unfiltered" %% "unfiltered-filter" % "$version$"
 ```
 To use **source dependencies** with sbt, create a project build such
 as `project/build.scala`:
@@ -78,7 +78,7 @@ For Maven, specify the full artifact name:
 
 ```xml
 <dependency>
-  <groupId>net.databinder</groupId>
+  <groupId>ws.unfiltered</groupId>
   <artifactId>unfiltered-filter_$scalaBinary$</artifactId>
   <version>$version$</version>
 </dependency>
