@@ -1,6 +1,0 @@
-Identification and Cookies
---------------------------
-
-When remote users are humans interacting with web browsers,
-applications are often concerned with their identity and
-preferences. This section covers relevant interfaces defined for HTTP.
