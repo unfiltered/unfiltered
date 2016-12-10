@@ -80,7 +80,7 @@ val asTool = data.Fallible[Int,Tool](toolStore.get)
 
 implicit def implyTool =
   data.as.String ~> data.as.Int ~> asTool.fail(
-    (k, v) => badParam("'\$v' is not a valid tool identifier")
+    (k, v) => badParam(s"'\$v' is not a valid tool identifier")
   )
 ```
 
