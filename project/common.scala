@@ -35,7 +35,7 @@ object Common {
 
     parallelExecution in Test := false, // :( test servers collide on same port
 
-    homepage := Some(new java.net.URL("http://unfiltered.databinder.net/")),
+    homepage := Some(new java.net.URL("http://unfiltered.ws")),
 
     publishMavenStyle := true,
 

@@ -2,7 +2,7 @@
 
 [![Join the chat at https://gitter.im/unfiltered/unfiltered](https://badges.gitter.im/unfiltered/unfiltered.svg)](https://gitter.im/unfiltered/unfiltered?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-See the the [Unfiltered documentation](http://unfiltered.databinder.net/) for instructions on using the project.
+See the the [Unfiltered documentation](http://unfiltered.ws) for instructions on using the project.
 
 [![Build Status](https://travis-ci.org/unfiltered/unfiltered.svg)](https://travis-ci.org/unfiltered/unfiltered)
 
