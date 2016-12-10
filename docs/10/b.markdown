@@ -16,7 +16,7 @@ import unfiltered.netty._
 trait MyPlan extends cycle.Plan with
 cycle.ThreadPool with ServerErrorResponse
 
-Object Hello extends MyPlan {
+object Hello extends MyPlan {
   def intent = {
     case _ => ResponseString("hello world")
   }
