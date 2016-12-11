@@ -12,12 +12,12 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   def protocol = req.getProtocol
   def method = req.getMethod.toUpperCase
   def uri = Option(req.getRequestURI) ++ Option(req.getQueryString).map("?%s".format(_)) mkString("")
-  def parameterNames =
+  def parameterNames: Iterator[String] =
     req.getParameterNames.asInstanceOf[java.util.Enumeration[String]].asScala
   def parameterValues(param: String) = Option[Seq[String]](req.getParameterValues(param)).getOrElse(Nil)
-  def headerNames =
+  def headerNames: Iterator[String] =
     req.getHeaderNames.asInstanceOf[java.util.Enumeration[String]].asScala
-  def headers(name: String) =
+  def headers(name: String): Iterator[String] =
     req.getHeaders(name).asInstanceOf[java.util.Enumeration[String]].asScala
   lazy val cookies = req.getCookies match {
     case null => Nil
