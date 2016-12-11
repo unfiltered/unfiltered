@@ -117,7 +117,7 @@ case class Server(
       .option(ChannelOption.SO_REUSEADDR, JBoolean.TRUE)
       .option(ChannelOption.SO_BACKLOG, JInteger.valueOf(16384))
 
-  /** @param binder a binder which may contribute to channel initialization */
+  /** @param binding a binder which may contribute to channel initialization */
   def initializer(binding: PortBinding): ChannelInitializer[SocketChannel] =
     new ChannelInitializer[SocketChannel] {
       def initChannel(channel: SocketChannel) =

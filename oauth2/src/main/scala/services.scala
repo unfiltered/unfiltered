@@ -26,7 +26,7 @@ trait ServiceResponses {
 
   /** @return a function that provides a means of promting a resource ower
    *          for authorization. The handling of this response should post
-   *          back to the authorization server's authorize endpoitn */
+   *          back to the authorization server's authorize endpoint */
   def requestAuthorization[T](requestBundle: RequestBundle[T]): ResponseFunction[Any]
 
   /** @return a function that provides a user notification that a provided redirect
@@ -41,7 +41,7 @@ trait ServiceResponses {
 
 trait Service extends ServiceResponses {
 
-  /** @return a uri for more information on a privded error code */
+  /** @return a uri for more information on a provided error code */
   def errorUri(error: String): Option[String]
 
   /** @return Some(resourceOwner) if one is authenticated, None otherwise. None will trigger a login request */

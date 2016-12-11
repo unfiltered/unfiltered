@@ -95,7 +95,7 @@ case class MockAuthServerProvider(cli: MockClient, owner: MockResourceOwner)
     }
 
     def denied[T](r: Req[T]) = {
-      // would normally inspect the reuqest for user denial here
+      // would normally inspect the request for user denial here
       false
     }
 

@@ -20,7 +20,7 @@ class NotFoundHandler
       case req: HttpMessage =>
         ReferenceCountUtil.release(req)
         Some(req.protocolVersion)
-        // fixme(doug): this may no be unessessary
+        // fixme(doug): this may no be unnecessary
       case chunk: HttpContent =>
         ReferenceCountUtil.release(chunk)
         None

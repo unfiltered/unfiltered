@@ -35,7 +35,7 @@ trait Client {
 
 /**
  * Locate a registered client. This could be from anywhere but assuming
- * its a database or other persistance store then the clientId should
+ * its a database or other persistence store then the clientId should
  * be used as the key. 
  */
 trait ClientStore {

@@ -1,6 +1,6 @@
 package unfiltered.oauth
 
-/** Mock implementatin of OAuthStores for testing */
+/** Mock implementation of OAuthStores for testing */
 trait MockOAuthStores extends OAuthStores {
   import unfiltered.request.{HttpRequest => Req}
 

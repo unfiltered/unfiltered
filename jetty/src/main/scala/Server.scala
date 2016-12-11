@@ -30,7 +30,7 @@ case class Server(
     })
 
   /** The mutable underlying jetty server object. This is built
-    * on-demand according to the discribed configuration. */
+    * on-demand according to the described configuration. */
   lazy val underlying = {
     val server = new org.eclipse.jetty.server.Server()
     for (binding <- portBindings.reverseIterator)

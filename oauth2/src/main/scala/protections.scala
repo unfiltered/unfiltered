@@ -167,7 +167,7 @@ trait MacAuth extends AuthScheme {
 
   val challenge = "MAC"
 
-  /** The algorigm used to sign the request */
+  /** The algorithm used to sign the request */
   def algorithm: String
 
   /** Given a token value, returns the associated token secret */

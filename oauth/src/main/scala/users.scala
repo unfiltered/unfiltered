@@ -3,7 +3,7 @@ package unfiltered.oauth
 import unfiltered.response._
 import unfiltered.request.{HttpRequest => Req}
 
-/** Respresents the `User` in an oauth interaction */
+/** Represents the `User` in an oauth interaction */
 trait UserLike {
   val id: String
 }

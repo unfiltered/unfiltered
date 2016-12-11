@@ -39,7 +39,7 @@ object CustomAuthorizationSpec
   val token = host / "oauth" / "token"
 
   "A customized OAuthorization configuration" should {
-    "permit overrided flow behavior" in {
+    "permit overridden flow behavior" in {
 
       val resp = httpx(req(token) << Map(
          "grant_type" -> "client_credentials",

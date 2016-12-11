@@ -4,9 +4,9 @@ package unfiltered.oauth
 trait OAuthStores {
   /** access to nonces */
   val nonces: NonceStore
-  /** acces to tokens */
+  /** access to tokens */
   val tokens: TokenStore
-  /** acces to cosumers */
+  /** access to consumers */
   val consumers: ConsumerStore
   /** access to users and host interactions */
   val users: UserHost

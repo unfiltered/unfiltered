@@ -107,7 +107,7 @@ trait HeadersSpec extends Specification with unfiltered.specs2.Hosted {
     "parse Via" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.44
       get("v", ("Via","1.0 fred, 1.1 nowhere.com (Apache/1.1)")) must_== "pass"
     }
-    "parse X-Forwared-For" in { //  http://en.wikipedia.org/wiki/X-Forwarded-For#Format
+    "parse X-Forwarded-For" in { //  http://en.wikipedia.org/wiki/X-Forwarded-For#Format
       get("xff", ("X-Forwarded-For","client1, proxy1, proxy2")) must_== "pass"
     }
     "parse header names" in {
