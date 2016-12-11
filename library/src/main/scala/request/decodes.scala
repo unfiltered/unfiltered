@@ -14,7 +14,7 @@ object Decodes {
   val Compress  = decoding("compress")
   val Deflate   = decoding("deflate")
 
-  @deprecated("No loger needed internally, to be removed", "0.8.0")
+  @deprecated("No longer needed internally, to be removed", "0.8.0")
   trait Decoding {
     def unapply[A](req: HttpRequest[A]) = req match {
       case AcceptEncoding(encs) =>
@@ -26,7 +26,7 @@ object Decodes {
     def encoding: String
   }
   
-  @deprecated("No loger needed internally, to be removed", "0.8.0")
+  @deprecated("No longer needed internally, to be removed", "0.8.0")
   def acceptable(encA: String)(encB: String) =
     encA.equalsIgnoreCase(encB) || encA == "*"
 }
