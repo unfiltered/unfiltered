@@ -7,7 +7,7 @@ import unfiltered.response.{ResponseFunction,Pass}
 import scala.concurrent.{Future,ExecutionContext}
 import scala.util.{Failure, Success}
 
-/** Converts an intent for a future of response fuction into an async responder */
+/** Converts an intent for a future of response function into an async responder */
 object Futured {
   type Intent[-A,-B] = PartialFunction[HttpRequest[A], Future[ResponseFunction[B]]]
   def apply[A,B](intent: Intent[A,B])(onException: (HttpRequest[A], Throwable) => Unit)
