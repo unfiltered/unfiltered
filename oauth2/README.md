@@ -69,7 +69,7 @@ parameter appended to the `redirect_uri` provided
 
 If the user denies authorization, the auth server will send a redirect to the `redirect_uri` containing an query string parameter `error=access_denied`. If the request shold fail for other reasons, please refer to the error codes in the [spec](http://tools.ietf.org/html/draft-ietf-oauth-v2-16#section-4.1.2.1)
 
-2. access token request requires `grant_type=authorization_code`, `client_id`, `code`, `redirect_uri` (which matches the one passed into the the previous request)
+2. access token request requires `grant_type=authorization_code`, `client_id`, `code`, `redirect_uri` (which matches the one passed into the previous request)
 
 If valid, the server will return a json encoded response string containing the `access_token` and optional `refresh_token` and `expires_in` properties.
 If not valid, the server will return an error response indicated by the [spec](http://tools.ietf.org/html/draft-ietf-oauth-v2-16#section-5.2)
@@ -157,7 +157,7 @@ Protection requires an `AuthSource` defined as
 
 The `Protection` trait handles the OAuth protected access verification in front of other Plans.
 
-After a a successful authorization verification, your Plans can extract the resource owner's and client's identity as well as the access scopes from the requets with the `OAuthIdentity` extractor
+After a successful authorization verification, your Plans can extract the resource owner's and client's identity as well as the access scopes from the requets with the `OAuthIdentity` extractor
 
     svr
      .filter(Protection(authSrc))

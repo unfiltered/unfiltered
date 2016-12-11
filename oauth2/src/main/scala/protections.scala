@@ -59,7 +59,7 @@ trait ProtectionLike extends Plan {
 trait AuthSource {
   /** Given an deserialized access token and request, extract the resource owner, client id, and list of scopes
    *  associated with the request, if there is an error return it represented as a string message
-   *  to return the the oauth client */
+   *  to return the oauth client */
   def authenticateToken[T](
     token: AccessToken,
     request: HttpRequest[T]): Either[String, (ResourceOwner, String, Seq[String])]
