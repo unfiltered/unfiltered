@@ -77,7 +77,7 @@ object FromCookies {
         // then fold over the rest of the names & values building up the cookie
         // along with a flag that indicates of the a cookie has been build.
         // On each application of the fold, move the top level iterator's cursor
-        // forword until a cookie is complete. We keep track of the completion flag
+        // forward until a cookie is complete. We keep track of the completion flag
         // as a member of the fold to a) avoid introducing a mutable var, and b)
         // scala does not have a way to break from a for comprehention while still returning
         // a value. scala.util.control.Breakable is not an option here
