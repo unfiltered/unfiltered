@@ -14,7 +14,6 @@ with DecodesSpec
 
 trait DecodesSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
-  import unfiltered.request._
   import unfiltered.request.{Path => UFPath}
 
 
