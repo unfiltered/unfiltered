@@ -77,7 +77,6 @@ case class SocketPortBinding (
 trait SslContextProvider {
   def keyStorePath: String
   def keyStorePassword: String
-  println(keyStorePassword)
   lazy val sslContextFactory = {
     val factory = new SslContextFactory
     factory.setKeyStorePath(keyStorePath)
