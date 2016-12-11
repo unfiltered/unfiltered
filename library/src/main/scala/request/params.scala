@@ -61,7 +61,7 @@ object Params {
   val nonempty = pred { !(_:String).isEmpty }
 }
 
-/** Basic query parameter acess. */
+/** Basic query parameter access. */
 object QueryParams {
   
   /**
