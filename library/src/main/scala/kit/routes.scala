@@ -69,6 +69,6 @@ object Routes {
     case req @ Path(path) =>
       route.view.flatMap { case (key, handler) =>
         f(req, path, key, handler)
-      }.filter { _ != Pass }.headOption.getOrElse { Pass }
+      }.find{ _ != Pass }.getOrElse { Pass }
   }
 }
