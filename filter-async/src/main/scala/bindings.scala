@@ -10,7 +10,7 @@ trait AsyncBinding extends Async.Responder[HttpServletResponse] {
   private[filter] val async: javax.servlet.AsyncContext
   private[filter] val filterChain: javax.servlet.FilterChain
 
-  def respond(rf: ResponseFunction[HttpServletResponse]) {
+  def respond(rf: ResponseFunction[HttpServletResponse]): Unit = {
     rf match {
       case Pass =>
         filterChain.doFilter(self.underlying, async.getResponse)

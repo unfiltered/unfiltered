@@ -33,7 +33,7 @@ trait Plan extends unfiltered.filter.InittedFilter {
 
   def doFilter(request: ServletRequest,
                         response: ServletResponse,
-                        chain: FilterChain) {
+                        chain: FilterChain): Unit = {
     val asyncContext = request.startAsync
     asyncContext.setTimeout(asyncRequestTimeoutMillis)
 

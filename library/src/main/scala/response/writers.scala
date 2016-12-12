@@ -3,7 +3,7 @@ package unfiltered.response
 import java.io.OutputStreamWriter
 
 trait ResponseWriter extends Responder[Any] {
-  def respond(res: HttpResponse[Any]) {
+  def respond(res: HttpResponse[Any]): Unit = {
     val writer = new OutputStreamWriter(res.outputStream, res.charset)
     try { write(writer) }
     finally { writer.close() }
@@ -12,7 +12,7 @@ trait ResponseWriter extends Responder[Any] {
 }
 
 case class ResponseString(content: String) extends ResponseWriter {
-  def write(writer: OutputStreamWriter) { writer.write(content) }
+  def write(writer: OutputStreamWriter): Unit = { writer.write(content) }
 }
 
 case class Html(nodes: scala.xml.NodeSeq) extends 
@@ -26,7 +26,7 @@ case class Charset(charset: java.nio.charset.Charset)
     }
 }
 case class Html5(nodes: scala.xml.NodeSeq) extends ComposeResponse(HtmlContent ~> new ResponseWriter {
-  def write(w: OutputStreamWriter) {
+  def write(w: OutputStreamWriter): Unit = {
     val html = nodes.head match {
       case <html>{_*}</html> => nodes.head
       case _ => <html>{nodes}</html>

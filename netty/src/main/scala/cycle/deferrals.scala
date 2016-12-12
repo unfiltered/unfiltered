@@ -20,9 +20,9 @@ object ThreadPool {
  * intent is fully CPU-bound. If any thread-blocking
  * I/O is required, use deferred execution.*/
 trait SynchronousExecution {
-  def executeIntent(thunk: => Unit) { thunk }
-  def executeResponse(thunk: => Unit) { thunk }
-  def shutdown() { }
+  def executeIntent(thunk: => Unit): Unit = { thunk }
+  def executeResponse(thunk: => Unit): Unit = { thunk }
+  def shutdown(): Unit = { }
 }
 
 trait Deferral {
@@ -31,8 +31,8 @@ trait Deferral {
 
 /** Defers all processing of the intent to a Deferral mechanism. */
 trait DeferredIntent { self: Deferral =>
-  def executeIntent(thunk: => Unit) { defer { thunk } }
-  def executeResponse(thunk: => Unit) { thunk }
+  def executeIntent(thunk: => Unit): Unit = { defer { thunk } }
+  def executeResponse(thunk: => Unit): Unit = { thunk }
 }
 
 /** Defers application of the intent's response function
@@ -42,18 +42,18 @@ trait DeferredIntent { self: Deferral =>
  * object should be used to ensure that blocking operations
  * are not performed in the evaluation of the intent function.*/
 trait DeferredResponse { self: Deferral =>
-  def executeIntent(thunk: => Unit) { thunk }
-  def executeResponse(thunk: => Unit) { defer { thunk } }
+  def executeIntent(thunk: => Unit): Unit = { thunk }
+  def executeResponse(thunk: => Unit): Unit = { defer { thunk } }
 }
 
 /** Uses an ExecutorService to perform deferred tasks. */
 trait DeferralExecutor extends Deferral {
   def underlying: ExecutorService
-  def shutdown() { underlying.shutdown() }
-  def defer(f: => Unit) {
+  def shutdown(): Unit = { underlying.shutdown() }
+  def defer(f: => Unit): Unit = {
     try {
       underlying.execute(new Runnable {
-        def run { f }
+        def run: Unit = { f }
       })
     } catch {
       /** Our underlying executor has already shutdown or has already completed all of its tasks following shutdown */

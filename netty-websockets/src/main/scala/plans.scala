@@ -22,7 +22,7 @@ import scala.util.control.Exception.catching
  *  satisfy ExceptionHandler#onException, except that it is not specific to the HTTP protocol.
  *  It will simply log the Throwable and close the Channel */
 trait CloseOnException { self: ExceptionHandler =>
-  def onException(ctx: ChannelHandlerContext, t: Throwable) {
+  def onException(ctx: ChannelHandlerContext, t: Throwable): Unit = {
     t.printStackTrace()
     ctx.channel.close()
   }
@@ -86,7 +86,7 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
                 catching(classOf[WebSocketHandshakeException]).either {
                   shaker.handshake(ctx.channel, request)
                     .addListeners(new ChannelFutureListener {
-                      def operationComplete(hf: ChannelFuture) {
+                      def operationComplete(hf: ChannelFuture): Unit = {
                         val chan = hf.channel
                         attempt(Open(WebSocket(chan)))
                         chan.closeFuture.addListener(new ChannelFutureListener {
@@ -158,7 +158,7 @@ case class SocketPlan(
         pass(ctx, f)
     }
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, throwable: Throwable) {
+  override def exceptionCaught(ctx: ChannelHandlerContext, throwable: Throwable): Unit = {
     attempt(Error(WebSocket(ctx.channel), throwable))
     exceptions.onException(ctx, throwable)
   }

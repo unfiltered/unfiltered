@@ -7,7 +7,7 @@ import java.io.OutputStream
 abstract class HttpResponse[+T](val underlying: T) {
   def charset = HttpResponse.UTF8
 
-  def status(statusCode: Int)
+  def status(statusCode: Int): Unit
 
   def status: Int
 

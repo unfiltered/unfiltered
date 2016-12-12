@@ -33,7 +33,7 @@ trait MultiPartDecoder extends ChannelInboundHandlerAdapter
 
   def shutdown(): Unit
 
-  def catching(ctx: ChannelHandlerContext)(thunk: => Unit) {
+  def catching(ctx: ChannelHandlerContext)(thunk: => Unit): Unit = {
     try { thunk } catch {
       case NonFatal(e) =>
         onException(ctx, e)

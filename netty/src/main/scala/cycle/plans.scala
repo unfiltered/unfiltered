@@ -31,13 +31,13 @@ trait Plan extends ChannelInboundHandlerAdapter
 
   def intent: Plan.Intent
 
-  def executeIntent(thunk: => Unit)
+  def executeIntent(thunk: => Unit): Unit
 
-  def executeResponse(thunk: => Unit)
+  def executeResponse(thunk: => Unit): Unit
 
-  def shutdown()
+  def shutdown(): Unit
 
-  def catching(ctx: ChannelHandlerContext)(thunk: => Unit) {
+  def catching(ctx: ChannelHandlerContext)(thunk: => Unit): Unit = {
     try { thunk } catch {
       case NonFatal(e) => onException(ctx, e)
     }

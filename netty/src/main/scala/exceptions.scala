@@ -9,9 +9,9 @@ import scala.util.control.NonFatal
 // note(doug): this type is a little dubious as there as exceptions passed around are no longer wrapped in events. we may wish to remove this
 @Sharable
 trait ExceptionHandler { self: ChannelInboundHandler =>
-  def onException(ctx: ChannelHandlerContext, t: Throwable)
+  def onException(ctx: ChannelHandlerContext, t: Throwable): Unit
   override def exceptionCaught(ctx: ChannelHandlerContext,
-                               t: Throwable) {    
+                               t: Throwable): Unit = {
     onException(ctx, t)
   }
 }

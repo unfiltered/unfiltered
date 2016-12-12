@@ -3,7 +3,7 @@ package unfiltered.request.io
 trait FileIO extends unfiltered.util.IO {
   import java.io.{File => JFile, InputStream, FileOutputStream}
   
-  def toFile(from: InputStream)(to: JFile) {
+  def toFile(from: InputStream)(to: JFile): Unit = {
     use(from) { in =>
       use(new FileOutputStream(to)) { out =>
         val buffer = new Array[Byte](1024)

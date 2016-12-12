@@ -17,7 +17,7 @@ object Common {
     scalaVersion := crossScalaVersions.value.head,
 
     scalacOptions ++=
-      Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked", "-feature", "-Ywarn-adapted-args"),
+      Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked", "-feature", "-Ywarn-adapted-args", "-Xfuture"),
 
     scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)){
       case Some((2, v)) if v >= 11 => unusedWarnings

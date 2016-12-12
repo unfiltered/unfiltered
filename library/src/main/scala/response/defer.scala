@@ -6,6 +6,6 @@ package unfiltered.response
  * eager application of an intent. A Pass can not be deferred*/
 object Defer {
   def apply[A](rf: => ResponseFunction[A]) = new Responder[A] {
-    def respond(res: HttpResponse[A]) { rf(res) }
+    def respond(res: HttpResponse[A]): Unit = { rf(res) }
   }
 }

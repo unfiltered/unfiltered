@@ -11,7 +11,7 @@ import unfiltered.filter.WritableServletResponse
 object WriterSafetySpec extends Specification with unfiltered.specs2.jetty.Served {
 
   case class WriteString(text: String) extends Responder[HttpServletResponse] {
-    override def respond(res: HttpResponse[HttpServletResponse]) {
+    override def respond(res: HttpResponse[HttpServletResponse]): Unit = {
       val writer = WritableServletResponse(res).getWriter
       writer.print(text)
       writer.close()
