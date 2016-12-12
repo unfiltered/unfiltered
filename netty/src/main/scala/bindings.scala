@@ -120,7 +120,7 @@ case class ReceivedMessage(
     case rf =>
       val keepAlive = HttpUtil.isKeepAlive(request)
       lazy val closer = new unfiltered.response.Responder[NettyHttpResponse] {
-        def respond(res: HttpResponse[NettyHttpResponse]) {
+        def respond(res: HttpResponse[NettyHttpResponse]): Unit = {
           res.outputStream.close() // close() triggers writing content to response body
           (
             if (keepAlive) {

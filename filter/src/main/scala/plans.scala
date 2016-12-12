@@ -8,10 +8,10 @@ import unfiltered.Cycle
 
 trait InittedFilter extends Filter {
   private var configVar: FilterConfig = _
-  def init(config: FilterConfig) { configVar = config; }
+  def init(config: FilterConfig): Unit = { configVar = config; }
   def config = configVar
 
-  def destroy { }
+  def destroy: Unit = { }
 }
 
 object Plan {
@@ -32,7 +32,7 @@ trait Plan extends InittedFilter {
   def intent: Plan.Intent
   def doFilter(request: ServletRequest,
                response: ServletResponse,
-               chain: FilterChain) {
+               chain: FilterChain): Unit = {
     (request, response) match {
       case (hreq: HttpServletRequest, hres: HttpServletResponse) =>
         val request = new RequestBinding(hreq)

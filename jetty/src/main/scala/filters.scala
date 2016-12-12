@@ -19,7 +19,7 @@ case class FilterAdder(
   pathSpec: String = "/*",
   dispatches: EnumSet[DispatcherType] = EnumSet.of(DispatcherType.REQUEST)
 ) {
-  def addToContext(ctx: ServletContextHandler) {
+  def addToContext(ctx: ServletContextHandler): Unit = {
     ctx.addFilter(filterHolder, pathSpec, dispatches)
   }
 }

@@ -19,14 +19,14 @@ trait Responder[A] extends ResponseFunction[A] {
     respond(res)
     res
   }
-  def respond(res: HttpResponse[A])
+  def respond(res: HttpResponse[A]): Unit
 }
 
 /** Convenience base class for response function classes defined as a
   * constructor paramater. */
 class ComposeResponse[A](rf: ResponseFunction[A]) extends 
     Responder[A] {
-  def respond(res: HttpResponse[A]) { rf(res) }
+  def respond(res: HttpResponse[A]): Unit = { rf(res) }
 }
 
 /** Composes two response functions. As a case class it recognizes

@@ -24,6 +24,6 @@ object Async {
     def apply[A,B](intent: Intent[A,B]) = intent
   }
   trait Responder[+R] {
-    def respond(rf: unfiltered.response.ResponseFunction[R])
+    def respond(rf: unfiltered.response.ResponseFunction[R]): Unit
   }
 }

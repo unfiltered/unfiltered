@@ -1,7 +1,7 @@
 package unfiltered.response
 
 trait BaseContentType extends Responder[Any] {
-  def respond(res: HttpResponse[Any]) {
+  def respond(res: HttpResponse[Any]): Unit = {
     res.header("Content-Type", contentType(res))
   }
   def contentType(res: HttpResponse[Any]): String

@@ -23,7 +23,7 @@ object NoChunkAggregatorSpec extends Specification
   with Served {
 
   trait ExpectedServerErrorResponse { self: ExceptionHandler =>
-    def onException(ctx: ChannelHandlerContext, t: Throwable) {
+    def onException(ctx: ChannelHandlerContext, t: Throwable): Unit = {
       val ch = ctx.channel
       if (ch.isOpen) try {
         println("expected exception occured: '%s'" format t.getMessage())

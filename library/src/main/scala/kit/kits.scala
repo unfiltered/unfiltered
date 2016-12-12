@@ -25,7 +25,7 @@ trait Prepend { self =>
     Async.Intent[A,B] {
       case req =>
         val dreq = new DelegatingRequest(req) with Async.Responder[B] {
-          def respond(rf: unfiltered.response.ResponseFunction[B]) {
+          def respond(rf: unfiltered.response.ResponseFunction[B]): Unit = {
             req.respond(intentOrNoOp(req) ~> rf)
           }
         }
@@ -46,5 +46,5 @@ trait RequestWrapper { self =>
 }
 
 object NoOpResponder extends Responder[Any] {
-  def respond(res: HttpResponse[Any]) { }
+  def respond(res: HttpResponse[Any]): Unit = { }
 }

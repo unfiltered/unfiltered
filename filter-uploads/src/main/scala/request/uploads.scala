@@ -111,7 +111,7 @@ object MultiPartParams extends TupleGenerator {
 
       var cache: Option[Array[Byte]] = None
       val out = new ByteArrayOutputStream()
-      override def delete {}
+      override def delete: Unit = {}
       override def get = cache getOrElse {
         val content = out.toByteArray
         cache = Some(content)
@@ -129,10 +129,10 @@ object MultiPartParams extends TupleGenerator {
       override def getString = getString("UTF-8")
       override def isFormField = formField
       override def isInMemory = true
-      override def setFieldName(value: String) { fieldName = value }
-      override def setFormField(state: Boolean) { formField = state }
-      override def setHeaders(value: FileItemHeaders) { headers = value }
-      override def write(file: JFile) { sys.error("File writing is not permitted") }
+      override def setFieldName(value: String): Unit = { fieldName = value }
+      override def setFormField(state: Boolean): Unit = { formField = state }
+      override def setHeaders(value: FileItemHeaders): Unit = { headers = value }
+      override def write(file: JFile): Unit = { sys.error("File writing is not permitted") }
     }
 
     class ByteArrayFileItemFactory extends FileItemFactory {

@@ -60,7 +60,7 @@ trait MultiPartDecoder
   final override def channelRead(ctx: ChannelHandlerContext, obj: java.lang.Object) =
     upgrade(ctx, obj)
 
-  final override def channelInactive(ctx: ChannelHandlerContext) {
+  final override def channelInactive(ctx: ChannelHandlerContext): Unit = {
     cleanFiles(ctx)
     ctx.fireChannelInactive()
   }

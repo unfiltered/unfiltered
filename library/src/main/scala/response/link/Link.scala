@@ -7,7 +7,7 @@ import unfiltered.response.{HttpResponse, Responder}
 object Link {
   def apply(refs: Ref*): Responder[Any] =
     new Responder[Any] {
-      def respond(res: HttpResponse[Any]) {
+      def respond(res: HttpResponse[Any]): Unit = {
         res.header("Link", Ref.refClauses(refs:_*))
       }
     }
