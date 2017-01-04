@@ -18,7 +18,7 @@ object ProtectionSpec extends Specification with org.specs2.matcher.ThrownMessag
   }
 
   override def http(req: okhttp3.Request): Response = {
-    requestWithNewClient(req, new OkHttpClient().newBuilder().followRedirects(false).followSslRedirects(false).build())
+    requestWithNewClient(req, new OkHttpClient().newBuilder().followRedirects(false).followSslRedirects(false))
   }
 
   override def httpx(req: okhttp3.Request): Response = {

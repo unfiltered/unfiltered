@@ -25,7 +25,7 @@ trait SecureClient extends Hosted {
     val sslContext = SSLContext.getInstance("TLS")
     sslContext.init(null, Array(trustManager), null)
     val sslSocketFactory = sslContext.getSocketFactory
-    new OkHttpClient.Builder().sslSocketFactory(sslSocketFactory, trustManager).build()
+    new OkHttpClient.Builder().sslSocketFactory(sslSocketFactory, trustManager)
   }
 
 

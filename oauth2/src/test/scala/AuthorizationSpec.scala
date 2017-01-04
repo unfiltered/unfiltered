@@ -23,7 +23,7 @@ object AuthorizationSpec
   val password = "mockuserspassword"
 
   override def http(req: okhttp3.Request): Response = {
-    requestWithNewClient(req, new OkHttpClient().newBuilder().followRedirects(false).followSslRedirects(false).build())
+    requestWithNewClient(req, new OkHttpClient().newBuilder().followRedirects(false).followSslRedirects(false))
   }
 
   override def httpx(req: okhttp3.Request): Response = {

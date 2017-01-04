@@ -17,7 +17,7 @@ trait Served extends Started {
   lazy val server = setup(Server.http(port))
 }
 
-trait Started extends unfiltered.specs2.Hosted with SpecificationLike with BeforeAfterAll {
+trait Started extends unfiltered.specs2.Hosted with SpecificationLike {
 
   // Enables paranoid resource leak detection which reports where the leaked object was accessed recently,
   // at the cost of the highest possible overhead (for testing purposes only).
@@ -25,16 +25,16 @@ trait Started extends unfiltered.specs2.Hosted with SpecificationLike with Befor
 
   def server: Server
 
-  override def afterAll: Unit = {
+  override def afterAll(): Unit = {
     server.stop()
     server.destroy()
     executor.shutdown()
-    ()
+    super.afterAll()
   }
 
-  override def beforeAll: Unit = {
+  override def beforeAll(): Unit = {
     server.start()
-    ()
+    super.beforeAll()
   }
 
  // override def map(fs: =>Fragments) = Step(before) ^ fs ^ Step(after)
