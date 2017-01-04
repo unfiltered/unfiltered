@@ -104,7 +104,7 @@ trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
   }
 
   def httpWithCookies(jar: okhttp3.CookieJar): (okhttp3.Request) => Response = { req =>
-    requestWithNewClient(req, new OkHttpClient.Builder().cookieJar(jar).build())
+    requestWithNewClient(req, new OkHttpClient.Builder().cookieJar(jar))
   }
 }
 

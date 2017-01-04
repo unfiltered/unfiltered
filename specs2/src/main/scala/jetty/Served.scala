@@ -12,7 +12,7 @@ trait Planned extends Served {
   def intent[A, B]: unfiltered.Cycle.Intent[A, B]
 }
 
-trait Served extends Hosted with SpecificationLike with BeforeAfterAll {
+trait Served extends Hosted with SpecificationLike {
 
   import unfiltered.jetty._
 
@@ -23,9 +23,11 @@ trait Served extends Hosted with SpecificationLike with BeforeAfterAll {
   override def afterAll(): Unit = {
     server.stop()
     server.destroy()
+    super.afterAll()
   }
 
   override def beforeAll(): Unit = {
     server.start()
+    super.beforeAll()
   }
 }
