@@ -5,22 +5,37 @@ import org.specs2.mutable._
 object BasicAuthKitSpecJetty
 extends Specification
 with unfiltered.specs2.jetty.Planned
-with BasicAuthKitSpec
+with BasicAuthKitSpecSync
 
 object BasicAuthKitSpecNetty
 extends Specification
 with unfiltered.specs2.netty.Planned
-with BasicAuthKitSpec
+with BasicAuthKitSpecSync
 
+object BasicAuthKitSpecNettyAsync
+extends Specification
+with unfiltered.specs2.netty.PlannedAsync
+with BasicAuthKitSpecAsync
 
-trait BasicAuthKitSpec extends Specification with unfiltered.specs2.Hosted {
+trait BasicAuthKitSpecSync extends BasicAuthKitSpec {
   import unfiltered.response._
-
-  def valid(u: String, p: String) = (u,p) match { case ("test", "secret") => true case _ => false }
 
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = unfiltered.kit.Auth.basic(valid)({
     case _ => ResponseString("we're in")
   })
+}
+
+trait BasicAuthKitSpecAsync extends BasicAuthKitSpec {
+  import unfiltered.response._
+
+  def intent[A,B]: unfiltered.Async.Intent[A,B] = unfiltered.Async.Intent.fromSync(unfiltered.kit.Auth.basic(valid)({
+    case _ => ResponseString("we're in")
+  }))
+}
+
+trait BasicAuthKitSpec extends Specification with unfiltered.specs2.Hosted {
+
+  def valid(u: String, p: String) = (u,p) match { case ("test", "secret") => true case _ => false }
 
   "Basic Auth kit" should {
     "authenticate a valid user" in {

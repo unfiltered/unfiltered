@@ -1,7 +1,7 @@
 package unfiltered
 
 import unfiltered.request.HttpRequest
-import unfiltered.response.{ResponseFunction,Pass}
+import unfiltered.response.{Pass, ResponseFunction}
 
 object Cycle {
   /** A roundtrip intent is a set of instructions for producing
@@ -22,8 +22,12 @@ object Async {
     PartialFunction[HttpRequest[A] with Responder[B], Any]
   object Intent {
     def apply[A,B](intent: Intent[A,B]) = intent
+
+    def fromSync[A,B](intent: Cycle.Intent[A, B]): Intent[A, B] = {
+      case req if intent.isDefinedAt(req) => req.respond(intent(req))
+    }
   }
   trait Responder[+R] {
-    def respond(rf: unfiltered.response.ResponseFunction[R]): Unit
+    def respond(rf: ResponseFunction[R]): Unit
   }
 }
