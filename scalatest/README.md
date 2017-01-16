@@ -49,6 +49,4 @@ Here is a test written using this support. For a complete example see https://gi
 
 ##Limitations
 
-Missing cross compilation for scala 2.7.x.
-
 Only Feature type scalatests are supported.
