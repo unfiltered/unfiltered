@@ -1,6 +1,6 @@
 # Unfiltered Scalatest
 
-Helps creating feature tests for Unfiltered apps with [scalatest](http://www.scalatest.org/user_guide/feature_spec).
+Helps creating feature tests for Unfiltered apps with [scalatest](http://www.scalatest.org).
 
 ## Usage
 
