@@ -44,12 +44,6 @@ Provides extractors for multipart posts using the servlet API.
 
 Provides extractors for working with jsonp and transforming json request bodies.
 
-### scalate
-
-[Scalate][scalate] template support.
-
-[scalate]: http://scalate.github.io/scalate/
-
 ### websockets
 
 A minimal server websocket interface build on netty
