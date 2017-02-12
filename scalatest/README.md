@@ -8,40 +8,33 @@ Here is a test written using this support. For a complete example see https://gi
 
     class ExampleFeature extends FeatureSpec with unfiltered.scalatest.jetty.Served
                                                   with unfiltered.scalatest.Hosted 
-                                                  with GivenWhenThen with ShouldMatchers {
-      import dispatch.classic._
+                                                  with GivenWhenThen with Matchers {
 
       def setup = {
-        _.filter(new App)
+        _.plan(new App)
       }
 
       feature("rest app") {
-        val http = new Http
-
         scenario("should validate integers") {
-          given("an invalid int and a valid palindrome as parameters")
+          Given("an invalid int and a valid palindrome as parameters")
             val params = Map("int" -> "x", "palindrome" -> "twistsiwt")
-          when("parameters are posted")
-            val (status, body) = http.x((host << params)) {
-              case (code, _, Some(body)) => (code, EntityUtils.toString(body))
-            }
-          then("status is BAD Request")
-            status should be(400)
-          and("""body includes "x is not an integer" """)
-            body should include("x is not an integer")
+          When("parameters are posted")
+            val response = httpx(req(host <<? params))
+          Then("status is BAD Request")
+            response.code should be(400)
+          And("""body includes "x is not an integer" """)
+            response.as_string should include("x is not an integer")
         }
 
         scenario("should validate palindrome") {
-          given("a valid int and an invalid palindrome as parameters")
+          Given("a valid int and an invalid palindrome as parameters")
             val params = Map("int" -> "1", "palindrome" -> "sweets")
-          when("parameters are posted")
-            val (status, body) = http.x((host << params)) {
-              case (code, _, Some(body)) => (code, EntityUtils.toString(body))
-            }
-          then("status is BAD Request")
-            status should be(400)
-          and("""body includes "sweets is not a palindrome" """)
-            body should include("sweets is not a palindrome")
+          When("parameters are posted")
+            val response = httpx(req(host <<? params))
+          Then("status is BAD Request")
+            response.code should be(400)
+          And("""body includes "sweets is not a palindrome" """)
+            response.as_string should include("sweets is not a palindrome")
         }
       }
     }
