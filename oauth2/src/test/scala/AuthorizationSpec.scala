@@ -388,8 +388,8 @@ object AuthorizationSpec
            // http://tools.ietf.org/html/draft-ietf-oauth-v2-21#section-4.2.2:
            header must haveKey("cache-control")
            header must haveKey("pragma")
-           header("cache-control") must be_== (Set("no-store"))
-           header("pragma") must be_== (Set("no-cache"))
+           header("cache-control") must be_== (List("no-store"))
+           header("pragma") must be_== (List("no-cache"))
            json(ares) { map =>
              map must haveKey("access_token")
              map must haveKey("expires_in")
