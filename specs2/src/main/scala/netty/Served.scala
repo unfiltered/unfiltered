@@ -5,7 +5,6 @@ import unfiltered.netty.cycle.{DeferralExecutor, DeferredIntent, Plan}
 import org.specs2.mutable._
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.util.ResourceLeakDetector
-import org.specs2.specification.BeforeAfterAll
 
 trait Planned extends Served {
   def setup = _.plan(planify(intent))
