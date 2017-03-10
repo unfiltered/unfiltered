@@ -2,7 +2,6 @@ package unfiltered.specs2
 package jetty
 
 import org.specs2.mutable._
-import org.specs2.specification.BeforeAfterAll
 
 
 trait Planned extends Served {
