@@ -113,8 +113,8 @@ case class Server(
       .childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, JInteger.valueOf(32 * 1024))
       .childOption(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, JInteger.valueOf(8 * 1024))
       .childOption(ChannelOption.SO_KEEPALIVE, JBoolean.TRUE)
-      .option(ChannelOption.SO_RCVBUF, JInteger.valueOf(128 * 1024))
-      .option(ChannelOption.SO_SNDBUF, JInteger.valueOf(128 * 1024))
+      .childOption(ChannelOption.SO_RCVBUF, JInteger.valueOf(128 * 1024))
+      .childOption(ChannelOption.SO_SNDBUF, JInteger.valueOf(128 * 1024))
       .option(ChannelOption.SO_REUSEADDR, JBoolean.TRUE)
       .option(ChannelOption.SO_BACKLOG, JInteger.valueOf(16384))
 
