@@ -140,8 +140,8 @@ trait NettyBase extends RunnableServer {
       .childHandler(initializer)
       .childOption(ChannelOption.TCP_NODELAY, JBoolean.TRUE)
       .childOption(ChannelOption.SO_KEEPALIVE, JBoolean.TRUE)
-      .option(ChannelOption.SO_RCVBUF, JInteger.valueOf(128 * 1024))
-      .option(ChannelOption.SO_SNDBUF, JInteger.valueOf(128 * 1024))
+      .childOption(ChannelOption.SO_RCVBUF, JInteger.valueOf(128 * 1024))
+      .childOption(ChannelOption.SO_SNDBUF, JInteger.valueOf(128 * 1024))
       .option(ChannelOption.SO_REUSEADDR, JBoolean.TRUE)
       .option(ChannelOption.SO_BACKLOG, JInteger.valueOf(16384)))
 
