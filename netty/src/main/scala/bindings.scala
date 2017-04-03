@@ -8,7 +8,7 @@ import io.netty.buffer.{ ByteBufInputStream, ByteBufOutputStream, Unpooled }
 import io.netty.channel.{ ChannelFuture, ChannelFutureListener, ChannelHandlerContext }
 import io.netty.handler.codec.http.{
   DefaultHttpResponse, DefaultFullHttpResponse, HttpContent,
-  HttpHeaders, HttpMessage, HttpUtil,
+  HttpHeaderValues, HttpHeaderNames, HttpMessage, HttpUtil,
   HttpRequest => NettyHttpRequest, HttpResponse => NettyHttpResponse, HttpResponseStatus,
   HttpVersion }
 import io.netty.handler.ssl.SslHandler
@@ -47,7 +47,7 @@ class RequestBinding(msg: ReceivedMessage)
 
   private def bodyParams = (this, content) match {
     case ((POST(_) | PUT(_)) & RequestContentType(ct), Some(content))
-      if ct.contains(HttpHeaders.Values.APPLICATION_X_WWW_FORM_URLENCODED) =>
+      if ct.contains(HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString) =>
       URLParser.urldecode(content.content.toString(JNIOCharset.forName(charset)))
     case _ =>
       Map.empty[String,Seq[String]]
@@ -124,7 +124,7 @@ case class ReceivedMessage(
           res.outputStream.close() // close() triggers writing content to response body
           (
             if (keepAlive) {
-              val defaults = unfiltered.response.Connection(HttpHeaders.Values.KEEP_ALIVE)
+              val defaults = unfiltered.response.Connection(HttpHeaderValues.KEEP_ALIVE.toString)
               res.underlying match {
                 case Content(has) =>
                   defaults ~> unfiltered.response.ContentLength(
@@ -132,7 +132,7 @@ case class ReceivedMessage(
                 case _ =>
                   defaults
               }
-            } else unfiltered.response.Connection(HttpHeaders.Values.CLOSE)
+            } else unfiltered.response.Connection(HttpHeaderValues.CLOSE.toString)
           )(res)
         }
       }
@@ -170,7 +170,7 @@ class ResponseBinding[U <: NettyHttpResponse](res: U)
     res.headers.add(name, value)
 
   def redirect(url: String) =
-    res.setStatus(HttpResponseStatus.FOUND).headers.add(HttpHeaders.Names.LOCATION, url)
+    res.setStatus(HttpResponseStatus.FOUND).headers.add(HttpHeaderNames.LOCATION, url)
 
   def outputStream = outStream
 }
