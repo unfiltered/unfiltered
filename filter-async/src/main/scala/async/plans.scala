@@ -46,6 +46,7 @@ trait Plan extends unfiltered.filter.InittedFilter {
      (request, response) match {
        case (hreq: HttpServletRequest, hres: HttpServletResponse) =>
           val requestBinding = new RequestBinding(hreq) with AsyncBinding {
+            val res = hres
             val con = continuation
             val filterChain = chain
           }
