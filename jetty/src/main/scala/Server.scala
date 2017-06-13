@@ -49,10 +49,11 @@ case class Server(
       val handlers = new HandlerCollection()
       val requestLogHandler = new RequestLogHandler()
       val requestLog = new NCSARequestLog(rl.filename)
-      requestLog.setRetainDays(rl.retainDays);
-      requestLog.setExtended(rl.extended);
-      requestLog.setLogTimeZone(rl.timezone);
-      requestLogHandler.setRequestLog(requestLog);
+      requestLog.setRetainDays(rl.retainDays)
+      requestLog.setExtended(rl.extended)
+      requestLog.setLogTimeZone(rl.timezone)
+      requestLog.setLogDateFormat(rl.dateFormat)
+      requestLogHandler.setRequestLog(requestLog)
       handlers.setHandlers(Array(contextHandlers, requestLogHandler))
       handlers
     })
