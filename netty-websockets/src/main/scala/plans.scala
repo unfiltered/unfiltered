@@ -43,6 +43,9 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
   /** specify PartialFunction[RequestBinding, SocketIntent] */
   def pass: PassHandler
 
+  /** Allow extensions to be used in the reserved bits of the web socket frame */
+  def allowExtensions: Boolean = false
+
   final override def channelReadComplete(ctx: ChannelHandlerContext) =
     ctx.flush()
 
@@ -74,7 +77,7 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
             val factory =
               new WebSocketServerHandshakerFactory(
                 WSLocation(r), null/* subprotocols */,
-                false/* allowExtensions */)
+                allowExtensions)
             factory.newHandshaker(request) match {
               case null =>
                 WebSocketServerHandshakerFactory
