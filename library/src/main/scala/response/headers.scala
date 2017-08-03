@@ -2,7 +2,7 @@ package unfiltered.response
 
 case class ResponseHeader(name: String, values: Iterable[String]) extends Responder[Any] {
   def respond(res: HttpResponse[Any]): Unit = {
-    values.foreach { v => res.header(name, v) } 
+    values.foreach { v => res.header(name, v) }
   }
 }
 
@@ -40,3 +40,14 @@ object TransferEncoding extends HeaderName("Transfer-Encoding")
 object Vary extends HeaderName("Vary")
 object Warning extends HeaderName("Warning")
 object WWWAuthenticate extends HeaderName("WWW-Authenticate")
+
+// CORS response headers
+// https://www.w3.org/TR/cors/#syntax
+object AccessControlAllowOrigin extends HeaderName("Access-Control-Allow-Origin")
+object AccessControlExposeHeaders extends HeaderName("Access-Control-Expose-Headers")
+object AccessControlMaxAge extends HeaderName("Access-Control-Max-Age")
+object AccessControlAllowCredentials extends HeaderName("Access-Control-Allow-Credentials") {
+  val True = apply("true")
+}
+object AccessControlAllowMethods extends HeaderName("Access-Control-Allow-Methods")
+object AccessControlAllowHeaders extends HeaderName("Access-Control-Allow-Headers")

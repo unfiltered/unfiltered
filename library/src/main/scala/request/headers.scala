@@ -201,3 +201,9 @@ object HostPort {
       case _ => None
     }
 }
+
+//CORS request headers
+//https://www.w3.org/TR/cors/#syntax
+object Origin extends StringHeader("Origin")
+object AccessControlRequestMethod extends StringHeader("Access-Control-Request-Method")
+object AccessControlRequestHeaders extends RepeatableHeader("Access-Control-Request-Headers")
