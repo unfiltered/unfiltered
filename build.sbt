@@ -4,14 +4,14 @@ import Dependencies._
 
 Common.settings
 
-unidocSettings
+enablePlugins(ScalaUnidocPlugin)
 
 // unidoc publish settings
 name := "unfiltered-all"
 artifacts := Classpaths.artifactDefs(Seq(packageDoc in Compile)).value
 packagedArtifacts := Classpaths.packaged(Seq(packageDoc in Compile)).value
 Defaults.packageTaskSettings(
-  packageDoc in Compile, (UnidocKeys.unidoc in Compile).map{_.flatMap(Path.allSubpaths)}
+  packageDoc in Compile, (unidoc in Compile).map{_.flatMap(Path.allSubpaths)}
 )
 
 val specs2ProjectId = "specs2"
