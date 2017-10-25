@@ -29,10 +29,11 @@ object Unfiltered {
     projectId: String = "unfiltered-" + moduleName,
     dirName: String = moduleName,
     srcPath: String = "unfiltered/" + moduleName.replace("-","/")
-  ) = Project(projectId, file(dirName),
-              settings = (Common.settings ++
-                          ciSettings ++
-                          srcPathSetting(projectId, srcPath)
-            ))
+  ) ={
+    val project = Project(projectId, file(dirName))
+    project.settings(Common.settings ++
+      ciSettings ++
+      srcPathSetting(projectId, srcPath))
+  }
 
 }

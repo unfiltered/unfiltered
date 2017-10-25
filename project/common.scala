@@ -24,14 +24,12 @@ object Common {
     }.toList.flatten,
 
     scalacOptions in (Compile, doc) ++= {
-      val hash = sys.process.Process("git rev-parse HEAD").lines_!.head
+      val hash = sys.process.Process("git rev-parse HEAD").lineStream_!.head
       val base = (baseDirectory in LocalRootProject).value.getAbsolutePath
       Seq("-sourcepath", base, "-doc-source-url", "https://github.com/unfiltered/unfiltered/tree/" + hash + "€{FILE_PATH}.scala")
     },
 
     javacOptions in Compile ++= Seq("-source", "1.6", "-target", "1.6"),
-
-    incOptions := incOptions.value.withNameHashing(true),
 
     parallelExecution in Test := false, // :( test servers collide on same port
 
