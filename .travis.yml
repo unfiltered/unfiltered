@@ -6,12 +6,5 @@ scala:
   - 2.12.3
   - 2.13.0-M1
 jdk:
-  - openjdk7
   - oraclejdk8
 script: sbt ++${TRAVIS_SCALA_VERSION} test publishLocal
-matrix:
-  exclude:
-  - scala: 2.12.3
-    jdk: openjdk7
-  - scala: 2.13.0-M1
-    jdk: openjdk7
