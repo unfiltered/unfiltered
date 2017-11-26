@@ -66,7 +66,13 @@ object SslServerSpec
       https(host.newBuilder().scheme("https").build()).as_string must_== "secret"
     }
     "refuse connection to unsecure requests" in {
-      https(host) must throwA[java.net.ConnectException]
+      try {
+        https(host)
+        sys.error("unexpected")
+      } catch {
+        case (_: java.net.ConnectException) | (_: java.io.IOException)=>
+          ok
+      }
     }
   }
 }
