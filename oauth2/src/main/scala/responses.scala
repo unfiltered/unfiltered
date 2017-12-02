@@ -105,11 +105,11 @@ trait Formatting {
   private def enc(s: String) = URLEncoder.encode(s, "utf-8")
 
   def qstr(kvs: Iterable[(String, String)]) =
-    kvs map { _ match { case (k, v) => "%s=%s" format(enc(k), enc(v)) } } mkString("&")
+    kvs map { case (k, v) => "%s=%s" format(enc(k), enc(v)) } mkString("&")
 
   // todo: use an actual json encoder
   def Json(kvs: Iterable[(String, String)]) =
-    unfiltered.response.ResponseString(kvs map { _ match { case (k, v) => "\"%s\":\"%s\"".format(k,v) } } mkString(
+    unfiltered.response.ResponseString(kvs map { case (k, v) => "\"%s\":\"%s\"".format(k,v) } mkString(
       "{",",","}"
     )) ~> unfiltered.response.JsonContent
 }
