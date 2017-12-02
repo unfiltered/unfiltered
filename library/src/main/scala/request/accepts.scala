@@ -14,7 +14,7 @@ object Accepts {
         case Accept(values) =>
           if(values.exists { _.equalsIgnoreCase(contentType) })
             Some(r)
-          else if (values.exists { _ == "*/*" } && pathSuffix.exists { ext == _ })
+          else if (values.contains("*/*") && pathSuffix.exists { ext == _ })
             Some(r)
           else None
         case _ => pathSuffix match {
