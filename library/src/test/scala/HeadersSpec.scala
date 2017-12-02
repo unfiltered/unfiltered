@@ -51,60 +51,60 @@ trait HeadersSpec extends Specification with unfiltered.specs2.Hosted {
     http(req(host / path) <:< hmap).as_string
   }
   "Headers" should {
-    "parse Accept-Charset" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.2
+    "parse Accept-Charset" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.2
       get("ac", ("Accept-Charset", "iso-8859-5, unicode-1-1;q=0.8")) must_== "pass"
     }
-   "parse Accept-Encoding" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.3
+   "parse Accept-Encoding" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.3
       get("ae", ("Accept-Encoding","gzip;q=1.0, identity; q=0.5, *;q=0")) must_== "pass"
     }
-    "parse Accept-Language" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.4
+    "parse Accept-Language" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.4
       get("al", ("Accept-Language","da, en-gb;q=0.8, en;q=0.7")) must_== "pass"
     }
-    "parse Authorization" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.8
+    "parse Authorization" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.8
       get("a", ("Authorization","Kind asdfasdf")) must_== "pass"
     }
-    "parse Connection" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.10
+    "parse Connection" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.10
       get("c", ("Connection","close")) must_== "pass"
     }
-    "parse Content-Type" in { //http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.17
+    "parse Content-Type" in { //https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.17
       get("ct", ("Content-Type","text/html; charset=ISO-8859-4")) must_== "pass"
     }
-    "parse Expect" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.20
+    "parse Expect" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.20
       get("e", ("Expect","100-continue")) must_== "pass"
     }
-    "parse From" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.22
+    "parse From" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.22
       get("f", ("From","webmaster@w3.org")) must_== "pass"
     }
-    "parse Host" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.23
+    "parse Host" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.23
       get("h", ("Host","www.w3.org")) must_== "pass"
     }
-    "parse If-Match" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.24
+    "parse If-Match" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.24
       get("im", ("If-Match","\"xyzzy\", \"r2d2xxxx\", \"c3piozzzz\"")) must_== "pass"
     }
-    "parse If-Modified-Since" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.25
+    "parse If-Modified-Since" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.25
       get("ims", ("If-Modified-Since", "Sat, 29 Oct 2012 19:43:31 GMT")) must_== "pass"
     }
-    "parse If-None-Match" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.26
+    "parse If-None-Match" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.26
        get("inm", ("If-None-Match","close")) must_== "pass"
     }
-    "parse If-Range" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.27
+    "parse If-Range" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.27
       get("ir", ("If-Range","close")) must_== "pass"
     }
-    "parse If-Unmodified-Since" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.28
+    "parse If-Unmodified-Since" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.28
       get("ius", ("If-Unmodified-Since","Sat, 29 Oct 1994 19:43:31 GMT")) must_== "pass"
     }
-    "parse TE" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.38
+    "parse TE" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.38
       get("te", ("TE","trailers, deflate;q=0.5")) must_== "pass"
     }
-    "parse Upgrade" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.42
+    "parse Upgrade" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.42
       // Connection: upgrade MUST be sent with Upgrade header
       // https://tools.ietf.org/html/rfc7230#page-59
       get("u", ("Connection", "upgrade"), ("Upgrade","HTTP/2.0, SHTTP/1.3, IRC/6.9, RTA/x11")) must_== "pass"
     }
-    "parse User-Agent" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.43
+    "parse User-Agent" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.43
       get("ua", ("User-Agent","CERN-LineMode/2.15 libwww/2.17b3")) must_== "pass"
     }
-    "parse Via" in { // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.44
+    "parse Via" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.44
       get("v", ("Via","1.0 fred, 1.1 nowhere.com (Apache/1.1)")) must_== "pass"
     }
     "parse X-Forwarded-For" in { //  http://en.wikipedia.org/wiki/X-Forwarded-For#Format

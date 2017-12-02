@@ -122,7 +122,7 @@ private [request] object ConnegValueParser extends (Iterator[String] => List[Str
 class DateHeader(name: String) extends RequestHeader(name)(DateValueParser)
 /** A repeatable header may be specified in more than one header k-v pair and
  *  whose values are a list delimited by comma
- *  see also [[http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2]] */
+ *  see also [[https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2]] */
 class RepeatableHeader(name: String) extends SeqRequestHeader(name)(SeqValueParser)
 /** Header whose value should be a valid URI. */
 class UriHeader(name: String) extends RequestHeader(name)(UriValueParser)
@@ -133,7 +133,7 @@ class IntHeader(name: String) extends RequestHeader(name)(IntValueParser)
 /* Header where the value needs to be sorted by the qualifier attribute. */
 class ConnegHeader(name: String) extends SeqRequestHeader(name)(ConnegValueParser)
 
-// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.10
+// https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.10
 
 object Accept extends ConnegHeader("Accept")
 object AcceptCharset extends ConnegHeader("Accept-Charset")

@@ -49,10 +49,10 @@ final case class Extension private[link] (override val paramType: Param.Extensio
 /** Target media types as described in
     [[https://tools.ietf.org/html/rfc5988#section-5.4 section-5.4]] The meaning
     and set of possible values for this parameter are specified in the
-    [[http://www.w3.org/TR/html401/types.html#h-6.13 HTML 401 Types]] specification. */
+    [[https://www.w3.org/TR/html401/types.html#h-6.13 HTML 401 Types]] specification. */
 sealed abstract class Media(val mediaType: String) extends Param(Param.Media, mediaType) {
   /** According to
-      [[http://www.w3.org/TR/html401/types.html#h-6.13 HTML 401 Types]],
+      [[https://www.w3.org/TR/html401/types.html#h-6.13 HTML 401 Types]],
       `Media` is a monoid resulting in the accumulated media for a single
       `media` parameter. */
   def :+(that: Media) = CompositeMedia(this, that)

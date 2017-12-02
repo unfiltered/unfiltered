@@ -10,7 +10,7 @@ class HeaderName(val name: String) {
   def apply(value: String*) = ResponseHeader(name, value)
 }
 
-// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.10
+// https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.10
 
 object AcceptRanges extends HeaderName("Accept-Ranges")
 object Age extends HeaderName("Age")

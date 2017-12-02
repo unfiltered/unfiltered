@@ -97,7 +97,7 @@ case class Resources(
           // precision of the time format in the IfModifiedSince header
           case Some(since) if seconds(since.getTime) == seconds(rsrc.lastModified) =>
             // do not include content-length header for HTTP status 304
-            // http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+            // https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
             val headers = setKeepAlive(
               NotModified ~>
               Date(Dates.format(new GregorianCalendar().getTime)))
