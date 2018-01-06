@@ -36,8 +36,6 @@ lazy val library: Project = module("unfiltered")(
     "commons-codec" % "commons-codec" % commonsCodecVersion,
     specs2Dep(scalaVersion.value) % "test",
     "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
-    "joda-time" % "joda-time" % jodaTimeVersion % "test",
-    "org.joda" % "joda-convert" % jodaConvertVersion % "test"
   ),
   libraryDependencies ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
