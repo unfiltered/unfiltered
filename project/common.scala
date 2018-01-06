@@ -9,12 +9,12 @@ object Common {
     Nil
   )
 
-  val Scala212 = "2.12.3"
+  val Scala212 = "2.12.4"
 
   val settings: Seq[Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "ws.unfiltered",
 
-    crossScalaVersions := Seq("2.13.0-M2", Scala212, "2.11.11", "2.10.6"),
+    crossScalaVersions := Seq("2.13.0-M2", Scala212, "2.11.12", "2.10.7"),
 
     scalaVersion := Scala212,
 

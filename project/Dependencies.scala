@@ -17,14 +17,14 @@ object Dependencies {
 
   def integrationTestDeps(sv: String) = (specs2Dep(sv) :: okHttp) map { _ % "test" }
 
-  val commonsCodecVersion = "1.10"
+  val commonsCodecVersion = "1.11"
   val scalacheckVersion = "1.13.5"
   val jodaTimeVersion = "2.9.9"
   val jodaConvertVersion = "1.8.2"
   val scalaXmlVersion = "1.0.6"
-  val commonsIoVersion = "2.5"
-  val commonsFileUploadVersion = "1.3.2"
-  val jettyVersion = "9.2.21.v20170120"
+  val commonsIoVersion = "2.6"
+  val commonsFileUploadVersion = "1.3.3"
+  val jettyVersion = "9.2.23.v20171218"
   val nettyVersion = "4.1.13.Final"
   val scalatestVersion = "3.0.4"
   val json4sVersion = "3.5.3"
