@@ -19,8 +19,6 @@ object Dependencies {
 
   val commonsCodecVersion = "1.11"
   val scalacheckVersion = "1.13.5"
-  val jodaTimeVersion = "2.9.9"
-  val jodaConvertVersion = "1.8.2"
   val scalaXmlVersion = "1.0.6"
   val commonsIoVersion = "2.6"
   val commonsFileUploadVersion = "1.3.3"

@@ -1,6 +1,6 @@
 package unfiltered.request
 
-import org.joda.time.DateTime
+import java.time.Instant
 
 import okhttp3.{Cookie, HttpUrl, OkHttpClient}
 import org.specs2.mutable._
@@ -116,7 +116,7 @@ class MemoryJar extends okhttp3.CookieJar {
 
   override def saveFromResponse(url: HttpUrl, cookies: java.util.List[Cookie]): Unit = {
     val list = cookies.asScala.flatMap(p =>
-      if (new DateTime(p.expiresAt()).isAfter(DateTime.now())) List(p) else Nil
+      if (Instant.ofEpochMilli(p.expiresAt()).isAfter(Instant.now())) List(p) else Nil
     )
     if (list.isEmpty) jar -= url.host() else {
       jar += (url.host() -> list.toList)
