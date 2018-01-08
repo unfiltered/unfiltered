@@ -7,7 +7,7 @@ scala:
   - 2.13.0-M2
 jdk:
   - oraclejdk8
-script: sbt ++${TRAVIS_SCALA_VERSION} test publishLocal
+script: sbt "++${TRAVIS_SCALA_VERSION}!" test publishLocal
 cache:
   directories:
   - "$HOME/.ivy2/cache"
