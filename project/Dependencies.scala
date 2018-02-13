@@ -8,7 +8,7 @@ object Dependencies {
       case Some((2, 10)) =>
         "3.9.4"
       case _ =>
-        "4.0.1"
+        "4.0.2"
     }
     "org.specs2" %% "specs2-core" % v
   }
@@ -24,7 +24,7 @@ object Dependencies {
   val commonsFileUploadVersion = "1.3.3"
   val jettyVersion = "9.2.23.v20171218"
   val nettyVersion = "4.1.13.Final"
-  val scalatestVersion = "3.0.4"
+  val scalatestVersion = "3.0.5-M1"
   val json4sVersion = "3.5.3"
   val asyncHttpClientVersion = "1.8.17"
   val scribeJavaVersion = "3.3.0"
