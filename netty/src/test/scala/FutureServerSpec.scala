@@ -1,14 +1,17 @@
 package unfiltered.netty
 
-import org.specs2.mutable.Specification
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.{Executors, ThreadFactory}
 
-import unfiltered.response.{ Pass, ResponseString }
-import unfiltered.request.{ GET, Path => UFPath }
-import scala.concurrent.Future
+import org.specs2.mutable.Specification
+import unfiltered.response.{Pass, ResponseString}
+import unfiltered.request.{GET, Path => UFPath}
+
+import scala.concurrent.{ExecutionContext, Future}
 
 object FutureServerSpec extends Specification with org.specs2.matcher.ThrownMessages with unfiltered.specs2.netty.Served {
 
-  implicit val executionContext = scala.concurrent.ExecutionContext.Implicits.global
+  implicit val executionContext = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(2, NamedDaemonTF.server))
 
   def setup = _.plan(future.Planify {
     case GET(UFPath("/ping")) =>
@@ -30,4 +33,20 @@ object FutureServerSpec extends Specification with org.specs2.matcher.ThrownMess
       http(host / "future-ping").as_string must_== "pong"
     }
   }
+}
+
+class NamedDaemonTF(base: String) extends ThreadFactory {
+  private val counter = new AtomicInteger(0)
+  private val delegate = Executors.defaultThreadFactory()
+
+  override def newThread(r: Runnable): Thread = {
+    val t = delegate.newThread(r)
+    t.setDaemon(true)
+    t.setName("%s-%s".format(base, counter.incrementAndGet()))
+    t
+  }
+}
+
+object NamedDaemonTF {
+  val server = new NamedDaemonTF("server")
 }
