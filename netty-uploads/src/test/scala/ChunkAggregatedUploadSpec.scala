@@ -15,6 +15,8 @@ import org.apache.commons.io.{ IOUtils => IOU }
 object ChunkAggregatedUploadSpec extends Specification
   with Served {
 
+  private val directory = java.nio.file.Files.createTempDirectory(new JFile("target").toPath, "ChunkAggregatedUploadSpec").toFile
+
   def setup = {
     _.plan(netty.async.Planify({
       case POST(UFPath("/async/disk-upload") & MultiPart(req)) =>
@@ -26,7 +28,7 @@ object ChunkAggregatedUploadSpec extends Specification
       }
       case POST(UFPath("/async/disk-upload/write") & MultiPart(req)) => MultiPartParams.Disk(req).files("f") match {
         case Seq(f, _*) =>
-          f.write(new JFile("async-upload-test-out.txt")) match {
+          f.write(new JFile(directory, "1async-upload-test-out.txt")) match {
             case Some(outFile) =>
               if(Arrays.equals(IOU.toByteArray(new FIS(outFile)), f.bytes)) req.respond(ResponseString(
                 "wrote disk read file f named %s with content type %s with correct contents" format(
@@ -51,7 +53,7 @@ object ChunkAggregatedUploadSpec extends Specification
         MultiPartParams.Streamed(req).files("f") match {
          case Seq(f, _*) =>
             val src = IOU.toByteArray(getClass.getResourceAsStream("/netty-upload-big-text-test.txt"))
-            f.write(new JFile("async-upload-test-out.txt")) match {
+            f.write(new JFile(directory, "2async-upload-test-out.txt")) match {
               case Some(outFile) =>
                 if (Arrays.equals(IOU.toByteArray(new FIS(outFile)), src)) req.respond(ResponseString(
                   "wrote stream read file f named %s with content type %s with correct contents" format(
@@ -74,7 +76,7 @@ object ChunkAggregatedUploadSpec extends Specification
         }
         case POST(UFPath("/async/mem-upload/write") & MultiPart(req)) => MultiPartParams.Memory(req).files("f") match {
           case Seq(f, _*) =>
-            f.write(new JFile("async-upload-test-out.txt")) match {
+            f.write(new JFile(directory, "3async-upload-test-out.txt")) match {
               case Some(outFile) => req.respond(ResponseString(
                 "wrote memory read file f is named %s with content type %s" format(
                   f.name, f.contentType)))
@@ -94,7 +96,7 @@ object ChunkAggregatedUploadSpec extends Specification
       }
       case POST(UFPath("/cycle/disk-upload/write") & MultiPart(req)) => MultiPartParams.Disk(req).files("f") match {
         case Seq(f, _*) =>
-          f.write(new JFile("upload-test-out.txt")) match {
+          f.write(new JFile(directory, "1upload-test-out.txt")) match {
             case Some(outFile) =>
               if (Arrays.equals(IOU.toByteArray(new FIS(outFile)), f.bytes)) ResponseString(
                 "wrote disk read file f named %s with content type %s with correct contents" format(
@@ -119,7 +121,7 @@ object ChunkAggregatedUploadSpec extends Specification
         MultiPartParams.Streamed(req).files("f") match {
          case Seq(f, _*) =>
             val src = IOU.toByteArray(getClass.getResourceAsStream("/netty-upload-big-text-test.txt"))
-            f.write(new JFile("upload-test-out.txt")) match {
+            f.write(new JFile(directory, "2upload-test-out.txt")) match {
               case Some(outFile) =>
                 if(Arrays.equals(IOU.toByteArray(new FIS(outFile)), src)) ResponseString(
                   "wrote stream read file f named %s with content type %s with correct contents" format(
@@ -141,7 +143,7 @@ object ChunkAggregatedUploadSpec extends Specification
         }
         case POST(UFPath("/cycle/mem-upload/write") & MultiPart(req)) => MultiPartParams.Memory(req).files("f") match {
           case Seq(f, _*) =>
-            f.write(new JFile("upload-test-out.txt")) match {
+            f.write(new JFile(directory, "3upload-test-out.txt")) match {
               case Some(outFile) => ResponseString(
                 "wrote memory read file f is named %s with content type %s" format(
                   f.name, f.contentType))
@@ -157,11 +159,6 @@ object ChunkAggregatedUploadSpec extends Specification
   }
 
  "MultiPartParams used in netty.cycle.Plan and netty.async.Plan with a chunk aggregator" should {
-    step {
-      val out = new JFile("netty-upload-test-out.txt")
-      if (out.exists) out.delete
-    }
-
     // Async
     "handle async file uploads written to disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)

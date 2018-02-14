@@ -14,6 +14,7 @@ import org.apache.commons.io.{ IOUtils => IOU }
 
 object CycleUploadSpec extends Specification
   with Served {
+  private val directory = java.nio.file.Files.createTempDirectory(new JFile("target").toPath, "CycleUploadSpec").toFile
 
   def setup = {
     val plan = cycle.MultiPartDecoder({
@@ -30,7 +31,7 @@ object CycleUploadSpec extends Specification
         case Decode(binding) =>
           MultiPartParams.Disk(binding).files("f") match {
             case Seq(f, _*) =>
-              f.write(new JFile("upload-test-out.txt")) match {
+              f.write(new JFile(directory, "1upload-test-out.txt")) match {
                 case Some(outFile) =>
                   if (Arrays.equals(IOU.toByteArray(new FIS(outFile)), f.bytes)) ResponseString(
                     "wrote disk read file f named %s with content type %s with correct contents" format(
@@ -60,7 +61,7 @@ object CycleUploadSpec extends Specification
           MultiPartParams.Streamed(binding).files("f") match {
            case Seq(f, _*) =>
               val src = IOU.toByteArray(getClass.getResourceAsStream("/netty-upload-big-text-test.txt"))
-              f.write(new JFile("upload-test-out.txt")) match {
+              f.write(new JFile(directory, "2upload-test-out.txt")) match {
                 case Some(outFile) =>
                   if (Arrays.equals(IOU.toByteArray(new FIS(outFile)), src)) ResponseString(
                     "wrote stream read file f named %s with content type %s with correct contents" format(
@@ -89,7 +90,7 @@ object CycleUploadSpec extends Specification
           case Decode(binding) =>
             MultiPartParams.Memory(binding).files("f") match {
               case Seq(f, _*) =>
-                f.write(new JFile("upload-test-out.txt")) match {
+                f.write(new JFile(directory, "3upload-test-out.txt")) match {
                   case Some(outFile) => ResponseString(
                     "wrote memory read file f is named %s with content type %s" format(
                       f.name, f.contentType))
@@ -107,10 +108,6 @@ object CycleUploadSpec extends Specification
   }
 
   "Netty cycle.MultiPartDecoder" should {
-    step {
-      val out = new JFile("netty-upload-test-out.txt")
-      if (out.exists) out.delete
-    }
     "handle file uploads written to disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
