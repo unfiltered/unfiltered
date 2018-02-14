@@ -23,7 +23,7 @@ object JsonSpec extends Specification  with unfiltered.specs2.jetty.Served {
       val headers = resp.headers
 
       resp.as_string must_== """{"foo":"bar","baz":"boom"}"""
-      headers("content-type") must_==(List("application/json; charset=utf-8"))
+      headers("content-type") must_==(List("application/json;charset=utf-8"))
     }
   }
 }

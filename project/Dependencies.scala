@@ -4,13 +4,7 @@ object Dependencies {
   val servletApiDep = "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided"
 
   def specs2Dep(sv: String) = {
-    val v = CrossVersion.partialVersion(sv) match {
-      case Some((2, 10)) =>
-        "3.9.4"
-      case _ =>
-        "4.0.2"
-    }
-    "org.specs2" %% "specs2-core" % v
+    "org.specs2" %% "specs2-core" % "4.0.1"
   }
 
   def okHttp = "com.squareup.okhttp3" % "okhttp" % "3.5.0" :: Nil
@@ -22,7 +16,7 @@ object Dependencies {
   val scalaXmlVersion = "1.0.6"
   val commonsIoVersion = "2.6"
   val commonsFileUploadVersion = "1.3.3"
-  val jettyVersion = "9.2.23.v20171218"
+  val jettyVersion = "9.4.8.v20171121"
   val nettyVersion = "4.1.13.Final"
   val scalatestVersion = "3.0.5-M1"
   val json4sVersion = "3.5.3"
