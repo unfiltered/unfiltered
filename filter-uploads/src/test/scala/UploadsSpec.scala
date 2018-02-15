@@ -11,7 +11,9 @@ object UploadsSpec extends Specification with unfiltered.specs2.jetty.Served {
   import java.io.{File => JFile}
   import java.util.Arrays
 
-  class TestPlan extends unfiltered.filter.Plan {
+  private val directory = java.nio.file.Files.createTempDirectory(new JFile("target").toPath, "UploadsSpec").toFile
+
+  class TestPlan(directory: JFile) extends unfiltered.filter.Plan {
     def intent = {
       case POST(UFPath("/disk-upload") & MultiPart(req)) => MultiPartParams.Disk(req).files("f") match {
         case Seq(f, _*) => ResponseString(
@@ -20,7 +22,7 @@ object UploadsSpec extends Specification with unfiltered.specs2.jetty.Served {
       }
       case POST(UFPath("/disk-upload/write") & MultiPart(req)) => MultiPartParams.Disk(req).files("f") match {
         case Seq(f, _*) =>
-          f.write(new JFile("upload-test-out.txt")) match {
+          f.write(new JFile(directory, "1upload-test-out.txt")) match {
             case Some(outFile) =>
               if(Arrays.equals(IOU.toByteArray(new FIS(outFile)), f.bytes)) ResponseString(
                 "wrote disk read file f named %s with content type %s with correct contents" format(
@@ -44,7 +46,7 @@ object UploadsSpec extends Specification with unfiltered.specs2.jetty.Served {
         MultiPartParams.Streamed(req).files("f") match {
          case Seq(f, _*) =>
             val src = IOU.toByteArray(getClass.getResourceAsStream("/upload-test.txt"))
-            f.write(new JFile("upload-test-out.txt")) match {
+            f.write(new JFile(directory, "2upload-test-out.txt")) match {
               case Some(outFile) =>
                 if(Arrays.equals(IOU.toByteArray(new FIS(outFile)), src)) ResponseString(
                   "wrote stream read file f named %s with content type %s with correct contents" format(
@@ -67,7 +69,7 @@ object UploadsSpec extends Specification with unfiltered.specs2.jetty.Served {
       }
       case POST(UFPath("/mem-upload/write") & MultiPart(req)) => MultiPartParams.Memory(req).files("f") match {
         case Seq(f, _*) =>
-          f.write(new JFile("upload-test-out.txt")) match {
+          f.write(new JFile(directory, "3upload-test-out.txt")) match {
             case Some(outFile) => ResponseString(
               "wrote memory read file f is named %s with content type %s" format(
                 f.name, f.contentType))
@@ -80,13 +82,9 @@ object UploadsSpec extends Specification with unfiltered.specs2.jetty.Served {
     }
   }
 
-  def setup = { _.plan(new TestPlan) }
+  def setup = { _.plan(new TestPlan(directory)) }
 
   "MultiPartParams" should {
-    step {
-      val out = new JFile("upload-test-out.txt")
-      if(out.exists) out.delete
-    }
     "handle file uploads written to disk" in {
       val file = new JFile(getClass.getResource("/upload-test.txt").toURI)
       file.exists must_==true
