@@ -146,20 +146,6 @@ lazy val websockets = module("netty-websockets")().settings(
   libraryDependencies += "com.ning" % "async-http-client" % asyncHttpClientVersion % "test"
 ).dependsOn(nettyServer, specs2 % "test")
 
-lazy val oauth = module("oauth")().settings(
-  description := "OAuth plans for servlet filters",
-  libraryDependencies += "com.github.scribejava" % "scribejava-core" % scribeJavaVersion % "test",
-  libraryDependencies ++= integrationTestDeps(scalaVersion.value)
-).dependsOn(jetty, filters, directives, specs2 % "test")
-
-lazy val mac = module("mac")().settings(
-  description := "MAC utilities for oauth2 module"
-).dependsOn(library, specs2 % "test")
-
-lazy val oauth2 = module("oauth2")().settings(
-  description := "OAuth2 module for unfiltered"
-).dependsOn(jetty, filters, mac, directives, specs2 % "test")
-
 lazy val nettyUploads = module("netty-uploads")().settings(
   description := "Uploads plan support using Netty",
   libraryDependencies ++= integrationTestDeps(scalaVersion.value),
