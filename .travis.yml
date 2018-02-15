@@ -1,11 +1,13 @@
 language: scala
 sudo: false
+dist: trusty
 scala:
   - 2.11.12
   - 2.12.4
   - 2.13.0-M3
 jdk:
   - oraclejdk8
+  - openjdk8
 script: sbt "++${TRAVIS_SCALA_VERSION}!" test publishLocal
 cache:
   directories:
