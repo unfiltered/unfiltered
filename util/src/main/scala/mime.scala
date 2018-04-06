@@ -1,6 +1,6 @@
 package unfiltered.util
 
-case class MIMEType(major: String, minor: String, params: Map[String, String]) {
+case class MIMEType(major: String, minor: String, params: Map[String, String] = Map.empty) {
   def includes(mt: MIMEType) = {
     (major, minor) match {
       case ("*", "*") => true
@@ -18,6 +18,7 @@ case class MIMEType(major: String, minor: String, params: Map[String, String]) {
 }
 
 object MIMEType {
+  val ALL = MIMEType("*", "*", Map.empty)
 
   private val EqualPattern = "(?sm)(.*)=(.*)".r
   private val MimeMatcher = "(?sm)([\\w-*]+)/([\\w-*+.]+);?(.*)?".r
@@ -25,7 +26,7 @@ object MIMEType {
   def parse(s: String): Option[MIMEType] = {
     s match {
       case MimeMatcher(major, minor, params) => {
-        Some(MIMEType(major, minor, if (params == null) Map.empty else parseParams(params)))
+        Some(MIMEType(major.toLowerCase, minor.toLowerCase(), if (params == null) Map.empty else parseParams(params)))
       }
       case _ => None
     }
