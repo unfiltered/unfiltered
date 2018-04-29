@@ -7,9 +7,9 @@ import unfiltered.Cookie
 private [request] object CookieValueParser extends (Iterator[String] => Map[String, Option[Cookie]]) {
   def apply(values: Iterator[String]) = {
     val vs = values.toList
-    ((Map.empty[String, Option[Cookie]] /: vs.flatMap(FromCookies.apply _))(
+    vs.flatMap(FromCookies.apply _).foldLeft(Map.empty[String, Option[Cookie]])(
       (m, c) => m + (c.name -> Some(c))
-    ).withDefaultValue(None))
+    ).withDefaultValue(None)
   }
 }
 
@@ -26,35 +26,32 @@ object FromCookies {
 
   def apply(cstr: String): Seq[Cookie] = {
     val (names, values) =
-      (((List.empty[String], List.empty[String], (None: Option[(String, String, String)])) /:
-         Cutter.findAllIn(cstr)) {
-           (a, e) => (a, e) match {
-             case ((names, values, prev), matchresult) =>
-               matchresult match {
-                 case Cutter(cname, couldBeValue, cvalue, delim) =>
+      (Cutter.findAllIn(cstr).foldLeft((List.empty[String], List.empty[String], (None: Option[(String, String, String)]))) {
+        case ((names, values, prev), matchresult) =>
+          matchresult match {
+            case Cutter(cname, couldBeValue, cvalue, delim) =>
 
-                   val (name, value, sep) = (cname, cvalue match {
-                     case null => couldBeValue match {
-                       case null => cvalue
-                       case is => is.replace("\\\"", "\"").replace("\\\\", "\\")
-                     }
-                     case v => v
-                   }, delim)
+              val (name, value, sep) = (cname, cvalue match {
+                case null => couldBeValue match {
+                  case null => cvalue
+                  case is => is.replace("\\\"", "\"").replace("\\\\", "\\")
+                }
+                case v => v
+              }, delim)
 
-                   prev match {
-                     case None =>
-                       (names, values, Some((name, Option(value).getOrElse(""), sep)))
-                     case Some((n0, v0, s0)) =>
-                       if(value == null &&
-                          KeyOnly.filter(_.equalsIgnoreCase(name)).isEmpty) {
-                         (names, values, Some((n0, v0 + s0 + name, sep)))
-                       } else {
-                         (n0 :: names, v0 :: values, Some((name, value, delim)))
-                       }
-                   }
-               }
-             }
-         }) match {
+              prev match {
+                case None =>
+                  (names, values, Some((name, Option(value).getOrElse(""), sep)))
+                case Some((n0, v0, s0)) =>
+                  if(value == null &&
+                     KeyOnly.filter(_.equalsIgnoreCase(name)).isEmpty) {
+                    (names, values, Some((n0, v0 + s0 + name, sep)))
+                  } else {
+                    (n0 :: names, v0 :: values, Some((name, value, delim)))
+                  }
+              }
+          }
+      }) match {
         case (ns, vs, Some((n, v, _))) =>
           if(n == null) (ns.reverse, vs.reverse)
           else ((n :: ns).reverse, (v :: vs).reverse)
@@ -83,8 +80,7 @@ object FromCookies {
         // a value. scala.util.control.Breakable is not an option here
         val iter: Iterator[Int] = (startAt until names.size).iterator
         (for(i <- iter) yield {
-          ((false, Cookie(names(i), Option(values(i)).getOrElse(""))) /: (
-            i + 1 until names.size)) { (a, j) =>
+          (i + 1 until names.size).foldLeft((false, Cookie(names(i), Option(values(i)).getOrElse("")))) { (a, j) =>
             val (complete, cookie) = a
             if(complete) a
             else (names(j).toLowerCase, values(j)) match {

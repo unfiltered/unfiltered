@@ -50,7 +50,7 @@ object Routes {
         None
       else {
         val start: Option[Map[String,String]] = Some(Map.empty[String,String])
-        (start /: spec.zip(actual)) {
+        spec.zip(actual).foldLeft(start) {
           case (None, _) => None
           case (Some(m), (sp, act)) if sp.startsWith(":") =>
             Some(m + (sp.substring(1) -> act))

@@ -193,10 +193,12 @@ trait DefaultServerInit {
   protected def chunkSize: Int
 
   protected def complete(line: ChannelPipeline) =
-    (line.addLast("housekeeping", new HouseKeepingChannelHandler(channels))
-     .addLast("decoder", new HttpRequestDecoder)
-     .addLast("encoder", new HttpResponseEncoder)
-     .addLast("chunker", new HttpObjectAggregator(chunkSize)) /: handlers.reverse.zipWithIndex) {
+    handlers.reverse.zipWithIndex.foldLeft(
+      line.addLast("housekeeping", new HouseKeepingChannelHandler(channels))
+       .addLast("decoder", new HttpRequestDecoder)
+       .addLast("encoder", new HttpResponseEncoder)
+       .addLast("chunker", new HttpObjectAggregator(chunkSize))
+     ) {
        case (pl, (handler, idx)) =>
          pl.addLast("handler-%s" format idx, handler())
     }.addLast("notfound", new NotFoundHandler)
