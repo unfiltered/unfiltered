@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
   val servletApiDep = "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided"
 
-  val specs2Dep = "org.specs2" %% "specs2-core" % "4.0.2"
+  val specs2Dep = "org.specs2" %% "specs2-core" % "4.0.4"
 
   def okHttp = "com.squareup.okhttp3" % "okhttp" % "3.5.0" :: Nil
 
@@ -11,7 +11,7 @@ object Dependencies {
 
   val commonsCodecVersion = "1.11"
   val scalacheckVersion = "1.13.5"
-  val scalaXmlVersion = "1.0.6"
+  val scalaXmlVersion = "1.1.0"
   val commonsIoVersion = "2.6"
   val commonsFileUploadVersion = "1.3.3"
   val jettyVersion = "9.4.8.v20171121"
