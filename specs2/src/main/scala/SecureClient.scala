@@ -26,6 +26,10 @@ trait SecureClient extends Hosted {
     sslContext.init(null, Array(trustManager), null)
     val sslSocketFactory = sslContext.getSocketFactory
     new OkHttpClient.Builder().sslSocketFactory(sslSocketFactory, trustManager)
+      .hostnameVerifier(new HostnameVerifier() {
+        // https://github.com/square/okhttp/issues/3898#issuecomment-369881475
+        override def verify(hostname: String, session: SSLSession) = true
+      })
   }
 
 
