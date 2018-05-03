@@ -14,9 +14,9 @@ object Params {
    * parameter was supplied without a value. */
   def unapply[T](req: HttpRequest[T]) = {
     val names = req.parameterNames
-    Some(((Map.empty[String, Seq[String]] /: names) ((m, n) =>
+    Some(names.foldLeft(Map.empty[String, Seq[String]]) ((m, n) =>
         m + (n -> req.parameterValues(n))
-      )).withDefaultValue(Nil))
+      ).withDefaultValue(Nil))
   }
 
   /**

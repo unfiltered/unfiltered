@@ -82,6 +82,6 @@ trait StreamedExtractor[R] {
 trait TupleGenerator {
   /** generates a tuple of (Map[String, List[A]], Map[String, List[B]]) */
   protected def genTuple[A, B, C](iter: Iterator[C])(f: ((Map[String, List[A]], Map[String, List[B]]), C) => (Map[String, List[A]], Map[String, List[B]])) =
-   ((Map.empty[String, List[A]].withDefaultValue(Nil), Map.empty[String, List[B]].withDefaultValue(Nil)) /: iter)(f(_,_))
+   iter.foldLeft((Map.empty[String, List[A]].withDefaultValue(Nil), Map.empty[String, List[B]].withDefaultValue(Nil)))(f)
 }
 

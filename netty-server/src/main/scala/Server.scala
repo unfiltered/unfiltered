@@ -121,15 +121,16 @@ case class Server(
   def initializer(binding: PortBinding): ChannelInitializer[SocketChannel] =
     new ChannelInitializer[SocketChannel] {
       def initChannel(channel: SocketChannel) =
-        (binding.init(channel).pipeline
-          .addLast("housekeeper", new HouseKeeper(channelGrp))
-          .addLast("decoder", new HttpRequestDecoder)
-          .addLast("encoder", new HttpResponseEncoder)
-          .addLast("chunker", new HttpObjectAggregator(chunkSize))
-           /: handlers.reverse.zipWithIndex) {
-            case (pipe, (handler, index)) =>
-              pipe.addLast(s"handler-$index", handler())
-          }.addLast("notfound", new NotFoundHandler)
+        handlers.reverse.zipWithIndex.foldLeft(
+          binding.init(channel).pipeline
+            .addLast("housekeeper", new HouseKeeper(channelGrp))
+            .addLast("decoder", new HttpRequestDecoder)
+            .addLast("encoder", new HttpResponseEncoder)
+            .addLast("chunker", new HttpObjectAggregator(chunkSize))
+        ) {
+          case (pipe, (handler, index)) =>
+            pipe.addLast(s"handler-$index", handler())
+        }.addLast("notfound", new NotFoundHandler)
     }
 
   def chunked(size: Int) = copy(chunkSize = size)

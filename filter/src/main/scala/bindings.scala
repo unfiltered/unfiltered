@@ -22,7 +22,7 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   lazy val cookies = req.getCookies match {
     case null => Nil
     case jcookies =>
-      (List[Cookie]() /: jcookies)((l, c) =>
+      jcookies.foldLeft(List[Cookie]())((l, c) =>
         Cookie(c.getName, c.getValue, Option(c.getDomain), Option(c.getPath), Option(c.getMaxAge), Option(c.getSecure)) :: l)
   }
 
