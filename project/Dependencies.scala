@@ -5,7 +5,7 @@ object Dependencies {
 
   val specs2Dep = "org.specs2" %% "specs2-core" % "4.0.4"
 
-  def okHttp = "com.squareup.okhttp3" % "okhttp" % "3.5.0" :: Nil
+  def okHttp = "com.squareup.okhttp3" % "okhttp" % "3.10.0" :: Nil
 
   def integrationTestDeps = (specs2Dep :: okHttp) map { _ % "test" }
 
