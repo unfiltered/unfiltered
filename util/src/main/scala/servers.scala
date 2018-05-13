@@ -38,7 +38,7 @@ trait StartableServer extends Server {
   def stop(): ServerBuilder
   def destroy(): ServerBuilder
   /** network interface/host name and port bound for a server */
-  def portBindings:  Traversable[PortBindingInfo]
+  def portBindings: Iterable[PortBindingInfo]
 }
 trait RunnableServer extends StartableServer { self =>
   /** Calls run with no afterStart or afterStop functions */

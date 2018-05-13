@@ -88,7 +88,7 @@ case class Server(
   })
 
   /** Ports used by this server, reported by super-trait */
-  def ports: Traversable[Int] = portBindings.reverse.map(_.port)
+  def ports: Iterable[Int] = portBindings.reverse.map(_.port)
 
   /** Starts server in the background */
   def start() = {

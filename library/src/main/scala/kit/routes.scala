@@ -63,7 +63,7 @@ object Routes {
       }
     }
 
-  def toIntent[A,B,K,F](route: Traversable[(K,F)])(
+  def toIntent[A,B,K,F](route: Iterable[(K,F)])(
     f: (HttpRequest[A], String, K, F) => Option[ResponseFunction[B]]
   ): unfiltered.Cycle.Intent[A, B] = {
     case req @ Path(path) =>
