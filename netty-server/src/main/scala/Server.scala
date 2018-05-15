@@ -49,7 +49,7 @@ case class Server(
   def bind(binding: PortBinding) =
     copy(portBindings = binding :: portBindings)
 
-  def ports: Traversable[Int] = portBindings.map(_.port)
+  def ports: Iterable[Int] = portBindings.map(_.port)
 
   def makePlan(plan: => ChannelHandler) =
     copy(handlers = { () => plan } :: handlers)
