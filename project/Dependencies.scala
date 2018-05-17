@@ -3,14 +3,14 @@ import sbt._
 object Dependencies {
   val servletApiDep = "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided"
 
-  val specs2Dep = "org.specs2" %% "specs2-core" % "4.0.4"
+  val specs2Dep = "org.specs2" %% "specs2-core" % "4.2.0"
 
   def okHttp = "com.squareup.okhttp3" % "okhttp" % "3.10.0" :: Nil
 
   def integrationTestDeps = (specs2Dep :: okHttp) map { _ % "test" }
 
   val commonsCodecVersion = "1.11"
-  val scalacheckVersion = "1.13.5"
+  val scalacheckVersion = "1.14.0"
   val scalaXmlVersion = "1.1.0"
   val commonsIoVersion = "2.6"
   val commonsFileUploadVersion = "1.3.3"
