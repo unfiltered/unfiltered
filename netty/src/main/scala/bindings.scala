@@ -185,7 +185,7 @@ private [netty] object URLParser {
         case _ => Nil
       }
     }.reverse
-    pairs.foldLeft(Map.empty[String, List[String]].withDefault {_ => Nil }) {
+    pairs.foldLeft(Map.empty[String, List[String]].withDefaultValue(Nil): Map[String, List[String]]) {
       case (m, (k, v)) => m + (k -> (v :: m(k)))
     }
   }
