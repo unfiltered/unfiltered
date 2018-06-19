@@ -74,7 +74,7 @@ object PlanSpec extends Specification with unfiltered.specs2.jetty.Served {
       http(host / "filter5" / "cplan").as_string must_== "Plan C"
     }
     "filter must extract query string" in {
-      http(host / "query" / "qplan" <<? Map("foo"->"bar", "baz"->"boom")).as_string must_== "foo=bar&baz=boom"
+      http(host / "query" / "qplan" <<? new Map.Map2("foo", "bar", "baz", "boom")).as_string must_== "foo=bar&baz=boom"
     }
   }
 }
