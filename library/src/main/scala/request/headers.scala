@@ -112,7 +112,7 @@ private [request] object ConnegValueParser extends (Iterator[String] => List[Str
     def parse: (String) => scala.List[Conneg] = {
       raw => raw.split(",").map(Conneg(_)).toList
     }
-    values.toList.flatMap(parse).sortBy(_.qualifier)(Ordering.Double.reverse).map(_.value)
+    values.toList.flatMap(parse).sortBy(_.qualifier)(implicitly[Ordering[Double]].reverse).map(_.value)
   }
 }
 
