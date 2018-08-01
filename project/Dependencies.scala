@@ -4,16 +4,10 @@ object Dependencies {
   val servletApiDep = "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided"
 
   val specs2Dep = Def.setting {
-    val v = CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, v)) if v >= 13 =>
-        "4.3.0"
-      case _ =>
-        "4.2.0"
-    }
-    "org.specs2" %% "specs2-core" % v
+    "org.specs2" %% "specs2-core" % "4.3.2"
   }
 
-  def okHttp = "com.squareup.okhttp3" % "okhttp" % "3.10.0" :: Nil
+  def okHttp = "com.squareup.okhttp3" % "okhttp" % "3.11.0" :: Nil
 
   def integrationTestDeps = Def.setting((specs2Dep.value :: okHttp) map { _ % "test" })
 
@@ -32,7 +26,7 @@ object Dependencies {
         "3.0.5-M1"
     }
   }
-  val json4sVersion = "3.5.4"
+  val json4sVersion = "3.6.0"
   val asyncHttpClientVersion = "1.8.17"
   val scribeJavaVersion = "3.3.0"
 }
