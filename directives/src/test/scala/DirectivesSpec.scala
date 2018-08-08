@@ -126,7 +126,7 @@ trait DirectivesSpec extends SpecificationLike with unfiltered.specs2.Hosted {
 
 
   "Directives commit" should {
-    "respond with expected commited error" in {
+    "respond with expected committed error" in {
       httpx(host / "commit_or").code must_== 400
     }
     "try alternative when failing before commit" in {

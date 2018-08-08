@@ -16,7 +16,7 @@ import unfiltered.response.HttpResponse
  * response output stream directly would bypass any filters in place,
  * and writing to its writer will produce an InvalidStateException.
  *
- * If working with software that requries a HttpServletResponse and
+ * If working with software that requires a HttpServletResponse and
  * uses its Writer interface, this wrapper supplies a writer that
  * works with any stream filters in the response function chain.
  */

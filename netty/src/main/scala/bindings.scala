@@ -147,7 +147,7 @@ case class ReceivedMessage(
 /** An unfiltered response implementation backed by a netty http response.
  *  Note the type of netty HttpResponse determines whether or not the unfiltered
  *  response combinators can write to it. As a general rule of thumb, only netty
- *  FullHttpResponses may be writen to by calling respond with a response writer */
+ *  FullHttpResponses may be written to by calling respond with a response writer */
 class ResponseBinding[U <: NettyHttpResponse](res: U)
   extends HttpResponse(res) {
   /** available when serving non-chunked responses */
