@@ -26,7 +26,7 @@ object Dependencies {
         "3.0.5-M1"
     }
   }
-  val json4sVersion = "3.6.0"
+  val json4sVersion = "3.6.1"
   val asyncHttpClientVersion = "1.8.17"
   val scribeJavaVersion = "3.3.0"
 }
