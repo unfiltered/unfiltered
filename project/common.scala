@@ -5,7 +5,6 @@ object Common {
 
   private[this] val unusedWarnings = (
     "-Ywarn-unused" ::
-    "-Ywarn-unused-import" ::
     Nil
   )
 
@@ -19,7 +18,12 @@ object Common {
     scalaVersion := Scala212,
 
     scalacOptions ++=
-      Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked", "-feature", "-Ywarn-adapted-args", "-Xfuture"),
+      Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked", "-feature", "-Xfuture"),
+
+    scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)){
+      case Some((2, v)) if v <= 12 =>
+        Seq("-Ywarn-adapted-args")
+    }.toList.flatten,
 
     scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)){
       case Some((2, v)) if v >= 11 => unusedWarnings
