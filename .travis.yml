@@ -12,7 +12,7 @@ script: sbt "++${TRAVIS_SCALA_VERSION}!" test publishLocal
 matrix:
   include:
   - scala: 2.12.6
-    jdk: oraclejdk9
+    jdk: oraclejdk11
 cache:
   directories:
   - "$HOME/.ivy2/cache"

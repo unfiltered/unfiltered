@@ -108,6 +108,7 @@ lazy val nettyServer = module("netty-server")(
 ).settings(
   description := "Netty server embedding module",
   dependsOnSpecs2InTest,
+  libraryDependencies += "javax.activation" % "activation" % javaxActivationVersion,
   libraryDependencies ++= integrationTestDeps.value
 ).dependsOn(netty, util)
 

@@ -31,16 +31,6 @@ object Common {
 
     fork in Test := true,
 
-    javaOptions in Test ++= {
-      if (scala.util.Properties.isJavaAtLeast("9")) {
-        Seq(
-          "--add-modules", "java.activation"
-        )
-      } else {
-        Nil
-      }
-    },
-
     scalacOptions in (Compile, doc) ++= {
       val hash = sys.process.Process("git rev-parse HEAD").lineStream_!.head
       val base = (baseDirectory in LocalRootProject).value.getAbsolutePath
