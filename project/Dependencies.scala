@@ -4,7 +4,7 @@ object Dependencies {
   val servletApiDep = "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided"
 
   val specs2Dep = Def.setting {
-    "org.specs2" %% "specs2-core" % "4.3.2"
+    "org.specs2" %% "specs2-core" % "4.3.5"
   }
 
   def okHttp = "com.squareup.okhttp3" % "okhttp" % "3.11.0" :: Nil
@@ -21,7 +21,7 @@ object Dependencies {
   val scalatestVersion = Def.setting {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, v)) if v >= 13 =>
-        "3.0.6-SNAP1"
+        "3.0.6-SNAP3"
       case _ =>
         "3.0.5-M1"
     }
