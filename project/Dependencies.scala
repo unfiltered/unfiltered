@@ -13,21 +13,20 @@ object Dependencies {
 
   val commonsCodecVersion = "1.11"
   val scalacheckVersion = "1.14.0"
-  val scalaXmlVersion = "1.1.0"
+  val scalaXmlVersion = "1.1.1"
   val commonsIoVersion = "2.6"
   val commonsFileUploadVersion = "1.3.3"
-  val jettyVersion = "9.4.8.v20171121"
+  val jettyVersion = "9.4.14.v20181114"
   val nettyVersion = "4.1.13.Final" // TODO https://github.com/unfiltered/unfiltered/issues/414
   val scalatestVersion = Def.setting {
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, v)) if v >= 13 =>
-        "3.0.6-SNAP3"
+        "3.0.6-SNAP5"
       case _ =>
-        "3.0.5-M1"
+        "3.0.5"
     }
   }
-  val json4sVersion = "3.6.1"
+  val json4sVersion = "3.6.2"
   val asyncHttpClientVersion = "1.8.17"
-  val scribeJavaVersion = "3.3.0"
   val javaxActivationVersion = "1.1.1"
 }
