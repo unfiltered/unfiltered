@@ -8,7 +8,7 @@ object Common {
     Nil
   )
 
-  val Scala212 = "2.12.7"
+  val Scala212 = "2.12.8"
 
   val settings: Seq[Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "ws.unfiltered",
