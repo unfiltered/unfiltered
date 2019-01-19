@@ -3,9 +3,15 @@ import sbt._
 object Common {
   import Keys._
 
-  private[this] val unusedWarnings = (
-    "-Ywarn-unused" ::
-    Nil
+  private[this] val unusedWarnings = Def.setting(
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, 11)) => Seq(
+        "-Ywarn-unused-import"
+      )
+      case _ => Seq(
+        "-Ywarn-unused:imports"
+      )
+    }
   )
 
   val Scala212 = "2.12.8"
@@ -25,9 +31,7 @@ object Common {
         Seq("-Ywarn-adapted-args")
     }.toList.flatten,
 
-    scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)){
-      case Some((2, v)) if v >= 11 => unusedWarnings
-    }.toList.flatten,
+    scalacOptions ++= unusedWarnings.value,
 
     fork in Test := true,
 
@@ -94,6 +98,6 @@ object Common {
     // this should resolve artifacts recently published to sonatype oss not yet mirrored to maven central
     resolvers += "sonatype releases" at "https://oss.sonatype.org/content/repositories/releases"
   ) ++ Seq(Compile, Test).flatMap(c =>
-    scalacOptions in (c, console) --= unusedWarnings
+    scalacOptions in (c, console) --= unusedWarnings.value
   )
 }
