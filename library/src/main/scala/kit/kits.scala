@@ -41,7 +41,7 @@ trait RequestWrapper { self =>
   def wrap[A]: PartialFunction[HttpRequest[A], HttpRequest[A]]
 
   def apply[A,B](intent: unfiltered.Cycle.Intent[A,B]): unfiltered.Cycle.Intent[A,B]  = {
-    wrap.andThen(Pass.lift(intent)).orElse(intent)
+    wrap[A].andThen(Pass.lift(intent)).orElse(intent)
   }
 }
 
