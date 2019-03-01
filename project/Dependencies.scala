@@ -16,7 +16,7 @@ object Dependencies {
   val scalaXmlVersion = "1.1.1"
   val commonsIoVersion = "2.6"
   val commonsFileUploadVersion = "1.3.3"
-  val jettyVersion = "9.4.14.v20181114"
+  val jettyVersion = "9.4.15.v20190215"
   val nettyVersion = "4.1.13.Final" // TODO https://github.com/unfiltered/unfiltered/issues/414
   val scalatestVersion = Def.setting {
     CrossVersion.partialVersion(scalaVersion.value) match {
