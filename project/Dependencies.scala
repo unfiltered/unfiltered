@@ -1,7 +1,7 @@
 import sbt._, Keys._
 
 object Dependencies {
-  val servletApiDep = "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided"
+  val servletApiDep = "javax.servlet" % "javax.servlet-api" % "4.0.1" % "provided"
 
   val specs2Dep = Def.setting {
     "org.specs2" %% "specs2-core" % "4.3.5"
