@@ -19,12 +19,7 @@ object Dependencies {
   val jettyVersion = "9.4.15.v20190215"
   val nettyVersion = "4.1.13.Final" // TODO https://github.com/unfiltered/unfiltered/issues/414
   val scalatestVersion = Def.setting {
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, v)) if v >= 13 =>
-        "3.0.6-SNAP5"
-      case _ =>
-        "3.0.5"
-    }
+    "3.0.7-RC1"
   }
   val json4sVersion = "3.6.5"
   val asyncHttpClientVersion = "1.8.17"

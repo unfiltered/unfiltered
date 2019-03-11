@@ -2,9 +2,9 @@ package unfiltered.response.link
 
 import org.scalacheck.Gen
 import org.scalatest._
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
-class RefSpec extends PropSpec with GeneratorDrivenPropertyChecks with Matchers {
+class RefSpec extends PropSpec with ScalaCheckDrivenPropertyChecks with Matchers {
 
   property(s"'${Param.Rel.name}' parameters don't persist as members of Ref#params")  {
     forAll(genRef) { ref =>
