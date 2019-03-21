@@ -18,9 +18,7 @@ object Dependencies {
   val commonsFileUploadVersion = "1.4"
   val jettyVersion = "9.4.15.v20190215"
   val nettyVersion = "4.1.13.Final" // TODO https://github.com/unfiltered/unfiltered/issues/414
-  val scalatestVersion = Def.setting {
-    "3.0.7-RC1"
-  }
+  val scalatestVersion = "3.0.7"
   val json4sVersion = "3.6.5"
   val asyncHttpClientVersion = "1.8.17"
   val javaxActivationVersion = "1.1.1"

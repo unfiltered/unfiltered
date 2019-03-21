@@ -131,7 +131,7 @@ lazy val specs2: Project = module(specs2ProjectId)().settings(
 
 lazy val scalatest = module(scalatestProjectId)().settings(
   description := "Facilitates testing Unfiltered servers with ScalaTest",
-  libraryDependencies ++= okHttp :+ "org.scalatest" %% "scalatest" % scalatestVersion.value
+  libraryDependencies ++= okHttp :+ "org.scalatest" %% "scalatest" % scalatestVersion
 ).dependsOn(filters, jetty, nettyServer)
 
 lazy val json4s = module("json4s")(
