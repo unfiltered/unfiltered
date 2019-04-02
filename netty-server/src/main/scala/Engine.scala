@@ -2,6 +2,8 @@ package unfiltered.netty
 
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.group.{ ChannelGroup, DefaultChannelGroup }
+import io.netty.channel.epoll.{Epoll, EpollEventLoopGroup}
+import io.netty.channel.kqueue.{KQueue, KQueueEventLoopGroup}
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.util.concurrent.{EventExecutor, GlobalEventExecutor}
 
@@ -18,8 +20,15 @@ trait Engine {
 
 object Engine {
   object Default extends Engine {
-    def acceptor = new NioEventLoopGroup()
-    def workers = new NioEventLoopGroup()
+    private [Default] def bestEventLoopGroup = if (Epoll.isAvailable) {
+      new EpollEventLoopGroup()
+    } else if (KQueue.isAvailable) {
+      new KQueueEventLoopGroup()
+    } else {
+      new NioEventLoopGroup()
+    }
+    def acceptor = bestEventLoopGroup
+    def workers = bestEventLoopGroup
     def channels = defaultChannels(GlobalEventExecutor.INSTANCE)
   }
   private [Engine] def defaultChannels(executor: EventExecutor) =

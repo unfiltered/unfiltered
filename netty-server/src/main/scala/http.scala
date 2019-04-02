@@ -12,7 +12,9 @@ import io.netty.channel.{
 }
 import io.netty.channel.group.{ ChannelGroup, DefaultChannelGroup }
 import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.channel.socket.SocketChannel
+import io.netty.channel.socket.{ServerSocketChannel, SocketChannel}
+import io.netty.channel.epoll.{Epoll, EpollEventLoopGroup, EpollServerSocketChannel}
+import io.netty.channel.kqueue.{KQueue, KQueueEventLoopGroup, KQueueServerSocketChannel}
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.codec.http.{
   HttpObjectAggregator,
@@ -119,11 +121,19 @@ trait NettyBase extends RunnableServer {
 
   // todo: previously used Executors.newCachedThreadPool()'s with NioServerSocketChannelFactory. investigate if this results in similar behavior
 
+  protected def bestEventLoopGroup = if (Epoll.isAvailable) {
+    new EpollEventLoopGroup()
+  } else if (KQueue.isAvailable) {
+    new KQueueEventLoopGroup()
+  } else {
+    new NioEventLoopGroup()
+  }
+
   /** EventLoopGroup associated with accepting client connections */
-  protected val acceptor: EventLoopGroup = new NioEventLoopGroup()
+  protected val acceptor: EventLoopGroup = bestEventLoopGroup
 
   /** EventLoopGroup associated with handling client requests */
-  protected val workers: EventLoopGroup = new NioEventLoopGroup()
+  protected val workers: EventLoopGroup = bestEventLoopGroup
 
   /** any channels added to this will receive broadcasted events */
   protected val channels = new DefaultChannelGroup(
@@ -134,9 +144,16 @@ trait NettyBase extends RunnableServer {
 
   /** Starts server with preBind callback called before connection binding */
   def start(preBind: ServerBootstrap => ServerBootstrap): ServerBuilder = {
+    val channelClz: Class[_ <: ServerSocketChannel] = if (Epoll.isAvailable) {
+      classOf[EpollServerSocketChannel]
+    } else if (KQueue.isAvailable) {
+      classOf[KQueueServerSocketChannel]
+    } else {
+      classOf[NioServerSocketChannel]
+    }
     val bootstrap = preBind(new ServerBootstrap()
       .group(acceptor, workers)
-      .channel(classOf[NioServerSocketChannel])
+      .channel(channelClz)
       .childHandler(initializer)
       .childOption(ChannelOption.TCP_NODELAY, JBoolean.TRUE)
       .childOption(ChannelOption.SO_KEEPALIVE, JBoolean.TRUE)
