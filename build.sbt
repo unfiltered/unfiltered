@@ -118,6 +118,8 @@ lazy val netty = module("netty")().settings(
   libraryDependencies ++= {
     ("io.netty" % "netty-codec-http" % nettyVersion) +:
     ("io.netty" % "netty-handler" % nettyVersion) +:
+    ("io.netty" % "netty-transport-native-epoll" % nettyVersion classifier "linux-x86_64") +:
+    ("io.netty" % "netty-transport-native-kqueue" % nettyVersion classifier "osx-x86_64") +:
     integrationTestDeps.value
   }
 ).dependsOn(library)

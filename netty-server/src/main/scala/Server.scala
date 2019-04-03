@@ -4,7 +4,9 @@ import unfiltered.util.{ PlanServer, RunnableServer }
 
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.{ ChannelHandler, ChannelInitializer, ChannelOption, WriteBufferWaterMark }
-import io.netty.channel.socket.SocketChannel
+import io.netty.channel.epoll.{Epoll, EpollServerSocketChannel}
+import io.netty.channel.kqueue.{KQueue, KQueueServerSocketChannel}
+import io.netty.channel.socket.{ServerSocketChannel, SocketChannel}
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.codec.http.{
   HttpObjectAggregator,
@@ -62,11 +64,18 @@ case class Server(
   /** Starts server in the background after applying a function
    *  to each port bindings server bootstrap */
   def start(prebind: ServerBootstrap => ServerBootstrap) = {    
+    val channelClz: Class[_ <: ServerSocketChannel] = if (Epoll.isAvailable) {
+      classOf[EpollServerSocketChannel]
+    } else if (KQueue.isAvailable) {
+      classOf[KQueueServerSocketChannel]
+    } else {
+      classOf[NioServerSocketChannel]
+    }
     val bindings = portBindings.map { binding =>
       val bootstrap = configure(
         new ServerBootstrap()
           .group(acceptorGrp, workerGrp)
-          .channel(classOf[NioServerSocketChannel])
+          .channel(channelClz)
           .childHandler(initializer(binding)))
       prebind(bootstrap).bind(binding.host, binding.port).sync
     }
