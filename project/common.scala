@@ -24,11 +24,11 @@ object Common {
     scalaVersion := Scala212,
 
     scalacOptions ++=
-      Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked", "-feature", "-Xfuture"),
+      Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked", "-feature"),
 
     scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)){
       case Some((2, v)) if v <= 12 =>
-        Seq("-Ywarn-adapted-args")
+        Seq("-Ywarn-adapted-args", "-Xfuture")
     }.toList.flatten,
 
     scalacOptions ++= unusedWarnings.value,
