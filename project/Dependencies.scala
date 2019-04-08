@@ -13,12 +13,12 @@ object Dependencies {
 
   val commonsCodecVersion = "1.12"
   val scalacheckVersion = "1.14.0"
-  val scalaXmlVersion = "1.1.1"
+  val scalaXmlVersion = "1.2.0"
   val commonsIoVersion = "2.6"
   val commonsFileUploadVersion = "1.4"
   val jettyVersion = "9.4.15.v20190215"
   val nettyVersion = "4.1.13.Final" // TODO https://github.com/unfiltered/unfiltered/issues/414
-  val scalatestVersion = "3.0.7"
+  val scalatestVersion = "3.0.8-RC2"
   val json4sVersion = "3.6.5"
   val asyncHttpClientVersion = "1.8.17"
   val javaxActivationVersion = "1.1.1"
