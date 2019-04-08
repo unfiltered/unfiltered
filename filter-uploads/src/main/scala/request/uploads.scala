@@ -8,7 +8,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory
 import org.apache.commons.fileupload.servlet.ServletFileUpload
 import org.apache.commons.fileupload.util.{FileItemHeadersImpl, Streams}
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File ⇒ JFile, InputStream}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File => JFile, InputStream}
 import javax.servlet.http.HttpServletRequest
 
 import scala.util.control.Exception.allCatch
