@@ -19,6 +19,7 @@ import io.netty.handler.codec.http.multipart.{
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.NotEnoughDataDecoderException
 import io.netty.util.{AttributeKey, AttributeMap}
 import scala.collection.JavaConverters._
+import scala.util.Try
 
 /** A PostDecoder wraps a HttpPostRequestDecoder. */
 class PostDecoder(req: HttpRequest, useDisk: Boolean = true) {
@@ -219,9 +220,9 @@ trait CleanUp {
 /** Ensure any state cleanup is done when an exception is caught */
 trait TidyExceptionHandler extends ExceptionHandler with CleanUp { self: ChannelInboundHandler =>
   override def exceptionCaught(ctx: ChannelHandlerContext, thrown: Throwable) = {
-    // fixme(doug): should we try catch each of these?
-    cleanUp(ctx)
-    cleanFiles(ctx)
+    Try {
+      cleanUp(ctx)
+    }
     super.exceptionCaught(ctx, thrown)
   }
 }
