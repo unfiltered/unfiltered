@@ -16,7 +16,7 @@ object Dependencies {
   val scalaXmlVersion = "1.2.0"
   val commonsIoVersion = "2.6"
   val commonsFileUploadVersion = "1.4"
-  val jettyVersion = "9.4.16.v20190411"
+  val jettyVersion = "9.4.17.v20190418"
   val nettyVersion = "4.1.13.Final" // TODO https://github.com/unfiltered/unfiltered/issues/414
   val scalatestVersion = "3.0.8-RC2"
   val json4sVersion = "3.6.5"
