@@ -20,7 +20,7 @@ object Dependencies {
   val nettyVersion = "4.1.13.Final" // TODO https://github.com/unfiltered/unfiltered/issues/414
   val scalatestVersion = "3.1.0-SNAP11"
   val scalatestPlusVersion = "1.0.0-SNAP6"
-  val json4sVersion = "3.6.5"
+  val json4sVersion = "3.6.6"
   val asyncHttpClientVersion = "1.8.17"
   val javaxActivationVersion = "1.1.1"
 }
