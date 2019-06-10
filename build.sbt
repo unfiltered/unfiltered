@@ -135,8 +135,7 @@ lazy val scalatest = module(scalatestProjectId)().settings(
   description := "Facilitates testing Unfiltered servers with ScalaTest",
   libraryDependencies ++= {
     okHttp :+
-    ("org.scalatest" %% "scalatest" % scalatestVersion) :+
-    ("org.scalatestplus" %% "scalatestplus-scalacheck" % scalatestPlusVersion)
+    ("org.scalatest" %% "scalatest" % scalatestVersion)
   }
 ).dependsOn(filters, jetty, nettyServer)
 
