@@ -62,4 +62,4 @@ There are some [giter8](https://github.com/foundweekends/giter8) templates for U
 - [unfiltered.g8](https://github.com/unfiltered/unfiltered.g8) basic g8 template example
 - [unfiltered-gae.g8](https://github.com/unfiltered/unfiltered-gae.g8) g8 template for google app engine deployment
 - [coffee-filter.g8](https://github.com/unfiltered/coffee-filter.g8) g8 template of unfiltered app using coffeescript and less css
-- [unfiltered-oauth-server.g8](https://github.com/unfiltered/unfiltered-oauth-server.g8) g8 template of example unfiltered oauth server
+
