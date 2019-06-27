@@ -19,7 +19,7 @@ object Dependencies {
   val jettyVersion = "9.4.19.v20190610"
   val nettyVersion = "4.1.13.Final" // TODO https://github.com/unfiltered/unfiltered/issues/414
   val scalatestVersion = "3.0.8"
-  val json4sVersion = "3.6.6"
+  val json4sVersion = "3.6.7"
   val asyncHttpClientVersion = "1.8.17"
   val javaxActivationVersion = "1.1.1"
 }
