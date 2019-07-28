@@ -13,6 +13,15 @@ matrix:
   include:
   - scala: 2.12.8
     jdk: openjdk11
+  - os: windows
+    language: bash
+    env: JDK="adopt@1.8.212-04"
+    before_install:
+    - wget https://raw.githubusercontent.com/DanySK/Gravis-CI/c8f400623d8f756ef7c/.install-jdk-travis.sh
+    - source .install-jdk-travis.sh
+    script:
+    - wget https://raw.githubusercontent.com/paulp/sbt-extras/3c8fcadc3376e/sbt && chmod +x ./sbt
+    - ./sbt "++ 2.13.0!" test
 cache:
   directories:
   - "$HOME/.ivy2/cache"
