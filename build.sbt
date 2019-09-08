@@ -1,6 +1,7 @@
 import Common._
 import Unfiltered._
 import Dependencies._
+import ReleaseTransformations._
 
 Common.settings
 
@@ -12,6 +13,23 @@ artifacts := Classpaths.artifactDefs(Seq(packageDoc in Compile)).value
 packagedArtifacts := Classpaths.packaged(Seq(packageDoc in Compile)).value
 Defaults.packageTaskSettings(
   packageDoc in Compile, (unidoc in Compile).map{_.flatMap(Path.allSubpaths)}
+)
+
+releaseCrossBuild := true
+
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  releaseStepCommandAndRemaining("+publishSigned"),
+  releaseStepCommandAndRemaining("sonatypeBundleRelease"),
+  setNextVersion,
+  commitNextVersion,
+  pushChanges,
 )
 
 val specs2ProjectId = "specs2"

@@ -1,4 +1,5 @@
 import sbt._
+import xerial.sbt.Sonatype.autoImport.sonatypePublishToBundle
 
 object Common {
   import Keys._
@@ -49,8 +50,7 @@ object Common {
 
     publishMavenStyle := true,
 
-    publishTo := Some("releases" at
-              "https://oss.sonatype.org/service/local/staging/deploy/maven2"),
+    publishTo := sonatypePublishToBundle.value,
 
     publishArtifact in Test := false,
 
