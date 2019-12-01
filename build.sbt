@@ -53,7 +53,7 @@ lazy val library: Project = module("unfiltered")(
   libraryDependencies ++= Seq(
     "commons-codec" % "commons-codec" % commonsCodecVersion,
     specs2Dep.value % "test",
-    "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test",
+    "org.scalatestplus" %% "scalacheck-1-14" % scalatestScalacheckVersion % "test",
   ),
   libraryDependencies ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {

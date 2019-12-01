@@ -1,9 +1,10 @@
 package unfiltered.request
 
 import test.AgentStrings
-import org.scalatest.{WordSpec, Matchers }
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class AgentMatchSpec extends WordSpec with Matchers {
+class AgentMatchSpec extends AnyWordSpec with Matchers {
   "Chrome strings" should {
     "satisfy the chrome predicate" in {
       AgentStrings.chrome.map(AgentIs.chromeAM).forall(identity) shouldBe true

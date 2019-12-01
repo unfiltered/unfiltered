@@ -1,6 +1,7 @@
 package unfiltered.request
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import unfiltered.response._
 import test.AgentStrings
 
@@ -12,7 +13,7 @@ class AgentSpecNetty
 extends AgentSpec
 with unfiltered.scalatest.netty.Planned
 
-trait AgentSpec extends WordSpec with Matchers with unfiltered.scalatest.Hosted {
+trait AgentSpec extends AnyWordSpec with Matchers with unfiltered.scalatest.Hosted {
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = {
     case GET(_) & AgentIs.Chrome(_) => ResponseString("chromium")
     case GET(_) & AgentIs.Safari(_) & AgentIs.Mobile(_) => ResponseString("safari mobile")
