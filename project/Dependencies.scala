@@ -12,7 +12,7 @@ object Dependencies {
   def integrationTestDeps = Def.setting((specs2Dep.value :: okHttp) map { _ % "test" })
 
   val commonsCodecVersion = "1.13"
-  val scalacheckVersion = "1.14.2"
+  val scalacheckVersion = "1.14.3"
   val scalaXmlVersion = "1.2.0"
   val commonsIoVersion = "2.6"
   val commonsFileUploadVersion = "1.4"
