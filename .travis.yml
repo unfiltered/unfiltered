@@ -26,6 +26,7 @@ cache:
   directories:
   - "$HOME/.ivy2/cache"
   - "$HOME/.sbt/launchers"
+  - "$HOME/.cache/coursier/v1"
 before_cache:
 - find $HOME/.sbt -name "*.lock" | xargs rm
 - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
