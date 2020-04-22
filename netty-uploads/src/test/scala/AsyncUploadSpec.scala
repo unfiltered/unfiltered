@@ -12,7 +12,7 @@ import java.io.{File => JFile,FileInputStream => FIS}
 import java.util.Arrays
 import org.apache.commons.io.{IOUtils => IOU}
 
-object AsyncUploadSpec extends Specification
+class AsyncUploadSpec extends Specification
   with Served {
 
   private val directory = java.nio.file.Files.createTempDirectory(new JFile("target").toPath, "AsyncUploadSpec").toFile

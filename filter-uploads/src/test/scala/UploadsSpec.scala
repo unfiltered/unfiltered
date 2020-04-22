@@ -2,7 +2,7 @@ package unfiltered.filter.request
 
 import org.specs2.mutable._
 
-object UploadsSpec extends Specification with unfiltered.specs2.jetty.Served {
+class UploadsSpec extends Specification with unfiltered.specs2.jetty.Served {
   import java.io.{FileInputStream => FIS}
   import org.apache.commons.io.{IOUtils => IOU}
   import unfiltered.response._

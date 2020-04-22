@@ -2,12 +2,12 @@ package unfiltered.request
 
 import org.specs2.mutable._
 
-object DecodesSpecJetty
+class DecodesSpecJetty
 extends Specification
 with unfiltered.specs2.jetty.Planned
 with DecodesSpec
 
-object DecodesSpecNetty
+class DecodesSpecNetty
 extends Specification
 with unfiltered.specs2.netty.Planned
 with DecodesSpec

@@ -3,7 +3,7 @@ package unfiltered.server
 import unfiltered.specs2.SecureClient
 import org.specs2.mutable._
 
-object SslServerSpec extends Specification with unfiltered.specs2.Hosted with SecureClient {
+class SslServerSpec extends Specification with unfiltered.specs2.Hosted with SecureClient {
 
   import unfiltered.response._
   import unfiltered.request._

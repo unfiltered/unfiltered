@@ -7,7 +7,7 @@ import unfiltered.request.{GET, HTTP, HTTPS, Path => UFPath}
 import unfiltered.specs2.SecureClient
 import unfiltered.util.Port
 
-object MixedServerSpec extends Specification with unfiltered.specs2.netty.Served with SecureClient {
+class MixedServerSpec extends Specification with unfiltered.specs2.netty.Served with SecureClient {
 
   // generated keystore for localhost
   // keytool -keystore keystore -alias unfiltered -genkey -keyalg RSA

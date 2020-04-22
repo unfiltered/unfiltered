@@ -1,7 +1,7 @@
 package unfiltered.filter
 import org.specs2.mutable._
 
-object AsyncSpec extends Specification with unfiltered.specs2.jetty.Served {
+class AsyncSpec extends Specification with unfiltered.specs2.jetty.Served {
   import unfiltered.response._
   import unfiltered.request._
   import unfiltered.request.{Path => UFPath}

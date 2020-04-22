@@ -2,12 +2,12 @@ package unfiltered.response
 
 import org.specs2.mutable._
 
-object PassSpecJetty
+class PassSpecJetty
 extends Specification
 with unfiltered.specs2.jetty.Planned
 with PassSpec
 
-object PassSpecNetty
+class PassSpecNetty
 extends Specification
 with unfiltered.specs2.netty.Planned
 with PassSpec

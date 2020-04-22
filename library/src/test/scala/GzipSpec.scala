@@ -8,12 +8,12 @@ import okio.ByteString
 import org.specs2.mutable._
 import okhttp3.{MediaType, RequestBody}
 
-object GzipSpecJetty
+class GzipSpecJetty
 extends Specification
 with unfiltered.specs2.jetty.Planned
 with GZipSpec
 
-object GzipSpecNetty
+class GzipSpecNetty
 extends Specification
 with unfiltered.specs2.netty.Planned
 with GZipSpec

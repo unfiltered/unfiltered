@@ -4,12 +4,12 @@ import org.specs2.mutable._
 
 import unfiltered.request._
 
-object RoutesStartsWithSpecJetty
+class RoutesStartsWithSpecJetty
 extends Specification
 with unfiltered.specs2.jetty.Planned
 with RoutesStartsWithSpec
 
-object RoutesStartsWithSpecNetty
+class RoutesStartsWithSpecNetty
 extends Specification
 with unfiltered.specs2.netty.Planned
 with RoutesStartsWithSpec

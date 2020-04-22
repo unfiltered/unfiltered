@@ -9,7 +9,7 @@ import java.io.{File => JFile}
 
 import okhttp3.MediaType
 
-object MixedPlanSpec extends Specification
+class MixedPlanSpec extends Specification
   with Served {
 
   val html = <html>

@@ -2,12 +2,12 @@ package unfiltered.request
 
 import org.specs2.mutable._
 
-object QueryParamsSpecJetty
+class QueryParamsSpecJetty
 extends Specification
 with unfiltered.specs2.jetty.Planned
 with QueryParamsSpec
 
-object QueryParamsSpecNetty
+class QueryParamsSpecNetty
 extends Specification
 with unfiltered.specs2.netty.Planned
 with QueryParamsSpec

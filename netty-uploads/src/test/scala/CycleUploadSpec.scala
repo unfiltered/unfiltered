@@ -12,7 +12,7 @@ import java.util.Arrays
 
 import org.apache.commons.io.{ IOUtils => IOU }
 
-object CycleUploadSpec extends Specification
+class CycleUploadSpec extends Specification
   with Served {
   private val directory = java.nio.file.Files.createTempDirectory(new JFile("target").toPath, "CycleUploadSpec").toFile
 

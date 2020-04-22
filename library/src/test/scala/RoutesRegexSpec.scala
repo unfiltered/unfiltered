@@ -4,12 +4,12 @@ import org.specs2.mutable._
 
 import unfiltered.request._
 
-object RoutesRegexSpecJetty
+class RoutesRegexSpecJetty
 extends Specification
 with unfiltered.specs2.jetty.Planned
 with RoutesRegexSpec
 
-object RoutesRegexSpecNetty
+class RoutesRegexSpecNetty
 extends Specification
 with unfiltered.specs2.netty.Planned
 with RoutesRegexSpec

@@ -2,7 +2,7 @@ package unfiltered.util
 
 import org.specs2.mutable.Specification
 
-object MIMETypeSpec extends Specification {
+class MIMETypeSpec extends Specification {
   "MIMETypes" should {
     "parse */*" in {
       val mime = MIMEType.parse("*/*")

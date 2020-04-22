@@ -9,7 +9,7 @@ import unfiltered.request.{GET, Path => UFPath}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object FutureServerSpec extends Specification with org.specs2.matcher.ThrownMessages with unfiltered.specs2.netty.Served {
+class FutureServerSpec extends Specification with org.specs2.matcher.ThrownMessages with unfiltered.specs2.netty.Served {
 
   implicit val executionContext = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(2, NamedDaemonTF.server))
 

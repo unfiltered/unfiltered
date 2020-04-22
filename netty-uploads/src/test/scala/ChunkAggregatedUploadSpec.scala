@@ -12,7 +12,7 @@ import java.util.Arrays
 
 import org.apache.commons.io.{ IOUtils => IOU }
 
-object ChunkAggregatedUploadSpec extends Specification
+class ChunkAggregatedUploadSpec extends Specification
   with Served {
 
   private val directory = java.nio.file.Files.createTempDirectory(new JFile("target").toPath, "ChunkAggregatedUploadSpec").toFile

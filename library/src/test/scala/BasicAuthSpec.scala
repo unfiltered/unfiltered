@@ -2,12 +2,12 @@ package unfiltered.request
 
 import org.specs2.mutable._
 
-object BasicAuthSpecJetty
+class BasicAuthSpecJetty
 extends Specification
 with unfiltered.specs2.jetty.Planned
 with BasicAuthSpec
 
-object BasicAuthSpecNetty
+class BasicAuthSpecNetty
 extends Specification
 with unfiltered.specs2.netty.Planned
 with BasicAuthSpec

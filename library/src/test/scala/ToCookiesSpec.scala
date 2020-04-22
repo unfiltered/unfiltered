@@ -2,7 +2,7 @@ package unfiltered.response
 
 import org.specs2.mutable._
 
-object ToCookiesSpec extends Specification {
+class ToCookiesSpec extends Specification {
   import unfiltered.Cookie
 
   "ToCookies" should {

@@ -19,7 +19,7 @@ import org.specs2.mutable.Specification
 
 import scala.util.control.NonFatal
 
-object NoChunkAggregatorSpec extends Specification
+class NoChunkAggregatorSpec extends Specification
   with Served {
 
   trait ExpectedServerErrorResponse { self: ExceptionHandler =>

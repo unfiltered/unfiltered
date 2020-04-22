@@ -2,12 +2,12 @@ package unfiltered.request
 
 import org.specs2.mutable._
 
-object AcceptsSpecJetty
+class AcceptsSpecJetty
 extends Specification
 with unfiltered.specs2.jetty.Planned
 with AcceptsSpec
 
-object AcceptsSpecNetty
+class AcceptsSpecNetty
 extends Specification
 with unfiltered.specs2.netty.Planned
 with AcceptsSpec

@@ -5,12 +5,12 @@ import java.time.Instant
 import okhttp3.{Cookie, HttpUrl, OkHttpClient}
 import org.specs2.mutable._
 
-object CookiesSpecJetty
+class CookiesSpecJetty
   extends Specification
     with unfiltered.specs2.jetty.Planned
     with CookiesSpec
 
-object CookiesSpecNetty
+class CookiesSpecNetty
   extends Specification
     with unfiltered.specs2.netty.Planned
     with CookiesSpec

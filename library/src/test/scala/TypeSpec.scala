@@ -4,8 +4,8 @@ import java.nio.charset.StandardCharsets
 
 import org.specs2.mutable._
 
-object TypeSpecJetty extends Specification with unfiltered.specs2.jetty.Planned with TypeSpec
-object TypeSpecNetty extends Specification with unfiltered.specs2.netty.Planned with TypeSpec
+class TypeSpecJetty extends Specification with unfiltered.specs2.jetty.Planned with TypeSpec
+class TypeSpecNetty extends Specification with unfiltered.specs2.netty.Planned with TypeSpec
 
 trait TypeSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._

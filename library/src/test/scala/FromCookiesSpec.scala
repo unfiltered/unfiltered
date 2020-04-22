@@ -4,7 +4,7 @@ import org.specs2.mutable._
 import java.util.Date
 
 // ported testcases from netty cookie decoder tests
-object FromCookiesSpec extends Specification {
+class FromCookiesSpec extends Specification {
   import unfiltered.Cookie 
   implicit val nameOrdering: Ordering[Cookie] = Ordering.by((_:Cookie).name.toLowerCase)
 

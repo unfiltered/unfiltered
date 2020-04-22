@@ -4,7 +4,7 @@ import org.specs2.mutable.Specification
 import unfiltered.request.{ GET, Path => UFPath }
 import scala.collection.mutable
 
-object WebSocketPlanSpec extends Specification with unfiltered.specs2.netty.Served {
+class WebSocketPlanSpec extends Specification with unfiltered.specs2.netty.Served {
   def setup = _.plan(Planify {
     case GET(UFPath("/")) => {
       case Open(s) =>

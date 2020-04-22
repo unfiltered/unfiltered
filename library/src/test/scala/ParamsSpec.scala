@@ -4,13 +4,13 @@ package unfiltered.request
 import org.specs2.mutable._
 
 @deprecated("Deprecated until we remove its references to QParams", since="0.8.3")
-object ParamsSpecJetty
+class ParamsSpecJetty
 extends Specification
 with unfiltered.specs2.jetty.Planned
 with ParamsSpec
 
 @deprecated("Deprecated until we remove its references to QParams", since="0.8.3")
-object ParamsSpecNetty
+class ParamsSpecNetty
 extends Specification
 with unfiltered.specs2.netty.Planned
 with ParamsSpec

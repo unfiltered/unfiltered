@@ -5,7 +5,7 @@ import org.specs2.mutable.Specification
 import unfiltered.response.ResponseString
 
 /** Tests a netty server configured with both a plan and a resource handler */
-object PlannedResourcesSpec extends Specification with unfiltered.specs2.netty.Served {
+class PlannedResourcesSpec extends Specification with unfiltered.specs2.netty.Served {
 
    def setup = _.resources(getClass().getResource("/files/")).plan(
      unfiltered.netty.cycle.Planify {

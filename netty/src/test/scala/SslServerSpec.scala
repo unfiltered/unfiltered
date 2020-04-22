@@ -13,7 +13,7 @@ import io.netty.channel.ChannelHandler.Sharable
 
 import org.specs2.mutable.Specification
 
-object SslServerSpec
+class SslServerSpec
   extends Specification
   with unfiltered.specs2.netty.Started
   with SecureClient {

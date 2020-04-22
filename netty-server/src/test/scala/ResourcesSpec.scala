@@ -3,7 +3,7 @@ package unfiltered.netty
 import org.specs2.mutable.Specification
 
 /** Tests a netty server configured to handle static resources only */
-object ResourcesSpec extends Specification with unfiltered.specs2.netty.Served {
+class ResourcesSpec extends Specification with unfiltered.specs2.netty.Served {
    def setup = _.resources(getClass().getResource("/files/"), passOnFail = false)
    "A resource server" should {
      "respond with a valid file" in {

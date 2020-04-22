@@ -2,12 +2,12 @@ package unfiltered.request
 
 import org.specs2.mutable._
 
-object HeadersSpecJetty
+class HeadersSpecJetty
 extends Specification
 with unfiltered.specs2.jetty.Planned
 with HeadersSpec
 
-object HeadersSpecNetty
+class HeadersSpecNetty
 extends Specification
 with unfiltered.specs2.netty.Planned
 with HeadersSpec
@@ -70,10 +70,11 @@ trait HeadersSpec extends Specification with unfiltered.specs2.Hosted {
       get("ct", ("Content-Type","text/html; charset=ISO-8859-4")) must_== "pass"
     }
     "parse Expect" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.20
-      if (this == unfiltered.request.HeadersSpecNetty) {
-        true must_== true // TODO
-      } else {
-        get("e", ("Expect","100-continue")) must_== "pass"
+      this match {
+        case _: unfiltered.request.HeadersSpecNetty =>
+          true must_== true // TODO
+        case _ =>
+          get("e", ("Expect","100-continue")) must_== "pass"
       }
     }
     "parse From" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.22
@@ -115,10 +116,11 @@ trait HeadersSpec extends Specification with unfiltered.specs2.Hosted {
       get("xff", ("X-Forwarded-For","client1, proxy1, proxy2")) must_== "pass"
     }
     "parse header names" in {
-      if (this == unfiltered.request.HeadersSpecNetty) {
-        true must_== true // TODO
-      } else {
-        get("names", ("Expect","100-continue"), ("From","webmaster@w3.org"), ("Host","www.w3.org")) must_== "pass"
+      this match {
+        case _: unfiltered.request.HeadersSpecNetty =>
+          true must_== true // TODO
+        case _ =>
+          get("names", ("Expect","100-continue"), ("From","webmaster@w3.org"), ("Host","www.w3.org")) must_== "pass"
       }
     }
   }
