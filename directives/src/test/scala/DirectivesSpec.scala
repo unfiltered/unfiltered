@@ -269,9 +269,7 @@ trait DirectivesSpec extends SpecificationLike with unfiltered.specs2.Hosted {
           "even_int" -> 7.toString
         ))
       resp.code must_== 400
-      resp.as_string must_== """option_int is not an int: four
-require_int is missing
-even_int is not even: 7"""
+      resp.as_string must_== Seq("option_int is not an int: four", "require_int is missing", "even_int is not even: 7").mkString("\n")
     }
   }
 }
