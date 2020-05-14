@@ -18,7 +18,7 @@ object Dependencies {
   val jettyVersion = "9.4.28.v20200408"
   val nettyVersion = "4.1.50.Final"
   val scalatestVersion = "3.1.2"
-  val scalatestScalacheckVersion = "3.1.1.1"
+  val scalatestScalacheckVersion = "3.1.2.0"
   val json4sVersion = "3.6.8"
   val asyncHttpClientVersion = "1.8.17"
   val javaxActivationVersion = "1.1.1"
