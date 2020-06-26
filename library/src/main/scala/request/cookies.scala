@@ -84,14 +84,14 @@ object FromCookies {
             val (complete, cookie) = a
             if(complete) a
             else (names(j).toLowerCase, values(j)) match {
-              case (LCDiscard,    _) => iter.next; (false, cookie) // don't support
-              case (LCSecure,     v) => iter.next; (false, cookie.copy(secure = Option(true)))
-              case (LCHTTPOnly,   v) => iter.next; (false, cookie.copy(httpOnly = true))
-              case (LCComment,    _) => iter.next; (false, cookie) // don't support
-              case (LCCommentURL, _) => iter.next; (false, cookie) // don't support
-              case (LCDomain,     v) => iter.next; (false, cookie.copy(domain = Option(v)))
-              case (LCPath,       v) => iter.next; (false, cookie.copy(path = Option(v)))
-              case (LCExpires,    v) => iter.next; (false, try {
+              case (LCDiscard,    _) => iter.next(); (false, cookie) // don't support
+              case (LCSecure,     v) => iter.next(); (false, cookie.copy(secure = Option(true)))
+              case (LCHTTPOnly,   v) => iter.next(); (false, cookie.copy(httpOnly = true))
+              case (LCComment,    _) => iter.next(); (false, cookie) // don't support
+              case (LCCommentURL, _) => iter.next(); (false, cookie) // don't support
+              case (LCDomain,     v) => iter.next(); (false, cookie.copy(domain = Option(v)))
+              case (LCPath,       v) => iter.next(); (false, cookie.copy(path = Option(v)))
+              case (LCExpires,    v) => iter.next(); (false, try {
                 val maxMils =
                   unfiltered.request.DateFormatting.parseDate(v).get.getTime -
                     System.currentTimeMillis
@@ -101,17 +101,17 @@ object FromCookies {
               } catch {
                 case _: Exception => cookie
               })
-              case (LCMaxAge, v)     => iter.next;  (false, try {
+              case (LCMaxAge, v)     => iter.next();  (false, try {
                 cookie.copy(maxAge = Option(Integer.parseInt(v)))
               } catch {
                 case _: Exception => cookie
               })
-              case (LCVersion, v)    => iter.next;  (false, try {
+              case (LCVersion, v)    => iter.next();  (false, try {
                 cookie.copy(version = Integer.parseInt(v))
               } catch {
                 case _: Exception => cookie
               })
-              case (LCPort, _)    =>  iter.next; (false, cookie) // don't support
+              case (LCPort, _)    =>  iter.next(); (false, cookie) // don't support
               case (pass, _)      =>  (true, cookie)
             }
           }

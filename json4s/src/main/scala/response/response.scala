@@ -10,5 +10,5 @@ object Json {
     new ComposeResponse(JsonContent ~> ResponseString(jsonToString(json)))
 
   def apply(json: JValue, cb: String) =
-    new ComposeResponse(JsContent ~> ResponseString("%s(%s)" format(cb, jsonToString(json))))
+    new ComposeResponse(JsContent ~> ResponseString("%s(%s)".format(cb, jsonToString(json))))
 }

@@ -214,7 +214,7 @@ trait CleanUp {
 
   /** Erase any temporary data that may be on disk */
   def cleanFiles(ctx: ChannelHandlerContext): Unit =
-    channelState(ctx).foreach(_.decoder.foreach(_.cleanFiles))
+    channelState(ctx).foreach(_.decoder.foreach(_.cleanFiles()))
 }
 
 /** Ensure any state cleanup is done when an exception is caught */
