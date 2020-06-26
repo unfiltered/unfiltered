@@ -114,7 +114,7 @@ trait NettyBase extends RunnableServer {
   /** host to bind to */
   val host: String
 
-  val url =  "http://%s:%d/" format(host, port)
+  val url =  "http://%s:%d/".format(host, port)
 
   /** ChannelInitializer that initializes the server bootstrap */
   protected def initializer: ChannelInitializer[SocketChannel]

@@ -29,7 +29,7 @@ trait CloseOnException { self: ExceptionHandler =>
 }
 
 private [websockets] object WSLocation {
-  def apply[T](r: HttpRequest[T]) = "%s://%s%s" format(
+  def apply[T](r: HttpRequest[T]) = "%s://%s%s".format(
     if (r.isSecure) "wss" else "ws", Host(r).get, r.uri)
 }
 

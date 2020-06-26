@@ -11,7 +11,7 @@ object Body {
     @scala.annotation.tailrec def read(): Unit = {
       val len = in.read(ba)
       if (len > 0) bos.write(ba, 0, len)
-      if (len >= 0) read
+      if (len >= 0) read()
     }
     read()
     in.close
@@ -24,7 +24,7 @@ object Body {
     @scala.annotation.tailrec def read(): Unit = {
       val len = reader.read(ca)
       if (len > 0) writer.write(ca, 0, len)
-      if (len >= 0) read
+      if (len >= 0) read()
     }
     read()
     reader.close
