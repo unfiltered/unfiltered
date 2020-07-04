@@ -160,31 +160,31 @@ class FromCookiesSpec extends Specification {
 
       val cookies = FromCookies(source).iterator
 
-      val a = cookies.next
+      val a = cookies.next()
       a.name must_== "a"
       a.value must_== ""
 
-      val b = cookies.next
+      val b = cookies.next()
       b.name must_== "b"
       b.value must_== "1"
 
-      val c = cookies.next
+      val c = cookies.next()
       c.name must_== "c"
       c.value must_== "\"1\"2\""
 
-      val d = cookies.next
+      val d = cookies.next()
       d.name must_== "d"
       d.value must_== "1\"2\"3"
 
-      val e = cookies.next
+      val e = cookies.next()
       e.name must_== "e"
       e.value must_== "\"\""
 
-      val f = cookies.next
+      val f = cookies.next()
       f.name must_== "f"
       f.value must_== "1\"\"2"
 
-      val g = cookies.next
+      val g = cookies.next()
       g.name must_== "g"
       g.value must_== "\\"
 
@@ -200,27 +200,27 @@ class FromCookiesSpec extends Specification {
         "__utmz=48461872.1258140131.1.1.utmcsr=overstock.com|utmccn=(referral)|utmcmd=referral|utmcct=/Home-Garden/Furniture/Clearance,/clearance,/32/dept.html" :: Nil mkString("")
       val cookies = FromCookies(source).sorted.iterator
 
-      val a = cookies.next
+      val a = cookies.next()
       a.name must_== "__utma"
       a.value must_== "48461872.1094088325.1258140131.1258140131.1258140131.1"
 
-      val b = cookies.next
+      val b = cookies.next()
       b.name must_== "__utmb"
       b.value must_== "48461872.13.10.1258140131"
 
-      val c = cookies.next
+      val c = cookies.next()
       c.name must_== "__utmc"
       c.value must_== "48461872"
 
-      val d = cookies.next
+      val d = cookies.next()
       d.name must_== "__utmz"
       d.value must_== "48461872.1258140131.1.1.utmcsr=overstock.com|utmccn=(referral)|utmcmd=referral|utmcct=/Home-Garden/Furniture/Clearance,/clearance,/32/dept.html"
 
-      val e = cookies.next
+      val e = cookies.next()
       e.name must_== "ARPT"
       e.value must_== "LWUKQPSWRTUN04CKKJI"
 
-      val f = cookies.next
+      val f = cookies.next()
       f.name must_== "kw-2E343B92-B097-442c-BFA5-BE371E0325A2"
       f.value must_== "unfinished furniture"
 

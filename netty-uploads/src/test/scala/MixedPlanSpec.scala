@@ -31,7 +31,7 @@ class MixedPlanSpec extends Specification
           (disk.files("f"), disk.params("p")) match {
             case (Seq(f, _*), p) =>
               ResponseString(
-                "cycle disk read file f named %s with content type %s and param p %s" format(
+                "cycle disk read file f named %s with content type %s and param p %s".format(
                   f.name, f.contentType, p))
             case _ => ResponseString("what's f?")
         }
@@ -41,7 +41,7 @@ class MixedPlanSpec extends Specification
           val stream = MultiPartParams.Streamed(binding)
           (stream.files("f"), stream.params("p")) match {
             case (Seq(f, _*), p) => ResponseString(
-              "cycle stream read file f is named %s with content type %s and param p %s" format(
+              "cycle stream read file f is named %s with content type %s and param p %s".format(
                 f.name, f.contentType, p))
             case _ =>  ResponseString("what's f?")
           }
@@ -51,7 +51,7 @@ class MixedPlanSpec extends Specification
           val mem =  MultiPartParams.Memory(binding)
           (mem.files("f"), mem.params("p")) match {
             case (Seq(f, _*), p) => ResponseString(
-              "cycle memory read file f is named %s with content type %s and param p %s" format(
+              "cycle memory read file f is named %s with content type %s and param p %s".format(
                 f.name, f.contentType, p))
             case _ =>  ResponseString("what's f?")
           }
@@ -63,7 +63,7 @@ class MixedPlanSpec extends Specification
           (disk.files("f"), disk.params("p")) match {
             case (Seq(f, _*), p) =>
               ResponseString(
-                "cycle disk read file f named %s with content type %s and param p %s" format(
+                "cycle disk read file f named %s with content type %s and param p %s".format(
                   f.name, f.contentType, p))
             case _ => ResponseString("what's f?")
         }
@@ -79,7 +79,7 @@ class MixedPlanSpec extends Specification
           (disk.files("f"), disk.params("p")) match {
             case (Seq(f, _*), p) =>
               binding.respond(ResponseString(
-                "async disk read file f named %s with content type %s and param p" format(
+                "async disk read file f named %s with content type %s and param p".format(
                   f.name, f.contentType, p)))
               case _ =>  binding.respond(ResponseString("what's f?"))
             }
@@ -89,7 +89,7 @@ class MixedPlanSpec extends Specification
           val stream = MultiPartParams.Streamed(binding)
           (stream.files("f"), stream.params("p")) match {
             case (Seq(f, _*), p) => binding.respond(ResponseString(
-              "async stream read file f is named %s with content type %s and param p %s" format(
+              "async stream read file f is named %s with content type %s and param p %s".format(
                 f.name, f.contentType, p)))
             case _ =>  binding.respond(ResponseString("what's f?"))
           }
@@ -99,7 +99,7 @@ class MixedPlanSpec extends Specification
           val mem = MultiPartParams.Memory(binding)
           (mem.files("f"), mem.params("p")) match {
             case (Seq(f, _*), p) => binding.respond(ResponseString(
-              "async memory read file f is named %s with content type %s and param p %s" format(
+              "async memory read file f is named %s with content type %s and param p %s".format(
                 f.name, f.contentType, p)))
             case _ => binding.respond(ResponseString("what's f?"))
           }
@@ -111,7 +111,7 @@ class MixedPlanSpec extends Specification
           (disk.files("f"), disk.params("p")) match {
             case (Seq(f, _*), p) =>
               binding.respond(ResponseString(
-                "async disk read file f named %s with content type %s and param p" format(
+                "async disk read file f named %s with content type %s and param p".format(
                   f.name, f.contentType, p)))
             case _ => binding.respond(ResponseString("what's f?"))
           }
@@ -146,38 +146,38 @@ class MixedPlanSpec extends Specification
     "respond with 404 when posting to a non-existent url" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      val code = httpx(req(host / "cycle" / "notexists") <<* ("f", file, "text/plain")).code
+      val code = httpx(req(host / "cycle" / "notexists").<<*("f", file, "text/plain")).code
       code must_== 404
     }
 
     "handle cycle file uploads disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(req(host / "cycle" / "disk") <<* ("f", file, "text/plain")).as_string must_== "cycle disk read file f named netty-upload-big-text-test.txt with content type text/plain and param p List()"
+      http(req(host / "cycle" / "disk").<<*("f", file, "text/plain")).as_string must_== "cycle disk read file f named netty-upload-big-text-test.txt with content type text/plain and param p List()"
     }
 
     "handle cycle file uploads streamed" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(req(host / "cycle" / "stream") <<* ("f", file, "text/plain")).as_string must_== "cycle stream read file f is named netty-upload-big-text-test.txt with content type text/plain and param p List()"
+      http(req(host / "cycle" / "stream").<<*("f", file, "text/plain")).as_string must_== "cycle stream read file f is named netty-upload-big-text-test.txt with content type text/plain and param p List()"
     }
 
     "handle cycle file uploads memory" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(req(host / "cycle" / "mem") <<* ("f", file, "text/plain")).as_string must_== "cycle memory read file f is named netty-upload-big-text-test.txt with content type text/plain and param p List()"
+      http(req(host / "cycle" / "mem").<<*("f", file, "text/plain")).as_string must_== "cycle memory read file f is named netty-upload-big-text-test.txt with content type text/plain and param p List()"
     }
 
     "handle passed cycle file uploads to disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(req(host / "cycle" / "pass") <<* ("f", file, "text/plain")).as_string must_== "cycle disk read file f named netty-upload-big-text-test.txt with content type text/plain and param p List()"
+      http(req(host / "cycle" / "pass").<<*("f", file, "text/plain")).as_string must_== "cycle disk read file f named netty-upload-big-text-test.txt with content type text/plain and param p List()"
     }
 
     "respond with a 404 when passing in a cycle plan with no matching intent" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      val code = httpx(req(host / "cycle" / "passnotfound") <<* ("f", file, "text/plain")).code
+      val code = httpx(req(host / "cycle" / "passnotfound").<<*("f", file, "text/plain")).code
       code must_== 404
     }
 
@@ -186,31 +186,31 @@ class MixedPlanSpec extends Specification
     "handle async file uploads to disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(req(host / "async" / "disk") <<* ("f", file, "text/plain")).as_string must_== "async disk read file f named netty-upload-big-text-test.txt with content type text/plain and param p"
+      http(req(host / "async" / "disk").<<*("f", file, "text/plain")).as_string must_== "async disk read file f named netty-upload-big-text-test.txt with content type text/plain and param p"
     }
 
     "handle async file uploads streamed" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(req(host / "async" / "stream") <<* ("f", file, "text/plain")).as_string must_== "async stream read file f is named netty-upload-big-text-test.txt with content type text/plain and param p List()"
+      http(req(host / "async" / "stream").<<*("f", file, "text/plain")).as_string must_== "async stream read file f is named netty-upload-big-text-test.txt with content type text/plain and param p List()"
     }
 
     "handle async file uploads memory" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(req(host / "async" / "mem") <<* ("f", file, "text/plain")).as_string must_== "async memory read file f is named netty-upload-big-text-test.txt with content type text/plain and param p List()"
+      http(req(host / "async" / "mem").<<*("f", file, "text/plain")).as_string must_== "async memory read file f is named netty-upload-big-text-test.txt with content type text/plain and param p List()"
     }
 
     "handle passed async file uploads to disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(req(host / "async" / "pass") <<* ("f", file, "text/plain")).as_string must_== "async disk read file f named netty-upload-big-text-test.txt with content type text/plain and param p"
+      http(req(host / "async" / "pass").<<*("f", file, "text/plain")).as_string must_== "async disk read file f named netty-upload-big-text-test.txt with content type text/plain and param p"
     }
 
     "respond with a 404 when passing in an async plan with no matching intent" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      val code = httpx(req(host / "async" / "passnotfound") <<* ("f", file, "text/plain")).code
+      val code = httpx(req(host / "async" / "passnotfound").<<*("f", file, "text/plain")).code
       code must_== 404
     }
   }

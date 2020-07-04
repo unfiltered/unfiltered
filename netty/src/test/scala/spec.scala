@@ -28,13 +28,13 @@ class RequestSpec extends Specification {
     }
     "return the correct values in a single-header" in {
       val headers = req.headers("Single-Header")
-      headers.next must_== "A"
+      headers.next() must_== "A"
       headers.hasNext must beFalse
     }
     "return the correct values in a multi-header" in {
       val headers = req.headers("Multi-Header")
-      headers.next must_== "A"
-      headers.next must_== "B"
+      headers.next() must_== "A"
+      headers.next() must_== "B"
     }
     "return url parameters" in {
       req.parameterValues("param1")(0) must_== "value 1"

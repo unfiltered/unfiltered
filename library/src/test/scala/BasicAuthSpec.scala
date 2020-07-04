@@ -48,31 +48,31 @@ trait BasicAuthSpec extends Specification with unfiltered.specs2.Hosted {
 
   "Basic Auth" should {
     "authenticate a valid user" in {
-      val resp = http(req(host / "secret") as_!("test", "secret")).as_string
+      val resp = http(req(host / "secret").as_!("test", "secret")).as_string
       resp must_== "pass"
     }
     "authenticate a valid user with a blank password" in {
-      val resp = http(req(host / "user-blank") as_!("test", "")).as_string
+      val resp = http(req(host / "user-blank").as_!("test", "")).as_string
       resp must_== "pass"
     }
     "authenticate a valid user with a password that contains a :" in {
-      val resp = http(req(host / "spec") as_!("test", "secret:password")).as_string
+      val resp = http(req(host / "spec").as_!("test", "secret:password")).as_string
       resp must_== "pass"
     }
     "authenticate a valid user with a blank username and a blank password" in {
-      val resp = http(req(host / "blank-blank") as_!("", "")).as_string
+      val resp = http(req(host / "blank-blank").as_!("", "")).as_string
       resp must_== "pass"
     }
     "authenticate a valid user with a blank username and a good password" in {
-      val resp = http(req(host / "blank-pass") as_!("", "secret")).as_string
+      val resp = http(req(host / "blank-pass").as_!("", "secret")).as_string
       resp must_== "pass"
     }
     "authenticate a valid user with a blank username and a good password that contains a :" in {
-      val resp = http(req(host / "blank-pass-colon") as_!("", "secret:password")).as_string
+      val resp = http(req(host / "blank-pass-colon").as_!("", "secret:password")).as_string
       resp must_== "pass"
     }
     "not authenticate an invalid user" in {
-      val resp = httpx(req(host / "secret") as_!("joe", "shmo")).as_string
+      val resp = httpx(req(host / "secret").as_!("joe", "shmo")).as_string
       resp must_== "fail"
     }
     "not authenticate an empty Authorization header" in {

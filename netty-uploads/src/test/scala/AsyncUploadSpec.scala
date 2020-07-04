@@ -23,7 +23,7 @@ class AsyncUploadSpec extends Specification
         case Decode(binding) =>
           MultiPartParams.Disk(binding).files("f") match {
           case Seq(f, _*) => binding.respond(ResponseString(
-            "disk read file f named %s with content type %s" format(
+            "disk read file f named %s with content type %s".format(
               f.name, f.contentType)))
           case f =>  binding.respond(ResponseString("what's f?"))
         }
@@ -35,14 +35,14 @@ class AsyncUploadSpec extends Specification
             f.write(new JFile(directory, "1upload-test-out.txt")) match {
               case Some(outFile) =>
                 if(Arrays.equals(IOU.toByteArray(new FIS(outFile)), f.bytes)) binding.respond(ResponseString(
-                  "wrote disk read file f named %s with content type %s with correct contents" format(
+                  "wrote disk read file f named %s with content type %s with correct contents".format(
                     f.name, f.contentType))
                 )
                 else binding.respond(ResponseString(
-                  "wrote disk read file f named %s with content type %s, with differing contents" format(
+                  "wrote disk read file f named %s with content type %s, with differing contents".format(
                     f.name, f.contentType)))
               case None => binding.respond(ResponseString(
-                "did not write disk read file f named %s with content type %s" format(
+                "did not write disk read file f named %s with content type %s".format(
                   f.name, f.contentType)))
           }
           case _ =>  binding.respond(ResponseString("what's f?"))
@@ -52,7 +52,7 @@ class AsyncUploadSpec extends Specification
         case Decode(binding) =>
           MultiPartParams.Streamed(binding).files("f") match {
           case Seq(f, _*) => binding.respond(ResponseString(
-            "stream read file f is named %s with content type %s" format(
+            "stream read file f is named %s with content type %s".format(
               f.name, f.contentType)))
           case _ =>  binding.respond(ResponseString("what's f?"))
         }
@@ -65,14 +65,14 @@ class AsyncUploadSpec extends Specification
               f.write(new JFile(directory, "2upload-test-out.txt")) match {
                 case Some(outFile) =>
                   if(Arrays.equals(IOU.toByteArray(new FIS(outFile)), src)) binding.respond(ResponseString(
-                    "wrote stream read file f named %s with content type %s with correct contents" format(
+                    "wrote stream read file f named %s with content type %s with correct contents".format(
                       f.name, f.contentType))
                   )
                   else binding.respond(ResponseString(
-                    "wrote stream read file f named %s with content type %s, with differing contents" format(
+                    "wrote stream read file f named %s with content type %s, with differing contents".format(
                       f.name, f.contentType)))
                 case None => binding.respond(ResponseString(
-                  "did not write stream read file f named %s with content type %s" format(
+                  "did not write stream read file f named %s with content type %s".format(
                     f.name, f.contentType)))
               }
             case _ => binding.respond(ResponseString("what's f?"))
@@ -82,7 +82,7 @@ class AsyncUploadSpec extends Specification
           case Decode(binding) =>
             MultiPartParams.Memory(binding).files("f") match {
             case Seq(f, _*) => binding.respond(ResponseString(
-              "memory read file f is named %s with content type %s" format(
+              "memory read file f is named %s with content type %s".format(
                 f.name, f.contentType)))
             case _ => binding.respond(ResponseString("what's f?"))
           }
@@ -93,10 +93,10 @@ class AsyncUploadSpec extends Specification
             case Seq(f, _*) =>
               f.write(new JFile(directory, "3upload-test-out.txt")) match {
                 case Some(outFile) => binding.respond(ResponseString(
-                  "wrote memory read file f is named %s with content type %s" format(
+                  "wrote memory read file f is named %s with content type %s".format(
                     f.name, f.contentType)))
                 case None =>  binding.respond(ResponseString(
-                  "did not write memory read file f is named %s with content type %s" format(
+                  "did not write memory read file f is named %s with content type %s".format(
                     f.name, f.contentType)))
               }
             case _ => binding.respond(ResponseString("what's f?"))
@@ -112,32 +112,32 @@ class AsyncUploadSpec extends Specification
     "handle file uploads written to disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(req(host / "disk-upload") <<* ("f", file, "text/plain")).as_string must_== "disk read file f named netty-upload-big-text-test.txt with content type text/plain"
+      http(req(host / "disk-upload").<<*("f", file, "text/plain")).as_string must_== "disk read file f named netty-upload-big-text-test.txt with content type text/plain"
     }
     "handle file uploads streamed" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(req(host / "stream-upload") <<* ("f", file, "text/plain")).as_string must_== "stream read file f is named netty-upload-big-text-test.txt with content type text/plain"
+      http(req(host / "stream-upload").<<*("f", file, "text/plain")).as_string must_== "stream read file f is named netty-upload-big-text-test.txt with content type text/plain"
     }
     "handle writing file uploads streamed" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(req(host / "stream-upload" / "write") <<* ("f", file, "text/plain")).as_string must_== "wrote stream read file f named netty-upload-big-text-test.txt with content type text/plain with correct contents"
+      http(req(host / "stream-upload" / "write").<<*("f", file, "text/plain")).as_string must_== "wrote stream read file f named netty-upload-big-text-test.txt with content type text/plain with correct contents"
     }
     "handle file uploads all in memory" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(req(host / "mem-upload") <<* ("f", file, "text/plain")).as_string must_== "memory read file f is named netty-upload-big-text-test.txt with content type text/plain"
+      http(req(host / "mem-upload").<<*("f", file, "text/plain")).as_string must_== "memory read file f is named netty-upload-big-text-test.txt with content type text/plain"
     }
     "not write memory read files" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(req(host / "mem-upload" / "write") <<* ("f", file, "text/plain")).as_string must_== "did not write memory read file f is named netty-upload-big-text-test.txt with content type text/plain"
+      http(req(host / "mem-upload" / "write").<<*("f", file, "text/plain")).as_string must_== "did not write memory read file f is named netty-upload-big-text-test.txt with content type text/plain"
     }
     "respond with a 404" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      val resp = httpx(req(host / "notfound") <<* ("f", file, "text/plain"))
+      val resp = httpx(req(host / "notfound").<<*("f", file, "text/plain"))
       resp.code must_== 404
     }
   }

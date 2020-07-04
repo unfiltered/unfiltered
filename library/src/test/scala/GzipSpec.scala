@@ -97,20 +97,15 @@ trait GZipSpec extends Specification with unfiltered.specs2.Hosted {
       resp.code must_== 404
     }
     "pass an non-matching zipped request" in {
-      val resp = httpx(req(host / "unknown")
-        <:< Map("Content-Encoding" -> "gzip")
-        POST(bos, MediaType.parse("text/plain")))
+      val resp = httpx(req(host / "unknown").<:<(Map("Content-Encoding" -> "gzip")).POST(bos, MediaType.parse("text/plain")))
       resp.code must_== 404
     }
     "echo a utf-8 request" in {
-      val msg = http(req(host / "echo")
-        POST(expected, MediaType.parse("text/plain; charset=utf-8"))).as_string
+      val msg = http(req(host / "echo").POST(expected, MediaType.parse("text/plain; charset=utf-8"))).as_string
       msg must_== expected
     }
     "echo a utf-8 zipped request" in {
-      val msg = http(req(host / "echo")
-        <:< Map("Content-Encoding" -> "gzip")
-        POST(ubos, MediaType.parse("text/plain; charset=utf-8"))).as_string
+      val msg = http(req(host / "echo").<:<(Map("Content-Encoding" -> "gzip")).POST(ubos, MediaType.parse("text/plain; charset=utf-8"))).as_string
       msg must_== expected
     }
   }

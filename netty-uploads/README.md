@@ -35,7 +35,7 @@ object App {
         (disk.files("f"), disk.params("p")) match {
           case (Seq(f, _*), p) =>
             ResponseString(
-              "cycle disk read file f named %s with content type %s and param p %s" format(
+              "cycle disk read file f named %s with content type %s and param p %s".format(
                 f.name, f.contentType, p))
           case _ =>  ResponseString("what's f?")
         }
@@ -74,7 +74,7 @@ object App {
           (disk.files("f"), disk.params("p")) match {
             case (Seq(f, _*), p) =>
               ResponseString(
-                "cycle disk read file f named %s with content type %s and param p %s" format(
+                "cycle disk read file f named %s with content type %s and param p %s".format(
                   f.name, f.contentType, p))
             case _ => ResponseString("what's f?")
           }
