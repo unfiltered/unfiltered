@@ -53,6 +53,7 @@ lazy val library: Project = module("unfiltered")(
   libraryDependencies ++= Seq(
     "commons-codec" % "commons-codec" % commonsCodecVersion,
     specs2Dep.value % "test",
+    "org.scalatest" %% "scalatest" % scalatestVersion % "test",
     "org.scalatestplus" %% "scalacheck-1-14" % scalatestScalacheckVersion % "test",
   ),
   libraryDependencies ++= {
@@ -84,6 +85,7 @@ lazy val agents = module("agents")(
   srcPath = "unfiltered/request"
 ).settings(
   description := "User-Agent request matchers",
+  libraryDependencies += "org.scalatest" %% "scalatest" % scalatestVersion % "test",
   libraryDependencies ++= Seq(servletApiDep) ++ integrationTestDeps.value
 ).dependsOn(
   library,
@@ -153,7 +155,7 @@ lazy val scalatest = module(scalatestProjectId)().settings(
   description := "Facilitates testing Unfiltered servers with ScalaTest",
   libraryDependencies ++= {
     okHttp :+
-    ("org.scalatest" %% "scalatest" % scalatestVersion)
+    ("org.scalatest" %% "scalatest-core" % scalatestVersion)
   }
 ).dependsOn(filters, jetty, nettyServer)
 
