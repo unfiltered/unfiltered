@@ -3,7 +3,7 @@ sudo: false
 dist: trusty
 scala:
   - 2.11.12
-  - 2.12.11
+  - 2.12.12
   - 2.13.3
 jdk:
   - oraclejdk8
@@ -11,7 +11,7 @@ jdk:
 script: sbt "++${TRAVIS_SCALA_VERSION}!" test publishLocal
 matrix:
   include:
-  - scala: 2.12.11
+  - scala: 2.12.12
     jdk: openjdk11
   - os: windows
     language: bash
