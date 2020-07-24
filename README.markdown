@@ -4,7 +4,7 @@
 
 See the [Unfiltered documentation](http://unfiltered.ws) for instructions on using the project.
 
-[![Build Status](https://travis-ci.org/unfiltered/unfiltered.svg)](https://travis-ci.org/unfiltered/unfiltered)
+[![Build Status](https://travis-ci.com/unfiltered/unfiltered.svg)](https://travis-ci.com/unfiltered/unfiltered)
 
 ## Modules
 
