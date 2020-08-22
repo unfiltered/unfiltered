@@ -78,7 +78,7 @@ trait SslContextProvider {
   def keyStorePath: String
   def keyStorePassword: String
   lazy val sslContextFactory = {
-    val factory = new SslContextFactory
+    val factory = new SslContextFactory.Server()
     factory.setKeyStorePath(keyStorePath)
     factory.setKeyStorePassword(keyStorePassword)
     factory
