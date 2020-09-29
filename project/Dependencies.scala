@@ -19,7 +19,7 @@ object Dependencies {
   val nettyVersion = "4.1.52.Final"
   val scalatestVersion = "3.2.2"
   val scalatestScalacheckVersion = "3.2.2.0"
-  val json4sVersion = "3.6.9"
+  val json4sVersion = "3.6.10"
   val asyncHttpClientVersion = "1.8.17"
   val javaxActivationVersion = "1.1.1"
 }
