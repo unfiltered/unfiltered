@@ -35,7 +35,7 @@ object Params {
    * chained ParamMapper objects. */
   class Extract[T](f: Map => Option[T]) {
     def this(name: String, f: Seq[String] => Option[T]) =
-      this({ params: Map => f(params(name)) })
+      this({ (params: Map) => f(params(name)) })
     def unapply(params: Map) = f(params)
   }
   /** Construct a parameter predicate */
