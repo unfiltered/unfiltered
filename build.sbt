@@ -55,15 +55,8 @@ lazy val library: Project = module("unfiltered")(
     specs2Dep.value % "test",
     "org.scalatest" %% "scalatest" % scalatestVersion % "test",
     "org.scalatestplus" %% "scalacheck-1-14" % scalatestScalacheckVersion % "test",
+    "org.scala-lang.modules" %% "scala-xml" % scalaXmlVersion,
   ),
-  libraryDependencies ++= {
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, v)) if v >= 11 =>
-        Seq("org.scala-lang.modules" %% "scala-xml" % scalaXmlVersion)
-      case _ =>
-        Nil
-    }
-  }
 ).dependsOn(util)
 
 lazy val directives = module("directives")().settings(
