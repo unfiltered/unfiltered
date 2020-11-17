@@ -13,6 +13,8 @@ matrix:
   include:
   - scala: 2.12.12
     jdk: openjdk11
+  - scala: 3.0.0-M1
+    script: sbt "++${TRAVIS_SCALA_VERSION}!" publishLocal # TODO enable tests when specs2 for Scala 3 released
   - os: windows
     language: bash
     env: JDK="adopt@1.8.0-272"
