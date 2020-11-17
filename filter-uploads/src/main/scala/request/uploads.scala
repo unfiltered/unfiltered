@@ -61,7 +61,7 @@ class StreamedFileWrapper(fstm: FileItemStream) extends AbstractStreamedFile
 object MultiPartParams extends TupleGenerator {
 
   object Streamed extends StreamedExtractor[HttpRequest[HttpServletRequest]] {
-    import unfiltered.filter.util.IteratorConversions.acfi2si
+    import unfiltered.filter.util.IteratorConversions._
 
     def apply(req: HttpRequest[HttpServletRequest]) = {
       def items = new ServletFileUpload().getItemIterator(req.underlying)
@@ -148,7 +148,7 @@ object MultiPartParams extends TupleGenerator {
   }
 
   trait AbstractDisk extends AbstractDiskExtractor[HttpRequest[HttpServletRequest]] {
-    import unfiltered.filter.util.IteratorConversions.ji2si
+    import unfiltered.filter.util.IteratorConversions._
 
      /** @return a configured FileItemFactory to parse a request */
     def factory(writeAfter: Int, writeDir: JFile): FileItemFactory =

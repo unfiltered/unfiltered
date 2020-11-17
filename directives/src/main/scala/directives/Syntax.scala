@@ -5,7 +5,7 @@ import unfiltered.response._
 import scala.language.implicitConversions
 
 trait Syntax extends Directives {
-  class Ops[X](x:X){
+  implicit class Ops[X](x: X){
     import Directive.{Eq, Gt, Lt}
 
     def ===[V, T, R, A](v:V)(implicit eq:Eq[X, V, T, R, A]) = eq.directive(x, v)
@@ -27,7 +27,8 @@ trait Syntax extends Directives {
     def >=[V, T, R, A](v:V)(implicit gtd:Gt[X, V, T, R, A], eq:Eq[X, V, T, R, A]) = gte(v)
   }
 
-  implicit def ops[X](x:X) = new Ops[X](x)
+  @deprecated("", "")
+  def ops[X](x: X): Ops[X] = new Ops[X](x)
 
   implicit def defMethod(M:Method) =
     when{ case M(_) => } orElse MethodNotAllowed

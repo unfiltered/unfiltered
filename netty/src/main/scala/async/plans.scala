@@ -35,7 +35,7 @@ trait RequestPlan extends ChannelInboundHandlerAdapter with ExceptionHandler {
   def requestIntent: Plan.Intent
   private lazy val guardedIntent =
     requestIntent.onPass(
-      { req: HttpRequest[ReceivedMessage] =>
+      { (req: HttpRequest[ReceivedMessage]) =>
         req.underlying.context.fireChannelRead(req.underlying.message) }
     )
 
