@@ -30,7 +30,7 @@ object Common {
       Seq("-encoding", "utf8", "-deprecation", "-unchecked", "-feature"),
 
     scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)){
-      case Some((3, v)) =>
+      case Some((2, _)) =>
         Seq("-Xcheckinit")
     }.toList.flatten,
 
