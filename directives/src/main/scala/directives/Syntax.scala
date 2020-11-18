@@ -30,25 +30,25 @@ trait Syntax extends Directives {
   @deprecated("", "")
   def ops[X](x: X): Ops[X] = new Ops[X](x)
 
-  implicit def defMethod(M:Method) =
+  implicit def defMethod(M: Method): FilterDirective[Any, ResponseFunction[Any], Unit] =
     when{ case M(_) => } orElse MethodNotAllowed
 
-  implicit def accepting(A:Accepts.Accepting) =
+  implicit def accepting(A: Accepts.Accepting): FilterDirective[Any, ResponseFunction[Any], Unit] =
     when{ case A(_) => } orElse NotAcceptable
 
-  implicit def defQueryParams(q:QueryParams.type) =
+  implicit def defQueryParams[A, B](q: QueryParams.type): Directive[A, B, Map[String,Seq[String]]] =
     queryParams
 
-  implicit def defExtract[A](Ex:Params.Extract[A]) =
+  implicit def defExtract[A](Ex: Params.Extract[A]): FilterDirective[Any, ResponseFunction[A], A] =
     when{ case Params(Ex(a)) => a } orElse BadRequest
 
-  implicit def defPathIntent(p:Path.type) = PathIntentions
+  implicit def defPathIntent(p: Path.type): PathIntentions.type = PathIntentions
 
   object PathIntentions {
     @deprecated("Use Directive.Intent.Path", since="0.7.0")
     def Intent[T] = Directive.Intent.Path[T]
   }
 
-  implicit def defInterpreterIdentity[T] = data.Interpreter.identity[T]
-  implicit def defInterpreterString = data.as.String
+  implicit def defInterpreterIdentity[T]: data.Interpreter[T, T, Nothing] = data.Interpreter.identity[T]
+  implicit def defInterpreterString: data.as.String.type = data.as.String
 }
