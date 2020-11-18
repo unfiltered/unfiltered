@@ -10,7 +10,7 @@ object ResponseFilter {
   trait Filtering[S <: OutputStream] extends ResponseFunction[Any] {
     def apply[T](delegate: HttpResponse[T]) = {
       new DelegatingResponse(delegate) {
-        override val outputStream = filter(delegate.outputStream)
+        override val outputStream = filter(this.delegate.outputStream)
       }
     }
     def filter(os: OutputStream): S

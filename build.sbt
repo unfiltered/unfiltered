@@ -7,6 +7,15 @@ Common.settings
 
 enablePlugins(ScalaUnidocPlugin)
 
+publish / skip := {
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((3, _)) =>
+      true
+    case _ =>
+      false
+  }
+}
+
 // unidoc publish settings
 name := "unfiltered-all"
 artifacts := Classpaths.artifactDefs(Seq(packageDoc in Compile)).value

@@ -9,9 +9,11 @@ object Common {
       case Some((2, 11)) => Seq(
         "-Ywarn-unused-import"
       )
-      case _ => Seq(
+      case Some((2, _)) => Seq(
         "-Ywarn-unused:imports"
       )
+      case _ =>
+        Nil
     }
   )
 
@@ -25,7 +27,12 @@ object Common {
     scalaVersion := Scala212,
 
     scalacOptions ++=
-      Seq("-Xcheckinit", "-encoding", "utf8", "-deprecation", "-unchecked", "-feature"),
+      Seq("-encoding", "utf8", "-deprecation", "-unchecked", "-feature"),
+
+    scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)){
+      case Some((3, v)) =>
+        Seq("-Xcheckinit")
+    }.toList.flatten,
 
     scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)){
       case Some((2, v)) if v <= 12 =>
@@ -39,7 +46,17 @@ object Common {
     scalacOptions in (Compile, doc) ++= {
       val hash = sys.process.Process("git rev-parse HEAD").lineStream_!.head
       val base = (baseDirectory in LocalRootProject).value.getAbsolutePath
-      Seq("-sourcepath", base, "-doc-source-url", "https://github.com/unfiltered/unfiltered/tree/" + hash + "€{FILE_PATH}.scala")
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((3, _)) =>
+          Nil
+        case _ =>
+          Seq(
+            "-sourcepath",
+            base,
+            "-doc-source-url",
+            "https://github.com/unfiltered/unfiltered/tree/" + hash + "€{FILE_PATH}.scala"
+          )
+      }
     },
 
     javacOptions in Compile ++= Seq("-source", "1.6", "-target", "1.6"),
