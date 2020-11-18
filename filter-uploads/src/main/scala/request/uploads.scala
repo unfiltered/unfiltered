@@ -124,9 +124,9 @@ object MultiPartParams extends TupleGenerator {
       override def getInputStream: InputStream = new ByteArrayInputStream(get)
       override def getName = name
       override def getOutputStream = out
-      override def getSize = get.size
-      override def getString(charset: String) = new String(get, charset)
-      override def getString = getString("UTF-8")
+      override def getSize: Long = get.size
+      override def getString(charset: String): String = new String(get, charset)
+      override def getString: String = getString("UTF-8")
       override def isFormField = formField
       override def isInMemory = true
       override def setFieldName(value: String): Unit = { fieldName = value }

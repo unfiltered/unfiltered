@@ -54,7 +54,7 @@ object Pass extends ResponseFunction[Any] {
 
   private def asAttempt[A,B](pf: PartialFunction[A,B]): Attempt[A,B] =
     pf match {
-      case pa: Attempt[_,_] => pa
+      case pa: Attempt[A, B] => pa
       case pf: PartialFunction[_,_] => new PartialAttempt(pf)
     }
   private trait Attempt[-A,+B] extends PartialFunction[A,B]{

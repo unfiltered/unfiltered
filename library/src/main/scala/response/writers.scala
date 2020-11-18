@@ -28,7 +28,7 @@ case class Charset(charset: java.nio.charset.Charset)
 case class Html5(nodes: scala.xml.NodeSeq) extends ComposeResponse(HtmlContent ~> new ResponseWriter {
   def write(w: OutputStreamWriter): Unit = {
     val html = nodes.head match {
-      case <html>{_*}</html> => nodes.head
+      case <html>{xs}</html> => nodes.head
       case _ => <html>{nodes}</html>
     }
     xml.XML.write( w, html, w.getEncoding, xmlDecl = false, doctype =

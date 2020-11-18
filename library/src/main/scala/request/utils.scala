@@ -16,20 +16,9 @@ abstract class RequestExtractor[E] {
 /** For working with request extractor objects */
 object RequestExtractor {
 
-  @deprecated("Extend RequestExtractor abstract class", "0.8.1") type RE[E] = {
-    def unapply[T](req: HttpRequest[T]): Option[E]
-  }
   /** @return new extractor, reproduces request when predicate is satisfied */
   def predicate[E](reqExtract: RequestExtractor[E])(predicate: E => Boolean): Predicate[E] =
     new Predicate(reqExtract, predicate)
-
-  @deprecated("Given request extractor should extend RequestExtractor abstract class", "0.8.1")
-  def predicate[E](re: RE[E])(predicate: E => Boolean): Predicate[E] = {
-    val reqExtract = new RequestExtractor[E] {
-      def unapply[T](req: HttpRequest[T]) = re.unapply(req)
-    }
-    new Predicate(reqExtract, predicate)
-  }
 
   final class Predicate[E] private[RequestExtractor] (reqExtract: RequestExtractor[E], predicate: E => Boolean) {
     def unapply[T](req: HttpRequest[T]): Option[HttpRequest[T]] =

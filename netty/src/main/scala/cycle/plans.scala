@@ -10,7 +10,7 @@ import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter }
 import io.netty.channel.ChannelHandler.Sharable
 
 import unfiltered.netty.{ ExceptionHandler, ReceivedMessage, RequestBinding, ServerErrorResponse }
-import unfiltered.response.ResponseFunction
+import unfiltered.response._
 import unfiltered.request.HttpRequest
 import scala.util.control.NonFatal
 
