@@ -4,7 +4,7 @@ dist: trusty
 scala:
   - 2.11.12
   - 2.12.12
-  - 2.13.3
+  - 2.13.4
 jdk:
   - oraclejdk8
   - openjdk8
@@ -23,7 +23,7 @@ matrix:
     - source .install-jdk-travis.sh
     script:
     - wget https://raw.githubusercontent.com/paulp/sbt-extras/4d558c88ae6ae240/sbt && chmod +x ./sbt
-    - ./sbt "++ 2.13.3!" test
+    - ./sbt "++ 2.13.4!" test
 cache:
   directories:
   - "$HOME/.ivy2/cache"
