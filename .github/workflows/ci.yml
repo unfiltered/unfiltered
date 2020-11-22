@@ -36,7 +36,7 @@ jobs:
             sbt -v "+ test" "+ publishLocal"
             ;;
           "scala_3")
-            sbt -v "+ compile" "+ publishLocal"
+            sbt -v '++ 3.0.0-M1!' compile publishLocal
             ;;
           *)
             echo "unknown job"
