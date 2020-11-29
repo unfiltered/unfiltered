@@ -31,7 +31,7 @@ object DateFormatting {
 
 /** A header with values mapped to keys in a Map. */
 private [request] class MappedRequestHeader[A, B](val name: String)(parser: Iterator[String] => Map[A, B]) extends RequestExtractor[Map[A, B]] {
-  def unapply[T](req: HttpRequest[T]) = Some(parser(req.headers(name)))
+  def unapply[T](req: HttpRequest[T]): Some[Map[A, B]] = Some(parser(req.headers(name)))
   def apply[T](req: HttpRequest[T]) = parser(req.headers(name))
 }
 

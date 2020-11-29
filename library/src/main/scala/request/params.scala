@@ -12,7 +12,7 @@ object Params {
    * The Map is assigned a default value of Nil, so param("p") would return Nil if there
    * is no such parameter, or (as normal for servlets) a single empty string if the
    * parameter was supplied without a value. */
-  def unapply[T](req: HttpRequest[T]) = {
+  def unapply[T](req: HttpRequest[T]): Some[Map] = {
     val names = req.parameterNames
     Some(names.foldLeft(Map.empty[String, Seq[String]]) ((m, n) =>
         m + (n -> req.parameterValues(n))
@@ -69,7 +69,7 @@ object QueryParams {
    * The Map is assigned a default value of Nil, so param("p") would return Nil if there
    * is no such parameter, or (as normal for servlets) a single empty string if the
    * parameter was supplied without a value. */
-  def unapply[T](req: HttpRequest[T]) = Some(urldecode(req.uri))
+  def unapply[T](req: HttpRequest[T]): Some[Map[String, Seq[String]]] = Some(urldecode(req.uri))
   
   def urldecode(enc: String) : Map[String, Seq[String]] = {
     def decode(raw: String) = URLDecoder.decode(raw, "UTF-8")

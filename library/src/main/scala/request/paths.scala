@@ -1,7 +1,7 @@
 package unfiltered.request
 
 object Path {
-  def unapply[T](req: HttpRequest[T]) = Some(req.uri.split('?')(0))
+  def unapply[T](req: HttpRequest[T]): Some[String] = Some(req.uri.split('?')(0))
   def apply[T](req: HttpRequest[T]) = req.uri.split('?')(0)
 }
 
@@ -13,7 +13,7 @@ object QueryString {
 }
 
 object Seg {
-  def unapply(path: String): Option[List[String]] = path.split("/").toList match {
+  def unapply(path: String): Some[List[String]] = path.split("/").toList match {
     case "" :: rest => Some(rest) // skip a leading slash
     case all => Some(all)
   }
