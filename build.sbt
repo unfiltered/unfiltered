@@ -10,6 +10,7 @@ enablePlugins(ScalaUnidocPlugin)
 publish / skip := {
   CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((3, _)) =>
+      // TODO https://github.com/sbt/sbt-unidoc/issues/83
       true
     case _ =>
       false
