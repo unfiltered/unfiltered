@@ -1,6 +1,5 @@
 package unfiltered.request
 
-import scala.language.reflectiveCalls
 
 object & {
   /** Used to bind extractors to a single request object */
