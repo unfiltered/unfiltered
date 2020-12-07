@@ -1,6 +1,6 @@
 package unfiltered.jetty
 
-import org.eclipse.jetty.server.{NCSARequestLog, Handler}
+import org.eclipse.jetty.server.{ CustomRequestLog, Handler, RequestLogWriter }
 import unfiltered.util.{ PlanServer, RunnableServer }
 import javax.servlet.Filter
 
@@ -48,12 +48,11 @@ case class Server(
       contextHandlers)(rl => {
       val handlers = new HandlerCollection()
       val requestLogHandler = new RequestLogHandler()
-      val requestLog = new NCSARequestLog(rl.filename)
+      val requestLog = new RequestLogWriter(rl.filename)
       requestLog.setRetainDays(rl.retainDays)
-      requestLog.setExtended(rl.extended)
-      requestLog.setLogTimeZone(rl.timezone)
-      requestLog.setLogDateFormat(rl.dateFormat)
-      requestLogHandler.setRequestLog(requestLog)
+      requestLog.setTimeZone(rl.timezone)
+      requestLog.setFilenameDateFormat(rl.dateFormat)
+      requestLogHandler.setRequestLog(new CustomRequestLog(requestLog, rl.format))
       handlers.setHandlers(Array(contextHandlers, requestLogHandler))
       handlers
     })
@@ -80,8 +79,16 @@ case class Server(
                      extended: Boolean = true,
                      dateFormat: String = "dd/MMM/yyyy:HH:mm:ss Z",
                      timezone: String = "GMT",
-                     retainDays: Int = 31) = copy(requestLogging = {
-    Some(RequestLogging(filename, extended, dateFormat, timezone, retainDays))
+                     retainDays: Int = 31,
+                     format: String) = copy(requestLogging = {
+    Some(RequestLogging(
+      filename = filename,
+      extended = extended,
+      dateFormat = dateFormat,
+      timezone = timezone,
+      retainDays = retainDays,
+      format = format
+    ))
   })
 
   /** Ports used by this server, reported by super-trait */

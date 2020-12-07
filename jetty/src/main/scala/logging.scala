@@ -5,5 +5,6 @@ case class RequestLogging(
   extended: Boolean,
   dateFormat: String,
   timezone: String,
-  retainDays: Int
+  retainDays: Int,
+  format: String
 )

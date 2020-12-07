@@ -8,10 +8,10 @@ import unfiltered.Cycle
 
 trait InittedFilter extends Filter {
   private var configVar: FilterConfig = _
-  def init(config: FilterConfig): Unit = { configVar = config; }
+  override def init(config: FilterConfig): Unit = { configVar = config; }
   def config = configVar
 
-  def destroy: Unit = { }
+  override def destroy(): Unit = { }
 }
 
 object Plan {
