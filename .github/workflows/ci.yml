@@ -17,8 +17,6 @@ jobs:
             os: ubuntu-latest
           - name: scala_2
             os: windows-latest
-          - name: scala_2
-            os: ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:
     - uses: olafurpg/setup-scala@v10
