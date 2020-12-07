@@ -2,7 +2,7 @@ import sbt._, Keys._
 import dotty.tools.sbtplugin.DottyPlugin.autoImport._
 
 object Dependencies {
-  val servletApiDep = "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided"
+  val servletApiDep = "jakarta.servlet" % "jakarta.servlet-api" % "5.0.0"
 
   val specs2Dep = Def.setting {
     "org.specs2" %% "specs2-core" % "4.10.5" withDottyCompat scalaVersion.value
@@ -16,7 +16,7 @@ object Dependencies {
   val scalaXmlVersion = "1.3.0"
   val commonsIoVersion = "2.8.0"
   val commonsFileUploadVersion = "1.4"
-  val jettyVersion = "9.4.35.v20201120"
+  val jettyVersion = "11.0.0"
   val nettyVersion = "4.1.54.Final"
   val scalatestVersion = "3.2.3"
   val scalatestScalacheckVersion = "3.2.3.0"

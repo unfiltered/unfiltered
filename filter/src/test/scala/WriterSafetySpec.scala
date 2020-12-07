@@ -1,6 +1,6 @@
 package unfiltered.server
 
-import javax.servlet.http.HttpServletResponse
+import jakarta.servlet.http.HttpServletResponse
 
 import org.specs2.mutable._
 import unfiltered.response._

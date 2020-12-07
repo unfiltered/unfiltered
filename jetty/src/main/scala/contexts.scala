@@ -1,6 +1,6 @@
 package unfiltered.jetty
 
-import javax.servlet.Filter
+import jakarta.servlet.Filter
 
 import org.eclipse.jetty.server.handler.{ContextHandler, ContextHandlerCollection}
 import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHolder}

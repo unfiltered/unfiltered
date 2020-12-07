@@ -1,7 +1,7 @@
 package unfiltered.filter.request
 
 import unfiltered.request.HttpRequest
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 
 object ContextPath {
   def unapply[T <: HttpServletRequest](req: HttpRequest[T]): Some[(String, String)] =

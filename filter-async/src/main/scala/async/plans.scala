@@ -3,8 +3,8 @@ package unfiltered.filter.async
 import unfiltered.filter.{AsyncBinding,RequestBinding,ResponseBinding}
 import unfiltered.response.Pass
 import unfiltered.request.HttpRequest
-import javax.servlet.{FilterChain, ServletRequest, ServletResponse}
-import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
+import jakarta.servlet.{FilterChain, ServletRequest, ServletResponse}
+import jakarta.servlet.http.{HttpServletRequest, HttpServletResponse}
 import unfiltered.Async
 import Planify._
 

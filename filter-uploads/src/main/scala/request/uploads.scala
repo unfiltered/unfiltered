@@ -1,24 +1,21 @@
 package unfiltered.filter.request
 
-import unfiltered.request.{AbstractDiskExtractor, AbstractDiskFile, AbstractStreamedFile, DiskExtractor, HttpRequest, MultiPartMatcher, MultipartData, StreamedExtractor, TupleGenerator}
+import unfiltered.request.{AbstractDiskExtractor, AbstractDiskFile, AbstractStreamedFile, DiskExtractor, HttpRequest, MultiPartMatcher, StreamedExtractor, TupleGenerator}
 import scala.util.control.NonFatal
 
 import org.apache.commons.fileupload.{FileItem, FileItemFactory, FileItemHeaders, FileItemStream}
 import org.apache.commons.fileupload.disk.DiskFileItemFactory
-import org.apache.commons.fileupload.servlet.ServletFileUpload
 import org.apache.commons.fileupload.util.{FileItemHeadersImpl, Streams}
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File => JFile, InputStream}
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 
 import scala.util.control.Exception.allCatch
 
 /** Matches requests that have multipart content */
 object MultiPart extends MultiPartMatcher[HttpRequest[HttpServletRequest]] {
-  def unapply(req: HttpRequest[HttpServletRequest]) =
-    if (ServletFileUpload.isMultipartContent(req.underlying))
-      Some(req)
-    else None
+  def unapply(req: HttpRequest[HttpServletRequest]): Option[HttpRequest[HttpServletRequest]] =
+    ??? // TODO
 }
 
 /** Represents an uploaded file loaded into memory (and possibly written to disk) */
@@ -61,25 +58,10 @@ class StreamedFileWrapper(fstm: FileItemStream) extends AbstractStreamedFile
 object MultiPartParams extends TupleGenerator {
 
   object Streamed extends StreamedExtractor[HttpRequest[HttpServletRequest]] {
-    import unfiltered.filter.util.IteratorConversions._
 
     def apply(req: HttpRequest[HttpServletRequest]) = {
-      def items = new ServletFileUpload().getItemIterator(req.underlying)
-      /** attempt to extract the first named param from the stream */
-      def extractParam(name: String): Seq[String] = {
-         items.find(f => f.getFieldName == name && f.isFormField) match {
-           case Some(p) => Seq(extractStr(p))
-           case _ => Nil
-         }
-      }
-      /** attempt to extract the first named file from the stream */
-      def extractFile(name: String): Seq[StreamedFileWrapper] = {
-         items.find(f => f.getFieldName == name && !f.isFormField) match {
-           case Some(f) => Seq(new StreamedFileWrapper(f))
-           case _ => Nil
-         }
-      }
-      MultipartData(extractParam _,extractFile _)
+      // TODO
+      ???
     }
 
     def withStreamedFile[T](fstm: FileItemStream)(f: java.io.InputStream => T): T = {
@@ -148,21 +130,14 @@ object MultiPartParams extends TupleGenerator {
   }
 
   trait AbstractDisk extends AbstractDiskExtractor[HttpRequest[HttpServletRequest]] {
-    import unfiltered.filter.util.IteratorConversions._
 
      /** @return a configured FileItemFactory to parse a request */
     def factory(writeAfter: Int, writeDir: JFile): FileItemFactory =
       new DiskFileItemFactory(writeAfter, writeDir)
 
     def apply(req: HttpRequest[HttpServletRequest]) = {
-      val items =  new ServletFileUpload(factory(memLimit, tempDir))
-        .parseRequest(req.underlying).iterator
-
-      val (params, files) = genTuple[String, DiskFileWrapper, FileItem](items) ((maps, item) =>
-        if(item.isFormField) (maps._1 + (item.getFieldName -> (item.getString :: maps._1(item.getFieldName))), maps._2)
-        else (maps._1, maps._2 + (item.getFieldName -> (new DiskFileWrapper(item) :: maps._2(item.getFieldName))))
-      )
-      MultipartData(params, files)
+      // TODO
+      ???
     }
   }
 }

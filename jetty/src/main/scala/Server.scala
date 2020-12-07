@@ -1,8 +1,7 @@
 package unfiltered.jetty
 
-import org.eclipse.jetty.server.{NCSARequestLog, Handler}
 import unfiltered.util.{ PlanServer, RunnableServer }
-import javax.servlet.Filter
+import jakarta.servlet.Filter
 
 import org.eclipse.jetty.server.handler.{ContextHandlerCollection, RequestLogHandler, HandlerCollection}
 
@@ -44,19 +43,8 @@ case class Server(
 
   private def withLogging(contextHandlers: ContextHandlerCollection,
                           requestLogging: Option[RequestLogging]) = {
-    requestLogging.fold[Handler](
-      contextHandlers)(rl => {
-      val handlers = new HandlerCollection()
-      val requestLogHandler = new RequestLogHandler()
-      val requestLog = new NCSARequestLog(rl.filename)
-      requestLog.setRetainDays(rl.retainDays)
-      requestLog.setExtended(rl.extended)
-      requestLog.setLogTimeZone(rl.timezone)
-      requestLog.setLogDateFormat(rl.dateFormat)
-      requestLogHandler.setRequestLog(requestLog)
-      handlers.setHandlers(Array(contextHandlers, requestLogHandler))
-      handlers
-    })
+    // TODO
+    contextHandlers
   }
 
   /** Add a servlet context with the given path */

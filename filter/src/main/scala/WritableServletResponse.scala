@@ -1,7 +1,7 @@
 package unfiltered.filter
 
 import java.io.PrintWriter
-import javax.servlet.http.{HttpServletResponse, HttpServletResponseWrapper}
+import jakarta.servlet.http.{HttpServletResponse, HttpServletResponseWrapper}
 import unfiltered.response.HttpResponse
 /**
  * The servlet API states that, for a given response, either the

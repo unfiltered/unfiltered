@@ -74,7 +74,7 @@ Directives are composable and simple to reuse. This example demonstrates how you
  
 
 	import directives._, Directives._
-	import javax.servlet.http.HttpServletRequest
+	import jakarta.servlet.http.HttpServletRequest
 
 	case class User(name:String)
 

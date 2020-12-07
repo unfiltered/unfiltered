@@ -12,22 +12,18 @@ jobs:
       matrix:
         include:
           - name: scala_2
-            java: 8
             os: ubuntu-latest
           - name: scala_3
-            java: 8
             os: ubuntu-latest
           - name: scala_2
-            java: 8
             os: windows-latest
           - name: scala_2
-            java: 11
             os: ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:
     - uses: olafurpg/setup-scala@v10
       with:
-        java-version: "adopt@1.${{matrix.java}}"
+        java-version: "adopt@1.11" # Jetty 11 require Java 11
     - uses: actions/checkout@v2.3.4
     - uses: coursier/cache-action@v5
     - shell: bash

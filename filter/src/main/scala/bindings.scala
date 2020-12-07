@@ -2,7 +2,7 @@ package unfiltered.filter
 
 import unfiltered.response.HttpResponse
 import unfiltered.request.HttpRequest
-import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
+import jakarta.servlet.http.{HttpServletRequest, HttpServletResponse}
 import unfiltered.Cookie
 import scala.collection.JavaConverters._
 
@@ -37,7 +37,7 @@ class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
   def redirect(url: String) = res.sendRedirect(url)
   def header(name: String, value: String) = res.addHeader(name, value)
   def cookies(resCookies: Seq[Cookie]) = {
-    import javax.servlet.http.{Cookie => JCookie}
+    import jakarta.servlet.http.{Cookie => JCookie}
     resCookies.foreach { c =>
       val jc = new JCookie(c.name, c.value)
       if(c.domain.isDefined) jc.setDomain(c.domain.get)

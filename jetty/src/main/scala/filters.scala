@@ -2,7 +2,7 @@ package unfiltered.jetty
 
 import java.util.EnumSet
 import java.util.concurrent.atomic.AtomicInteger
-import javax.servlet.{ Filter, DispatcherType }
+import jakarta.servlet.{ Filter, DispatcherType }
 
 import org.eclipse.jetty.servlet.{ FilterHolder, ServletContextHandler }
 
