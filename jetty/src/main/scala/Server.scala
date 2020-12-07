@@ -65,9 +65,6 @@ case class Server(
       block(DefaultServletContextAdder(path, Nil, None)) :: contextAdders
   )
 
-  @deprecated("Use `plan(filter)`", "0.8.1")
-  def filter(filter: Filter) = plan(filter)
-
   /** Add a filter as a by-name parameter. Generally you should use
     * `plan(plan)` instead. */
   def makePlan(plan: => Filter) = originalContext(

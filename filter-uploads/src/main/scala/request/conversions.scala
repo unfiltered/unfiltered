@@ -5,12 +5,6 @@ object IteratorConversions {
   import fu.{FileItemIterator, FileItemStream}
   import java.util.{Iterator => JIterator}
 
-  @deprecated("", "")
-  def acfi2si(i: FileItemIterator): FIIteratorWrapper = new FIIteratorWrapper(i)
-
-  @deprecated("", "")
-  def ji2si[A](i: JIterator[A]): JIteratorWrapper[A] = new JIteratorWrapper[A](i)
-
   /** convert java iterator to scala iterator */
   implicit final class JIteratorWrapper[A](i: JIterator[A]) extends Iterator[A] {
     def hasNext: Boolean = i.hasNext

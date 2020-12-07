@@ -10,8 +10,6 @@ trait ContextAdder {
   def addToParent(parent: ContextHandlerCollection): Unit
   def filterAdder(filter: FilterAdder): ContextAdder
   def plan(filter: Filter) = filterAdder(FilterAdder(BasicFilterHolder(filter)))
-  @deprecated("Use `plan(filter)`", "0.8.1")
-  def filter(filter: Filter) = plan(filter)
   def resources(path: java.net.URL): ContextAdder
   def allowAliases(aliases: Boolean): ContextAdder
 }

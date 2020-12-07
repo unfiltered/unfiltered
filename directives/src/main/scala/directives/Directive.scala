@@ -11,10 +11,6 @@ object Directive {
   def apply[T, R, A](run:HttpRequest[T] => Result[R, A]):Directive[T, R, A] =
     new Directive[T, R, A](run)
 
-  @deprecated("Use Directives.success","0.7.2")
-  def success[A,B](runSuccess: => B) =
-    Directive[A, Nothing, B]({ (_: HttpRequest[A]) => Success(runSuccess) })
-
   trait Fail[-T, +R, +A]{
     def map[X](f:R => X):Directive[T, X, A]
     def ~> [RR, TT <: T, AA >: A](and: ResponseFunction[RR])

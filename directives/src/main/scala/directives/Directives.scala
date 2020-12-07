@@ -28,19 +28,6 @@ trait Directives {
     }}
   }
 
-  @deprecated(
-  """Use:
-  for {
-    x <- myDirective
-    _ <- commit
-    ...
-  } instead of autocommit(myDirective)""", since="0.7.0")
-  def autocommit[T, R, A](d:Directive[T, R, A]) =
-    for {
-      x <- d
-      _ <- commit
-    } yield x
-
   def getOrElse[R, A](opt:Option[A], orElse: => ResponseFunction[R]) = opt.map(success).getOrElse(failure(orElse))
 
   /* HttpRequest has to be of type Any because of type-inference (SLS 8.5) */

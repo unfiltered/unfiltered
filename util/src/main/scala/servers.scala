@@ -25,13 +25,6 @@ trait HttpPortBinding {
 trait HttpsPortBinding {
   val scheme = "https"
 }
-@deprecated("Info-only binding for older server builders", since="0.8.1")
-case class HttpPortBindingShim(host: String, port: Int)
-extends PortBindingInfo with HttpPortBinding
-
-@deprecated("Info-only binding for older server builders", since="0.8.1")
-case class HttpsPortBindingShim(host: String, port: Int)
-extends PortBindingInfo with HttpsPortBinding
 
 trait StartableServer extends Server {
   def start(): ServerBuilder

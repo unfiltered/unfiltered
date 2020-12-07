@@ -27,9 +27,6 @@ trait Syntax extends Directives {
     def >=[V, T, R, A](v:V)(implicit gtd:Gt[X, V, T, R, A], eq:Eq[X, V, T, R, A]) = gte(v)
   }
 
-  @deprecated("", "")
-  def ops[X](x: X): Ops[X] = new Ops[X](x)
-
   implicit def defMethod(M: Method): FilterDirective[Any, ResponseFunction[Any], Unit] =
     when{ case M(_) => } orElse MethodNotAllowed
 
@@ -41,13 +38,6 @@ trait Syntax extends Directives {
 
   implicit def defExtract[A](Ex: Params.Extract[A]): FilterDirective[Any, ResponseFunction[A], A] =
     when{ case Params(Ex(a)) => a } orElse BadRequest
-
-  implicit def defPathIntent(p: Path.type): PathIntentions.type = PathIntentions
-
-  object PathIntentions {
-    @deprecated("Use Directive.Intent.Path", since="0.7.0")
-    def Intent[T] = Directive.Intent.Path[T]
-  }
 
   implicit def defInterpreterIdentity[T]: data.Interpreter[T, T, Nothing] = data.Interpreter.identity[T]
   implicit def defInterpreterString: data.as.String.type = data.as.String
