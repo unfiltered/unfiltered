@@ -5,6 +5,11 @@ import ReleaseTransformations._
 
 Common.settings
 
+ThisBuild / mimaReportSignatureProblems := true
+
+// disable root
+disablePlugins(MimaPlugin)
+
 enablePlugins(ScalaUnidocPlugin)
 
 publish / skip := {

@@ -1,5 +1,6 @@
 import sbt._
 import xerial.sbt.Sonatype.autoImport.sonatypePublishToBundle
+import com.typesafe.tools.mima.plugin.MimaPlugin.autoImport._
 
 object Common {
   import Keys._
@@ -25,6 +26,12 @@ object Common {
     crossScalaVersions := Seq("2.13.4", Scala212, "2.11.12"),
 
     scalaVersion := Scala212,
+
+    mimaPreviousArtifacts := {
+      (0 to 0).map { v =>
+        organization.value %% moduleName.value % s"0.10.$v"
+      }.toSet
+    },
 
     scalacOptions ++=
       Seq("-encoding", "utf8", "-deprecation", "-unchecked", "-feature"),
