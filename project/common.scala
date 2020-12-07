@@ -6,9 +6,6 @@ object Common {
 
   private[this] val unusedWarnings = Def.setting(
     CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, 11)) => Seq(
-        "-Ywarn-unused-import"
-      )
       case Some((2, _)) => Seq(
         "-Ywarn-unused:imports"
       )
@@ -22,7 +19,7 @@ object Common {
   val settings: Seq[Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "ws.unfiltered",
 
-    crossScalaVersions := Seq("2.13.4", Scala212, "2.11.12"),
+    crossScalaVersions := Seq("2.13.4", Scala212),
 
     scalaVersion := Scala212,
 
