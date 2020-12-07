@@ -7,7 +7,7 @@ trait Interpreter[A,B,+E] { self =>
   def ~> [C, EE >: E](implicit next: Interpreter[B,C,EE]): Interpreter[A,C,EE] =
     new Interpreter[A,C,EE] {
       def interpret(a: A, name: String): Either[EE,C] =
-        self.interpret(a, name).right.flatMap {
+        self.interpret(a, name).flatMap {
           r => next.interpret(r, name)
         }
     }
@@ -16,7 +16,7 @@ trait Interpreter[A,B,+E] { self =>
   def named[EE >: E](name: String)(implicit to: Interpreter[Seq[String],A,EE]) =
     new Directive[Any,EE,B]( { req =>
       val seq = Option(req.parameterValues(name)).getOrElse(Nil)
-      to.interpret(seq, name).right.flatMap { r =>
+      to.interpret(seq, name).flatMap { r =>
         self.interpret(r, name)
       }.fold(
         r => Result.Failure(r),
