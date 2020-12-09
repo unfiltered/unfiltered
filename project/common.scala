@@ -56,7 +56,7 @@ object Common {
       }
     },
 
-    javacOptions in Compile ++= Seq("-source", "1.6", "-target", "1.6"),
+    javacOptions in Compile ++= Seq("-source", "1.8", "-target", "1.8"),
 
     parallelExecution in Test := false, // :( test servers collide on same port
 
