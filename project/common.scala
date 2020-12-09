@@ -70,7 +70,7 @@ object Common {
 
     parallelExecution in Test := false, // :( test servers collide on same port
 
-    homepage := Some(new java.net.URL("http://unfiltered.ws")),
+    homepage := Some(new java.net.URL("https://unfiltered.ws")),
 
     publishMavenStyle := true,
 
@@ -78,7 +78,7 @@ object Common {
 
     publishArtifact in Test := false,
 
-    licenses := Seq("MIT" -> url("http://www.opensource.org/licenses/MIT")),
+    licenses := Seq("MIT" -> url("https://www.opensource.org/licenses/MIT")),
 
     pomExtra := (
       <scm>
