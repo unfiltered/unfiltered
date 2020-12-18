@@ -6,6 +6,6 @@ addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.9.5")
 
 addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.13")
 
-addSbtPlugin("ch.epfl.lamp" % "sbt-dotty" % "0.4.6")
+addSbtPlugin("ch.epfl.lamp" % "sbt-dotty" % "0.5.1")
 
 addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "0.8.1")
