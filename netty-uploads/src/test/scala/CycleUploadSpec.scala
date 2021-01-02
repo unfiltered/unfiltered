@@ -3,7 +3,7 @@ package unfiltered.netty.request
 import org.specs2.mutable.Specification
 
 import unfiltered.netty.cycle
-import unfiltered.request.{ Path => UFPath, POST, & }
+import unfiltered.request.{ Path => UFPath, POST, PUT, & }
 import unfiltered.response.{ NotFound, ResponseString }
 import unfiltered.specs2.netty.Served
 
@@ -11,6 +11,8 @@ import java.io.{ File => JFile,FileInputStream => FIS }
 import java.util.Arrays
 
 import org.apache.commons.io.{ IOUtils => IOU }
+
+import okhttp3.{MediaType, MultipartBody, Request, RequestBody}
 
 class CycleUploadSpec extends Specification
   with Served {
@@ -101,6 +103,16 @@ class CycleUploadSpec extends Specification
               case _ => ResponseString("what's f?")
             }
         }
+        case
+          PUT(UFPath("/disk-upload") & MultiPart(req)) => {
+          case Decode(binding) =>
+            MultiPartParams.Disk(binding).files("f") match {
+              case Seq(f, _*) => ResponseString(
+                "disk read file f named %s with content type %s".format(
+                  f.name, f.contentType))
+              case f => ResponseString("what's f?")
+            }
+        }
     })
     _.plan(plan).plan(cycle.Planify {
       case _ => NotFound
@@ -138,6 +150,17 @@ class CycleUploadSpec extends Specification
       file.exists must_==true
       val resp = httpx(req(host / "notfound").<<*("f", file, "text/plain"))
       resp.code must_== 404
+    }
+    "handle file uploads via PUT" in {
+      val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
+      file.exists must_==true
+      val mp = new MultipartBody.Builder().
+        setType(MultipartBody.FORM).
+        addFormDataPart("f", file.getName, RequestBody.create(MediaType.parse("text/plain"), file)).
+        build()
+      val req = new Request.Builder().method("PUT", mp).url(host / "disk-upload").build()
+
+      http(req).as_string must_== "disk read file f named netty-upload-big-text-test.txt with content type text/plain"
     }
   }
 }
