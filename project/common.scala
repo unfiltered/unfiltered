@@ -28,7 +28,7 @@ object Common {
     scalaVersion := Scala212,
 
     mimaPreviousArtifacts := {
-      (0 to 0).map { v =>
+      (0 to 1).map { v =>
         organization.value %% moduleName.value % s"0.10.$v"
       }.toSet
     },
