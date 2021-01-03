@@ -1,7 +1,6 @@
 package unfiltered.netty.request
 
 import unfiltered.netty.{ ExceptionHandler, ReceivedMessage, RequestBinding }
-import unfiltered.request.POST
 import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandler }
 import io.netty.handler.codec.http.{
   HttpRequest,
@@ -114,7 +113,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
         val binding = new RequestBinding(ReceivedMessage(request, ctx, request))
         binding match {
           // Should match the initial multipart request
-          case POST(MultiPart(_)) =>
+          case MultiPart(_) =>
             // Determine whether the request is destined for this plan's intent and if not, pass
             handleOrPass(ctx, request, binding) {
               // The request is destined for this intent, so start to handle it
