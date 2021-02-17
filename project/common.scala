@@ -48,11 +48,11 @@ object Common {
 
     scalacOptions ++= unusedWarnings.value,
 
-    fork in Test := true,
+    Test / fork := true,
 
-    scalacOptions in (Compile, doc) ++= {
+    (Compile / doc / scalacOptions) ++= {
       val hash = sys.process.Process("git rev-parse HEAD").lineStream_!.head
-      val base = (baseDirectory in LocalRootProject).value.getAbsolutePath
+      val base = (LocalRootProject / baseDirectory).value.getAbsolutePath
       CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((3, _)) =>
           Nil
@@ -66,9 +66,9 @@ object Common {
       }
     },
 
-    javacOptions in Compile ++= Seq("-source", "1.6", "-target", "1.6"),
+    Compile / javacOptions ++= Seq("-source", "1.6", "-target", "1.6"),
 
-    parallelExecution in Test := false, // :( test servers collide on same port
+    Test / parallelExecution := false, // :( test servers collide on same port
 
     homepage := Some(new java.net.URL("https://unfiltered.ws")),
 
@@ -76,7 +76,7 @@ object Common {
 
     publishTo := sonatypePublishToBundle.value,
 
-    publishArtifact in Test := false,
+    Test / publishArtifact := false,
 
     licenses := Seq("MIT" -> url("https://www.opensource.org/licenses/MIT")),
 
@@ -119,6 +119,6 @@ object Common {
       </developers>
     )
   ) ++ Seq(Compile, Test).flatMap(c =>
-    scalacOptions in (c, console) --= unusedWarnings.value
+    (c / console / scalacOptions) --= unusedWarnings.value
   )
 }
