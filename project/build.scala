@@ -10,7 +10,7 @@ object Unfiltered {
   def local(name: String) = LocalProject(id(name))
 
   def srcPathSetting(projectId: String, rootPkg: String) =
-    mappings in (LocalProject(projectId), Compile, packageSrc) ~= {
+    (LocalProject(projectId) / Compile / packageSrc / mappings) ~= {
       defaults: Seq[(File,String)] =>
         defaults.map { case(file, path) =>
           (file, rootPkg + "/" + path)
@@ -20,9 +20,9 @@ object Unfiltered {
   private def ciSettings: Seq[Def.Setting[_]] = {
     if (JBoolean.parseBoolean(
       sys.env.getOrElse("TRAVIS", "false"))) Seq(
-      logLevel in Global := Level.Warn,
-      logLevel in Compile := Level.Warn,
-      logLevel in Test := Level.Info
+      Global / logLevel := Level.Warn,
+      Compile / logLevel := Level.Warn,
+      Test / logLevel := Level.Info
     ) else Seq.empty[Def.Setting[_]]
   }
   def module(moduleName: String)(
