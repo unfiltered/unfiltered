@@ -19,10 +19,10 @@ publish / skip := {
 
 // unidoc publish settings
 name := "unfiltered-all"
-artifacts := Classpaths.artifactDefs(Seq(packageDoc in Compile)).value
-packagedArtifacts := Classpaths.packaged(Seq(packageDoc in Compile)).value
+artifacts := Classpaths.artifactDefs(Seq(Compile / packageDoc)).value
+packagedArtifacts := Classpaths.packaged(Seq(Compile / packageDoc)).value
 Defaults.packageTaskSettings(
-  packageDoc in Compile, (unidoc in Compile).map{_.flatMap(Path.allSubpaths)}
+  (Compile / packageDoc), (Compile / unidoc).map{_.flatMap(Path.allSubpaths)}
 )
 
 releaseCrossBuild := true
@@ -48,7 +48,7 @@ val filterProjectId = "filter"
 
 // avoid cyclic error
 def dependsOnInTest(id: String) =
-  unmanagedClasspath in Test ++= (fullClasspath in (local(id), Compile)).value
+  (Test / unmanagedClasspath) ++= (local(id) / Compile / fullClasspath).value
 
 val dependsOnSpecs2InTest = dependsOnInTest(specs2ProjectId)
 
@@ -180,5 +180,5 @@ lazy val websockets = module("netty-websockets")().settings(
 lazy val nettyUploads = module("netty-uploads")().settings(
   description := "Uploads plan support using Netty",
   libraryDependencies ++= integrationTestDeps.value,
-  parallelExecution in Test := false
+  Test / parallelExecution := false
 ).dependsOn(nettyServer, uploads, specs2 % "test")
