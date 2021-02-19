@@ -41,7 +41,7 @@ object Common {
     Test / fork := true,
 
     Compile / doc / sources := {
-      CrossVersion.partialVersion(scalaVersion.value)) match {
+      CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, _)) =>
           (Compile / doc / sources).value
         case _ =>
