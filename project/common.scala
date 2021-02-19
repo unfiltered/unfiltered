@@ -40,6 +40,15 @@ object Common {
 
     Test / fork := true,
 
+    Compile / doc / sources := {
+      CrossVersion.partialVersion(scalaVersion.value)) match {
+        case Some((2, _)) =>
+          (Compile / doc / sources).value
+        case _ =>
+          Nil // TODO enable scaladoc for Scala 3
+      }
+    },
+
     (Compile / doc / scalacOptions) ++= {
       val hash = sys.process.Process("git rev-parse HEAD").lineStream_!.head
       val base = (LocalRootProject / baseDirectory).value.getAbsolutePath
