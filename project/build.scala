@@ -17,14 +17,6 @@ object Unfiltered {
         }
     }
 
-  private def ciSettings: Seq[Def.Setting[_]] = {
-    if (JBoolean.parseBoolean(
-      sys.env.getOrElse("TRAVIS", "false"))) Seq(
-      Global / logLevel := Level.Warn,
-      Compile / logLevel := Level.Warn,
-      Test / logLevel := Level.Info
-    ) else Seq.empty[Def.Setting[_]]
-  }
   def module(moduleName: String)(
     projectId: String = "unfiltered-" + moduleName,
     dirName: String = moduleName,
@@ -32,7 +24,6 @@ object Unfiltered {
   ) ={
     val project = Project(projectId, file(dirName))
     project.settings(Common.settings ++
-      ciSettings ++
       srcPathSetting(projectId, srcPath))
   }
 
