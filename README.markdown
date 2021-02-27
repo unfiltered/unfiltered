@@ -2,7 +2,7 @@
 
 [![Join the chat at https://gitter.im/unfiltered/unfiltered](https://badges.gitter.im/unfiltered/unfiltered.svg)](https://gitter.im/unfiltered/unfiltered?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-See the [Unfiltered documentation](http://unfiltered.ws) for instructions on using the project.
+See the [Unfiltered documentation](https://unfiltered.ws) for instructions on using the project.
 
 ## Modules
 
@@ -32,7 +32,7 @@ Provides extractors for multipart posts using netty.
 
 ### specs2
 
-Provides helpers for testing Intents with [specs2](http://etorreborre.github.io/specs2/).
+Provides helpers for testing Intents with [specs2](https://etorreborre.github.io/specs2/).
 
 ### uploads
 
@@ -48,7 +48,7 @@ A minimal server websocket interface build on netty
 
 ## Community
 
-Join the [Unfiltered mailing list on Google Groups](http://groups.google.com/group/unfiltered-scala/topics) or view the previous list on [Nabble](http://databinder.3617998.n2.nabble.com/Unfiltered-f5560764.html).
+Join the [Unfiltered mailing list on Google Groups](https://groups.google.com/g/unfiltered-scala) or view the previous list on [Nabble](http://databinder.3617998.n2.nabble.com/Unfiltered-f5560764.html).
 
 ## Example Apps
 
