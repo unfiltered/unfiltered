@@ -18,7 +18,7 @@ object Dependencies {
   val commonsFileUploadVersion = "1.4"
   val jettyVersion = "11.0.1"
   val nettyVersion = "4.1.59.Final"
-  val scalatestVersion = "3.2.5"
+  val scalatestVersion = "3.2.6"
   val scalatestScalacheckVersion = "3.2.5.0"
   val json4sVersion = "3.6.11"
   val asyncHttpClientVersion = "1.8.17"
