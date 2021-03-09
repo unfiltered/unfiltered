@@ -65,7 +65,7 @@ lazy val library: Project = module("unfiltered")(
     specs2Dep.value % "test",
     "org.scalatest" %% "scalatest" % scalatestVersion % "test",
     "org.scalatestplus" %% "scalacheck-1-15" % scalatestScalacheckVersion % "test",
-    "org.scala-lang.modules" %% "scala-xml" % scalaXmlVersion withDottyCompat scalaVersion.value,
+    "org.scala-lang.modules" %% "scala-xml" % scalaXmlVersion,
   ),
 ).dependsOn(util)
 
