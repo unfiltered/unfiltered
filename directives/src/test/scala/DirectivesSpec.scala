@@ -2,6 +2,8 @@ package unfiltered.directives
 
 import org.specs2.mutable._
 import unfiltered.request._
+import unfiltered.directives.data.Requiring
+import unfiltered.directives.data.Interpreter
 import java.util.concurrent.atomic.AtomicLong
 
 import okhttp3.MediaType
@@ -29,7 +31,7 @@ trait DirectivesSpec extends SpecificationLike with unfiltered.specs2.Hosted {
     when { case RequestContentType(t) => t } orElse UnsupportedMediaType
 
   // enables `===` in awesome_json case
-  implicit val contentTypeAwesome =
+  implicit val contentTypeAwesome: Directive.Eq[RequestContentType.type, String, Any, ResponseFunction[Any], String] =
     Directive.Eq { (R:RequestContentType.type, value:String) =>
       when { case R(`value`) => value } orElse UnsupportedMediaType
     }
@@ -38,10 +40,10 @@ trait DirectivesSpec extends SpecificationLike with unfiltered.specs2.Hosted {
       BadRequest ~> ResponseString(messages.mkString("\n"))
   )
 
-  implicit val asInt =
+  implicit val asInt: Interpreter[Seq[String], Option[Int], BadParam] =
     data.as.String ~> data.as.Int.fail((name, i) => BadParam(name + " is not an int: " + i))
 
-  implicit def require[T] = data.Requiring[T].fail(name => BadParam(name + " is missing"))
+  implicit def require[T]: Requiring[T, BadParam] = data.Requiring[T].fail(name => BadParam(name + " is missing"))
 
   val asEven = data.Conditional[Int]( _ % 2 == 0 ).fail(
     (name, i) => BadParam(name + " is not even: " + i)
