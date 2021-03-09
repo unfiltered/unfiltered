@@ -119,7 +119,7 @@ class ChunkAggregatedUploadSpec extends Specification
       }
       case POST(UFPath("/cycle/stream-upload/write") & MultiPart(req)) =>
         MultiPartParams.Streamed(req).files("f") match {
-         case Seq(f, _*) =>
+          case Seq(f, _*) =>
             val src = IOU.toByteArray(getClass.getResourceAsStream("/netty-upload-big-text-test.txt"))
             f.write(new JFile(directory, "2upload-test-out.txt")) match {
               case Some(outFile) =>
