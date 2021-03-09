@@ -60,7 +60,7 @@ class RequestBinding(msg: ReceivedMessage)
   lazy val inputStream =
     new ByteBufInputStream(content.map(_.content).getOrElse(Unpooled.EMPTY_BUFFER))
 
-  lazy val reader =
+  lazy val reader: BufferedReader =
     new BufferedReader(new InputStreamReader(inputStream, charset))
 
   def protocol = req.protocolVersion.text()
