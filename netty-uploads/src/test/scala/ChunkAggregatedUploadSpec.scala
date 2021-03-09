@@ -51,7 +51,7 @@ class ChunkAggregatedUploadSpec extends Specification
       }
       case POST(UFPath("/async/stream-upload/write") & MultiPart(req)) =>
         MultiPartParams.Streamed(req).files("f") match {
-         case Seq(f, _*) =>
+          case Seq(f, _*) =>
             val src = IOU.toByteArray(getClass.getResourceAsStream("/netty-upload-big-text-test.txt"))
             f.write(new JFile(directory, "2async-upload-test-out.txt")) match {
               case Some(outFile) =>
@@ -68,24 +68,24 @@ class ChunkAggregatedUploadSpec extends Specification
             }
           case _ =>  req.respond(ResponseString("what's f?"))
         }
-        case POST(UFPath("/async/mem-upload") & MultiPart(req)) => MultiPartParams.Memory(req).files("f") match {
-          case Seq(f, _*) => req.respond(ResponseString(
-            "memory read file f is named %s with content type %s".format(
-              f.name, f.contentType)))
-          case _ =>  req.respond(ResponseString("what's f?"))
-        }
-        case POST(UFPath("/async/mem-upload/write") & MultiPart(req)) => MultiPartParams.Memory(req).files("f") match {
-          case Seq(f, _*) =>
-            f.write(new JFile(directory, "3async-upload-test-out.txt")) match {
-              case Some(outFile) => req.respond(ResponseString(
-                "wrote memory read file f is named %s with content type %s".format(
-                  f.name, f.contentType)))
-              case None =>  req.respond(ResponseString(
-                "did not write memory read file f is named %s with content type %s".format(
-                  f.name, f.contentType)))
-            }
-          case _ => req.respond(ResponseString("what's f?"))
-        }
+      case POST(UFPath("/async/mem-upload") & MultiPart(req)) => MultiPartParams.Memory(req).files("f") match {
+        case Seq(f, _*) => req.respond(ResponseString(
+          "memory read file f is named %s with content type %s".format(
+            f.name, f.contentType)))
+        case _ =>  req.respond(ResponseString("what's f?"))
+      }
+      case POST(UFPath("/async/mem-upload/write") & MultiPart(req)) => MultiPartParams.Memory(req).files("f") match {
+        case Seq(f, _*) =>
+          f.write(new JFile(directory, "3async-upload-test-out.txt")) match {
+            case Some(outFile) => req.respond(ResponseString(
+              "wrote memory read file f is named %s with content type %s".format(
+                f.name, f.contentType)))
+            case None =>  req.respond(ResponseString(
+              "did not write memory read file f is named %s with content type %s".format(
+                f.name, f.contentType)))
+          }
+        case _ => req.respond(ResponseString("what's f?"))
+      }
     })).plan(netty.cycle.Planify({
       case POST(UFPath("/cycle/disk-upload") & MultiPart(req)) =>
         MultiPartParams.Disk(req).files("f") match {
