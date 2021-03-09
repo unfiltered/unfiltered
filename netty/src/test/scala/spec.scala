@@ -83,7 +83,7 @@ class ResponseSpec extends Specification {
   "URL Parser" should {
     "return an empty map when no params given" in {
       val url = ""
-      URLParser.urldecode(url) must be empty
+      URLParser.urldecode(url) must beEmpty
     }
     "return correctly decoded parameters when given" in {
       val url = "param1=value%201&param2=value%202&param2=value%202%20again&param%3A3=value%203"
