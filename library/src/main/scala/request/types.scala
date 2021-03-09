@@ -177,7 +177,7 @@ object Mime {
     ".zip"     -> "application/zip"
   )
   
-  private val Ext = """([.]\w+)$""".r
+  private[this] val Ext = """([.]\w+)$""".r
   
   /** given a file name, extract the extension and match its content type */
   def unapply(name: String) = Ext.findFirstMatchIn(name) match {

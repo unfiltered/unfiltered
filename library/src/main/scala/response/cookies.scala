@@ -4,7 +4,7 @@ import unfiltered.Cookie
 
 /** Set-Cookie response header */
 object SetCookies {
-  private val Name = "Set-Cookie"
+  private[this] val Name = "Set-Cookie"
   def apply(cookies: Cookie*) =
     new ResponseHeader(Name, cookies.foldLeft(Seq.empty[String])(
       (a, e) => ToCookies(e) +: a)
