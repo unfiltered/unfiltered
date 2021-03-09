@@ -25,7 +25,7 @@ case class FilterAdder(
 }
 
 case class CountedName(prefix: String) {
-  private val counter = new AtomicInteger
+  private[this] val counter = new AtomicInteger
   def name = prefix + " " + counter.incrementAndGet
 }
 

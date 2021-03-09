@@ -20,8 +20,8 @@ case class MIMEType(major: String, minor: String, params: Map[String, String] = 
 object MIMEType {
   val ALL = MIMEType("*", "*", Map.empty)
 
-  private val EqualPattern = "(?sm)(.*)=(.*)".r
-  private val MimeMatcher = "(?sm)([\\w-*]+)/([\\w-*+.]+);?(.*)?".r
+  private[this] val EqualPattern = "(?sm)(.*)=(.*)".r
+  private[this] val MimeMatcher = "(?sm)([\\w-*]+)/([\\w-*+.]+);?(.*)?".r
 
   def parse(s: String): Option[MIMEType] = {
     s match {
