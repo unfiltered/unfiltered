@@ -32,6 +32,15 @@ object Common {
     }.toList.flatten,
 
     scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)){
+      case Some((3, _)) =>
+        Seq(
+          "-Xignore-scala2-macros",
+          "-source",
+          "3.0-migration",
+        )
+    }.toList.flatten,
+
+    scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)){
       case Some((2, v)) if v <= 12 =>
         Seq("-Ywarn-adapted-args", "-Xfuture")
     }.toList.flatten,
