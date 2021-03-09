@@ -11,7 +11,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class FutureServerSpec extends Specification with org.specs2.matcher.ThrownMessages with unfiltered.specs2.netty.Served {
 
-  implicit val executionContext = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(2, NamedDaemonTF.server))
+  implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(2, NamedDaemonTF.server))
 
   def setup = _.plan(future.Planify {
     case GET(UFPath("/ping")) =>
