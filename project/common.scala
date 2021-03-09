@@ -48,6 +48,18 @@ object Common {
           Nil // TODO enable scaladoc for Scala 3
       }
     },
+    
+    testFrameworks --= {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, _)) =>
+          Nil
+        case _ =>
+          // specs2 does not support Scala 3
+          // https://github.com/etorreborre/specs2/issues/848
+          // TODO remove this setting when specs2 for Scala 3 released
+          Seq(TestFrameworks.Specs2)
+      }
+    },
 
     (Compile / doc / scalacOptions) ++= {
       val hash = sys.process.Process("git rev-parse HEAD").lineStream_!.head
