@@ -49,6 +49,8 @@ object Common {
 
     Test / fork := true,
 
+    libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always",
+
     allDependencies := {
       val values = allDependencies.value
       // workaround for
