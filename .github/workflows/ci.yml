@@ -37,7 +37,11 @@ jobs:
             sbt -v "+ test" "+ mimaReportBinaryIssues" "+ publishLocal"
             ;;
           "scala_3")
-            sbt -v '++ 3.0.0!' compile publishLocal
+            sbt -v \
+            SetScala3_0 \
+            compile \
+            "all unfiltered-agents/test unfiltered-filter/test unfiltered-filter-async/test unfiltered-filter-uploads/test unfiltered-jetty/test unfiltered-json4s/test unfiltered-netty-server/test unfiltered-scalatest/test unfiltered-specs2/test unfiltered-uploads/test unfiltered-util/test" \
+            publishLocal
             ;;
           *)
             echo "unknown job"
