@@ -65,7 +65,7 @@ lazy val library: Project = module("unfiltered")(
     specs2Dep.value % "test",
     "org.scalatest" %% "scalatest" % scalatestVersion % "test",
     "org.scalatestplus" %% "scalacheck-1-15" % scalatestScalacheckVersion % "test",
-    "org.scala-lang.modules" %% "scala-xml" % scalaXmlVersion withDottyCompat scalaVersion.value,
+    "org.scala-lang.modules" %% "scala-xml" % scalaXmlVersion,
   ),
 ).dependsOn(util)
 
@@ -167,7 +167,7 @@ lazy val json4s = module("json4s")(
 ).settings(
   description := "Json4s request matchers and response functions",
   libraryDependencies ++= {
-    Seq("org.json4s" %% "json4s-native" % json4sVersion withDottyCompat scalaVersion.value) ++ integrationTestDeps.value
+    Seq("org.json4s" %% "json4s-native" % json4sVersion cross CrossVersion.for3Use2_13) ++ integrationTestDeps.value
   }
 ).dependsOn(library, filters % "test", specs2 % "test")
 
