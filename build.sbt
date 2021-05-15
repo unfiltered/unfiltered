@@ -3,6 +3,11 @@ import Unfiltered._
 import Dependencies._
 import ReleaseTransformations._
 
+def Scala3_0 = "3.0.0"
+
+val SetScala3_0 = "SetScala3_0"
+addCommandAlias(SetScala3_0, s"++ ${Scala3_0}! -v")
+
 Common.settings
 
 enablePlugins(ScalaUnidocPlugin)
@@ -36,6 +41,7 @@ releaseProcess := Seq[ReleaseStep](
   commitReleaseVersion,
   tagRelease,
   releaseStepCommandAndRemaining("+publishSigned"),
+  releaseStepCommandAndRemaining(s"${SetScala3_0};publishSigned"),
   releaseStepCommandAndRemaining("sonatypeBundleRelease"),
   setNextVersion,
   commitNextVersion,
