@@ -37,7 +37,7 @@ jobs:
             sbt -v "+ test" "+ mimaReportBinaryIssues" "+ publishLocal"
             ;;
           "scala_3")
-            sbt -v '++ 3.0.0-M1!' compile publishLocal
+            sbt -v '++ 3.0.0!' compile publishLocal
             ;;
           *)
             echo "unknown job"

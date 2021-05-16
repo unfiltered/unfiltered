@@ -59,6 +59,22 @@ object Common {
 
     Test / fork := true,
 
+    libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always",
+
+    allDependencies := {
+      val values = allDependencies.value
+      // workaround for
+      // https://twitter.com/olafurpg/status/1346777651550285824
+      // "Modules were resolved with conflicting cross-version suffixes"
+      // "   org.scala-lang.modules:scala-xml _3.0.0-RC1, _2.13"
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((3, _)) =>
+          values.map(_.exclude("org.scala-lang.modules", "scala-xml_2.13"))
+        case _ =>
+          values
+      }
+    },
+
     Compile / doc / sources := {
       CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, _)) =>
