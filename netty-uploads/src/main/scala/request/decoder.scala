@@ -1,7 +1,6 @@
 package unfiltered.netty.request
 
 import unfiltered.netty.{ ExceptionHandler, ReceivedMessage, RequestBinding }
-import unfiltered.request.POST
 import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandler }
 import io.netty.handler.codec.http.{
   HttpRequest,
