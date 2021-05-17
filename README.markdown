@@ -58,6 +58,4 @@ There are some [giter8](https://github.com/foundweekends/giter8) templates for U
 - [unfiltered-war.g8](https://github.com/unfiltered/unfiltered-war.g8) g8 template configured with sbt war plugin
 - [unfiltered-websockets.g8](https://github.com/unfiltered/unfiltered-websockets.g8) g8 template for websocket based chat app
 - [unfiltered.g8](https://github.com/unfiltered/unfiltered.g8) basic g8 template example
-- [unfiltered-gae.g8](https://github.com/unfiltered/unfiltered-gae.g8) g8 template for google app engine deployment
-- [coffee-filter.g8](https://github.com/unfiltered/coffee-filter.g8) g8 template of unfiltered app using coffeescript and less css
 
