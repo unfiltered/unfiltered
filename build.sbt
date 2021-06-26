@@ -86,7 +86,7 @@ lazy val filters = module(filterProjectId)().settings(
 ).dependsOn(library)
 
 lazy val filtersAsync = module("filter-async")().settings(
-  description := "Server binding for Java Servlet 3.0 async filters",
+  description := "Server binding for Java Servlet async filters",
   libraryDependencies += servletApiDep
 ).dependsOn(filters, specs2 % "test")
 
