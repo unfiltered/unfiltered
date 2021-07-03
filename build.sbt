@@ -3,7 +3,7 @@ import Unfiltered._
 import Dependencies._
 import ReleaseTransformations._
 
-def Scala3_0 = "3.0.1-RC1"
+def Scala3_0 = "3.0.1-RC2"
 
 val SetScala3_0 = "SetScala3_0"
 addCommandAlias(SetScala3_0, s"++ ${Scala3_0}! -v")
