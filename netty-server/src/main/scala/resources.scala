@@ -1,22 +1,27 @@
 package unfiltered.netty
 
 import unfiltered.netty.async.Plan
-import unfiltered.netty.resources.{FileSystemResource, Resolve, Resource}
-import unfiltered.request.{&, GET, HEAD, HttpRequest, IfModifiedSince, Path}
-import unfiltered.response.{BadRequest, CacheControl, Connection, ContentLength, ContentType, Date, Expires, Forbidden, LastModified, NotFound, NotModified, Ok, Pass, PlainTextContent, ResponseFunction}
-import io.netty.channel.{ChannelFuture, ChannelFutureListener, DefaultFileRegion}
-import io.netty.channel.ChannelHandler.Sharable
-import io.netty.handler.codec.http.{HttpHeaders, HttpResponse, HttpUtil, LastHttpContent}
-import io.netty.handler.stream.{ChunkedFile, ChunkedStream}
-import io.netty.util.CharsetUtil
+import unfiltered.netty.resources.{ FileSystemResource, Resolve, Resource }
+import unfiltered.request.{ GET, HEAD, HttpRequest, IfModifiedSince, Path, & }
+import unfiltered.response.{
+  BadRequest, CacheControl, Connection, ContentLength, ContentType, Date,
+  Expires, Forbidden, LastModified, NotFound, NotModified, Ok,
+  Pass, PlainTextContent, ResponseFunction }
 
-import java.io.{File, FileNotFoundException, RandomAccessFile}
-import java.net.{URL, URLDecoder}
+import io.netty.channel.{ ChannelFuture, ChannelFutureListener, DefaultFileRegion }
+import io.netty.channel.ChannelHandler.Sharable
+import io.netty.handler.codec.http.{
+  LastHttpContent, HttpHeaders, HttpResponse, HttpUtil }
+import io.netty.handler.stream.{ ChunkedFile, ChunkedStream }
+import io.netty.util.CharsetUtil
+import java.io.{ File, FileNotFoundException, RandomAccessFile }
+import java.net.{ URL, URLDecoder }
 import java.text.SimpleDateFormat
-import java.util.{Calendar, GregorianCalendar}
+import java.util.{ Calendar, GregorianCalendar }
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.activation.MimetypesFileTypeMap
-import scala.util.{Failure, Success, Try}
+
+import scala.util.Try
 import scala.util.control.Exception.allCatch
 
 object Mimes {
