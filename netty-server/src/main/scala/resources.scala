@@ -158,7 +158,6 @@ case class Resources(
    */
   private def safe(uri: String): Option[Resource] =
     decode(uri) flatMap { decoded =>
-      println(uri)
       decoded.replace('/', File.separatorChar) match {
         case p
           if (p.contains(File.separator + ".") ||
