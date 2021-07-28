@@ -1,26 +1,22 @@
 package unfiltered.netty
 
 import unfiltered.netty.async.Plan
-import unfiltered.netty.resources.{ FileSystemResource, Resolve, Resource }
-import unfiltered.request.{ GET, HEAD, HttpRequest, IfModifiedSince, Path, & }
-import unfiltered.response.{
-  BadRequest, CacheControl, Connection, ContentLength, ContentType, Date,
-  Expires, Forbidden, LastModified, NotFound, NotModified, Ok,
-  Pass, PlainTextContent, ResponseFunction }
-
-import io.netty.channel.{ ChannelFuture, ChannelFutureListener, DefaultFileRegion }
+import unfiltered.netty.resources.{FileSystemResource, Resolve, Resource}
+import unfiltered.request.{&, GET, HEAD, HttpRequest, IfModifiedSince, Path}
+import unfiltered.response.{BadRequest, CacheControl, Connection, ContentLength, ContentType, Date, Expires, Forbidden, LastModified, NotFound, NotModified, Ok, Pass, PlainTextContent, ResponseFunction}
+import io.netty.channel.{ChannelFuture, ChannelFutureListener, DefaultFileRegion}
 import io.netty.channel.ChannelHandler.Sharable
-import io.netty.handler.codec.http.{
-  LastHttpContent, HttpHeaders, HttpResponse, HttpUtil }
-import io.netty.handler.stream.{ ChunkedFile, ChunkedStream }
+import io.netty.handler.codec.http.{HttpHeaders, HttpResponse, HttpUtil, LastHttpContent}
+import io.netty.handler.stream.{ChunkedFile, ChunkedStream}
 import io.netty.util.CharsetUtil
-import java.io.{ File, FileNotFoundException, RandomAccessFile }
-import java.net.{ URL, URLDecoder }
+
+import java.io.{File, FileNotFoundException, RandomAccessFile}
+import java.net.{URL, URLDecoder}
 import java.text.SimpleDateFormat
-import java.util.{ Calendar, GregorianCalendar }
+import java.util.{Calendar, GregorianCalendar}
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.activation.MimetypesFileTypeMap
-
+import scala.util.{Failure, Success, Try}
 import scala.util.control.Exception.allCatch
 
 object Mimes {
@@ -162,7 +158,7 @@ case class Resources(
    */
   private def safe(uri: String): Option[Resource] =
     decode(uri) flatMap { decoded =>
-      println(decoded)
+      println(uri)
       decoded.replace('/', File.separatorChar) match {
         case p
           if (p.contains(File.separator + ".") ||
@@ -171,13 +167,17 @@ case class Resources(
               p.startsWith("/") || // fixes any // requests which can expose a directory traversal problem
               p.endsWith(".")) => None
         case path =>
-          // create a path and check that the underlying path used is prefixed by the base path, this
-          // ensures that there is no upward traversal of the base path as an extra security measure
-          val proposed = new URL(base, path)
-          if (proposed.toString.startsWith(base.toString))
-            Resolve(proposed)
-          else
-            None
+
+          for {
+            proposed <- Try(new URL(base, path)).toOption // check for MalformedURLExceptions
+            _ <- Try(proposed.toURI).toOption // enforces URI$Parser to test for invalid characters i.e. /<  script > < / script>
+
+            // create a path and check that the underlying path used is prefixed by the base path, this
+            // ensures that there is no upward traversal of the base path as an extra security measure
+            if proposed.toString.startsWith(base.toString)
+            resolved <- Resolve(proposed)
+          } yield resolved
+
       }
     }
 
