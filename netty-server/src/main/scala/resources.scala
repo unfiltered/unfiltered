@@ -21,6 +21,7 @@ import java.util.{ Calendar, GregorianCalendar }
 import java.util.concurrent.TimeUnit.MILLISECONDS
 import javax.activation.MimetypesFileTypeMap
 
+import scala.util.Try
 import scala.util.control.Exception.allCatch
 
 object Mimes {
@@ -156,7 +157,9 @@ case class Resources(
 
   /** Converts a raw uri to a safe resource path. Attempts to prevent
    *  security holes where resources are accessed with .. paths
-   *  potentially outside of the root of the web app
+   *  potentially outside of the root of the web app.
+   *
+   *  Further directory traversal requests should be assumed
    */
   private def safe(uri: String): Option[Resource] =
     decode(uri) flatMap { decoded =>
@@ -165,9 +168,20 @@ case class Resources(
           if (p.contains(File.separator + ".") ||
               p.contains("." + File.separator) ||
               p.startsWith(".") ||
+              p.startsWith("/") || // fixes any // requests which can expose a directory traversal problem
               p.endsWith(".")) => None
         case path =>
-          Resolve(new URL(base, decoded))
+
+          for {
+            proposed <- Try(new URL(base, path)).toOption // check for MalformedURLExceptions
+            _ <- Try(proposed.toURI).toOption // enforces URI$Parser to test for invalid characters i.e. /<  script > < / script>
+
+            // create a path and check that the underlying path used is prefixed by the base path, this
+            // ensures that there is no upward traversal of the base path as an extra security measure
+            if proposed.toString.startsWith(base.toString)
+            resolved <- Resolve(proposed)
+          } yield resolved
+
       }
     }
 

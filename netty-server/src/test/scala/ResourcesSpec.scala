@@ -1,5 +1,6 @@
 package unfiltered.netty
 
+import okhttp3.HttpUrl
 import org.specs2.mutable.Specification
 
 /** Tests a netty server configured to handle static resources only */
@@ -31,6 +32,9 @@ class ResourcesSpec extends Specification with unfiltered.specs2.netty.Served {
      }
      "respond with NotFound (404) for requests for non-existant files" in {
        httpx(host / "foo.bar").code must be_==(404)
+     }
+     "respond with Forbidden (403) for directory traversal requests" in {
+       httpx(HttpUrl.parse(s"http://localhost:$port///etc/passwd")).code must be_==(403)
      }
      "respond with Forbidden (403) for requests for a directory by default" in {
        httpx(host).code must be_==(403)
