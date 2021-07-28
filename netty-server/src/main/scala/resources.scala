@@ -156,18 +156,28 @@ case class Resources(
 
   /** Converts a raw uri to a safe resource path. Attempts to prevent
    *  security holes where resources are accessed with .. paths
-   *  potentially outside of the root of the web app
+   *  potentially outside of the root of the web app.
+   *
+   *  Further directory traversal requests should be assumed
    */
   private def safe(uri: String): Option[Resource] =
     decode(uri) flatMap { decoded =>
+      println(decoded)
       decoded.replace('/', File.separatorChar) match {
         case p
           if (p.contains(File.separator + ".") ||
               p.contains("." + File.separator) ||
               p.startsWith(".") ||
+              p.startsWith("/") || // fixes any // requests which can expose a directory traversal problem
               p.endsWith(".")) => None
         case path =>
-          Resolve(new URL(base, decoded))
+          // create a path and check that the underlying path used is prefixed by the base path, this
+          // ensures that there is no upward traversal of the base path as an extra security measure
+          val proposed = new URL(base, path)
+          if (proposed.toString.startsWith(base.toString))
+            Resolve(proposed)
+          else
+            None
       }
     }
 
