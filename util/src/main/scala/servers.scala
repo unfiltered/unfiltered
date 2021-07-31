@@ -2,7 +2,7 @@ package unfiltered.util
 
 /** Unfiltered's base server trait, something plans can be added to */
 trait Server { self =>
-  // ServerBuilder is concretely defined in the final case clases,
+  // ServerBuilder is concretely defined in the final case classes,
   // and we can always return `this` for ServerBuilder
   type ServerBuilder >: self.type <: Server
 }
