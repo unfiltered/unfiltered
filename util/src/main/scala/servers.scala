@@ -1,5 +1,7 @@
 package unfiltered.util
 
+import scala.annotation.tailrec
+
 /** Unfiltered's base server trait, something plans can be added to */
 trait Server { self =>
   // ServerBuilder is concretely defined in the final case classes,
@@ -69,6 +71,7 @@ trait RunnableServer extends StartableServer { self =>
         for (binding <- portBindings)
           println(s"  ${binding.url}")
         println("Press any key to stop.")
+        @tailrec
         def doWait(): Unit = {
           try { Thread.sleep(1000) } catch { case _: InterruptedException => () }
           if(System.in.available() <= 0)
