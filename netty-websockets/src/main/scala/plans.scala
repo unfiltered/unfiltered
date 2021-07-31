@@ -3,7 +3,7 @@ package unfiltered.netty.websockets
 import unfiltered.request.{ GET, Host, HttpRequest }
 import unfiltered.netty.{ ExceptionHandler, ReceivedMessage, RequestBinding }
 import io.netty.channel.{
-  ChannelFuture, ChannelFutureListener,
+  ChannelFuture,
   ChannelHandlerContext, ChannelInboundHandlerAdapter
 }
 import io.netty.channel.ChannelHandler.Sharable
@@ -88,23 +88,19 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
                 // as a websocket handler
                 catching(classOf[WebSocketHandshakeException]).either {
                   shaker.handshake(ctx.channel, request)
-                    .addListeners(new ChannelFutureListener {
-                      def operationComplete(hf: ChannelFuture): Unit = {
-                        val chan = hf.channel
-                        attempt(Open(WebSocket(chan)))
-                        chan.closeFuture.addListener(new ChannelFutureListener {
-                          def operationComplete(cf: ChannelFuture) = {
-                            attempt(Close(WebSocket(cf.channel)))
-                          }
-                        })
-                        chan.pipeline.replace(
-                          Plan.this, ctx.name, SocketPlan(socketIntent, pass, shaker, Plan.this))
-                        // aggregate frames
-                        chan.pipeline.addAfter(
-                          chan.pipeline.context(classOf[WebSocketFrameDecoder]).name(),
-                          "ws-frame-aggregator", new WebSocketFrameAggregator(Integer.MAX_VALUE)
-                        )
-                      }
+                    .addListeners((hf: ChannelFuture) => {
+                      val chan = hf.channel
+                      attempt(Open(WebSocket(chan)))
+                      chan.closeFuture.addListener((cf: ChannelFuture) => {
+                        attempt(Close(WebSocket(cf.channel)))
+                      })
+                      chan.pipeline.replace(
+                        Plan.this, ctx.name, SocketPlan(socketIntent, pass, shaker, Plan.this))
+                      // aggregate frames
+                      chan.pipeline.addAfter(
+                        chan.pipeline.context(classOf[WebSocketFrameDecoder]).name(),
+                        "ws-frame-aggregator", new WebSocketFrameAggregator(Integer.MAX_VALUE)
+                      )
                     }, r.underlying.releaser)
                 }.fold({ _ => pass(ctx, request) }, identity)
             }

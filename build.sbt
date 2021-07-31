@@ -27,7 +27,7 @@ name := "unfiltered-all"
 artifacts := Classpaths.artifactDefs(Seq(Compile / packageDoc)).value
 packagedArtifacts := Classpaths.packaged(Seq(Compile / packageDoc)).value
 Defaults.packageTaskSettings(
-  (Compile / packageDoc), (Compile / unidoc).map{_.flatMap(Path.allSubpaths)}
+  Compile / packageDoc, (Compile / unidoc).map{_.flatMap(Path.allSubpaths)}
 )
 
 releaseCrossBuild := true

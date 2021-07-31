@@ -44,7 +44,7 @@ object FromCookies {
                   (names, values, Some((name, Option(value).getOrElse(""), sep)))
                 case Some((n0, v0, s0)) =>
                   if(value == null &&
-                     KeyOnly.filter(_.equalsIgnoreCase(name)).isEmpty) {
+                     !KeyOnly.exists(_.equalsIgnoreCase(name))) {
                     (names, values, Some((n0, v0 + s0 + name, sep)))
                   } else {
                     (n0 :: names, v0 :: values, Some((name, value, delim)))

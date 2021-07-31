@@ -137,17 +137,14 @@ trait Hosted extends BeforeAndAfterAll { self: Suite =>
   }
 
   object ByteStringToConverter {
-    implicit val StringByteStringConverter: ByteStringToConverter[String] = new ByteStringToConverter[String] {
-      override def toByteString(a: String): ByteString = ByteString.encodeUtf8(a)
-    }
+    implicit val StringByteStringConverter: ByteStringToConverter[String] =
+      (a: String) => ByteString.encodeUtf8(a)
 
-    implicit val IdentityStringConverter: ByteStringToConverter[ByteString] = new ByteStringToConverter[ByteString] {
-      override def toByteString(a: ByteString): ByteString = a
-    }
+    implicit val IdentityStringConverter: ByteStringToConverter[ByteString] =
+      (a: ByteString) => a
 
-    implicit val bytesStringConverter: ByteStringToConverter[Array[Byte]] = new ByteStringToConverter[Array[Byte]] {
-      override def toByteString(a: Array[Byte]): ByteString = ByteString.of(a, 0, a.length)
-    }
+    implicit val bytesStringConverter: ByteStringToConverter[Array[Byte]] =
+      (a: Array[Byte]) => ByteString.of(a, 0, a.length)
   }
 
   implicit def urlToGetRequest(url: HttpUrl): Request = req(url)

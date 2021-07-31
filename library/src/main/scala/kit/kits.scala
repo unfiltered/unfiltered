@@ -18,7 +18,7 @@ trait Prepend { self =>
       intent,
       (_: HttpRequest[A]) => Pass,
       (req: HttpRequest[A], rf: ResponseFunction[B]) =>
-        (intentOrNoOp)(req) ~> rf
+        intentOrNoOp(req) ~> rf
     ): Cycle.Intent[A,B]
 
   def async[A,B](intent: Async.Intent[A,B]) =

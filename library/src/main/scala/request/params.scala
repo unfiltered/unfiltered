@@ -7,7 +7,7 @@ import java.net.URLDecoder
 object Params {
   type Map = scala.collection.Map[String, Seq[String]]
   /**
-   * Given a req, extract the request params into a (Map[String, Seq[String]], request).
+   * Given a req, extract the request params into a `(Map[String, Seq[String]], request)`.
    * The Map is assigned a default value of Nil, so param("p") would return Nil if there
    * is no such parameter, or (as normal for servlets) a single empty string if the
    * parameter was supplied without a value. */
@@ -64,7 +64,7 @@ object Params {
 object QueryParams {
   
   /**
-   * Given a req, extract the request query params into a (Map[String, Seq[String]], request).
+   * Given a req, extract the request query params into a `(Map[String, Seq[String]], request)`.
    * The Map is assigned a default value of Nil, so param("p") would return Nil if there
    * is no such parameter, or (as normal for servlets) a single empty string if the
    * parameter was supplied without a value. */

@@ -51,7 +51,7 @@ class StreamedFileWrapper(fstm: FileItemStream) extends AbstractStreamedFile
   val contentType = fstm.getContentType
 }
 
-/** Extactors for multi-part form param processing
+/** Extractors for multi-part form param processing
   * @note a request can go through one pass of this extractor
   * afterwards, the requests input stream will appear empty
   */
@@ -106,7 +106,7 @@ object MultiPartParams extends TupleGenerator {
       override def getInputStream: InputStream = new ByteArrayInputStream(get)
       override def getName = name
       override def getOutputStream = out
-      override def getSize: Long = get.size
+      override def getSize: Long = get.length
       override def getString(charset: String): String = new String(get, charset)
       override def getString: String = getString("UTF-8")
       override def isFormField = formField

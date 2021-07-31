@@ -126,8 +126,8 @@ trait AbstractDisk
   with TupleGenerator {
   def apply(req: RequestBinding) = {
     val items = req match {
-      case r: MultiPartBinding => r.decoder.map(_.items).getOrElse(Nil).toIterator
-      case _ => PostDecoder(req.underlying.request).map(_.items).getOrElse(Nil).toIterator 
+      case r: MultiPartBinding => r.decoder.map(_.items).getOrElse(Nil).iterator
+      case _ => PostDecoder(req.underlying.request).map(_.items).getOrElse(Nil).iterator 
     }  
 
     val (params, files) = genTuple[String, DiskFileWrapper, InterfaceHttpData](items) ((maps, item) => item match {

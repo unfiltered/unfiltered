@@ -11,7 +11,7 @@ import unfiltered.response.{
 import io.netty.channel.{ ChannelFuture, ChannelFutureListener, DefaultFileRegion }
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{
-  LastHttpContent, HttpHeaders, HttpResponse, HttpUtil }
+  LastHttpContent, HttpHeaderValues, HttpResponse, HttpUtil }
 import io.netty.handler.stream.{ ChunkedFile, ChunkedStream }
 import io.netty.util.CharsetUtil
 import java.io.{ File, FileNotFoundException, RandomAccessFile }
@@ -89,7 +89,7 @@ case class Resources(
 
         def setKeepAlive(headers: ResponseFunction[Any]) =
           if (HttpUtil.isKeepAlive(req.underlying.request))
-            headers ~> Connection(HttpHeaders.Values.KEEP_ALIVE)
+            headers ~> Connection(HttpHeaderValues.KEEP_ALIVE.toString)
           else headers
 
         def seconds(t: Long) = MILLISECONDS.toSeconds(t)
@@ -165,11 +165,11 @@ case class Resources(
     decode(uri) flatMap { decoded =>
       decoded.replace('/', File.separatorChar) match {
         case p
-          if (p.contains(File.separator + ".") ||
+          if p.contains(File.separator + ".") ||
               p.contains("." + File.separator) ||
               p.startsWith(".") ||
               p.startsWith("/") || // fixes any // requests which can expose a directory traversal problem
-              p.endsWith(".")) => None
+              p.endsWith(".") => None
         case path =>
 
           for {

@@ -6,7 +6,7 @@ import unfiltered.Cookie
 object SetCookies {
   private[this] val Name = "Set-Cookie"
   def apply(cookies: Cookie*) =
-    new ResponseHeader(Name, cookies.foldLeft(Seq.empty[String])(
+    ResponseHeader(Name, cookies.foldLeft(Seq.empty[String])(
       (a, e) => ToCookies(e) +: a)
     )
   /** Call this method with a list of names to discard cookies */
@@ -25,7 +25,7 @@ object ToCookies {
   def apply(cs: Cookie*): String = {
     val res = new StringBuilder
     cs.foreach(append(res, _))
-    if (!res.isEmpty) {
+    if (res.nonEmpty) {
       res.setLength(res.length - 1)
       res.toString
     } else res.toString

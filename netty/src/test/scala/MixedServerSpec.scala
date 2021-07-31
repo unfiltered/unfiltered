@@ -17,7 +17,7 @@ class MixedServerSpec extends Specification with unfiltered.specs2.netty.Served 
     if (f.isAbsolute()) {
       Paths.get(f).toAbsolutePath().toString
     } else {
-      f.getPath();
+      f.getPath()
     }
   }
   val keyStorePasswd = "unfiltered"

@@ -22,7 +22,7 @@ object JsonContent extends CharContentType("application/json")
 object ApplicationXmlContent extends CharContentType("application/xml")
 object FormEncodedContent extends ContentType("application/x-www-form-urlencoded")
 
-case class ContentType(val staticContentType: String)
+case class ContentType(staticContentType: String)
 extends BaseContentType {
   def contentType(res: HttpResponse[Any]) = staticContentType
 }

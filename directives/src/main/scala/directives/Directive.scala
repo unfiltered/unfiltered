@@ -22,8 +22,8 @@ object Directive {
     /** General directive intent constructor, for a partial function of requests */
     def apply[A,B](
     intent: PartialFunction[HttpRequest[A],
-                            (HttpRequest[A] => Result[ResponseFunction[B],
-                                                      ResponseFunction[B]])]
+                            HttpRequest[A] => Result[ResponseFunction[B],
+                                                     ResponseFunction[B]]]
     ): unfiltered.Cycle.Intent[A,B] = {
       case req if intent.isDefinedAt(req) => intent(req)(req) match {
         case Success(response) => response

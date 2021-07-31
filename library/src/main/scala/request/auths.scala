@@ -2,7 +2,7 @@ package unfiltered.request
 
 /** Basic HTTP Authentication extractor */
 object BasicAuth {
-  import org.apache.commons.codec.binary.Base64.{decodeBase64}
+  import org.apache.commons.codec.binary.Base64.decodeBase64
   import unfiltered.request.{HttpRequest => Req}
 
   /** @return Some(user, pass) or None */

@@ -39,7 +39,7 @@ private [request] class MappedRequestHeader[A, B](val name: String)(parser: Iter
  * will not match requests for which the header `name` is not present.*/
 private [request] class SeqRequestHeader[T](val name: String)(parser: Iterator[String] => List[T]) extends RequestExtractor[List[T]] {
   def unapply[A](req: HttpRequest[A]) =
-    Some(parser(req.headers(name))).filter { !_.isEmpty }
+    Some(parser(req.headers(name))).filter { _.nonEmpty }
   def apply[T](req: HttpRequest[T]) = parser(req.headers(name))
 }
 
@@ -109,7 +109,7 @@ private [request]  object Conneg {
 
 private [request] object ConnegValueParser extends (Iterator[String] => List[String]) {
   def apply(values: Iterator[String]) = {
-    def parse: (String) => scala.List[Conneg] = {
+    def parse: String => scala.List[Conneg] = {
       raw => raw.split(",").map(Conneg(_)).toList
     }
     values.toList.flatMap(parse).sortBy(_.qualifier)(implicitly[Ordering[Double]].reverse).map(_.value)

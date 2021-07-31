@@ -32,7 +32,7 @@ class PostDecoder(req: HttpRequest, useDisk: Boolean = true) {
     }
 
   /** Whether the request is multi-part */
-  lazy val isMultipart: Boolean = decoder.map(_.isMultipart).getOrElse(false)
+  lazy val isMultipart: Boolean = decoder.exists(_.isMultipart)
 
   /** Returns a collection containing all the parts of the parsed request */
   lazy val items: List[InterfaceHttpData] = {

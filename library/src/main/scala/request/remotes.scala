@@ -11,7 +11,7 @@ object RemoteAddr {
   val TrustedProxies = """(^127\.0\.0\.1$|^(10|172\.(1[6-9]|2[0-9]|3[0-1])|192\.168)\.\S+)""".r
   def unapply[T](req: HttpRequest[T]): Some[String] = Some(req match {
     case XForwardedFor(forwarded) =>
-      forwarded.filter(!TrustedProxies.findFirstMatchIn(_).isDefined) match {
+      forwarded.filter(TrustedProxies.findFirstMatchIn(_).isEmpty) match {
         case addr :: _ => addr
         case _ => req.remoteAddr
       }

@@ -5,11 +5,8 @@ import unfiltered.directives._
 trait Interpreter[A,B,+E] { self =>
   def interpret(a: A, name: String): Either[E, B]
   def ~> [C, EE >: E](implicit next: Interpreter[B,C,EE]): Interpreter[A,C,EE] =
-    new Interpreter[A,C,EE] {
-      def interpret(a: A, name: String): Either[EE,C] =
-        self.interpret(a, name).flatMap {
-          r => next.interpret(r, name)
-        }
+    (a: A, name: String) => self.interpret(a, name).flatMap {
+      r => next.interpret(r, name)
     }
 
   /** Lifts an Interpreter into a Directive that interprets a named request parameter */

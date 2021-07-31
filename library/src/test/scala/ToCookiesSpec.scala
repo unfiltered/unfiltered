@@ -18,7 +18,7 @@ class ToCookiesSpec extends Specification {
     }
 
     "serialize a single version 1 cookie" in {
-      val expected = "myCookie=myValue;Max-Age=50;Path=\"/apathsomewhere\";Domain=.adomainsomewhere;Secure;Version=1";
+      val expected = "myCookie=myValue;Max-Age=50;Path=\"/apathsomewhere\";Domain=.adomainsomewhere;Secure;Version=1"
       val cookie = Cookie("myCookie", "myValue",
         version = 1,
         domain  = Some(".adomainsomewhere"),
@@ -30,7 +30,7 @@ class ToCookiesSpec extends Specification {
     }
 
     "serialize a single version 2 cookie" in {
-      val expected = "myCookie=myValue;Max-Age=50;Path=\"/apathsomewhere\";Domain=.adomainsomewhere;Secure;Version=2";
+      val expected = "myCookie=myValue;Max-Age=50;Path=\"/apathsomewhere\";Domain=.adomainsomewhere;Secure;Version=2"
       val cookie = Cookie("myCookie", "myValue",
         version = 2,
         domain  = Some(".adomainsomewhere"),

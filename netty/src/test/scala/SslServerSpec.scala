@@ -53,7 +53,7 @@ class SslServerSpec
     if (f.isAbsolute()) {
       Paths.get(f).toAbsolutePath().toString
     } else {
-      f.getPath();
+      f.getPath()
     }
   }
   val keyStorePasswd = "unfiltered"

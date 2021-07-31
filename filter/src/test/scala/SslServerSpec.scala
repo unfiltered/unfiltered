@@ -19,7 +19,7 @@ class SslServerSpec extends Specification with unfiltered.specs2.Hosted with Sec
     if (f.isAbsolute()) {
       Paths.get(f).toAbsolutePath().toString
     } else {
-      f.getPath();
+      f.getPath()
     }
   }
   val keyStorePasswd = "unfiltered"

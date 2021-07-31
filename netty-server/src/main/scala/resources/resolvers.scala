@@ -10,11 +10,11 @@ object Resolve {
   val JarPathDelimiter = "!/"
   type Resolver = PartialFunction[String, URL => Option[Resource]]
   val JarResolver: Resolver = {
-    case jf if (jf.startsWith("jar:file:")) =>
+    case jf if jf.startsWith("jar:file:") =>
       { u => Some(JarResource(u)) }
   }
   val FsResolver: Resolver = {
-    case fs if (fs.startsWith("file:")) =>
+    case fs if fs.startsWith("file:") =>
       { u => Some(FileSystemResource(new File(u.toURI))) }
   }
   val DefaultResolver = FsResolver orElse JarResolver orElse ({

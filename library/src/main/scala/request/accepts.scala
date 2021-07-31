@@ -18,7 +18,7 @@ object Accepts {
             Some(r)
           else None
         case _ => pathSuffix match {
-          case Some(pathSuffix) if(pathSuffix == ext) => Some(r)
+          case Some(pathSuffix) if pathSuffix == ext => Some(r)
           case _ => None
         }
       }

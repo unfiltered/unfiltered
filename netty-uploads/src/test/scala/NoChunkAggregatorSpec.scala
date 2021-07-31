@@ -1,7 +1,7 @@
 package unfiltered.netty.request
 
 import unfiltered.netty
-import unfiltered.netty.{ ExceptionHandler }
+import unfiltered.netty.ExceptionHandler
 import unfiltered.netty.cycle.ThreadPool
 import unfiltered.request.{ Path => UFPath, POST, & }
 import unfiltered.response.{ Pass, ResponseString }

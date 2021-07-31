@@ -46,7 +46,7 @@ trait AbstractDiskExtractor[R] {
 
   /**
     * Given a req, extract the multipart form params into a
-    * (Map[String, Seq[String]], Map[String, Seq[FileItem]], request).
+    * `(Map[String, Seq[String]], Map[String, Seq[FileItem]], request)`.
     * The Map is assigned a default value of Nil, so param("p") would
     * return Nil if there is no such parameter, or (as normal for
     * servlets) a single empty string if the parameter was
@@ -65,8 +65,8 @@ trait StreamedExtractor[R] {
 
   /**
     * Provides extraction similar to MultiPartParams.Disk, except
-    * the second map will contain Map[String, Seq[StreamedFileWrapper]] rather
-    * than  Map[String, Seq[DiskFileWrapper]].
+    * the second map will contain `Map[String, Seq[StreamedFileWrapper]]` rather
+    * than  `Map[String, Seq[DiskFileWrapper]]`.
     * @note the seq returned by keys will only return the `first`
     * named value. This is based on a limitation on apache commons file upload
     * streaming interface. To read from the stream iterator,
@@ -80,7 +80,7 @@ trait StreamedExtractor[R] {
 }
 
 trait TupleGenerator {
-  /** generates a tuple of (Map[String, List[A]], Map[String, List[B]]) */
+  /** generates a tuple of `(Map[String, List[A]], Map[String, List[B]])` */
   protected def genTuple[A, B, C](iter: Iterator[C])(f: ((Map[String, List[A]], Map[String, List[B]]), C) => (Map[String, List[A]], Map[String, List[B]])) = {
     val a: Map[String, List[A]] = Map.empty[String, List[A]].withDefaultValue(Nil)
     val b: Map[String, List[B]] = Map.empty[String, List[B]].withDefaultValue(Nil)
