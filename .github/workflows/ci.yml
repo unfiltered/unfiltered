@@ -12,26 +12,36 @@ jobs:
       matrix:
         include:
           - name: scala_2
-            os: ubuntu-latest
-          - name: scala_3
+            java: 17
             os: ubuntu-latest
           - name: scala_2
+            java: 11
+            os: ubuntu-latest
+          - name: scala_3
+            java: 11
+            os: ubuntu-latest
+          - name: scala_2
+            java: 11
             os: windows-latest
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: olafurpg/setup-scala@v13
+    - uses: actions/setup-java@v2
       with:
-        java-version: "adopt@1.11" # Jetty 11 require Java 11
+        java-version: ${{matrix.java}}
+        distribution: adopt
     - uses: actions/checkout@v2.3.4
     - uses: coursier/cache-action@v6
+    - shell: bash
+      name: install sbt
+      run: curl -Ls https://raw.githubusercontent.com/sbt/sbt/6aed0146785c2cf1a6a5170807329c510c5bb3d3/sbt > ./sbt && chmod 0755 ./sbt
     - shell: bash
       run: |
         case ${{ matrix.name }} in
           "scala_2")
-            sbt -v "+ test" "+ publishLocal"
+            ./sbt -v "+ test" "+ publishLocal"
             ;;
           "scala_3")
-            sbt -v \
+            ./sbt -v \
             SetScala3_0 \
             compile \
             "all unfiltered-agents/test unfiltered-filter/test unfiltered-filter-async/test unfiltered-filter-uploads/test unfiltered-jetty/test unfiltered-json4s/test unfiltered-netty-server/test unfiltered-scalatest/test unfiltered-specs2/test unfiltered-uploads/test unfiltered-util/test" \
