@@ -4,6 +4,7 @@ on:
     branches: [ main ]
   schedule:
   - cron: '0 16 * * *'
+  workflow_dispatch:
 jobs:
   scala-steward:
     runs-on: ubuntu-latest
