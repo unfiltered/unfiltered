@@ -33,7 +33,7 @@ object Dependencies {
         "3.2.9.0"
     }
   )
-  val json4sVersion = "3.6.11"
+  val json4sVersion = "4.0.3"
   val asyncHttpClientVersion = "1.8.17"
   val javaxActivationVersion = "1.1.1"
 }
