@@ -12,18 +12,16 @@ Common.settings
 
 enablePlugins(ScalaUnidocPlugin)
 
-publish / skip := {
-  CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((3, _)) =>
-      // TODO https://github.com/sbt/sbt-unidoc/issues/83
-      true
-    case _ =>
-      false
-  }
-}
-
 // unidoc publish settings
 name := "unfiltered-all"
+ScalaUnidoc / unidoc / unidocProjectFilter := {
+  if (scalaBinaryVersion.value == "3") {
+    // TODO enable
+    inAnyProject -- inProjects(specs2)
+  } else {
+    (ScalaUnidoc / unidoc / unidocProjectFilter).value
+  }
+}
 artifacts := Classpaths.artifactDefs(Seq(Compile / packageDoc)).value
 packagedArtifacts := Classpaths.packaged(Seq(Compile / packageDoc)).value
 Defaults.packageTaskSettings(
