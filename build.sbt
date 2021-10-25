@@ -3,12 +3,18 @@ import Unfiltered._
 import Dependencies._
 import ReleaseTransformations._
 
-def Scala3 = "3.1.0"
-
-val SetScala3 = "SetScala3"
-addCommandAlias(SetScala3, s"++ ${Scala3}! -v")
-
 Common.settings
+
+// TODO
+lazy val disableScala3TestCompile = Def.settings(
+  Test / sources := {
+    if (scalaBinaryVersion.value == "3") {
+      Nil
+    } else {
+      (Test / sources).value
+    }
+  }
+)
 
 enablePlugins(ScalaUnidocPlugin)
 
@@ -39,7 +45,6 @@ releaseProcess := Seq[ReleaseStep](
   commitReleaseVersion,
   tagRelease,
   releaseStepCommandAndRemaining("+publishSigned"),
-  releaseStepCommandAndRemaining(s"${SetScala3};publishSigned"),
   releaseStepCommandAndRemaining("sonatypeBundleRelease"),
   setNextVersion,
   commitNextVersion,
@@ -74,7 +79,8 @@ lazy val library: Project = module("unfiltered")(
 ).dependsOn(util)
 
 lazy val directives = module("directives")().settings(
-  description := "monadic api for unfiltered"
+  description := "monadic api for unfiltered",
+  disableScala3TestCompile,
 ).dependsOn(library, specs2 % "test")
 
 lazy val filters = module(filterProjectId)().settings(
@@ -183,6 +189,7 @@ lazy val websockets = module("netty-websockets")().settings(
 
 lazy val nettyUploads = module("netty-uploads")().settings(
   description := "Uploads plan support using Netty",
+  disableScala3TestCompile,
   libraryDependencies ++= integrationTestDeps.value,
   Test / parallelExecution := false
 ).dependsOn(nettyServer, uploads, specs2 % "test")
