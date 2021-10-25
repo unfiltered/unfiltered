@@ -16,7 +16,7 @@ object Common {
 
   val Scala212 = "2.12.15"
 
-  val settings: Seq[Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
+  val settings: Seq[Setting[_]] = Def.settings(
     organization := "ws.unfiltered",
 
     crossScalaVersions := Seq("2.13.6", Scala212, "3.1.0"),
@@ -111,8 +111,6 @@ object Common {
     publishMavenStyle := true,
 
     publishTo := sonatypePublishToBundle.value,
-
-    Test / publishArtifact := false,
 
     licenses := Seq("MIT" -> url("https://www.opensource.org/licenses/MIT")),
 
