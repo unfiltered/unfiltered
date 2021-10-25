@@ -3,10 +3,10 @@ import Unfiltered._
 import Dependencies._
 import ReleaseTransformations._
 
-def Scala3_0 = "3.0.2"
+def Scala3 = "3.0.2"
 
-val SetScala3_0 = "SetScala3_0"
-addCommandAlias(SetScala3_0, s"++ ${Scala3_0}! -v")
+val SetScala3 = "SetScala3"
+addCommandAlias(SetScala3, s"++ ${Scala3}! -v")
 
 Common.settings
 
@@ -41,7 +41,7 @@ releaseProcess := Seq[ReleaseStep](
   commitReleaseVersion,
   tagRelease,
   releaseStepCommandAndRemaining("+publishSigned"),
-  releaseStepCommandAndRemaining(s"${SetScala3_0};publishSigned"),
+  releaseStepCommandAndRemaining(s"${SetScala3};publishSigned"),
   releaseStepCommandAndRemaining("sonatypeBundleRelease"),
   setNextVersion,
   commitNextVersion,
