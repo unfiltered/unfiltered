@@ -19,7 +19,7 @@ object Common {
   val settings: Seq[Setting[_]] = Def.settings(
     organization := "ws.unfiltered",
 
-    crossScalaVersions := Seq("2.13.6", Scala212, "3.1.0"),
+    crossScalaVersions := Seq("2.13.7", Scala212, "3.1.0"),
 
     scalaVersion := Scala212,
 
