@@ -30,7 +30,7 @@ object Dependencies {
       case Some((2, 11)) =>
         "3.2.4.0-M1"
       case _ =>
-        "3.2.9.0"
+        s"${scalatestVersion}.0"
     }
   )
   val json4sVersion = "3.6.12"
