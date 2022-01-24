@@ -24,7 +24,7 @@ object Dependencies {
   val commonsFileUploadVersion = "1.4"
   val jettyVersion = "9.4.44.v20210927"
   val nettyVersion = "4.1.73.Final"
-  val scalatestVersion = "3.2.10"
+  val scalatestVersion = "3.2.11"
   val scalatestScalacheckVersion = Def.setting(
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 11)) =>
