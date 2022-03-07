@@ -24,7 +24,6 @@ jobs:
         java-version: ${{matrix.java}}
         distribution: adopt
     - uses: actions/checkout@v2.4.0
-    - uses: coursier/cache-action@v6
     - shell: bash
       run: sbt -v "+ test" "+ publishLocal"
     - shell: bash
