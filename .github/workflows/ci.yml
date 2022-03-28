@@ -11,35 +11,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: scala_2
+          - java: 17
             os: ubuntu-latest
-          - name: scala_3
+          - java: 11
             os: ubuntu-latest
-          - name: scala_2
+          - java: 11
             os: windows-latest
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: olafurpg/setup-scala@v10
+    - uses: actions/setup-java@v2
       with:
-        java-version: "adopt@1.11" # Jetty 10 require Java 11
-    - uses: actions/checkout@v2.3.4
-    - uses: coursier/cache-action@v5
+        java-version: ${{matrix.java}}
+        distribution: adopt
+    - uses: actions/checkout@v3
     - shell: bash
-      run: |
-        case ${{ matrix.name }} in
-          "scala_2")
-            sbt -v "+ test" "+ publishLocal"
-            ;;
-          "scala_3")
-            sbt -v \
-            SetScala3_0 \
-            compile \
-            "all unfiltered-agents/test unfiltered-filter/test unfiltered-filter-async/test unfiltered-filter-uploads/test unfiltered-jetty/test unfiltered-json4s/test unfiltered-netty-server/test unfiltered-scalatest/test unfiltered-specs2/test unfiltered-uploads/test unfiltered-util/test" \
-            publishLocal
-            ;;
-          *)
-            echo "unknown job"
-            exit 1
-        esac
+      run: sbt -v "+ test" "+ publishLocal"
     - shell: bash
       run: rm -rf "$HOME/.ivy2/local" || true
