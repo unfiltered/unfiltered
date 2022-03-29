@@ -20,14 +20,6 @@ enablePlugins(ScalaUnidocPlugin)
 
 // unidoc publish settings
 name := "unfiltered-all"
-ScalaUnidoc / unidoc / unidocProjectFilter := {
-  if (scalaBinaryVersion.value == "3") {
-    // TODO enable
-    inAnyProject -- inProjects(specs2)
-  } else {
-    (ScalaUnidoc / unidoc / unidocProjectFilter).value
-  }
-}
 artifacts := Classpaths.artifactDefs(Seq(Compile / packageDoc)).value
 packagedArtifacts := Classpaths.packaged(Seq(Compile / packageDoc)).value
 Defaults.packageTaskSettings(
