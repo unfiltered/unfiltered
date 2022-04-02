@@ -22,7 +22,7 @@ object Dependencies {
   )
   val commonsIoVersion = "2.11.0"
   val commonsFileUploadVersion = "1.4"
-  val jettyVersion = "9.4.45.v20220203"
+  val jettyVersion = "9.4.46.v20220331"
   val nettyVersion = "4.1.75.Final"
   val scalatestVersion = "3.2.11"
   val scalatestScalacheckVersion = Def.setting(
