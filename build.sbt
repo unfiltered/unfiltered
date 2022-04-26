@@ -71,11 +71,17 @@ lazy val library: Project = module("unfiltered")(
   dependsOnSpecs2InTest,
   dependsOnInTest(scalatestProjectId),
   dependsOnInTest(filterProjectId),
+  libraryDependencies += {
+    if (scalaBinaryVersion.value == "2.11") {
+      "org.scalatestplus" %% "scalacheck-1-15" % scalatestScalacheckVersion.value % "test",
+    } else {
+      "org.scalatestplus" %% "scalacheck-1-16" % scalatestScalacheckVersion.value % "test",
+    }
+  },
   libraryDependencies ++= Seq(
     "commons-codec" % "commons-codec" % commonsCodecVersion,
     specs2Dep.value % "test",
     "org.scalatest" %% "scalatest" % scalatestVersion % "test",
-    "org.scalatestplus" %% "scalacheck-1-16" % scalatestScalacheckVersion.value % "test",
     "org.scala-lang.modules" %% "scala-xml" % scalaXmlVersion.value,
   ),
 ).dependsOn(util)
