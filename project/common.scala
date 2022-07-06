@@ -49,8 +49,6 @@ object Common {
 
     Test / fork := true,
 
-    libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % "always",
-
     Compile / doc / sources := {
       CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, _)) =>
