@@ -34,7 +34,6 @@ object Common {
     scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)){
       case Some((3, _)) =>
         Seq(
-          "-Xignore-scala2-macros",
           "-source",
           "3.0-migration",
         )
