@@ -1,7 +1,7 @@
 import sbt._, Keys._
 
 object Dependencies {
-  val servletApiDep = "jakarta.servlet" % "jakarta.servlet-api" % "5.0.0"
+  val servletApiDep = "jakarta.servlet" % "jakarta.servlet-api" % "6.0.0"
 
   val specs2Dep = Def.setting {
     "org.specs2" %% "specs2-core" % "4.16.1"
