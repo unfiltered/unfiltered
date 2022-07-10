@@ -71,13 +71,7 @@ trait RunnableServer extends StartableServer { self =>
         for (binding <- portBindings)
           println(s"  ${binding.url}")
         println("Press any key to stop.")
-        @tailrec
-        def doWait(): Unit = {
-          try { Thread.sleep(1000) } catch { case _: InterruptedException => () }
-          if(System.in.available() <= 0)
-            doWait()
-        }
-        doWait()
+        System.in.read()
         stop()
         afterStop(RunnableServer.this)
         destroy()
