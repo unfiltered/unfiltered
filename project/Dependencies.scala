@@ -4,7 +4,7 @@ object Dependencies {
   val servletApiDep = "jakarta.servlet" % "jakarta.servlet-api" % "5.0.0"
 
   val specs2Dep = Def.setting {
-    "org.specs2" %% "specs2-core" % "4.17.0"
+    "org.specs2" %% "specs2-core" % "4.19.0"
   }
 
   def okHttp = "com.squareup.okhttp3" % "okhttp" % "4.10.0" :: Nil
@@ -16,7 +16,7 @@ object Dependencies {
   val commonsIoVersion = "2.11.0"
   val commonsFileUploadVersion = "1.4"
   val jettyVersion = "11.0.12"
-  val nettyVersion = "4.1.84.Final"
+  val nettyVersion = "4.1.85.Final"
   val scalatestVersion = "3.2.14"
   val scalatestScalacheckVersion = s"${scalatestVersion}.0"
   val json4sVersion = "4.0.6"
