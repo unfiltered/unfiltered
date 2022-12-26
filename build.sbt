@@ -179,7 +179,7 @@ lazy val json4s = module("json4s")(
 ).settings(
   description := "Json4s request matchers and response functions",
   libraryDependencies ++= {
-    Seq("org.json4s" %% "json4s-native" % json4sVersion cross CrossVersion.for3Use2_13) ++ integrationTestDeps.value
+    Seq("org.json4s" %% "json4s-native" % json4sVersion) ++ integrationTestDeps.value
   }
 ).dependsOn(library, filters % "test", specs2 % "test")
 
