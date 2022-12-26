@@ -11,7 +11,7 @@ class RequestSpec extends Specification {
   val nettyReq = new DefaultFullHttpRequest(
     HttpVersion.HTTP_1_1,
     HttpMethod.GET,
-    "/seg1/seg2?param1=value%201&param2=value%202&param2=value%202%20again",
+    "/seg1/seg2?param1=value%201&param2=value%202&param2=value%202%20again&param3=value=mapping",
     Unpooled.copiedBuffer(payload.getBytes("UTF-8")))
   nettyReq.headers.add("Single-Header", "A")
   nettyReq.headers.add("Multi-Header", "A")
@@ -39,6 +39,9 @@ class RequestSpec extends Specification {
     "return url parameters" in {
       req.parameterValues("param1")(0) must_== "value 1"
     }
+    "return url parameters with non-ecoded =" in {
+      req.parameterValues("param3")(0) must_== "value=mapping"
+    }
     "return empty seq for missing parameter with other parameters present" in {
       req.parameterValues("param42") must_== Seq.empty
     }
@@ -60,7 +63,7 @@ class RequestSpec extends Specification {
     }
     "extract QueryString correctly" in {
       val unfiltered.request.QueryString(qs) = req
-      qs must_== "param1=value%201&param2=value%202&param2=value%202%20again"
+      qs must_== "param1=value%201&param2=value%202&param2=value%202%20again&param3=value=mapping"
     }
   }
 }
@@ -86,11 +89,12 @@ class ResponseSpec extends Specification {
       URLParser.urldecode(url) must beEmpty
     }
     "return correctly decoded parameters when given" in {
-      val url = "param1=value%201&param2=value%202&param2=value%202%20again&param%3A3=value%203"
+      val url = "param1=value%201&param2=value%202&param2=value%202%20again&param%3A3=value%203&param4=value=mapping"
       val m = URLParser.urldecode(url)
       m("param1") must_== List("value 1")
       m("param2") must_== List("value 2", "value 2 again")
       m("param:3") must_== List("value 3")
+      m("param4") must_== List("value=mapping")
     }
   }
 }
