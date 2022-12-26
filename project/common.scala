@@ -14,14 +14,14 @@ object Common {
     }
   )
 
-  val Scala212 = "2.12.17"
+  val Scala213 = "2.13.10"
 
   val settings: Seq[Setting[_]] = Def.settings(
     organization := "ws.unfiltered",
 
-    crossScalaVersions := Seq("2.13.10", Scala212, "3.2.1"),
+    crossScalaVersions := Seq(Scala213, "3.2.1"),
 
-    scalaVersion := Scala212,
+    scalaVersion := Scala213,
 
     scalacOptions ++=
       Seq("-encoding", "utf8", "-deprecation", "-unchecked", "-feature"),
