@@ -4,7 +4,8 @@ import unfiltered.response.HttpResponse
 import unfiltered.request.HttpRequest
 import jakarta.servlet.http.{HttpServletRequest, HttpServletResponse}
 import unfiltered.Cookie
-import scala.collection.JavaConverters._
+import scala.collection.immutable.ArraySeq
+import scala.jdk.CollectionConverters._
 
 class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   def inputStream = req.getInputStream
@@ -14,7 +15,8 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   def uri = Option(req.getRequestURI) ++ Option(req.getQueryString).map("?%s".format(_)) mkString("")
   def parameterNames: Iterator[String] =
     req.getParameterNames.asScala
-  def parameterValues(param: String) = Option[Seq[String]](req.getParameterValues(param)).getOrElse(Nil)
+  def parameterValues(param: String): Seq[String] =
+    Option(req.getParameterValues(param)).fold(Seq.empty[String])(ArraySeq.unsafeWrapArray(_))
   def headerNames: Iterator[String] =
     req.getHeaderNames.asScala
   def headers(name: String): Iterator[String] =

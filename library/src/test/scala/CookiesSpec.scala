@@ -17,7 +17,7 @@ class CookiesSpecNetty
 
 trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
 
-  import scala.collection.JavaConverters._
+  import scala.jdk.CollectionConverters._
 
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
@@ -110,7 +110,7 @@ trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
 
 class MemoryJar extends okhttp3.CookieJar {
 
-  import scala.collection.JavaConverters._
+  import scala.jdk.CollectionConverters._
 
   val jar = collection.concurrent.TrieMap[String, List[Cookie]]()
 

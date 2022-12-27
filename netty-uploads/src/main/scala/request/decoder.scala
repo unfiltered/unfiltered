@@ -17,7 +17,7 @@ import io.netty.handler.codec.http.multipart.{
 }
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.NotEnoughDataDecoderException
 import io.netty.util.{AttributeKey, AttributeMap}
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 /** A PostDecoder wraps a HttpPostRequestDecoder. */

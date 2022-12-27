@@ -49,11 +49,11 @@ trait Hosted extends BeforeAfterAll {
   }
 
   def requestWithNewClient(req: Request, builder: OkHttpClient.Builder): Response = {
-    import collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
 
     val client = builder.dispatcher(dispatcher).build()
     val res = client.newCall(req).execute()
-    val headers = res.headers.toMultimap.asScala.mapValues(_.asScala.toList).toMap
+    val headers = res.headers.toMultimap.asScala.view.mapValues(_.asScala.toList).toMap
     val transformed = Response(res.code(), headers, Option(res.body()).map{ body =>
       val bytes = body.bytes()
       ByteString.of(bytes, 0, bytes.length)

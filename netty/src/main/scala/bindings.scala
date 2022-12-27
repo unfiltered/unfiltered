@@ -17,7 +17,7 @@ import java.io.{ BufferedReader, ByteArrayOutputStream, InputStreamReader }
 import java.net.{ InetSocketAddress, URLDecoder }
 import java.nio.charset.{ Charset => JNIOCharset }
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object HttpConfig {
    val DEFAULT_CHARSET = CharsetUtil.UTF_8.name()
