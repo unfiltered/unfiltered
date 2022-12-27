@@ -181,7 +181,7 @@ object Charset {
   import unfiltered.util.MIMEType
   def unapply[T](req: HttpRequest[T]) = {
     for {
-      MIMEType(mimeType) <- RequestContentType(req)
+      case MIMEType(mimeType) <- RequestContentType(req)
       charset <- mimeType.params.get("charset")
     } yield charset
   }
