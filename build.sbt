@@ -20,6 +20,7 @@ enablePlugins(ScalaUnidocPlugin)
 
 // unidoc publish settings
 name := "unfiltered-all"
+mimaReportBinaryIssues := false
 artifacts := Classpaths.artifactDefs(Seq(Compile / packageDoc)).value
 packagedArtifacts := Classpaths.packaged(Seq(Compile / packageDoc)).value
 Defaults.packageTaskSettings(

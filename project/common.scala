@@ -1,5 +1,7 @@
 import sbt._
 import xerial.sbt.Sonatype.autoImport.sonatypePublishToBundle
+import com.typesafe.tools.mima.plugin.MimaKeys.mimaPreviousArtifacts
+import com.typesafe.tools.mima.plugin.MimaKeys.mimaReportSignatureProblems
 
 object Common {
   import Keys._
@@ -17,6 +19,12 @@ object Common {
   val Scala212 = "2.12.17"
 
   val settings: Seq[Setting[_]] = Def.settings(
+    mimaPreviousArtifacts := Set(
+      organization.value %% name.value % "0.12.0"
+    ),
+
+    mimaReportSignatureProblems := true,
+
     organization := "ws.unfiltered",
 
     crossScalaVersions := Seq("2.13.10", Scala212, "3.2.1"),
