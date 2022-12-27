@@ -54,7 +54,7 @@ trait HeadersSpec extends Specification with unfiltered.specs2.Hosted {
     "parse Accept-Charset" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.2
       get("ac", ("Accept-Charset", "iso-8859-5, unicode-1-1;q=0.8")) must_== "pass"
     }
-   "parse Accept-Encoding" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.3
+    "parse Accept-Encoding" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.3
       get("ae", ("Accept-Encoding","gzip;q=1.0, identity; q=0.5, *;q=0")) must_== "pass"
     }
     "parse Accept-Language" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.4

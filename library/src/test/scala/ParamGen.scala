@@ -27,9 +27,9 @@ object ParamGen {
   val genMedium: Gen[Media] = Gen.oneOf(AllMedia)
   val genNonEmptyMedia: Gen[List[Media]] = Gen.nonEmptyListOf(genMedium)
 
-  val genTitle = Gen.alphaStr.map(Title)
+  val genTitle = Gen.alphaStr.map(Title.apply)
 
-  val genTitleStar = Gen.alphaStr.map(TitleStar)
+  val genTitleStar = Gen.alphaStr.map(TitleStar.apply)
 
   val genMediaType = for {
     main <- Gen.alphaStr
