@@ -28,12 +28,7 @@ object Common {
 
     scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)){
       case Some((2, _)) =>
-        Seq("-Xcheckinit")
-    }.toList.flatten,
-
-    scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)){
-      case Some((2, v)) if v <= 12 =>
-        Seq("-Ywarn-adapted-args", "-Xfuture")
+        Seq("-Xcheckinit", "-Xsource:3")
     }.toList.flatten,
 
     scalacOptions ++= unusedWarnings.value,
