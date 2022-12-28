@@ -55,7 +55,7 @@ trait DirectivesSpec extends SpecificationLike with unfiltered.specs2.Hosted {
 
   // limited time offers. expect a side effect!
   val asPrize = (data.Requiring[Prize]
-                  .fail(name => BadParam("%s are out of stock".format(name)))
+                  .fail(name => BadParam(s"${name} are out of stock"))
                   .named("prizes", Some(callers.getAndIncrement()).filter(_ < MaxPrizes).map(Prize(_))))
 
   def intent[A,B] = Directive.Intent.Path {

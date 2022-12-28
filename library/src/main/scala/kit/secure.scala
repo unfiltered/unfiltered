@@ -15,7 +15,7 @@ object Secure {
             if (port > -1)
               "https://%s:%d%s".format(host, port, req.uri)
             else
-              "https://%s%s".format(host, req.uri)
+              s"https://${host}${req.uri}"
           )
       }
     )

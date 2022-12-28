@@ -34,17 +34,17 @@ trait RoutesSpec extends Specification with unfiltered.specs2.Hosted {
   }
 
   def getWidget[A](req: HttpRequest[A], params: Map[String, String]) = {
-    ResponseString("widget:%s".format(params("widget_id")))
+    ResponseString(s"widget:${params("widget_id")}")
   }
 
   def sprockets[A](req: HttpRequest[A], params: Map[String, String]) = {
-    ResponseString("sprocketsOf:%s".format(params("widget_id")))
+    ResponseString(s"sprocketsOf:${params("widget_id")}")
   }
 
   def assembly[A](req: HttpRequest[A], params: Map[String, String]) = {
     val widgetId :: sprocketId :: Nil =
       ("widget_id" :: "sprocket_id" :: Nil).map(params)
-    ResponseString("%s:%s".format(widgetId, sprocketId))
+    ResponseString(s"${widgetId}:${sprocketId}")
   }
 
   "Routes.specify" should {

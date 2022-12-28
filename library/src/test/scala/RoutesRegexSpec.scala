@@ -29,16 +29,16 @@ trait RoutesRegexSpec extends Specification with unfiltered.specs2.Hosted {
   }
 
   def getWidget[A](req: HttpRequest[A], groups: List[String]) = {
-    ResponseString("widget:%s".format(groups.head))
+    ResponseString(s"widget:${groups.head}")
   }
 
   def sprockets[A](req: HttpRequest[A], groups: List[String]) = {
-    ResponseString("sprocketsOf:%s".format(groups.head))
+    ResponseString(s"sprocketsOf:${groups.head}")
   }
 
   def assembly[A](req: HttpRequest[A], groups: List[String]) = {
     val widgetId :: sprocketId :: Nil = groups
-    ResponseString("%s:%s".format(widgetId, sprocketId))
+    ResponseString(s"${widgetId}:${sprocketId}")
   }
 
   "Routes.specify" should {

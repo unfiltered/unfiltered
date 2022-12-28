@@ -38,7 +38,7 @@ object ToCookies {
 
   private def quoted(k: String, v: String) =  k + "=\"" + escape(v) + "\";"
 
-  private def literal(k: String, v: String) = "%s=%s;".format(k, v)
+  private def literal(k: String, v: String) = s"${k}=${v};"
 
   private def add(k: String, v: String) = v match {
     case null => quoted(k, v)

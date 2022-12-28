@@ -51,8 +51,7 @@ trait RequestPlan extends ChannelInboundHandlerAdapter with ExceptionHandler {
       case chunk: HttpContent => ctx.fireChannelRead(chunk)
       case frame: WebSocketFrame => ctx.fireChannelRead(frame)
       // fixme(doug): Should we define an explicit exception to catch for this
-      case ue => sys.error("Unexpected message type from upstream: %s"
-                           .format(ue))
+      case ue => sys.error(s"Unexpected message type from upstream: ${ue}")
     }
 }
 

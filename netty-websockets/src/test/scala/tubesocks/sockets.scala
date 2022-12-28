@@ -16,6 +16,5 @@ class DefaultSocket(underlying: WebSocket) extends Socket {
     if (underlying.isOpen) underlying.sendTextMessage(s)
   def open = underlying.isOpen
   def close() = if (underlying.isOpen) underlying.close()
-  override def toString() = "%s(%s)".format(
-    getClass().getName, if(open) "open" else "closed")
+  override def toString() = s"${getClass().getName}(${if(open) "open" else "closed"})"
 }

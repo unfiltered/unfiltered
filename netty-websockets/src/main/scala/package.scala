@@ -43,8 +43,7 @@ package object websockets {
         ctx.channel.writeAndFlush(res).addListener(
           ChannelFutureListener.CLOSE)
       case invalid =>
-        sys.error("Invalid type of event message (%s) for Plan pass handling"
-                  .format(invalid.getClass.getName))
+        sys.error(s"Invalid type of event message (${invalid.getClass.getName}) for Plan pass handling")
     }
   }
 }

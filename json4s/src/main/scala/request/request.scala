@@ -27,7 +27,7 @@ object Jsonp {
   }
 
   class CallbackWrapper(cb: String) extends Wrapper {
-    def wrap(body: String) = "%s(%s)".format(cb, body)
+    def wrap(body: String) = s"${cb}(${body})"
     def respond(json: => JValue) = unfiltered.response.Json(json, cb)
   }
 

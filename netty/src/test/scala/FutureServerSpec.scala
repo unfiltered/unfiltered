@@ -42,7 +42,7 @@ class NamedDaemonTF(base: String) extends ThreadFactory {
   override def newThread(r: Runnable): Thread = {
     val t = delegate.newThread(r)
     t.setDaemon(true)
-    t.setName("%s-%s".format(base, counter.incrementAndGet()))
+    t.setName(s"${base}-${counter.incrementAndGet()}")
     t
   }
 }

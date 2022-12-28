@@ -27,7 +27,7 @@ trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
   def intent[A, B]: Intent[A, B] = {
 
     case UFPath("/") & Cookies(cs) if cs("foo").isDefined =>
-      ResponseString("foo %s!".format(cs("foo").map(_.value).getOrElse("?")))
+      ResponseString(s"foo ${cs("foo").map(_.value).getOrElse("?")}!")
 
     case UFPath("/") & Cookies(cs) =>
       ResponseString("foo who?")
@@ -39,10 +39,7 @@ trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
       SetCookies.discarding("foo") andThen Redirect("/")
 
     case UFPath("/multi") & Cookies(cs) if cs("foo").isDefined && cs("baz").isDefined =>
-      ResponseString("foo %s baz %s!".format(
-        cs("foo").map(_.value).getOrElse("?"),
-        cs("baz").map(_.value).getOrElse("?")
-        ))
+      ResponseString(s"foo ${cs("foo").map(_.value).getOrElse("?")} baz ${cs("baz").map(_.value).getOrElse("?")}!")
 
     case UFPath("/multi") & Cookies(cs) =>
       ResponseString("who and the what now?")

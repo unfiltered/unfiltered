@@ -54,8 +54,7 @@ class NoChunkAggregatorSpec extends Specification
       case POST(UFPath("/cycle/upload") & MultiPart(req)) =>
         MultiPartParams.Disk(req).files("f") match {
           case Seq(f, _*) => ResponseString(
-            "disk read file f named %s with content type %s".format(
-              f.name, f.contentType))
+            s"disk read file f named ${f.name} with content type ${f.contentType}")
           case f => ResponseString("what's f?")
         }
     }
@@ -76,8 +75,7 @@ class NoChunkAggregatorSpec extends Specification
       case r@POST(UFPath("/async/upload") & MultiPart(req)) =>
         MultiPartParams.Disk(req).files("f") match {
           case Seq(f, _*) => r.respond(ResponseString(
-            "disk read file f named %s with content type %s".format(
-              f.name, f.contentType)))
+            s"disk read file f named ${f.name} with content type ${f.contentType}"))
           case f =>  r.respond(ResponseString("what's f?"))
         }
     })

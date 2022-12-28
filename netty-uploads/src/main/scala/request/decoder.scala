@@ -162,7 +162,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
       }
     } else {
       // Shouldn't get here
-      sys.error("HttpRequest received while reading chunks: %s".format(request))
+      sys.error(s"HttpRequest received while reading chunks: ${request}")
     }
   }
 

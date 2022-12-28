@@ -24,8 +24,7 @@ class CycleUploadSpec extends Specification
         case Decode(binding) =>
           MultiPartParams.Disk(binding).files("f") match {
           case Seq(f, _*) => ResponseString(
-            "disk read file f named %s with content type %s".format(
-              f.name, f.contentType))
+            s"disk read file f named ${f.name} with content type ${f.contentType}")
           case f => ResponseString("what's f?")
         }
       }
@@ -36,15 +35,12 @@ class CycleUploadSpec extends Specification
               f.write(new JFile(directory, "1upload-test-out.txt")) match {
                 case Some(outFile) =>
                   if (Arrays.equals(IOU.toByteArray(new FIS(outFile)), f.bytes)) ResponseString(
-                    "wrote disk read file f named %s with content type %s with correct contents".format(
-                      f.name, f.contentType)
+                    s"wrote disk read file f named ${f.name} with content type ${f.contentType} with correct contents"
                   )
                   else ResponseString(
-                    "wrote disk read file f named %s with content type %s, with differing contents".format(
-                      f.name, f.contentType))
+                    s"wrote disk read file f named ${f.name} with content type ${f.contentType}, with differing contents")
                 case None => ResponseString(
-                  "did not write disk read file f named %s with content type %s".format(
-                    f.name, f.contentType))
+                  s"did not write disk read file f named ${f.name} with content type ${f.contentType}")
             }
             case _ => ResponseString("what's f?")
           }
@@ -53,8 +49,7 @@ class CycleUploadSpec extends Specification
         case Decode(binding) =>
           MultiPartParams.Streamed(binding).files("f") match {
             case Seq(f, _*) => ResponseString(
-              "stream read file f is named %s with content type %s".format(
-                f.name, f.contentType))
+              s"stream read file f is named ${f.name} with content type ${f.contentType}")
             case _ => ResponseString("what's f?")
           }
       }
@@ -66,15 +61,12 @@ class CycleUploadSpec extends Specification
               f.write(new JFile(directory, "2upload-test-out.txt")) match {
                 case Some(outFile) =>
                   if (Arrays.equals(IOU.toByteArray(new FIS(outFile)), src)) ResponseString(
-                    "wrote stream read file f named %s with content type %s with correct contents".format(
-                      f.name, f.contentType)
+                    s"wrote stream read file f named ${f.name} with content type ${f.contentType} with correct contents"
                   )
                   else ResponseString(
-                    "wrote stream read file f named %s with content type %s, with differing contents".format(
-                      f.name, f.contentType))
+                    s"wrote stream read file f named ${f.name} with content type ${f.contentType}, with differing contents")
                 case None => ResponseString(
-                  "did not write stream read file f named %s with content type %s".format(
-                    f.name, f.contentType))
+                  s"did not write stream read file f named ${f.name} with content type ${f.contentType}")
               }
             case _ => ResponseString("what's f?")
           }
@@ -83,8 +75,7 @@ class CycleUploadSpec extends Specification
           case Decode(binding) =>
             MultiPartParams.Memory(binding).files("f") match {
               case Seq(f, _*) => ResponseString(
-                "memory read file f is named %s with content type %s".format(
-                  f.name, f.contentType))
+                s"memory read file f is named ${f.name} with content type ${f.contentType}")
               case _ => ResponseString("what's f?")
             }
         }
@@ -94,11 +85,9 @@ class CycleUploadSpec extends Specification
               case Seq(f, _*) =>
                 f.write(new JFile(directory, "3upload-test-out.txt")) match {
                   case Some(outFile) => ResponseString(
-                    "wrote memory read file f is named %s with content type %s".format(
-                      f.name, f.contentType))
+                    s"wrote memory read file f is named ${f.name} with content type ${f.contentType}")
                   case None => ResponseString(
-                    "did not write memory read file f is named %s with content type %s".format(
-                      f.name, f.contentType))
+                    s"did not write memory read file f is named ${f.name} with content type ${f.contentType}")
                 }
               case _ => ResponseString("what's f?")
             }
@@ -108,8 +97,7 @@ class CycleUploadSpec extends Specification
           case Decode(binding) =>
             MultiPartParams.Disk(binding).files("f") match {
               case Seq(f, _*) => ResponseString(
-                "disk read file f named %s with content type %s".format(
-                  f.name, f.contentType))
+                s"disk read file f named ${f.name} with content type ${f.contentType}")
               case f => ResponseString("what's f?")
             }
         }

@@ -23,8 +23,7 @@ class AsyncUploadSpec extends Specification
         case Decode(binding) =>
           MultiPartParams.Disk(binding).files("f") match {
           case Seq(f, _*) => binding.respond(ResponseString(
-            "disk read file f named %s with content type %s".format(
-              f.name, f.contentType)))
+            s"disk read file f named ${f.name} with content type ${f.contentType}"))
           case f =>  binding.respond(ResponseString("what's f?"))
         }
       }
@@ -35,15 +34,12 @@ class AsyncUploadSpec extends Specification
             f.write(new JFile(directory, "1upload-test-out.txt")) match {
               case Some(outFile) =>
                 if(Arrays.equals(IOU.toByteArray(new FIS(outFile)), f.bytes)) binding.respond(ResponseString(
-                  "wrote disk read file f named %s with content type %s with correct contents".format(
-                    f.name, f.contentType))
+                  s"wrote disk read file f named ${f.name} with content type ${f.contentType} with correct contents")
                 )
                 else binding.respond(ResponseString(
-                  "wrote disk read file f named %s with content type %s, with differing contents".format(
-                    f.name, f.contentType)))
+                  s"wrote disk read file f named ${f.name} with content type ${f.contentType}, with differing contents"))
               case None => binding.respond(ResponseString(
-                "did not write disk read file f named %s with content type %s".format(
-                  f.name, f.contentType)))
+                s"did not write disk read file f named ${f.name} with content type ${f.contentType}"))
           }
           case _ =>  binding.respond(ResponseString("what's f?"))
         }
@@ -52,8 +48,7 @@ class AsyncUploadSpec extends Specification
         case Decode(binding) =>
           MultiPartParams.Streamed(binding).files("f") match {
           case Seq(f, _*) => binding.respond(ResponseString(
-            "stream read file f is named %s with content type %s".format(
-              f.name, f.contentType)))
+            s"stream read file f is named ${f.name} with content type ${f.contentType}"))
           case _ =>  binding.respond(ResponseString("what's f?"))
         }
       }
@@ -65,15 +60,12 @@ class AsyncUploadSpec extends Specification
               f.write(new JFile(directory, "2upload-test-out.txt")) match {
                 case Some(outFile) =>
                   if(Arrays.equals(IOU.toByteArray(new FIS(outFile)), src)) binding.respond(ResponseString(
-                    "wrote stream read file f named %s with content type %s with correct contents".format(
-                      f.name, f.contentType))
+                    s"wrote stream read file f named ${f.name} with content type ${f.contentType} with correct contents")
                   )
                   else binding.respond(ResponseString(
-                    "wrote stream read file f named %s with content type %s, with differing contents".format(
-                      f.name, f.contentType)))
+                    s"wrote stream read file f named ${f.name} with content type ${f.contentType}, with differing contents"))
                 case None => binding.respond(ResponseString(
-                  "did not write stream read file f named %s with content type %s".format(
-                    f.name, f.contentType)))
+                  s"did not write stream read file f named ${f.name} with content type ${f.contentType}"))
               }
             case _ => binding.respond(ResponseString("what's f?"))
           }
@@ -82,8 +74,7 @@ class AsyncUploadSpec extends Specification
           case Decode(binding) =>
             MultiPartParams.Memory(binding).files("f") match {
             case Seq(f, _*) => binding.respond(ResponseString(
-              "memory read file f is named %s with content type %s".format(
-                f.name, f.contentType)))
+              s"memory read file f is named ${f.name} with content type ${f.contentType}"))
             case _ => binding.respond(ResponseString("what's f?"))
           }
         }
@@ -93,11 +84,9 @@ class AsyncUploadSpec extends Specification
             case Seq(f, _*) =>
               f.write(new JFile(directory, "3upload-test-out.txt")) match {
                 case Some(outFile) => binding.respond(ResponseString(
-                  "wrote memory read file f is named %s with content type %s".format(
-                    f.name, f.contentType)))
+                  s"wrote memory read file f is named ${f.name} with content type ${f.contentType}"))
                 case None =>  binding.respond(ResponseString(
-                  "did not write memory read file f is named %s with content type %s".format(
-                    f.name, f.contentType)))
+                  s"did not write memory read file f is named ${f.name} with content type ${f.contentType}"))
               }
             case _ => binding.respond(ResponseString("what's f?"))
           }

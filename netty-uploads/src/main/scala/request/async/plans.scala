@@ -51,7 +51,7 @@ trait MultiPartDecoder
         }
         cleanUp
       case _ =>
-        sys.error("Original request missing from channel state %s".format(ctx))
+        sys.error(s"Original request missing from channel state ${ctx}")
     }
     cleanUp
     res

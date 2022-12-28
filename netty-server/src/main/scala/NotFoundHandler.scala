@@ -24,7 +24,7 @@ class NotFoundHandler
       case chunk: HttpContent =>
         ReferenceCountUtil.release(chunk)
         None
-      case ue => sys.error("Unexpected message type from upstream: %s".format(ue))
+      case ue => sys.error(s"Unexpected message type from upstream: ${ue}")
     }).map { version =>
       ctx.channel.writeAndFlush(new DefaultHttpResponse(version, HttpResponseStatus.NOT_FOUND))
          .addListener(ChannelFutureListener.CLOSE)
