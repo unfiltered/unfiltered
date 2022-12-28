@@ -5,7 +5,7 @@ case class Status(code: Int) extends Responder[Any] {
   def respond(res: HttpResponse[Any]): Unit = { res.status(code) }
 }
 
-// http://www.iana.org/assignments/http-status-codes & http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+// http://www.iana.org/assignments/http-status-codes & https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
 
 object Continue extends Status(100)
 object SwitchingProtocols extends Status(101)

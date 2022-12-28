@@ -74,7 +74,7 @@ case class Server(
   def resources(path: java.net.URL) = originalContext(_.resources(path))
 
   /** Configure global logging of requests to a logfile in Common or Extended log format.
-    * [[http://en.wikipedia.org/wiki/Category:Log_file_formats]] */
+    * [[https://en.wikipedia.org/wiki/Category:Log_file_formats]] */
   def requestLogging(filename: String,
                      extended: Boolean = true,
                      dateFormat: String = "dd/MMM/yyyy:HH:mm:ss Z",

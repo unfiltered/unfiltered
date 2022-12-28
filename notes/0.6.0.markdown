@@ -1,7 +1,7 @@
 #### Cookies changes
 
 We've added support for the
-[HttpOnly](http://en.wikipedia.org/wiki/HTTP_cookie#HttpOnly_cookie)
+[HttpOnly](https://en.wikipedia.org/wiki/HTTP_cookie#HttpOnly_cookie)
 and Version, properties of cookies. This change affects the source of
 extraction of Cookies. Rather than delegating to `HttpRequest`,
 Cookies are now extracted directly from the headers of an HTTP request
