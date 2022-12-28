@@ -31,8 +31,7 @@ class MixedPlanSpec extends Specification
           (disk.files("f"), disk.params("p")) match {
             case (Seq(f, _*), p) =>
               ResponseString(
-                "cycle disk read file f named %s with content type %s and param p %s".format(
-                  f.name, f.contentType, p))
+                s"cycle disk read file f named ${f.name} with content type ${f.contentType} and param p ${p}")
             case _ => ResponseString("what's f?")
         }
       }
@@ -41,8 +40,7 @@ class MixedPlanSpec extends Specification
           val stream = MultiPartParams.Streamed(binding)
           (stream.files("f"), stream.params("p")) match {
             case (Seq(f, _*), p) => ResponseString(
-              "cycle stream read file f is named %s with content type %s and param p %s".format(
-                f.name, f.contentType, p))
+              s"cycle stream read file f is named ${f.name} with content type ${f.contentType} and param p ${p}")
             case _ =>  ResponseString("what's f?")
           }
       }
@@ -51,8 +49,7 @@ class MixedPlanSpec extends Specification
           val mem =  MultiPartParams.Memory(binding)
           (mem.files("f"), mem.params("p")) match {
             case (Seq(f, _*), p) => ResponseString(
-              "cycle memory read file f is named %s with content type %s and param p %s".format(
-                f.name, f.contentType, p))
+              s"cycle memory read file f is named ${f.name} with content type ${f.contentType} and param p ${p}")
             case _ =>  ResponseString("what's f?")
           }
       }
@@ -63,8 +60,7 @@ class MixedPlanSpec extends Specification
           (disk.files("f"), disk.params("p")) match {
             case (Seq(f, _*), p) =>
               ResponseString(
-                "cycle disk read file f named %s with content type %s and param p %s".format(
-                  f.name, f.contentType, p))
+                s"cycle disk read file f named ${f.name} with content type ${f.contentType} and param p ${p}")
             case _ => ResponseString("what's f?")
         }
       }
@@ -79,8 +75,7 @@ class MixedPlanSpec extends Specification
           (disk.files("f"), disk.params("p")) match {
             case (Seq(f, _*), p) =>
               binding.respond(ResponseString(
-                "async disk read file f named %s with content type %s and param p".format(
-                  f.name, f.contentType, p)))
+                s"async disk read file f named ${f.name} with content type ${f.contentType} and param ${p}"))
               case _ =>  binding.respond(ResponseString("what's f?"))
             }
       }
@@ -89,8 +84,7 @@ class MixedPlanSpec extends Specification
           val stream = MultiPartParams.Streamed(binding)
           (stream.files("f"), stream.params("p")) match {
             case (Seq(f, _*), p) => binding.respond(ResponseString(
-              "async stream read file f is named %s with content type %s and param p %s".format(
-                f.name, f.contentType, p)))
+              s"async stream read file f is named ${f.name} with content type ${f.contentType} and param p ${p}"))
             case _ =>  binding.respond(ResponseString("what's f?"))
           }
       }
@@ -99,8 +93,7 @@ class MixedPlanSpec extends Specification
           val mem = MultiPartParams.Memory(binding)
           (mem.files("f"), mem.params("p")) match {
             case (Seq(f, _*), p) => binding.respond(ResponseString(
-              "async memory read file f is named %s with content type %s and param p %s".format(
-                f.name, f.contentType, p)))
+              s"async memory read file f is named ${f.name} with content type ${f.contentType} and param p ${p}"))
             case _ => binding.respond(ResponseString("what's f?"))
           }
       }
@@ -111,8 +104,7 @@ class MixedPlanSpec extends Specification
           (disk.files("f"), disk.params("p")) match {
             case (Seq(f, _*), p) =>
               binding.respond(ResponseString(
-                "async disk read file f named %s with content type %s and param p".format(
-                  f.name, f.contentType, p)))
+                s"async disk read file f named ${f.name} with content type ${f.contentType} and param ${p}"))
             case _ => binding.respond(ResponseString("what's f?"))
           }
       }
@@ -186,7 +178,7 @@ class MixedPlanSpec extends Specification
     "handle async file uploads to disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(req(host / "async" / "disk").<<*("f", file, "text/plain")).as_string must_== "async disk read file f named netty-upload-big-text-test.txt with content type text/plain and param p"
+      http(req(host / "async" / "disk").<<*("f", file, "text/plain")).as_string must_== "async disk read file f named netty-upload-big-text-test.txt with content type text/plain and param List()"
     }
 
     "handle async file uploads streamed" in {
@@ -204,7 +196,7 @@ class MixedPlanSpec extends Specification
     "handle passed async file uploads to disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)
       file.exists must_==true
-      http(req(host / "async" / "pass").<<*("f", file, "text/plain")).as_string must_== "async disk read file f named netty-upload-big-text-test.txt with content type text/plain and param p"
+      http(req(host / "async" / "pass").<<*("f", file, "text/plain")).as_string must_== "async disk read file f named netty-upload-big-text-test.txt with content type text/plain and param List()"
     }
 
     "respond with a 404 when passing in an async plan with no matching intent" in {
