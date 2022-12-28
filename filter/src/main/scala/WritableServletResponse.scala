@@ -7,8 +7,8 @@ import unfiltered.response.HttpResponse
  * The servlet API states that, for a given response, either the
  * getOutputStream or getWriter method may be called, but not both:
  *
- * http://docs.oracle.com/javaee/6/api/javax/servlet/ServletResponse.html#getOutputStream()
- * http://docs.oracle.com/javaee/6/api/javax/servlet/ServletResponse.html#getWriter()
+ * https://javadoc.io/static/jakarta.servlet/jakarta.servlet-api/5.0.0/jakarta/servlet/ServletResponse.html#getOutputStream--
+ * https://javadoc.io/static/jakarta.servlet/jakarta.servlet-api/5.0.0/jakarta/servlet/ServletResponse.html#getWriter--
  *
  * Unfiltered response bindings are based on a single outputStream,
  * and support filtering it (unfiltered.response.ResponseFilter)
