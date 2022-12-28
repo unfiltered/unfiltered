@@ -42,6 +42,6 @@ avoid potentional conflict when parsing dates
 
 [i47]: https://github.com/n8han/Unfiltered/issues/47
 [agents]: https://github.com/n8han/Unfiltered/tree/master/agents
-[ua]: http://en.wikipedia.org/wiki/User_agent
+[ua]: https://en.wikipedia.org/wiki/User_agent
 [clewis]: https://github.com/chrislewis
 [scalate]: https://github.com/n8han/Unfiltered/pull/57
