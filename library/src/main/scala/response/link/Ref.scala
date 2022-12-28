@@ -1,9 +1,9 @@
 package unfiltered.response.link
 
 /** A `link-value` as described in
-    [[https://tools.ietf.org/html/rfc5988#section-5 section-5]]. While `Rel` is
+    [[https://www.rfc-editor.org/rfc/rfc5988#section-5 section-5]]. While `Rel` is
     is specified as a parameter,
-    [[https://tools.ietf.org/html/rfc5988#section-3 section-3]] states that it
+    [[https://www.rfc-editor.org/rfc/rfc5988#section-3 section-3]] states that it
     is required and so it is implemented as a `Ref` member. */
 final case class Ref private (uri: String, rel: Rel, params: List[Param]) {
   /** Yield "link-value" clause. */

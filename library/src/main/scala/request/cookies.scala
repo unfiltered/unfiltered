@@ -18,7 +18,7 @@ private [request] object CookieValueParser extends (Iterator[String] => Map[Stri
 object Cookies extends MappedRequestHeader[String, Option[Cookie]]("Cookie")(CookieValueParser)
 
 /** Module for Cookie deserialization.
- * Some optional cookie properties defined in http://tools.ietf.org/html/rfc2965 are not included in this implementation's
+ * Some optional cookie properties defined in https://www.rfc-editor.org/rfc/rfc2965 are not included in this implementation's
  * deserialized cookie representation. This list includes `Comment`, `CommentURL`, `Discard`, and `Port` */
 object FromCookies {
   import unfiltered.CookieKeys._

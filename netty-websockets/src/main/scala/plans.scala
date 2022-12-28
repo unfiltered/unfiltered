@@ -147,7 +147,7 @@ case class SocketPlan(
           .foreach(_ => ReferenceCountUtil.release(b))
       case p: PongWebSocketFrame =>
         // unsolicited pong rec from client, a response is not expected
-        // http://tools.ietf.org/html/rfc6455#section-5.5.3
+        // https://www.rfc-editor.org/rfc/rfc6455#section-5.5.3
       case c: ContinuationWebSocketFrame =>
         attempt(Continuation(
           WebSocket(ctx.channel), Fragment(c.content, c.isFinalFragment)))
