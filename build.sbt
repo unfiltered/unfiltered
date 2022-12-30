@@ -5,17 +5,6 @@ import ReleaseTransformations._
 
 Common.settings
 
-// TODO
-lazy val disableScala3TestCompile = Def.settings(
-  Test / sources := {
-    if (scalaBinaryVersion.value == "3") {
-      Nil
-    } else {
-      (Test / sources).value
-    }
-  }
-)
-
 enablePlugins(ScalaUnidocPlugin)
 
 // unidoc publish settings
@@ -72,7 +61,17 @@ lazy val library: Project = module("unfiltered")(
 
 lazy val directives = module("directives")().settings(
   description := "monadic api for unfiltered",
-  disableScala3TestCompile,
+  Test / sources := {
+    if (scalaBinaryVersion.value == "3") {
+      // TODO
+      val exclude = Set(
+        "DirectivesSpec.scala"
+      )
+      (Test / sources).value.filterNot(f => exclude(f.getName))
+    } else {
+      (Test / sources).value
+    }
+  }
 ).dependsOn(library, specs2 % "test")
 
 lazy val filters = module(filterProjectId)().settings(
@@ -181,7 +180,17 @@ lazy val websockets = module("netty-websockets")().settings(
 
 lazy val nettyUploads = module("netty-uploads")().settings(
   description := "Uploads plan support using Netty",
-  disableScala3TestCompile,
+  Test / sources := {
+    if (scalaBinaryVersion.value == "3") {
+      // TODO
+      val exclude = Set(
+        "MixedPlanSpec.scala"
+      )
+      (Test / sources).value.filterNot(f => exclude(f.getName))
+    } else {
+      (Test / sources).value
+    }
+  },
   libraryDependencies ++= integrationTestDeps.value,
   Test / parallelExecution := false
 ).dependsOn(nettyServer, uploads, specs2 % "test")

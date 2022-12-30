@@ -11,7 +11,7 @@ import unfiltered.specs2.netty.Served
 import java.io.{ File => JFile }
 
 import io.netty.buffer.Unpooled
-import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext }
+import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext, ChannelInboundHandler }
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.{ DefaultFullHttpResponse, HttpResponseStatus, HttpVersion }
 
@@ -22,7 +22,7 @@ import scala.util.control.NonFatal
 class NoChunkAggregatorSpec extends Specification
   with Served {
 
-  trait ExpectedServerErrorResponse { self: ExceptionHandler =>
+  trait ExpectedServerErrorResponse { self: ExceptionHandler with ChannelInboundHandler =>
     def onException(ctx: ChannelHandlerContext, t: Throwable): Unit = {
       val ch = ctx.channel
       if (ch.isOpen) try {
