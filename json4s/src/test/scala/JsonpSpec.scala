@@ -45,7 +45,7 @@ class JsonpSpec extends Specification  with unfiltered.specs2.jetty.Served {
       val resp = http(req(host / "jsonp" / "optional" <<? Map("callback" -> "onResp")) <:< Map("Accept" -> "text/javascript")).as_string
       resp must_== "onResp([42])"
     }
-    "optionaly match an application/json accepts request without a callback, return unwrapped response body" in {
+    "optionally match an application/json accepts request without a callback, return unwrapped response body" in {
       val resp = http(req(host / "jsonp" / "optional") <:< Map("Accept" -> "application/json")).as_string
       resp must_== "[42]"
     }

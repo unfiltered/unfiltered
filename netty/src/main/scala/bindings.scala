@@ -104,7 +104,7 @@ case class ReceivedMessage(
   /** @return a new Netty FullHttpResponse bound to an Unfiltered HttpResponse */
   lazy val defaultResponse = response(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))_
 
-  /** @return a new partial Netty HttpResonse bound to an Unfiltered HttpResponse. */
+  /** @return a new partial Netty HttpResponse bound to an Unfiltered HttpResponse. */
   lazy val partialResponse = response(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK))_
 
   /** @return a ChannelFutureListener which releases the NettyHttpRequest of this message */

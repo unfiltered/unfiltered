@@ -23,7 +23,7 @@ trait Responder[A] extends ResponseFunction[A] {
 }
 
 /** Convenience base class for response function classes defined as a
-  * constructor paramater. */
+  * constructor parameter. */
 class ComposeResponse[A](rf: ResponseFunction[A]) extends 
     Responder[A] {
   def respond(res: HttpResponse[A]): Unit = { rf(res) }
