@@ -39,7 +39,7 @@ class RequestSpec extends Specification {
     "return url parameters" in {
       req.parameterValues("param1")(0) must_== "value 1"
     }
-    "return url parameters with non-ecoded =" in {
+    "return url parameters with non-encoded =" in {
       req.parameterValues("param3")(0) must_== "value=mapping"
     }
     "return empty seq for missing parameter with other parameters present" in {
