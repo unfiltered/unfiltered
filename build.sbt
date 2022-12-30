@@ -9,8 +9,8 @@ enablePlugins(ScalaUnidocPlugin)
 
 // unidoc publish settings
 name := "unfiltered-all"
-artifacts := Classpaths.artifactDefs(Seq(Compile / packageDoc)).value
-packagedArtifacts := Classpaths.packaged(Seq(Compile / packageDoc)).value
+artifacts := Classpaths.artifactDefs(Seq(Compile / packageDoc, Compile / makePom)).value
+packagedArtifacts := Classpaths.packaged(Seq(Compile / packageDoc, Compile / makePom)).value
 Defaults.packageTaskSettings(
   Compile / packageDoc, (Compile / unidoc).map{_.flatMap(Path.allSubpaths)}
 )
