@@ -116,27 +116,27 @@ class ChunkAggregatedUploadSpec extends Specification
             }
           case _ => ResponseString("what's f?")
         }
-        case POST(UFPath("/cycle/mem-upload") & MultiPart(req)) => MultiPartParams.Memory(req).files("f") match {
-          case Seq(f, _*) => ResponseString(
-            s"memory read file f is named ${f.name} with content type ${f.contentType}")
-          case _ => ResponseString("what's f?")
-        }
-        case POST(UFPath("/cycle/mem-upload/write") & MultiPart(req)) => MultiPartParams.Memory(req).files("f") match {
-          case Seq(f, _*) =>
-            f.write(new JFile(directory, "3upload-test-out.txt")) match {
-              case Some(outFile) => ResponseString(
-                s"wrote memory read file f is named ${f.name} with content type ${f.contentType}")
-              case None => ResponseString(
-                s"did not write memory read file f is named ${f.name} with content type ${f.contentType}")
-            }
-          case _ => ResponseString("what's f?")
-        }
+      case POST(UFPath("/cycle/mem-upload") & MultiPart(req)) => MultiPartParams.Memory(req).files("f") match {
+        case Seq(f, _*) => ResponseString(
+          s"memory read file f is named ${f.name} with content type ${f.contentType}")
+        case _ => ResponseString("what's f?")
+      }
+      case POST(UFPath("/cycle/mem-upload/write") & MultiPart(req)) => MultiPartParams.Memory(req).files("f") match {
+        case Seq(f, _*) =>
+          f.write(new JFile(directory, "3upload-test-out.txt")) match {
+            case Some(outFile) => ResponseString(
+              s"wrote memory read file f is named ${f.name} with content type ${f.contentType}")
+            case None => ResponseString(
+              s"did not write memory read file f is named ${f.name} with content type ${f.contentType}")
+          }
+        case _ => ResponseString("what's f?")
+      }
     })).plan(planify {
       case _ => NotFound
     })
   }
 
- "MultiPartParams used in netty.cycle.Plan and netty.async.Plan with a chunk aggregator" should {
+  "MultiPartParams used in netty.cycle.Plan and netty.async.Plan with a chunk aggregator" should {
     // Async
     "handle async file uploads written to disk" in {
       val file = new JFile(getClass.getResource("/netty-upload-big-text-test.txt").toURI)

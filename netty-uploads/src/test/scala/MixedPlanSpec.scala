@@ -76,8 +76,8 @@ class MixedPlanSpec extends Specification
             case (Seq(f, _*), p) =>
               binding.respond(ResponseString(
                 s"async disk read file f named ${f.name} with content type ${f.contentType} and param ${p}"))
-              case _ =>  binding.respond(ResponseString("what's f?"))
-            }
+            case _ =>  binding.respond(ResponseString("what's f?"))
+          }
       }
       case POST(UFPath("/async/stream") & MultiPart(req)) => {
         case Decode(binding) =>
