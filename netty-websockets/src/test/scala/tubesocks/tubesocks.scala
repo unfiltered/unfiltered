@@ -55,7 +55,7 @@ object Sock {
    *  @param str string uri
    *  @return a function that takes a Handler and returns a Socket */
   def uri(str: String) =
-    apply(new URI(if (str.startsWith("ws")) str else "ws://%s" format str))_
+    apply(new URI(if (str.startsWith("ws")) str else s"ws://${str}"))_
 
   /** Default client-configured Socket
    *  @param uri websocket endpoint

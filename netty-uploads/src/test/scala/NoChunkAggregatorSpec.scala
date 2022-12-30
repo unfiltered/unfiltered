@@ -26,7 +26,7 @@ class NoChunkAggregatorSpec extends Specification
     def onException(ctx: ChannelHandlerContext, t: Throwable): Unit = {
       val ch = ctx.channel
       if (ch.isOpen) try {
-        println("expected exception occured: '%s'" format t.getMessage())
+        println(s"expected exception occured: '${t.getMessage()}'")
         val res = new DefaultFullHttpResponse(
           HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR,
           Unpooled.copiedBuffer(

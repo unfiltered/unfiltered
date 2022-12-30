@@ -29,8 +29,7 @@ trait CloseOnException { self: ExceptionHandler with ChannelInboundHandlerAdapte
 }
 
 private [websockets] object WSLocation {
-  def apply[T](r: HttpRequest[T]) = "%s://%s%s".format(
-    if (r.isSecure) "wss" else "ws", Host(r).get, r.uri)
+  def apply[T](r: HttpRequest[T]) = s"${if (r.isSecure) "wss" else "ws"}://${Host(r).get}${r.uri}"
 }
 
 /** Provides an extension point for netty ChannelHandlers that wish to

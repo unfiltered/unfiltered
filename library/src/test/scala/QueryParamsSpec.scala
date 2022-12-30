@@ -20,12 +20,12 @@ trait QueryParamsSpec extends Specification with unfiltered.specs2.Hosted {
   def intent[A,B]: unfiltered.Cycle.Intent[A,B] = {
 
     case GET(UFPath("/basic")) & QueryParams(params) => params("foo") match {
-      case Seq(foo) => ResponseString("foo is %s" format foo)
+      case Seq(foo) => ResponseString(s"foo is ${foo}")
       case Nil => ResponseString("what's foo?")
     }
 
     case GET(UFPath("/with-utf")) & QueryParams(params) => params("фыва") match {
-      case Seq(foo) => ResponseString("фыва is %s" format foo)
+      case Seq(foo) => ResponseString(s"фыва is ${foo}")
       case Nil => ResponseString("what's foo?")
     }
 

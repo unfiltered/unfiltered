@@ -72,8 +72,8 @@ object ToCookies {
         else literal(Domain, d)
       )
     }
-    if (c.secure.getOrElse(false)) sb.append("%s;" format Secure)
-    if(c.httpOnly) sb.append("%s;" format HTTPOnly)
+    if (c.secure.getOrElse(false)) sb.append(s"${Secure};")
+    if(c.httpOnly) sb.append(s"${HTTPOnly};")
     if (c.version > 0) {
        sb.append(add(Version, c.version.toString))
     }

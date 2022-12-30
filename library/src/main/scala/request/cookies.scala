@@ -55,7 +55,7 @@ object FromCookies {
         case (ns, vs, Some((n, v, _))) =>
           if(n == null) (ns.reverse, vs.reverse)
           else ((n :: ns).reverse, (v :: vs).reverse)
-        case _ => sys.error("Error parsing cookie string %s" format cstr)
+        case _ => sys.error(s"Error parsing cookie string ${cstr}")
       }
 
     if(names.isEmpty) { Seq.empty[Cookie] }
