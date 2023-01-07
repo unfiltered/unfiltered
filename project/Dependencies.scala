@@ -24,13 +24,13 @@ object Dependencies {
   val commonsFileUploadVersion = "1.4"
   val jettyVersion = "9.4.50.v20221201"
   val nettyVersion = "4.1.85.Final"
-  val scalatestVersion = "3.2.11"
-  val scalatestScalacheckVersion = Def.setting(
+  val scalatestVersion = "3.2.15"
+  val scalatestScalacheck = Def.setting(
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, 11)) =>
-        "3.2.4.0-M1"
+        "org.scalatestplus" %% "scalacheck-1-15" % "3.2.4.0-M1" % "test"
       case _ =>
-        s"${scalatestVersion}.0"
+        "org.scalatestplus" %% "scalacheck-1-17" % s"${scalatestVersion}.0" % "test"
     }
   )
   val json4sVersion = "3.6.12"

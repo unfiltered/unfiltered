@@ -3,10 +3,10 @@ import Unfiltered._
 import Dependencies._
 import ReleaseTransformations._
 
-def Scala3_0 = "3.0.1"
+def Scala3 = "3.1.3"
 
-val SetScala3_0 = "SetScala3_0"
-addCommandAlias(SetScala3_0, s"++ ${Scala3_0}! -v")
+val SetScala3 = "SetScala3"
+addCommandAlias(SetScala3, s"++ ${Scala3}! -v")
 
 Common.settings
 
@@ -46,7 +46,7 @@ releaseProcess := Seq[ReleaseStep](
   commitReleaseVersion,
   tagRelease,
   releaseStepCommandAndRemaining("+publishSigned"),
-  releaseStepCommandAndRemaining(s"${SetScala3_0};publishSigned"),
+  releaseStepCommandAndRemaining(s"${SetScala3};publishSigned"),
   releaseStepCommandAndRemaining("sonatypeBundleRelease"),
   setNextVersion,
   commitNextVersion,
@@ -75,7 +75,7 @@ lazy val library: Project = module("unfiltered")(
     "commons-codec" % "commons-codec" % commonsCodecVersion,
     specs2Dep.value % "test",
     "org.scalatest" %% "scalatest" % scalatestVersion % "test",
-    "org.scalatestplus" %% "scalacheck-1-15" % scalatestScalacheckVersion.value % "test",
+    scalatestScalacheck.value,
     "org.scala-lang.modules" %% "scala-xml" % scalaXmlVersion.value,
   ),
 ).dependsOn(util)
