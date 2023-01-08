@@ -53,7 +53,9 @@ lazy val library: Project = module("unfiltered")(
   libraryDependencies ++= Seq(
     "commons-codec" % "commons-codec" % commonsCodecVersion,
     specs2Dep.value % "test",
-    "org.scalatest" %% "scalatest" % scalatestVersion % "test",
+    "org.scalatest" %% "scalatest-wordspec" % scalatestVersion % "test",
+    "org.scalatest" %% "scalatest-shouldmatchers" % scalatestVersion % "test",
+    "org.scalatest" %% "scalatest-propspec" % scalatestVersion % "test",
     "org.scalatestplus" %% "scalacheck-1-17" % scalatestScalacheckVersion % "test",
     "org.scala-lang.modules" %% "scala-xml" % scalaXmlVersion,
   ),
@@ -89,7 +91,10 @@ lazy val agents = module("agents")(
   srcPath = "unfiltered/request"
 ).settings(
   description := "User-Agent request matchers",
-  libraryDependencies += "org.scalatest" %% "scalatest" % scalatestVersion % "test",
+  libraryDependencies ++= Seq(
+    "org.scalatest" %% "scalatest-wordspec" % scalatestVersion % "test",
+    "org.scalatest" %% "scalatest-shouldmatchers" % scalatestVersion % "test",
+  ),
   libraryDependencies ++= Seq(servletApiDep) ++ integrationTestDeps.value
 ).dependsOn(
   library,
