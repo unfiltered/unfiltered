@@ -19,7 +19,7 @@ import java.net.{ URL, URLDecoder }
 import java.text.SimpleDateFormat
 import java.util.{ Calendar, GregorianCalendar }
 import java.util.concurrent.TimeUnit.MILLISECONDS
-import javax.activation.MimetypesFileTypeMap
+import jakarta.activation.MimetypesFileTypeMap
 
 import scala.util.Try
 import scala.util.control.Exception.allCatch

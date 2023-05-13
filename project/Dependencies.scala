@@ -21,5 +21,5 @@ object Dependencies {
   val scalatestScalacheckVersion = s"${scalatestVersion}.0"
   val json4sVersion = "4.0.6"
   val asyncHttpClientVersion = "1.8.17"
-  val javaxActivationVersion = "1.1.1"
+  val activationVersion = "2.1.2"
 }
