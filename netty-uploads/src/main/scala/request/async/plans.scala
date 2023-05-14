@@ -3,7 +3,6 @@ package unfiltered.netty.async
 import unfiltered.netty.{ async, ReceivedMessage, RequestBinding, ServerErrorResponse }
 import unfiltered.netty.request.{ AbstractMultiPartDecoder, Decode, Helpers, MultiPartBinding, MultiPartCallback, MultiPartPass, TidyExceptionHandler }
 import unfiltered.request.HttpRequest
-import unfiltered.response.{ Pass => UPass }
 
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelHandler.Sharable
@@ -12,7 +11,7 @@ import io.netty.channel.ChannelHandler.Sharable
 object MultipartPlan {
   type Intent = PartialFunction[HttpRequest[ReceivedMessage], MultiPartIntent]
   type MultiPartIntent = PartialFunction[MultiPartCallback, Unit]
-  val Pass: MultiPartIntent  = { case _ => UPass }
+  val Pass: MultiPartIntent  = { case _ => () }
   val PassAlong: Intent = { case _ => Pass }
 }
 
