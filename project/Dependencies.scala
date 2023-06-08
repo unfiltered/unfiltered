@@ -13,7 +13,7 @@ object Dependencies {
 
   val commonsCodecVersion = "1.15"
   val scalaXmlVersion = "2.1.0"
-  val commonsIoVersion = "2.12.0"
+  val commonsIoVersion = "2.13.0"
   val commonsFileUploadVersion = "1.5"
   val jettyVersion = "11.0.15"
   val nettyVersion = "4.1.93.Final"
