@@ -36,9 +36,9 @@ case class DefaultServletContextAdder(
       ctx.addAliasCheck(new ContextHandler.ApproveAliases())
   }
 
-  def filterAdder(filter: FilterAdder) = copy(filterAdders = filter :: filterAdders)
+  def filterAdder(filter: FilterAdder): ContextAdder = copy(filterAdders = filter :: filterAdders)
 
-  def resources(path: java.net.URL) = copy(resourcePath = Some(path))
+  def resources(path: java.net.URL): ContextAdder = copy(resourcePath = Some(path))
 
-  def allowAliases(aliases: Boolean) = copy(aliases = aliases)
+  def allowAliases(aliases: Boolean): ContextAdder = copy(aliases = aliases)
 }

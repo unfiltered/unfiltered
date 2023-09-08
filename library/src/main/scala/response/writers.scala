@@ -20,7 +20,7 @@ case class Html(nodes: scala.xml.NodeSeq) extends
 
 case class Charset(charset: java.nio.charset.Charset)
   extends ResponseFunction[Any] {
-  def apply[T](delegate: HttpResponse[T]) =
+  def apply[T](delegate: HttpResponse[T]): HttpResponse[T] =
     new DelegatingResponse(delegate) {
       override val charset = Charset.this.charset
     }

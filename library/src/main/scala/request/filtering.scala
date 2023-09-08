@@ -8,9 +8,9 @@ object RequestFilter {
   abstract class Filtering[S <: InputStream, +T](req: HttpRequest[T]) extends DelegatingRequest(req) {
     private def charset = Charset(this).getOrElse { "iso-8859-1" }
 
-    override lazy val inputStream = filter(delegate.inputStream)
+    override lazy val inputStream: InputStream = filter(delegate.inputStream)
 
-    override lazy val reader =
+    override lazy val reader: java.io.Reader =
       new BufferedReader(new InputStreamReader(inputStream, charset))
 
     def filter(is: InputStream): S

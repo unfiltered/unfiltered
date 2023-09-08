@@ -179,7 +179,7 @@ class DiskFileWrapper(item: FileUpload)
 /** Wrapper for an uploaded file with write functionality disabled. */
 class MemoryFileWrapper(item: FileUpload)
   extends StreamedFileWrapper(item) {  
-  override def write(out: JFile) = { 
+  override def write(out: JFile): Option[JFile] = {
     //error("File writing is not permitted") // todo: remove this
     None
   }

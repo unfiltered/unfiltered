@@ -13,7 +13,7 @@ import io.netty.handler.codec.http.{
   HttpVersion }
 import io.netty.handler.ssl.SslHandler
 import io.netty.util.{ CharsetUtil, ReferenceCountUtil }
-import java.io.{ BufferedReader, ByteArrayOutputStream, InputStreamReader }
+import java.io.{ BufferedReader, ByteArrayOutputStream, InputStream, InputStreamReader }
 import java.net.{ InetSocketAddress, URLDecoder }
 import java.nio.charset.{ Charset => JNIOCharset }
 
@@ -57,7 +57,7 @@ class RequestBinding(msg: ReceivedMessage)
     HttpConfig.DEFAULT_CHARSET
   }
 
-  lazy val inputStream =
+  lazy val inputStream: InputStream =
     new ByteBufInputStream(content.map(_.content).getOrElse(Unpooled.EMPTY_BUFFER))
 
   lazy val reader: BufferedReader =

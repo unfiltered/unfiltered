@@ -8,8 +8,8 @@ import scala.collection.immutable.ArraySeq
 import scala.jdk.CollectionConverters._
 
 class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
-  def inputStream = req.getInputStream
-  def reader = req.getReader
+  def inputStream: java.io.InputStream = req.getInputStream
+  def reader: java.io.Reader = req.getReader
   def protocol = req.getProtocol
   def method = req.getMethod.toUpperCase
   def uri = Option(req.getRequestURI) ++ Option(req.getQueryString).map("?%s".format(_)) mkString("")
@@ -35,7 +35,7 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
 class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
   def status(statusCode: Int) = res.setStatus(statusCode)
   def status: Int = res.getStatus
-  def outputStream = res.getOutputStream
+  def outputStream: java.io.OutputStream = res.getOutputStream
   def redirect(url: String) = res.sendRedirect(url)
   def header(name: String, value: String) = res.addHeader(name, value)
   def cookies(resCookies: Seq[Cookie]) = {
