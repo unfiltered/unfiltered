@@ -41,7 +41,7 @@ case class FileSystemResource(f: File) extends Resource {
   def exists = f.exists
   def path = f.getCanonicalPath
   def size = f.length
-  def in = new FileInputStream(f)
+  def in: InputStream = new FileInputStream(f)
 }
 
 case class JarResource(url: URL) extends Resource {

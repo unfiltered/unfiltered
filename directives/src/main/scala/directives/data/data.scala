@@ -33,16 +33,16 @@ trait Interpreter[A,B,+E] { self =>
 
 object Interpreter {
   def identity[A] = new Interpreter[A, A, Nothing] {
-    def interpret(seq: A, name: String) = Right(seq)
+    def interpret(seq: A, name: String): Either[Nothing, A] = Right(seq)
   }
   def apply[A,B](f: A => B) = new Interpreter[A, B, Nothing] {
-    def interpret(a: A, name: String) = Right(f(a))
+    def interpret(a: A, name: String): Either[Nothing, B] = Right(f(a))
   }
 }
 
 case class Fallible[A,B](cf: A => Option[B])
 extends Interpreter[Option[A], Option[B], Nothing] {
-  def interpret(opt: Option[A], name: String) =
+  def interpret(opt: Option[A], name: String): Either[Nothing, Option[B]] =
     Right(opt.flatMap(cf))
   def fail[E](handle: (String, A) => E) =
     new Strict(cf, handle)

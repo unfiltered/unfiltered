@@ -21,7 +21,7 @@ object BigDecimal extends Fallible[String,BigDecimal](s =>
 )
 
 object String extends Interpreter[Seq[String], Option[String], Nothing] {
-  def interpret(seq: Seq[String], name: String) = Right(seq.headOption)
+  def interpret(seq: Seq[String], name: String): Either[Nothing, Option[String]] = Right(seq.headOption)
 
   val trimmed = Interpreter[Option[String],Option[String]]( opt => opt.map { _.trim } )
   val nonEmpty = Conditional[String]( _.nonEmpty )

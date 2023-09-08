@@ -1,13 +1,13 @@
 package unfiltered.filter.request
 
-import unfiltered.request.{AbstractDiskExtractor, AbstractDiskFile, AbstractStreamedFile, DiskExtractor, HttpRequest, MultiPartMatcher, StreamedExtractor, TupleGenerator}
+import unfiltered.request.{AbstractDiskExtractor, AbstractDiskFile, AbstractStreamedFile, DiskExtractor, HttpRequest, MultiPartMatcher, MultipartData, StreamedExtractor, TupleGenerator}
 import scala.util.control.NonFatal
 
 import org.apache.commons.fileupload.{FileItem, FileItemFactory, FileItemHeaders, FileItemStream}
 import org.apache.commons.fileupload.disk.DiskFileItemFactory
 import org.apache.commons.fileupload.util.{FileItemHeadersImpl, Streams}
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File => JFile, InputStream}
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File => JFile, InputStream, OutputStream }
 import jakarta.servlet.http.HttpServletRequest
 
 import scala.util.control.Exception.allCatch
@@ -59,7 +59,7 @@ object MultiPartParams extends TupleGenerator {
 
   object Streamed extends StreamedExtractor[HttpRequest[HttpServletRequest]] {
 
-    def apply(req: HttpRequest[HttpServletRequest]) = {
+    def apply(req: HttpRequest[HttpServletRequest]): MultipartData[Seq[AbstractStreamedFile]] = {
       // TODO
       ???
     }
@@ -105,7 +105,7 @@ object MultiPartParams extends TupleGenerator {
       override def getHeaders = headers
       override def getInputStream: InputStream = new ByteArrayInputStream(get)
       override def getName = name
-      override def getOutputStream = out
+      override def getOutputStream: OutputStream = out
       override def getSize: Long = get.length
       override def getString(charset: String): String = new String(get, charset)
       override def getString: String = getString("UTF-8")
@@ -119,12 +119,12 @@ object MultiPartParams extends TupleGenerator {
 
     class ByteArrayFileItemFactory extends FileItemFactory {
       override def createItem(fieldName: String , contentType: String ,
-                            isFormField: Boolean , fileName: String ) = new ByteArrayFileItem(
+                            isFormField: Boolean , fileName: String ): FileItem = new ByteArrayFileItem(
                               fieldName, contentType, isFormField, fileName, Int.MaxValue
                             )
     }
 
-    override def factory(writeAfter: Int, writeDir: JFile) = new ByteArrayFileItemFactory
+    override def factory(writeAfter: Int, writeDir: JFile): FileItemFactory = new ByteArrayFileItemFactory
     val memLimit = Int.MaxValue
     val tempDir = new java.io.File(".")
   }
@@ -135,7 +135,7 @@ object MultiPartParams extends TupleGenerator {
     def factory(writeAfter: Int, writeDir: JFile): FileItemFactory =
       new DiskFileItemFactory(writeAfter, writeDir)
 
-    def apply(req: HttpRequest[HttpServletRequest]) = {
+    def apply(req: HttpRequest[HttpServletRequest]): MultipartData[Seq[AbstractDiskFile]] = {
       // TODO
       ???
     }

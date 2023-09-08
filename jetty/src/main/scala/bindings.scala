@@ -66,7 +66,7 @@ case class SocketPortBinding (
   port: Int,
   host: String
 ) extends PortBinding with HttpPortBinding {
-  def connector(server: org.eclipse.jetty.server.Server) = {
+  def connector(server: org.eclipse.jetty.server.Server): Connector = {
     val c = new ServerConnector(server)
     c.setPort(port)
     c.setHost(host)
@@ -106,7 +106,7 @@ case class SslSocketPortBinding (
   host: String,
   sslContextProvider: SslContextProvider
 ) extends PortBinding with HttpsPortBinding {
-  def connector(server: org.eclipse.jetty.server.Server) = {
+  def connector(server: org.eclipse.jetty.server.Server): Connector = {
     val c = new ServerConnector(server, sslContextProvider.sslContextFactory)
     c.setPort(port)
     c.setHost(host)

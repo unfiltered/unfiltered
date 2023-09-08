@@ -27,9 +27,9 @@ object Engine {
     } else {
       new NioEventLoopGroup()
     }
-    def acceptor = bestEventLoopGroup
-    def workers = bestEventLoopGroup
-    def channels = defaultChannels(GlobalEventExecutor.INSTANCE)
+    def acceptor: EventLoopGroup = bestEventLoopGroup
+    def workers: EventLoopGroup = bestEventLoopGroup
+    def channels: ChannelGroup = defaultChannels(GlobalEventExecutor.INSTANCE)
   }
   private [Engine] def defaultChannels(executor: EventExecutor) =
     new DefaultChannelGroup("Netty Unfiltered Server Channel Group", executor)

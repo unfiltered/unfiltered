@@ -75,7 +75,7 @@ object Pass extends ResponseFunction[Any] {
   extends PassingAttempt[A,B] {
     def isDefinedAt(x: A) = true
     def apply(x: A) = underlying(x)
-    def attemptWithPass(x: A) = Some(underlying(x))
+    def attemptWithPass(x: A): Option[B] = Some(underlying(x))
   }
   private class OnPassAttempt[A,B >: RF,A1 <: A, B1 >: B](
     left: Attempt[A,B],
