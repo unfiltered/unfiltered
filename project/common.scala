@@ -14,7 +14,7 @@ object Common {
     }
   )
 
-  val Scala213 = "2.13.11"
+  val Scala213 = "2.13.12"
 
   val settings: Seq[Setting[_]] = Def.settings(
     organization := "ws.unfiltered",
@@ -28,7 +28,11 @@ object Common {
 
     scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)){
       case Some((2, _)) =>
-        Seq("-Xcheckinit", "-Xsource:3")
+        Seq(
+          "-Xcheckinit",
+          "-Xsource:3",
+          "-Wconf:msg=constructor modifiers are assumed by synthetic:info",
+        )
     }.toList.flatten,
 
     scalacOptions ++= unusedWarnings.value,
