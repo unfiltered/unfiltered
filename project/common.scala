@@ -27,7 +27,7 @@ object Common {
 
     organization := "ws.unfiltered",
 
-    crossScalaVersions := Seq("2.13.11", Scala212, "3.3.1"),
+    crossScalaVersions := Seq("2.13.11", Scala212, "3.3.0"),
 
     scalaVersion := Scala212,
 
