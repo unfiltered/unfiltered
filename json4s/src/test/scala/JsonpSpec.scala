@@ -37,7 +37,7 @@ class JsonpSpec extends Specification  with unfiltered.specs2.jetty.Served {
       val resp = http(req(host / "jsonp.json" <<? Map("callback" -> "onResp")) <:< Map("Accept" -> "*/*")).as_string
       resp must_== "onResp([42])"
     }
-   "not match an text/javascript accepts request without a callback" in {
+    "not match an text/javascript accepts request without a callback" in {
       val resp = http(req(host / "jsonp") <:< Map("Accept" -> "text/javascript")).as_string
       resp must_== "bad req"
     }

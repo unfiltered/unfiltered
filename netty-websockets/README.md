@@ -1,6 +1,6 @@
 # Unfiltered Websockets
 
-A minimal server [Websocket](http://en.wikipedia.org/wiki/WebSockets) interface for [Unfiltered](http://github.com/unfiltered/unfiltered#readme).
+A minimal server [Websocket](https://en.wikipedia.org/wiki/WebSockets) interface for [Unfiltered](http://github.com/unfiltered/unfiltered#readme).
 
 ## Usage
 

@@ -25,6 +25,6 @@ jobs:
         distribution: adopt
     - uses: actions/checkout@v3
     - shell: bash
-      run: sbt -v "+ test" "+ publishLocal"
+      run: sbt -v "+ mimaReportBinaryIssues" "+ test" "+ publishLocal"
     - shell: bash
       run: rm -rf "$HOME/.ivy2/local" || true

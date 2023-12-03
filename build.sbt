@@ -20,6 +20,7 @@ enablePlugins(ScalaUnidocPlugin)
 
 // unidoc publish settings
 name := "unfiltered-all"
+mimaReportBinaryIssues := false
 artifacts := Classpaths.artifactDefs(Seq(Compile / packageDoc)).value
 packagedArtifacts := Classpaths.packaged(Seq(Compile / packageDoc)).value
 Defaults.packageTaskSettings(
@@ -65,7 +66,7 @@ lazy val library: Project = module("unfiltered")(
     "commons-codec" % "commons-codec" % commonsCodecVersion,
     specs2Dep.value % "test",
     "org.scalatest" %% "scalatest" % scalatestVersion % "test",
-    "org.scalatestplus" %% "scalacheck-1-16" % scalatestScalacheckVersion % "test",
+    "org.scalatestplus" %% "scalacheck-1-17" % scalatestScalacheckVersion % "test",
     "org.scala-lang.modules" %% "scala-xml" % scalaXmlVersion,
   ),
 ).dependsOn(util)

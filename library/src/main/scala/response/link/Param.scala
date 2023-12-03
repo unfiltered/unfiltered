@@ -2,7 +2,7 @@ package unfiltered.response.link
 
 object Param {
   /** Predefined parameter types as specified in
-      [[http://tools.ietf.org/html/rfc5988#section-5 section-5]]. Note that
+      [[https://www.rfc-editor.org/rfc/rfc5988#section-5 section-5]]. Note that
       `rev` is omitted as it has been deprecated by the specification. */
   sealed abstract class Type(val name: String)
   case object Rel extends Type("rel")
@@ -31,9 +31,9 @@ object Param {
 }
 
 /** Root type for all implementations of `link-param` as specified in
-    [[https://tools.ietf.org/html/rfc5988#section-5 section-5]].
+    [[https://www.rfc-editor.org/rfc/rfc5988#section-5 section-5]].
     Predefined parameter values are specified in various documents linked or
-    referred to in the [[https://tools.ietf.org/html/rfc5988 rfc5988]];
+    referred to in the [[https://www.rfc-editor.org/rfc/rfc5988 rfc5988]];
     see [[Media]] and [[Rel]].
     New parameter types can be added to `Link` headers as `link-extension`
     parameters. Extension parameters can be constructed
@@ -47,7 +47,7 @@ final case class MediaType(typeName: String, subTypeName: String) extends Param(
 final case class Extension private[link] (override val paramType: Param.ExtensionType, override val value: String) extends Param(paramType, value)
 
 /** Target media types as described in
-    [[https://tools.ietf.org/html/rfc5988#section-5.4 section-5.4]] The meaning
+    [[https://www.rfc-editor.org/rfc/rfc5988#section-5.4 section-5.4]] The meaning
     and set of possible values for this parameter are specified in the
     [[https://www.w3.org/TR/html401/types.html#h-6.13 HTML 401 Types]] specification. */
 sealed abstract class Media(val mediaType: String) extends Param(Param.Media, mediaType) {
@@ -72,7 +72,7 @@ case object Aural extends Media("aural")
 case object All extends Media("all")
 
 /** A link relation type as described in
-    [[https://tools.ietf.org/html/rfc5988#section-5.3 section-5.3]].
+    [[https://www.rfc-editor.org/rfc/rfc5988#section-5.3 section-5.3]].
     The relation type is specified as link parameter for which a global set
     of possible values is catalogued at
     [[http://www.iana.org/assignments/link-relations/link-relations.xml]].
@@ -80,7 +80,7 @@ case object All extends Media("all")
     be provided as absolute URLs (see the [[ExtensionRel]] type). */
 sealed abstract class Rel(val relType: String) extends Param(Param.Rel, relType) {
   /** According to
-      [[https://tools.ietf.org/html/rfc5988#section-5.5 section-5.5]], `Rel`
+      [[https://www.rfc-editor.org/rfc/rfc5988#section-5.5 section-5.5]], `Rel`
       is a monoid resulting in the accumulated relation types for a single
       `rel` parameter. */
   def :+(that: Rel) = CompositeRel(this, that)
@@ -91,7 +91,7 @@ sealed abstract class Rel(val relType: String) extends Param(Param.Rel, relType)
 private [link] final case class CompositeRel (a: Rel, b: Rel) extends Rel(a.relType + " " + b.relType)
 
 /** Support for extension relation types as specified in
-    [[https://tools.ietf.org/html/rfc5988#section-4.2 section-4.2]] */
+    [[https://www.rfc-editor.org/rfc/rfc5988#section-4.2 section-4.2]] */
 final case class ExtensionRel (uri: String) extends Rel(uri)
 
 /* The complete set of catalogued relation types. */

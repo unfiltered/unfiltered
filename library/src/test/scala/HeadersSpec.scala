@@ -54,7 +54,7 @@ trait HeadersSpec extends Specification with unfiltered.specs2.Hosted {
     "parse Accept-Charset" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.2
       get("ac", ("Accept-Charset", "iso-8859-5, unicode-1-1;q=0.8")) must_== "pass"
     }
-   "parse Accept-Encoding" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.3
+    "parse Accept-Encoding" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.3
       get("ae", ("Accept-Encoding","gzip;q=1.0, identity; q=0.5, *;q=0")) must_== "pass"
     }
     "parse Accept-Language" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.4
@@ -103,7 +103,7 @@ trait HeadersSpec extends Specification with unfiltered.specs2.Hosted {
     }
     "parse Upgrade" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.42
       // Connection: upgrade MUST be sent with Upgrade header
-      // https://tools.ietf.org/html/rfc7230#page-59
+      // https://www.rfc-editor.org/rfc/rfc7230#page-59
       get("u", ("Connection", "upgrade"), ("Upgrade","HTTP/2.0, SHTTP/1.3, IRC/6.9, RTA/x11")) must_== "pass"
     }
     "parse User-Agent" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.43
@@ -112,7 +112,7 @@ trait HeadersSpec extends Specification with unfiltered.specs2.Hosted {
     "parse Via" in { // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.44
       get("v", ("Via","1.0 fred, 1.1 nowhere.com (Apache/1.1)")) must_== "pass"
     }
-    "parse X-Forwarded-For" in { //  http://en.wikipedia.org/wiki/X-Forwarded-For#Format
+    "parse X-Forwarded-For" in { //  https://en.wikipedia.org/wiki/X-Forwarded-For#Format
       get("xff", ("X-Forwarded-For","client1, proxy1, proxy2")) must_== "pass"
     }
     "parse header names" in {
