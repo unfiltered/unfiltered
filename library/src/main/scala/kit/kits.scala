@@ -9,7 +9,7 @@ trait Prepend { self =>
   def intent: Cycle.Intent[Any,Any]
   private def intentOrNoOp = Pass.onPass(
     intent,
-    (_: HttpRequest[_]) => NoOpResponder
+    (_: HttpRequest[?]) => NoOpResponder
   )
   /** The produced intent is defined for all inputs, is Pass
    *  where the given intent parameter is not defined. */
