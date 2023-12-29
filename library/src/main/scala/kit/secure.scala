@@ -4,8 +4,7 @@ import unfiltered.request._
 import unfiltered.response._
 
 object Secure {
-  def redir[A,B](intent: unfiltered.Cycle.Intent[A,B],
-                 port: Int = -1) = {
+  def redir[A, B](intent: unfiltered.Cycle.Intent[A, B], port: Int = -1) = {
     intent.fold(
       { _ => Pass },
       {

@@ -24,6 +24,8 @@ jobs:
         java-version: ${{matrix.java}}
         distribution: adopt
     - uses: actions/checkout@v4
+    - if: matrix.os != 'windows-latest'
+      run: sbt -v scalafmtSbtCheck "+ scalafmtCheckAll"
     - shell: bash
       run: sbt -v "+ test" "+ publishLocal"
     - shell: bash

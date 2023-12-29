@@ -32,18 +32,22 @@ trait StartableServer extends Server {
   def start(): ServerBuilder
   def stop(): ServerBuilder
   def destroy(): ServerBuilder
+
   /** network interface/host name and port bound for a server */
   def portBindings: Iterable[PortBindingInfo]
 }
 trait RunnableServer extends StartableServer { self =>
+
   /** Calls run with no afterStart or afterStop functions */
   def run(): Unit = {
     run { _ => () }
   }
+
   /** Starts the server then takes an action */
   def run(afterStart: ServerBuilder => Unit): Unit = {
     run(afterStart, { _ => () })
   }
+
   /** Starts the server, calls afterStart. then waits. The waiting behavior
    * depends on whether the current thread is "main"; if not "main" it
    * assumes this is an interactive session with sbt and waits for any input,
@@ -73,8 +77,9 @@ trait RunnableServer extends StartableServer { self =>
         println("Press any key to stop.")
         @tailrec
         def doWait(): Unit = {
-          try { Thread.sleep(1000) } catch { case _: InterruptedException => () }
-          if(System.in.available() <= 0)
+          try { Thread.sleep(1000) }
+          catch { case _: InterruptedException => () }
+          if (System.in.available() <= 0)
             doWait()
         }
         doWait()

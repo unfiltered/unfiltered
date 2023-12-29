@@ -22,7 +22,7 @@ class AgentMatchSpec extends AnyWordSpec with Matchers {
       AgentStrings.chrome.map(AgentIs.operaAM).forall(!_) shouldBe true
     }
   }
-  
+
   "Safari strings" should {
     "satisfy the safari predicate" in {
       AgentStrings.safari.map(AgentIs.safariAM).forall(identity) shouldBe true
@@ -40,7 +40,7 @@ class AgentMatchSpec extends AnyWordSpec with Matchers {
       AgentStrings.safari.map(AgentIs.operaAM).forall(!_) shouldBe true
     }
   }
-  
+
   "Firefox strings" should {
     "satisfy the firefox predicate" in {
       AgentStrings.firefox.map(AgentIs.firefoxAM).forall(identity) shouldBe true
@@ -58,7 +58,7 @@ class AgentMatchSpec extends AnyWordSpec with Matchers {
       AgentStrings.firefox.map(AgentIs.operaAM).forall(!_) shouldBe true
     }
   }
-  
+
   "Opera strings" should {
     "satisfy the opera predicate" in {
       AgentStrings.opera.map(AgentIs.operaAM).forall(identity) shouldBe true
@@ -76,7 +76,7 @@ class AgentMatchSpec extends AnyWordSpec with Matchers {
       AgentStrings.opera.map(AgentIs.firefoxAM).forall(!_) shouldBe true
     }
   }
-  
+
   "Internet Explorer strings" should {
     "satisfy the ie predicate" in {
       AgentStrings.ie.map(AgentIs.ieAM).forall(identity) shouldBe true

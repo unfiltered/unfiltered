@@ -25,12 +25,14 @@ class SslServerSpec extends Specification with unfiltered.specs2.Hosted with Sec
   val keyStorePasswd = "unfiltered"
   val securePort = Port.any
 
-  lazy val server = Server.https(
-    securePort,
-    "0.0.0.0",
-    keyStorePath = keyStorePath,
-    keyStorePassword = keyStorePasswd
-  ).plan(filt)
+  lazy val server = Server
+    .https(
+      securePort,
+      "0.0.0.0",
+      keyStorePath = keyStorePath,
+      keyStorePassword = keyStorePasswd
+    )
+    .plan(filt)
 
   lazy val httpServer = Server.http(port, "0.0.0.0").plan(filt)
 
@@ -38,15 +40,17 @@ class SslServerSpec extends Specification with unfiltered.specs2.Hosted with Sec
 
   val filt = unfiltered.filter.Planify(secured.onPass(whatever))
   def secured =
-    unfiltered.kit.Secure.redir[Any,Any]( {
-      case req @ UFPath(Seg("unprotected" :: Nil)) =>
-        Pass
-      case req @ UFPath(Seg("protected" :: Nil)) =>
-        ResponseString(req.isSecure.toString) ~> Ok
-    }, securePort)
-  def whatever = unfiltered.Cycle.Intent[Any,Any] {
-    case req =>
-      ResponseString(req.isSecure.toString) ~> Ok
+    unfiltered.kit.Secure.redir[Any, Any](
+      {
+        case req @ UFPath(Seg("unprotected" :: Nil)) =>
+          Pass
+        case req @ UFPath(Seg("protected" :: Nil)) =>
+          ResponseString(req.isSecure.toString) ~> Ok
+      },
+      securePort
+    )
+  def whatever = unfiltered.Cycle.Intent[Any, Any] { case req =>
+    ResponseString(req.isSecure.toString) ~> Ok
   }
 
   "A Secure Server" should {

@@ -1,11 +1,15 @@
 package unfiltered.netty
 
 import io.netty.buffer.Unpooled
-import io.netty.channel.{ ChannelFutureListener, ChannelHandlerContext }
-import io.netty.handler.codec.http.{ DefaultFullHttpResponse, FullHttpRequest, HttpUtil }
+import io.netty.channel.ChannelFutureListener
+import io.netty.channel.ChannelHandlerContext
+import io.netty.handler.codec.http.DefaultFullHttpResponse
+import io.netty.handler.codec.http.FullHttpRequest
+import io.netty.handler.codec.http.HttpUtil
 import io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN
 import io.netty.handler.codec.http.HttpVersion.HTTP_1_1
-import io.netty.util.{ CharsetUtil, ReferenceCountUtil }
+import io.netty.util.CharsetUtil
+import io.netty.util.ReferenceCountUtil
 
 /** Module defining function types used in the WebSockets module as well as
  *  function defaults */
@@ -26,7 +30,7 @@ package object websockets {
 
   /** Equivalent of an HttpResponse's Pass function,
    *  a SocketIntent that does nothing */
-  val Pass: SocketIntent  = { case _ => () }
+  val Pass: SocketIntent = { case _ => () }
 
   val PassAlong: Intent = { case _ => Pass }
 
@@ -35,13 +39,11 @@ package object websockets {
   val DefaultPassHandler: PassHandler = { (ctx, message) =>
     message match {
       case req: FullHttpRequest =>
-        val res = new DefaultFullHttpResponse(
-          HTTP_1_1, FORBIDDEN, Unpooled.copiedBuffer(
-            FORBIDDEN.toString, CharsetUtil.UTF_8))
+        val res =
+          new DefaultFullHttpResponse(HTTP_1_1, FORBIDDEN, Unpooled.copiedBuffer(FORBIDDEN.toString, CharsetUtil.UTF_8))
         HttpUtil.setContentLength(res, res.content.readableBytes)
         ReferenceCountUtil.release(req)
-        ctx.channel.writeAndFlush(res).addListener(
-          ChannelFutureListener.CLOSE)
+        ctx.channel.writeAndFlush(res).addListener(ChannelFutureListener.CLOSE)
       case invalid =>
         sys.error(s"Invalid type of event message (${invalid.getClass.getName}) for Plan pass handling")
     }

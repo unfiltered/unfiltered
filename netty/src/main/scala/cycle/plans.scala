@@ -1,15 +1,16 @@
-
 package unfiltered.netty.cycle
 
-import io.netty.handler.codec.http.{
-  HttpContent,
-  HttpRequest => NettyHttpRequest,
-  HttpResponse }
+import io.netty.handler.codec.http.HttpContent
+import io.netty.handler.codec.http.{HttpRequest => NettyHttpRequest}
+import io.netty.handler.codec.http.HttpResponse
 import io.netty.handler.codec.http.websocketx.WebSocketFrame
-import io.netty.channel.{ ChannelHandlerContext, ChannelInboundHandlerAdapter }
+import io.netty.channel.ChannelHandlerContext
+import io.netty.channel.ChannelInboundHandlerAdapter
 import io.netty.channel.ChannelHandler.Sharable
-
-import unfiltered.netty.{ ExceptionHandler, ReceivedMessage, RequestBinding, ServerErrorResponse }
+import unfiltered.netty.ExceptionHandler
+import unfiltered.netty.ReceivedMessage
+import unfiltered.netty.RequestBinding
+import unfiltered.netty.ServerErrorResponse
 import unfiltered.response._
 import unfiltered.request.HttpRequest
 import scala.util.control.NonFatal
@@ -26,8 +27,7 @@ object Intent {
 
 /** A Netty Plan for request cycle handling. */
 @Sharable
-trait Plan extends ChannelInboundHandlerAdapter
-  with ExceptionHandler {
+trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
 
   def intent: Plan.Intent
 
@@ -38,16 +38,15 @@ trait Plan extends ChannelInboundHandlerAdapter
   def shutdown(): Unit
 
   def catching(ctx: ChannelHandlerContext)(thunk: => Unit): Unit = {
-    try { thunk } catch {
+    try { thunk }
+    catch {
       case NonFatal(e) => onException(ctx, e)
     }
   }
 
   private lazy val guardedIntent = intent.fold(
-    (req: HttpRequest[ReceivedMessage]) =>
-      req.underlying.context.fireChannelRead(req.underlying.message),
-    (req: HttpRequest[ReceivedMessage],
-     rf: ResponseFunction[HttpResponse]) =>
+    (req: HttpRequest[ReceivedMessage]) => req.underlying.context.fireChannelRead(req.underlying.message),
+    (req: HttpRequest[ReceivedMessage], rf: ResponseFunction[HttpResponse]) =>
       executeResponse {
         catching(req.underlying.context) {
           req.underlying.respond(rf)
@@ -57,8 +56,8 @@ trait Plan extends ChannelInboundHandlerAdapter
 
   final override def channelReadComplete(ctx: ChannelHandlerContext) =
     ctx.flush()
-  
-  override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object ): Unit =
+
+  override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object): Unit =
     msg match {
       case req: NettyHttpRequest =>
         catching(ctx) {
@@ -80,8 +79,7 @@ trait Plan extends ChannelInboundHandlerAdapter
 
 object Planify {
   @Sharable
-  class Planned(intentIn: Plan.Intent) extends Plan
-    with ThreadPool with ServerErrorResponse {
+  class Planned(intentIn: Plan.Intent) extends Plan with ThreadPool with ServerErrorResponse {
     val intent = intentIn
   }
   def apply(intentIn: Plan.Intent) = new Planned(intentIn)

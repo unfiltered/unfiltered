@@ -8,8 +8,7 @@ trait MultiPartMatcher[T] {
 
 /** Multipart file upload utilities should extract data
  *  using this common format */
-case class MultipartData[W](
-  params: String => Seq[String], files: String => W)
+case class MultipartData[W](params: String => Seq[String], files: String => W)
 
 /** Describes an uploaded file, its content type, and
  *  a means of copying its content to another file */
@@ -74,17 +73,20 @@ trait StreamedExtractor[R] {
   def apply(req: R): MultipartData[Seq[AbstractStreamedFile]]
 
   def withStreamedFile[T](istm: JInputStream)(f: java.io.InputStream => T): T = {
-    try { f(istm) } finally { istm.close }
+    try { f(istm) }
+    finally { istm.close }
   }
 
 }
 
 trait TupleGenerator {
+
   /** generates a tuple of `(Map[String, List[A]], Map[String, List[B]])` */
-  protected def genTuple[A, B, C](iter: Iterator[C])(f: ((Map[String, List[A]], Map[String, List[B]]), C) => (Map[String, List[A]], Map[String, List[B]])) = {
+  protected def genTuple[A, B, C](
+    iter: Iterator[C]
+  )(f: ((Map[String, List[A]], Map[String, List[B]]), C) => (Map[String, List[A]], Map[String, List[B]])) = {
     val a: Map[String, List[A]] = Map.empty[String, List[A]].withDefaultValue(Nil)
     val b: Map[String, List[B]] = Map.empty[String, List[B]].withDefaultValue(Nil)
     iter.foldLeft((a, b))(f)
   }
 }
-

@@ -1,26 +1,33 @@
 package unfiltered.netty
 
 import io.netty.channel.EventLoopGroup
-import io.netty.channel.group.{ ChannelGroup, DefaultChannelGroup }
-import io.netty.channel.epoll.{Epoll, EpollEventLoopGroup}
-import io.netty.channel.kqueue.{KQueue, KQueueEventLoopGroup}
+import io.netty.channel.group.ChannelGroup
+import io.netty.channel.group.DefaultChannelGroup
+import io.netty.channel.epoll.Epoll
+import io.netty.channel.epoll.EpollEventLoopGroup
+import io.netty.channel.kqueue.KQueue
+import io.netty.channel.kqueue.KQueueEventLoopGroup
 import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.util.concurrent.{EventExecutor, GlobalEventExecutor}
+import io.netty.util.concurrent.EventExecutor
+import io.netty.util.concurrent.GlobalEventExecutor
 
 /** Defines the set of resources used for process scheduling
  *  and collecting active channels needed for graceful shutdown */
 trait Engine {
+
   /** a shared event loop group for accepting connections shared between bootstraps */
   def acceptor: EventLoopGroup
+
   /** a shared event loop group for handling accepted connections shared between bootstraps */
   def workers: EventLoopGroup
+
   /** a channel group used to collect active channels so that they may be shutdown properly on RunnableServer#stop() */
   def channels: ChannelGroup
 }
 
 object Engine {
   object Default extends Engine {
-    private [Default] def bestEventLoopGroup = if (Epoll.isAvailable) {
+    private[Default] def bestEventLoopGroup = if (Epoll.isAvailable) {
       new EpollEventLoopGroup()
     } else if (KQueue.isAvailable) {
       new KQueueEventLoopGroup()
@@ -31,7 +38,7 @@ object Engine {
     def workers: EventLoopGroup = bestEventLoopGroup
     def channels: ChannelGroup = defaultChannels(GlobalEventExecutor.INSTANCE)
   }
-  private [Engine] def defaultChannels(executor: EventExecutor) =
+  private[Engine] def defaultChannels(executor: EventExecutor) =
     new DefaultChannelGroup("Netty Unfiltered Server Channel Group", executor)
 
   /** An interface building netty server engines */

@@ -1,17 +1,28 @@
 package unfiltered.netty
 
-import unfiltered.util.{ HttpPortBinding, HttpsPortBinding, IO, Port, PortBindingInfo }
-
+import unfiltered.util.HttpPortBinding
+import unfiltered.util.HttpsPortBinding
+import unfiltered.util.IO
+import unfiltered.util.Port
+import unfiltered.util.PortBindingInfo
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.socket.SocketChannel
-import io.netty.handler.ssl.{ SslContext, SslContextBuilder, SslProvider, SslHandler }
+import io.netty.handler.ssl.SslContext
+import io.netty.handler.ssl.SslContextBuilder
+import io.netty.handler.ssl.SslProvider
+import io.netty.handler.ssl.SslHandler
 import io.netty.handler.ssl.util.SelfSignedCertificate
-import java.io.{ File, FileInputStream }
-import java.security.{ KeyStore, SecureRandom }
-import javax.net.ssl.{ KeyManagerFactory, SSLContext, SSLEngine }
+import java.io.File
+import java.io.FileInputStream
+import java.security.KeyStore
+import java.security.SecureRandom
+import javax.net.ssl.KeyManagerFactory
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLEngine
 
 /** A PortBinding defines a binding for a ServerBootstrap for a given address  and port */
 trait PortBinding extends PortBindingInfo {
+
   /** contribute to a channel's initialization before defaults are applied */
   def init(channel: SocketChannel): SocketChannel
 }
@@ -95,7 +106,7 @@ case class SecureEngineSocketBinding(
     new SslHandler(ssl.engine)
 }
 
-trait SslEngineProvider {  
+trait SslEngineProvider {
   def engine: SSLEngine
 }
 
@@ -161,7 +172,8 @@ object SslEngineProvider {
     keyStorePath: String,
     keyStorePassword: String
   ) = Path.Simple(
-    keyStorePath, keyStorePassword
+    keyStorePath,
+    keyStorePassword
   )
 
   def pathSysProperties(
@@ -181,8 +193,7 @@ object SslContextProvider {
   def selfSigned(
     cert: SelfSignedCertificate
   ) = new SslContextProvider {
-    def context = SslContextBuilder.forServer(
-      cert.certificate(), cert.privateKey()).build
+    def context = SslContextBuilder.forServer(cert.certificate(), cert.privateKey()).build
   }
   def keys(
     certChain: File,
@@ -190,7 +201,6 @@ object SslContextProvider {
     password: Option[String] = None,
     nettyProvider: Option[SslProvider] = None
   ) = new SslContextProvider {
-    def context = SslContextBuilder.forServer(
-      certChain, key, password.orNull).sslProvider(nettyProvider.orNull).build
+    def context = SslContextBuilder.forServer(certChain, key, password.orNull).sslProvider(nettyProvider.orNull).build
   }
 }

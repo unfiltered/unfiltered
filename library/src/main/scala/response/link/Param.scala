@@ -1,6 +1,7 @@
 package unfiltered.response.link
 
 object Param {
+
   /** Predefined parameter types as specified in
       [[https://www.rfc-editor.org/rfc/rfc5988#section-5 section-5]]. Note that
       `rev` is omitted as it has been deprecated by the specification. */
@@ -14,7 +15,7 @@ object Param {
   case object ContentType extends Type("type")
 
   /** The extension type supporting `link-extension` parameters. */
-  private [link] final case class ExtensionType (override val name: String) extends Type(name)
+  private[link] final case class ExtensionType(override val name: String) extends Type(name)
 
   /** Construct an extension parameter. */
   def extension(paramType: String): String => Extension =
@@ -43,14 +44,17 @@ final case class Anchor(uri: String) extends Param(Param.Anchor, uri)
 final case class Hreflang(lang: String) extends Param(Param.Hreflang, lang)
 final case class Title(title: String) extends Param(Param.Title, title)
 final case class TitleStar(titleStar: String) extends Param(Param.TitleStar, titleStar)
-final case class MediaType(typeName: String, subTypeName: String) extends Param(Param.ContentType, s"$typeName/$subTypeName")
-final case class Extension private[link] (override val paramType: Param.ExtensionType, override val value: String) extends Param(paramType, value)
+final case class MediaType(typeName: String, subTypeName: String)
+    extends Param(Param.ContentType, s"$typeName/$subTypeName")
+final case class Extension private[link] (override val paramType: Param.ExtensionType, override val value: String)
+    extends Param(paramType, value)
 
 /** Target media types as described in
     [[https://www.rfc-editor.org/rfc/rfc5988#section-5.4 section-5.4]] The meaning
     and set of possible values for this parameter are specified in the
     [[https://www.w3.org/TR/html401/types.html#h-6.13 HTML 401 Types]] specification. */
 sealed abstract class Media(val mediaType: String) extends Param(Param.Media, mediaType) {
+
   /** According to
       [[https://www.w3.org/TR/html401/types.html#h-6.13 HTML 401 Types]],
       `Media` is a monoid resulting in the accumulated media for a single
@@ -60,7 +64,7 @@ sealed abstract class Media(val mediaType: String) extends Param(Param.Media, me
   final override def toString = s"Media($mediaType)"
 }
 
-private [link] final case class CompositeMedia (a: Media, b: Media) extends Media(a.mediaType + ", " + b.mediaType)
+private[link] final case class CompositeMedia(a: Media, b: Media) extends Media(a.mediaType + ", " + b.mediaType)
 case object Screen extends Media("screen")
 case object Tty extends Media("tty")
 case object Tv extends Media("tv")
@@ -79,6 +83,7 @@ case object All extends Media("all")
     The specification also permits extension types to
     be provided as absolute URLs (see the [[ExtensionRel]] type). */
 sealed abstract class Rel(val relType: String) extends Param(Param.Rel, relType) {
+
   /** According to
       [[https://www.rfc-editor.org/rfc/rfc5988#section-5.5 section-5.5]], `Rel`
       is a monoid resulting in the accumulated relation types for a single
@@ -88,11 +93,11 @@ sealed abstract class Rel(val relType: String) extends Param(Param.Rel, relType)
   final override def toString = s"Rel($relType)"
 }
 
-private [link] final case class CompositeRel (a: Rel, b: Rel) extends Rel(a.relType + " " + b.relType)
+private[link] final case class CompositeRel(a: Rel, b: Rel) extends Rel(a.relType + " " + b.relType)
 
 /** Support for extension relation types as specified in
     [[https://www.rfc-editor.org/rfc/rfc5988#section-4.2 section-4.2]] */
-final case class ExtensionRel (uri: String) extends Rel(uri)
+final case class ExtensionRel(uri: String) extends Rel(uri)
 
 /* The complete set of catalogued relation types. */
 case object About extends Rel("about")

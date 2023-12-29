@@ -1,10 +1,14 @@
 package unfiltered.jetty
 
-import org.eclipse.jetty.server.{ CustomRequestLog, Handler, RequestLogWriter }
-import unfiltered.util.{ PlanServer, RunnableServer }
+import org.eclipse.jetty.server.CustomRequestLog
+import org.eclipse.jetty.server.Handler
+import org.eclipse.jetty.server.RequestLogWriter
+import unfiltered.util.PlanServer
+import unfiltered.util.RunnableServer
 import jakarta.servlet.Filter
-
-import org.eclipse.jetty.server.handler.{ContextHandlerCollection, RequestLogHandler, HandlerCollection}
+import org.eclipse.jetty.server.handler.ContextHandlerCollection
+import org.eclipse.jetty.server.handler.RequestLogHandler
+import org.eclipse.jetty.server.handler.HandlerCollection
 
 /** Holds port bindings for selected ports and interfaces. The
   * PortBindings trait provides convenience methods for bindings. */
@@ -23,11 +27,10 @@ case class Server(
   )
 
   /** Update the server's first-added context. */
-  def originalContext(replace: ContextAdder => ContextAdder) = copy(
-    contextAdders = contextAdders.reverse match {
-      case head :: tail => (replace(head) :: tail).reverse
-      case _ => contextAdders
-    })
+  def originalContext(replace: ContextAdder => ContextAdder) = copy(contextAdders = contextAdders.reverse match {
+    case head :: tail => (replace(head) :: tail).reverse
+    case _ => contextAdders
+  })
 
   /** The mutable underlying jetty server object. This is built
     * on-demand according to the described configuration. */
@@ -42,10 +45,8 @@ case class Server(
     server
   }
 
-  private def withLogging(contextHandlers: ContextHandlerCollection,
-                          requestLogging: Option[RequestLogging]) = {
-    requestLogging.fold[Handler](
-      contextHandlers)(rl => {
+  private def withLogging(contextHandlers: ContextHandlerCollection, requestLogging: Option[RequestLogging]) = {
+    requestLogging.fold[Handler](contextHandlers)(rl => {
       val handlers = new HandlerCollection()
       val requestLogHandler = new RequestLogHandler()
       val requestLog = new RequestLogWriter(rl.filename)
@@ -60,8 +61,7 @@ case class Server(
 
   /** Add a servlet context with the given path */
   def context(path: String)(block: ContextAdder => ContextAdder) = copy(
-    contextAdders =
-      block(DefaultServletContextAdder(path, Nil, None)) :: contextAdders
+    contextAdders = block(DefaultServletContextAdder(path, Nil, None)) :: contextAdders
   )
 
   /** Add a filter as a by-name parameter. Generally you should use
@@ -75,20 +75,24 @@ case class Server(
 
   /** Configure global logging of requests to a logfile in Common or Extended log format.
     * [[https://en.wikipedia.org/wiki/Category:Log_file_formats]] */
-  def requestLogging(filename: String,
-                     extended: Boolean = true,
-                     dateFormat: String = "dd/MMM/yyyy:HH:mm:ss Z",
-                     timezone: String = "GMT",
-                     retainDays: Int = 31,
-                     format: String) = copy(requestLogging = {
-    Some(RequestLogging(
-      filename = filename,
-      extended = extended,
-      dateFormat = dateFormat,
-      timezone = timezone,
-      retainDays = retainDays,
-      format = format
-    ))
+  def requestLogging(
+    filename: String,
+    extended: Boolean = true,
+    dateFormat: String = "dd/MMM/yyyy:HH:mm:ss Z",
+    timezone: String = "GMT",
+    retainDays: Int = 31,
+    format: String
+  ) = copy(requestLogging = {
+    Some(
+      RequestLogging(
+        filename = filename,
+        extended = extended,
+        dateFormat = dateFormat,
+        timezone = timezone,
+        retainDays = retainDays,
+        format = format
+      )
+    )
   })
 
   /** Ports used by this server, reported by super-trait */
@@ -100,11 +104,13 @@ case class Server(
     underlying.start()
     this
   }
+
   /** Stops server running in the background */
   def stop() = {
     underlying.stop()
     this
   }
+
   /** Destroys the Jetty server instance and frees its resources.
    * Call after stopping a server, if finished with the instance,
    * to help avoid PermGen errors in an ongoing JVM session. */

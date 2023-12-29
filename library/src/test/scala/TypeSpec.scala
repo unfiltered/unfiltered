@@ -1,7 +1,6 @@
 package unfiltered.request
 
 import java.nio.charset.StandardCharsets
-
 import org.specs2.mutable._
 
 class TypeSpecJetty extends Specification with unfiltered.specs2.jetty.Planned with TypeSpec
@@ -11,15 +10,13 @@ trait TypeSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
 
-
   val message = "élo"
 
-  def intent[A,B]: unfiltered.Cycle.Intent[A,B] = unfiltered.kit.GZip {
+  def intent[A, B]: unfiltered.Cycle.Intent[A, B] = unfiltered.kit.GZip {
     case UFPath("/test") => PlainTextContent ~> ResponseString(message)
     case UFPath("/latin") =>
-      unfiltered.response.Charset(
-        java.nio.charset.Charset.forName("iso-8859-1")) ~>
-      PlainTextContent ~> ResponseString(message)
+      unfiltered.response.Charset(java.nio.charset.Charset.forName("iso-8859-1")) ~>
+        PlainTextContent ~> ResponseString(message)
   }
 
   "ContentType should" should {

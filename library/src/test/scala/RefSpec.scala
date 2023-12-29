@@ -7,16 +7,16 @@ import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 
 class RefSpec extends AnyPropSpec with ScalaCheckDrivenPropertyChecks with Matchers {
 
-  property(s"'${Param.Rel.name}' parameters don't persist as members of Ref#params")  {
+  property(s"'${Param.Rel.name}' parameters don't persist as members of Ref#params") {
     forAll(genRef) { ref =>
       ref.params.find(isRel) should be(empty)
     }
   }
 
-  property(s"'${Param.Rel.name}' parameters are collapsed into Ref#rel")  {
+  property(s"'${Param.Rel.name}' parameters are collapsed into Ref#rel") {
     forAll(ParamGen.genRel, ParamGen.genParams) { (rel, params) =>
       whenever(params.exists(isRel)) {
-        val ref = Ref("", rel, params:_*)
+        val ref = Ref("", rel, params*)
         val explicitRelTypes = params.filter(isRel).map(_.paramType)
         val computedRelStrings = ref.rel.relType.split(" ")
         explicitRelTypes.size should be(computedRelStrings.size - 1)
@@ -45,6 +45,6 @@ class RefSpec extends AnyPropSpec with ScalaCheckDrivenPropertyChecks with Match
       uri <- Gen.alphaStr
       rel <- ParamGen.genRel
       params <- ParamGen.genParams
-    } yield Ref(uri, rel, params:_*)
+    } yield Ref(uri, rel, params*)
 
 }

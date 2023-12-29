@@ -1,7 +1,6 @@
 package unfiltered.server
 
 import jakarta.servlet.http.HttpServletResponse
-
 import org.specs2.mutable._
 import unfiltered.response._
 import unfiltered.request._
@@ -18,8 +17,8 @@ class WriterSafetySpec extends Specification with unfiltered.specs2.jetty.Served
     }
   }
 
-  def setup = _.plan(unfiltered.filter.Planify {
-    case GET(UFPath("/writer")) => WriteString("written") ~> Ok
+  def setup = _.plan(unfiltered.filter.Planify { case GET(UFPath("/writer")) =>
+    WriteString("written") ~> Ok
   })
 
   "An Responder[HttpServletResponse]" should {

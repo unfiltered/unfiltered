@@ -3,7 +3,6 @@ package jetty
 
 import org.specs2.mutable._
 
-
 trait Planned extends Served {
 
   def setup = _.plan(unfiltered.filter.Planify(intent))

@@ -13,7 +13,7 @@ trait SecureClient extends Hosted {
   val secureScheme = "https"
 
   private def secure() = {
-    val keys  = KeyStore.getInstance(KeyStore.getDefaultType)
+    val keys = KeyStore.getInstance(KeyStore.getDefaultType)
     unfiltered.util.IO.use(new FileInputStream(keyStorePath)) { in =>
       keys.load(in, keyStorePasswd.toCharArray)
     }
@@ -25,13 +25,13 @@ trait SecureClient extends Hosted {
     val sslContext = SSLContext.getInstance("TLS")
     sslContext.init(null, Array(trustManager), null)
     val sslSocketFactory = sslContext.getSocketFactory
-    new OkHttpClient.Builder().sslSocketFactory(sslSocketFactory, trustManager)
+    new OkHttpClient.Builder()
+      .sslSocketFactory(sslSocketFactory, trustManager)
       .hostnameVerifier(new HostnameVerifier() {
         // https://github.com/square/okhttp/issues/3898#issuecomment-369881475
         override def verify(hostname: String, session: SSLSession) = true
       })
   }
-
 
   def https(req: Request): Response = {
     val response = httpsx(req)

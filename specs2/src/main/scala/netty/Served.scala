@@ -1,14 +1,17 @@
 package unfiltered.specs2.netty
 
-import unfiltered.netty.{Server, ServerErrorResponse}
-import unfiltered.netty.cycle.{DeferralExecutor, DeferredIntent, Plan}
+import unfiltered.netty.Server
+import unfiltered.netty.ServerErrorResponse
+import unfiltered.netty.cycle.DeferralExecutor
+import unfiltered.netty.cycle.DeferredIntent
+import unfiltered.netty.cycle.Plan
 import org.specs2.mutable._
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.util.ResourceLeakDetector
 
 trait Planned extends Served {
   def setup = _.plan(planify(intent))
-  def intent[A,B]: unfiltered.Cycle.Intent[A,B]
+  def intent[A, B]: unfiltered.Cycle.Intent[A, B]
 }
 
 trait Served extends Started {
@@ -36,7 +39,7 @@ trait Started extends unfiltered.specs2.Hosted with SpecificationLike {
     super.beforeAll()
   }
 
- // override def map(fs: =>Fragments) = Step(before) ^ fs ^ Step(after)
+  // override def map(fs: =>Fragments) = Step(before) ^ fs ^ Step(after)
 
   lazy val executor = java.util.concurrent.Executors.newCachedThreadPool()
 
@@ -46,10 +49,11 @@ trait Started extends unfiltered.specs2.Hosted with SpecificationLike {
     new StartedPlan(intentIn)
 
   @Sharable
-  class StartedPlan(intentIn: Plan.Intent) extends Plan
-   with DeferralExecutor
-   with DeferredIntent
-   with ServerErrorResponse {
+  class StartedPlan(intentIn: Plan.Intent)
+      extends Plan
+      with DeferralExecutor
+      with DeferredIntent
+      with ServerErrorResponse {
     def underlying = executor
     val intent = intentIn
   }

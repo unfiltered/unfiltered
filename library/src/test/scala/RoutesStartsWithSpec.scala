@@ -1,23 +1,16 @@
 package unfiltered.kit
 
 import org.specs2.mutable._
-
 import unfiltered.request._
 
-class RoutesStartsWithSpecJetty
-extends Specification
-with unfiltered.specs2.jetty.Planned
-with RoutesStartsWithSpec
+class RoutesStartsWithSpecJetty extends Specification with unfiltered.specs2.jetty.Planned with RoutesStartsWithSpec
 
-class RoutesStartsWithSpecNetty
-extends Specification
-with unfiltered.specs2.netty.Planned
-with RoutesStartsWithSpec
+class RoutesStartsWithSpecNetty extends Specification with unfiltered.specs2.netty.Planned with RoutesStartsWithSpec
 
 trait RoutesStartsWithSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
 
-  def intent[A,B]: unfiltered.Cycle.Intent[A,B] = Routes.startsWith(
+  def intent[A, B]: unfiltered.Cycle.Intent[A, B] = Routes.startsWith(
     "/the" -> theFunction,
     "/things/" -> things
   )

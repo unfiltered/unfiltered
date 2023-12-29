@@ -1,8 +1,11 @@
 package unfiltered.netty.resources
 
-import java.io.{ File, FileInputStream, FileNotFoundException, InputStream }
-import java.net.{ JarURLConnection, URL }
-
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.InputStream
+import java.net.JarURLConnection
+import java.net.URL
 import scala.util.control.Exception.catching
 
 // todo(doug): none of this is specific to unfiltered. consider factoring this out into its own library
@@ -10,12 +13,10 @@ object Resolve {
   val JarPathDelimiter = "!/"
   type Resolver = PartialFunction[String, URL => Option[Resource]]
   val JarResolver: Resolver = {
-    case jf if jf.startsWith("jar:file:") =>
-      { u => Some(JarResource(u)) }
+    case jf if jf.startsWith("jar:file:") => { u => Some(JarResource(u)) }
   }
   val FsResolver: Resolver = {
-    case fs if fs.startsWith("file:") =>
-      { u => Some(FileSystemResource(new File(u.toURI))) }
+    case fs if fs.startsWith("file:") => { u => Some(FileSystemResource(new File(u.toURI))) }
   }
   val DefaultResolver = FsResolver orElse JarResolver orElse ({
     case _ => { u => None }
@@ -54,15 +55,14 @@ case class JarResource(url: URL) extends Resource {
   val hidden = false
   lazy val entry = jarfile.flatMap { jar =>
     import scala.jdk.CollectionConverters._
-    jar.entries.asScala.find(_.getName.replace("\\","/") == path)
+    jar.entries.asScala.find(_.getName.replace("\\", "/") == path)
   }
   lazy val exists = entry.isDefined
-  lazy val lastModified = entry match  {
+  lazy val lastModified = entry match {
     case Some(e) => e.getTime
-    case _ => jarfile.map(jar => new File(jar.getName).lastModified)
-                     .getOrElse(-1L)
+    case _ => jarfile.map(jar => new File(jar.getName).lastModified).getOrElse(-1L)
   }
-  
+
   lazy val size =
     if (exists && !directory) entry.get.getSize
     else -1
@@ -70,6 +70,7 @@ case class JarResource(url: URL) extends Resource {
   def jarfile = catching(classOf[FileNotFoundException]).opt {
     url.openConnection().asInstanceOf[JarURLConnection].getJarFile
   }
+
   /** users are expected to call close(). Netty's ChunkedStream writer does */
-  def in = url.openStream()  
+  def in = url.openStream()
 }

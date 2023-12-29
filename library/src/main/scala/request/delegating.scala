@@ -1,7 +1,6 @@
 package unfiltered.request
 
-class DelegatingRequest[+T](val delegate: HttpRequest[T])
-extends HttpRequest(delegate.underlying) {
+class DelegatingRequest[+T](val delegate: HttpRequest[T]) extends HttpRequest(delegate.underlying) {
   def inputStream = delegate.inputStream
   def reader = delegate.reader
   def protocol = delegate.protocol

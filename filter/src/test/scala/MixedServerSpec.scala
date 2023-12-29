@@ -25,20 +25,23 @@ class MixedServerSpec extends Specification with unfiltered.specs2.jetty.Served 
   val securePort = Port.any
 
   override lazy val server = setup(
-    Server.http(port).https(
-      port = securePort,
-      keyStorePath = keyStorePath,
-      keyStorePassword = keyStorePasswd
-    )
+    Server
+      .http(port)
+      .https(
+        port = securePort,
+        keyStorePath = keyStorePath,
+        keyStorePassword = keyStorePasswd
+      )
   )
 
-  def setup = { _.plan(unfiltered.filter.Planify {
-    case GET(UFPath("/")) => ResponseString("public") ~> Ok
-    case HTTP(GET(UFPath("/https_only"))) => Redirect(s"https://localhost:$securePort/https_only")
-    case HTTPS(GET(UFPath("/https_only"))) => ResponseString("secret") ~> Ok
-    case HTTPS(GET(UFPath("/tryme"))) => ResponseString("secret") ~> Ok
-  })}
-
+  def setup = {
+    _.plan(unfiltered.filter.Planify {
+      case GET(UFPath("/")) => ResponseString("public") ~> Ok
+      case HTTP(GET(UFPath("/https_only"))) => Redirect(s"https://localhost:$securePort/https_only")
+      case HTTPS(GET(UFPath("/https_only"))) => ResponseString("secret") ~> Ok
+      case HTTPS(GET(UFPath("/tryme"))) => ResponseString("secret") ~> Ok
+    })
+  }
 
   "A Mixed Secure Server" should {
     "respond to matched unsecure requests" in {

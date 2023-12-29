@@ -2,9 +2,10 @@ package unfiltered.jetty
 
 import java.util.EnumSet
 import java.util.concurrent.atomic.AtomicInteger
-import jakarta.servlet.{ Filter, DispatcherType }
-
-import org.eclipse.jetty.servlet.{ FilterHolder, ServletContextHandler }
+import jakarta.servlet.Filter
+import jakarta.servlet.DispatcherType
+import org.eclipse.jetty.servlet.FilterHolder
+import org.eclipse.jetty.servlet.ServletContextHandler
 
 object BasicFilterHolder {
   def apply(filter: Filter) = {

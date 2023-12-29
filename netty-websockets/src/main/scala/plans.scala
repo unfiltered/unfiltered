@@ -1,20 +1,28 @@
 package unfiltered.netty.websockets
 
-import unfiltered.request.{ GET, Host, HttpRequest }
-import unfiltered.netty.{ ExceptionHandler, ReceivedMessage, RequestBinding }
-import io.netty.channel.{
-  ChannelFuture,
-  ChannelHandlerContext, ChannelInboundHandlerAdapter
-}
+import unfiltered.request.GET
+import unfiltered.request.Host
+import unfiltered.request.HttpRequest
+import unfiltered.netty.ExceptionHandler
+import unfiltered.netty.ReceivedMessage
+import unfiltered.netty.RequestBinding
+import io.netty.channel.ChannelFuture
+import io.netty.channel.ChannelHandlerContext
+import io.netty.channel.ChannelInboundHandlerAdapter
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.handler.codec.http.FullHttpRequest
-import io.netty.handler.codec.http.websocketx.{
-  BinaryWebSocketFrame, CloseWebSocketFrame, ContinuationWebSocketFrame,
-  PingWebSocketFrame, PongWebSocketFrame, TextWebSocketFrame,
-  WebSocketFrame, WebSocketFrameAggregator, WebSocketFrameDecoder,
-  WebSocketServerHandshaker, WebSocketHandshakeException,
-  WebSocketServerHandshakerFactory
-}
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame
+import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame
+import io.netty.handler.codec.http.websocketx.ContinuationWebSocketFrame
+import io.netty.handler.codec.http.websocketx.PingWebSocketFrame
+import io.netty.handler.codec.http.websocketx.PongWebSocketFrame
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
+import io.netty.handler.codec.http.websocketx.WebSocketFrame
+import io.netty.handler.codec.http.websocketx.WebSocketFrameAggregator
+import io.netty.handler.codec.http.websocketx.WebSocketFrameDecoder
+import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker
+import io.netty.handler.codec.http.websocketx.WebSocketHandshakeException
+import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory
 import io.netty.util.ReferenceCountUtil
 import scala.util.control.Exception.catching
 
@@ -28,7 +36,7 @@ trait CloseOnException { self: ExceptionHandler with ChannelInboundHandlerAdapte
   }
 }
 
-private [websockets] object WSLocation {
+private[websockets] object WSLocation {
   def apply[T](r: HttpRequest[T]) = s"${if (r.isSecure) "wss" else "ws"}://${Host(r).get}${r.uri}"
 }
 
@@ -48,8 +56,7 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
   final override def channelReadComplete(ctx: ChannelHandlerContext) =
     ctx.flush()
 
-  final override def channelRead(
-    ctx: ChannelHandlerContext, msg: java.lang.Object) =
+  final override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object) =
     msg match {
       case http: FullHttpRequest => upgrade(ctx, http)
       case unexpected => pass(ctx, unexpected)
@@ -63,56 +70,55 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
    *   evaluate WebSocket protocol requests
    *  If an HTTP intent filter is matched but this is not a websocket request,
    *    the `pass` method will be invoked. */
-  private def upgrade(
-    ctx: ChannelHandlerContext,
-    request: FullHttpRequest) =
+  private def upgrade(ctx: ChannelHandlerContext, request: FullHttpRequest) =
     if (!request.decoderResult.isSuccess()) pass(ctx, request)
-    else new RequestBinding(ReceivedMessage(request, ctx, request)) match {
-      case r @ GET(_) =>
-        intent.orElse(PassAlong)(r) match {
-          case Pass => pass(ctx, request)
-          case socketIntent =>
-            def attempt = socketIntent.lift
-            val factory =
-              new WebSocketServerHandshakerFactory(
-                WSLocation(r), null/* subprotocols */,
-                allowExtensions)
-            factory.newHandshaker(request) match {
-              case null =>
-                WebSocketServerHandshakerFactory
-                  .sendUnsupportedVersionResponse(ctx.channel)
-              case shaker =>
-                // handle handshake exceptions for the use case
-                // of mounting an http plan on the same path
-                // as a websocket handler
-                catching(classOf[WebSocketHandshakeException]).either {
-                  shaker.handshake(ctx.channel, request)
-                    .addListeners((hf: ChannelFuture) => {
-                      val chan = hf.channel
-                      attempt(Open(WebSocket(chan)))
-                      chan.closeFuture.addListener((cf: ChannelFuture) => {
-                        attempt(Close(WebSocket(cf.channel)))
-                      })
-                      chan.pipeline.replace(
-                        Plan.this, ctx.name, SocketPlan(socketIntent, pass, shaker, Plan.this))
-                      // aggregate frames
-                      chan.pipeline.addAfter(
-                        chan.pipeline.context(classOf[WebSocketFrameDecoder]).name(),
-                        "ws-frame-aggregator", new WebSocketFrameAggregator(Integer.MAX_VALUE)
+    else
+      new RequestBinding(ReceivedMessage(request, ctx, request)) match {
+        case r @ GET(_) =>
+          intent.orElse(PassAlong)(r) match {
+            case Pass => pass(ctx, request)
+            case socketIntent =>
+              def attempt = socketIntent.lift
+              val factory =
+                new WebSocketServerHandshakerFactory(WSLocation(r), null /* subprotocols */, allowExtensions)
+              factory.newHandshaker(request) match {
+                case null =>
+                  WebSocketServerHandshakerFactory.sendUnsupportedVersionResponse(ctx.channel)
+                case shaker =>
+                  // handle handshake exceptions for the use case
+                  // of mounting an http plan on the same path
+                  // as a websocket handler
+                  catching(classOf[WebSocketHandshakeException]).either {
+                    shaker
+                      .handshake(ctx.channel, request)
+                      .addListeners(
+                        (hf: ChannelFuture) => {
+                          val chan = hf.channel
+                          attempt(Open(WebSocket(chan)))
+                          chan.closeFuture.addListener((cf: ChannelFuture) => {
+                            attempt(Close(WebSocket(cf.channel)))
+                          })
+                          chan.pipeline.replace(Plan.this, ctx.name, SocketPlan(socketIntent, pass, shaker, Plan.this))
+                          // aggregate frames
+                          chan.pipeline.addAfter(
+                            chan.pipeline.context(classOf[WebSocketFrameDecoder]).name(),
+                            "ws-frame-aggregator",
+                            new WebSocketFrameAggregator(Integer.MAX_VALUE)
+                          )
+                        },
+                        r.underlying.releaser
                       )
-                    }, r.underlying.releaser)
-                }.fold({ _ => pass(ctx, request) }, identity)
-            }
-        }
-      case _ => pass(ctx, request)
-    }
+                  }.fold({ _ => pass(ctx, request) }, identity)
+              }
+          }
+        case _ => pass(ctx, request)
+      }
 
   /** By default, when a websocket handler `passes` it writes an Http Forbidden response
    *  to the channel in DefaultPassHandler. To override this behavior, call this method
    *   with a function to handle the ChannelEvent with custom behavior */
   def onPass(handler: PassHandler) = Planify(intent, handler)
 }
-
 
 /** The result of defined Intent should result in a SocketPlan value.
  *  SocketPlans are handlers for message frames in the WebSocket protocol.
@@ -123,34 +129,31 @@ case class SocketPlan(
   intent: SocketIntent,
   pass: PassHandler,
   shaker: WebSocketServerHandshaker,
-  exceptions: ExceptionHandler)
-  extends ChannelInboundHandlerAdapter {
+  exceptions: ExceptionHandler
+) extends ChannelInboundHandlerAdapter {
 
   def attempt = intent.lift
 
   final override def channelReadComplete(ctx: ChannelHandlerContext) =
     ctx.flush()
 
-  final override def channelRead(
-    ctx: ChannelHandlerContext, msg: java.lang.Object) =
+  final override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object) =
     msg match {
       case c: CloseWebSocketFrame =>
         shaker.close(ctx.channel, c.retain())
       case p: PingWebSocketFrame =>
         ctx.channel.writeAndFlush(new PongWebSocketFrame(p.content.retain()))
       case t: TextWebSocketFrame =>
-        attempt(Message(WebSocket(ctx.channel), Text(t.text)))
-          .foreach(_ => ReferenceCountUtil.release(t))
+        attempt(Message(WebSocket(ctx.channel), Text(t.text))).foreach(_ => ReferenceCountUtil.release(t))
       case b: BinaryWebSocketFrame =>
-        attempt(Message(WebSocket(ctx.channel), Binary(b.content)))
-          .foreach(_ => ReferenceCountUtil.release(b))
+        attempt(Message(WebSocket(ctx.channel), Binary(b.content))).foreach(_ => ReferenceCountUtil.release(b))
       case p: PongWebSocketFrame =>
-        // unsolicited pong rec from client, a response is not expected
-        // https://www.rfc-editor.org/rfc/rfc6455#section-5.5.3
+      // unsolicited pong rec from client, a response is not expected
+      // https://www.rfc-editor.org/rfc/rfc6455#section-5.5.3
       case c: ContinuationWebSocketFrame =>
-        attempt(Continuation(
-          WebSocket(ctx.channel), Fragment(c.content, c.isFinalFragment)))
-          .foreach(_ => ReferenceCountUtil.release(c))
+        attempt(Continuation(WebSocket(ctx.channel), Fragment(c.content, c.isFinalFragment))).foreach(_ =>
+          ReferenceCountUtil.release(c)
+        )
       case f: WebSocketFrame =>
         // other frames are not supported at this time
         pass(ctx, f)
@@ -167,8 +170,7 @@ case class SocketPlan(
  *  yourself mixing a custom ExceptionHandler implementation */
 object Planify {
   @Sharable
-  class Planned(val intent: Intent, val pass: PassHandler)
-    extends Plan with CloseOnException
+  class Planned(val intent: Intent, val pass: PassHandler) extends Plan with CloseOnException
 
   /** Creates a WebSocket Plan with a custom PassHandler function */
   def apply(intentIn: Intent, passIn: PassHandler): Plan =

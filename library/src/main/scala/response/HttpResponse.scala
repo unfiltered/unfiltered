@@ -11,7 +11,7 @@ abstract class HttpResponse[+T](val underlying: T) {
 
   def status: Int
 
-  def outputStream : OutputStream
+  def outputStream: OutputStream
 
   /** Sets a redirect */
   def redirect(url: String): Unit

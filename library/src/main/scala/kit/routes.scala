@@ -8,7 +8,7 @@ object Routes {
 
   /** Matches request paths that start with the given string to functions
    *  that take the request and the remaining path string as parameters */
-  def startsWith[A,B](
+  def startsWith[A, B](
     route: (String, (HttpRequest[A], String) => ResponseFunction[B])*
   ) =
     toIntent(route) { (req: HttpRequest[A], path, k, rf) =>
@@ -37,38 +37,38 @@ object Routes {
    * values. e.g. "/thing/:thing_id" for the path "/thing/1" would call
    * the corresponding function with a `Map("thing_id" -> "1")`.
    */
-  def specify[A, B](
-    route: (String, ((HttpRequest[A], Map[String,String]) =>
-                     ResponseFunction[B]))*) =
+  def specify[A, B](route: (String, ((HttpRequest[A], Map[String, String]) => ResponseFunction[B]))*) =
     toIntent(
-      route.map {
-        case (Seg(spec), f) => spec -> f
+      route.map { case (Seg(spec), f) =>
+        spec -> f
       }
     ) { (req: HttpRequest[A], path, spec, rf) =>
       val Seg(actual) = path
       if (spec.length != actual.length)
         None
       else {
-        val start: Option[Map[String,String]] = Some(Map.empty[String,String])
-        spec.zip(actual).foldLeft(start) {
-          case (None, _) => None
-          case (Some(m), (sp, act)) if sp.startsWith(":") =>
-            Some(m + (sp.substring(1) -> act))
-          case (opt, (sp, act)) if sp == act =>
-            opt
-          case _ => None
-        }.map { m =>
-          rf(req, m)
-        }
+        val start: Option[Map[String, String]] = Some(Map.empty[String, String])
+        spec
+          .zip(actual)
+          .foldLeft(start) {
+            case (None, _) => None
+            case (Some(m), (sp, act)) if sp.startsWith(":") =>
+              Some(m + (sp.substring(1) -> act))
+            case (opt, (sp, act)) if sp == act =>
+              opt
+            case _ => None
+          }
+          .map { m =>
+            rf(req, m)
+          }
       }
     }
 
-  def toIntent[A,B,K,F](route: Iterable[(K,F)])(
+  def toIntent[A, B, K, F](route: Iterable[(K, F)])(
     f: (HttpRequest[A], String, K, F) => Option[ResponseFunction[B]]
-  ): unfiltered.Cycle.Intent[A, B] = {
-    case req @ Path(path) =>
-      route.view.flatMap { case (key, handler) =>
-        f(req, path, key, handler)
-      }.find{ _ != Pass }.getOrElse { Pass }
+  ): unfiltered.Cycle.Intent[A, B] = { case req @ Path(path) =>
+    route.view.flatMap { case (key, handler) =>
+      f(req, path, key, handler)
+    }.find { _ != Pass }.getOrElse { Pass }
   }
 }

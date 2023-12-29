@@ -38,14 +38,13 @@ object ParamGen {
 
   val genParam: Gen[Param] =
     for {
-    rel <- Gen.oneOf(AllRels)
-    media <- Gen.oneOf(AllMedia)
-    title <- genTitle
-    titleStar <- genTitleStar
-    mediaType <- genMediaType
-    param <- Gen.oneOf(rel, media, title, titleStar, mediaType)
-  } yield param
+      rel <- Gen.oneOf(AllRels)
+      media <- Gen.oneOf(AllMedia)
+      title <- genTitle
+      titleStar <- genTitleStar
+      mediaType <- genMediaType
+      param <- Gen.oneOf(rel, media, title, titleStar, mediaType)
+    } yield param
   val genParams: Gen[List[Param]] = Gen.listOf(genParam)
-
 
 }

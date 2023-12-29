@@ -1,4 +1,5 @@
-import sbt._, Keys._
+import sbt._
+import Keys._
 
 object Dependencies {
   val servletApiDep = "jakarta.servlet" % "jakarta.servlet-api" % "5.0.0"

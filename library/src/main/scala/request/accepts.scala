@@ -12,15 +12,16 @@ object Accepts {
       val pathSuffix = Path(r).split("[.]").lastOption
       r match {
         case Accept(values) =>
-          if(values.exists { _.equalsIgnoreCase(contentType) })
+          if (values.exists { _.equalsIgnoreCase(contentType) })
             Some(r)
           else if (values.contains("*/*") && pathSuffix.exists { ext == _ })
             Some(r)
           else None
-        case _ => pathSuffix match {
-          case Some(pathSuffix) if pathSuffix == ext => Some(r)
-          case _ => None
-        }
+        case _ =>
+          pathSuffix match {
+            case Some(pathSuffix) if pathSuffix == ext => Some(r)
+            case _ => None
+          }
       }
     }
   }
@@ -36,7 +37,7 @@ object Accepts {
     val ext = "js"
 
     override def unapply[T](r: HttpRequest[T]) =
-      AppJavaScript.unapply(r) orElse {super.unapply(r)}
+      AppJavaScript.unapply(r) orElse { super.unapply(r) }
   }
 
   object AppJavaScript extends Accepting {
@@ -47,7 +48,7 @@ object Accepts {
   /** Lenient matcher for application/json, application/javascript, and text/javascript */
   object Jsonp {
     def unapply[T](r: HttpRequest[T]) =
-      Json.unapply(r) orElse {JavaScript.unapply(r)}
+      Json.unapply(r) orElse { JavaScript.unapply(r) }
   }
 
   object Xml extends Accepting {

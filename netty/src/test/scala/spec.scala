@@ -2,7 +2,11 @@ package unfiltered.netty
 
 import org.specs2.mutable.Specification
 import io.netty.buffer.Unpooled
-import io.netty.handler.codec.http.{ DefaultFullHttpRequest, DefaultFullHttpResponse, HttpResponseStatus, HttpMethod, HttpVersion }
+import io.netty.handler.codec.http.DefaultFullHttpRequest
+import io.netty.handler.codec.http.DefaultFullHttpResponse
+import io.netty.handler.codec.http.HttpResponseStatus
+import io.netty.handler.codec.http.HttpMethod
+import io.netty.handler.codec.http.HttpVersion
 
 // todo: move to its own file
 class RequestSpec extends Specification {
@@ -12,7 +16,8 @@ class RequestSpec extends Specification {
     HttpVersion.HTTP_1_1,
     HttpMethod.GET,
     "/seg1/seg2?param1=value%201&param2=value%202&param2=value%202%20again&param3=value=mapping",
-    Unpooled.copiedBuffer(payload.getBytes("UTF-8")))
+    Unpooled.copiedBuffer(payload.getBytes("UTF-8"))
+  )
   nettyReq.headers.add("Single-Header", "A")
   nettyReq.headers.add("Multi-Header", "A")
   nettyReq.headers.add("Multi-Header", "B")

@@ -2,22 +2,15 @@ package unfiltered.request
 
 import org.specs2.mutable._
 
-class DecodesSpecJetty
-extends Specification
-with unfiltered.specs2.jetty.Planned
-with DecodesSpec
+class DecodesSpecJetty extends Specification with unfiltered.specs2.jetty.Planned with DecodesSpec
 
-class DecodesSpecNetty
-extends Specification
-with unfiltered.specs2.netty.Planned
-with DecodesSpec
+class DecodesSpecNetty extends Specification with unfiltered.specs2.netty.Planned with DecodesSpec
 
 trait DecodesSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
 
-
-  def intent[A,B]: unfiltered.Cycle.Intent[A,B] = {
+  def intent[A, B]: unfiltered.Cycle.Intent[A, B] = {
     case GET(UFPath(Seg(ext :: Nil)) & Decodes.Chunked(_)) => ResponseString("chunked")
     case GET(UFPath(Seg(ext :: Nil)) & Decodes.Identity(_)) => ResponseString("identity")
     case GET(UFPath(Seg(ext :: Nil)) & Decodes.GZip(_)) => ResponseString("gzip")

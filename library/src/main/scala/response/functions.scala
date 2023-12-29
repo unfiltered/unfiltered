@@ -24,15 +24,13 @@ trait Responder[A] extends ResponseFunction[A] {
 
 /** Convenience base class for response function classes defined as a
   * constructor parameter. */
-class ComposeResponse[A](rf: ResponseFunction[A]) extends 
-    Responder[A] {
+class ComposeResponse[A](rf: ResponseFunction[A]) extends Responder[A] {
   def respond(res: HttpResponse[A]): Unit = { rf(res) }
 }
 
 /** Composes two response functions. As a case class it recognizes
   * equivalence, so that (a ~> b == a ~> b) */
-private case class ComposedResponseFunction[F, G <: F]
-(f: ResponseFunction[F], g: ResponseFunction[G]) extends ResponseFunction[G] {
-    def apply[R <: G](res: HttpResponse[R]) = g(f(res))
+private case class ComposedResponseFunction[F, G <: F](f: ResponseFunction[F], g: ResponseFunction[G])
+    extends ResponseFunction[G] {
+  def apply[R <: G](res: HttpResponse[R]) = g(f(res))
 }
-

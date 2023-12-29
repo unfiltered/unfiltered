@@ -6,6 +6,7 @@ package unfiltered.response.link
     [[https://www.rfc-editor.org/rfc/rfc5988#section-3 section-3]] states that it
     is required and so it is implemented as a `Ref` member. */
 final case class Ref private (uri: String, rel: Rel, params: List[Param]) {
+
   /** Yield "link-value" clause. */
   def refClause = s"<$uri>; $paramsClause"
 
@@ -26,7 +27,7 @@ object Ref {
         case ((r, pt, ps), p: Rel) =>
           (r :+ p, pt, ps)
         case ((r, pt, ps), Param.NonRepeatable(p)) =>
-          if (! pt.contains(p.paramType))
+          if (!pt.contains(p.paramType))
             (r, pt + p.paramType, p :: ps)
           else
             (r, pt, ps)

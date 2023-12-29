@@ -1,6 +1,8 @@
 package unfiltered.netty.cycle
 
-import java.util.concurrent.{ ExecutorService, Executors, RejectedExecutionException }
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
 
 /** Evaluates the intent in an unbounded CachedThreadPool
  * executor. For a production environment with known
@@ -22,7 +24,7 @@ object ThreadPool {
 trait SynchronousExecution {
   def executeIntent(thunk: => Unit): Unit = { thunk }
   def executeResponse(thunk: => Unit): Unit = { thunk }
-  def shutdown(): Unit = { }
+  def shutdown(): Unit = {}
 }
 
 trait Deferral {

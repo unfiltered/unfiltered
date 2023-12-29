@@ -1,9 +1,10 @@
 package unfiltered.jetty
 
 import jakarta.servlet.Filter
-
-import org.eclipse.jetty.server.handler.{ContextHandler, ContextHandlerCollection}
-import org.eclipse.jetty.servlet.{ServletContextHandler, ServletHolder}
+import org.eclipse.jetty.server.handler.ContextHandler
+import org.eclipse.jetty.server.handler.ContextHandlerCollection
+import org.eclipse.jetty.servlet.ServletContextHandler
+import org.eclipse.jetty.servlet.ServletHolder
 import org.eclipse.jetty.util.resource.Resource
 
 trait ContextAdder {

@@ -1,30 +1,35 @@
 package unfiltered.netty
 
 import org.specs2.mutable.Specification
-
-import unfiltered.response.{ Pass, Ok, ResponseString }
-import unfiltered.request.{ GET, Params, Path => UFPath, POST, PUT, RemoteAddr, & }
-
+import unfiltered.response.Pass
+import unfiltered.response.Ok
+import unfiltered.response.ResponseString
+import unfiltered.request.GET
+import unfiltered.request.Params
+import unfiltered.request.{Path => UFPath}
+import unfiltered.request.POST
+import unfiltered.request.PUT
+import unfiltered.request.RemoteAddr
+import unfiltered.request.&
 
 class ServerSpec extends Specification with unfiltered.specs2.netty.Served {
 
-  def setup = _.plan(planify({
+  def setup = _.plan(planify {
     case GET(UFPath("/pass")) => Pass
     case GET(UFPath("/")) =>
       ResponseString("test") ~> Ok
     case r @ GET(UFPath("/addr")) => ResponseString(r.remoteAddr) ~> Ok
     case GET(UFPath("/addr_extractor") & RemoteAddr(addr)) => ResponseString(addr) ~> Ok
-  })).plan(async.Planify({
+  }).plan(async.Planify {
     case GET(UFPath("/pass")) => Pass
     case req @ GET(UFPath("/planc")) =>
       req.underlying.respond(ResponseString("planc") ~> Ok)
-  })).plan(planify({
+  }).plan(planify {
     case GET(UFPath("/planb")) => ResponseString("planb") ~> Ok
     case GET(UFPath("/pass")) => ResponseString("pass") ~> Ok
-  })).plan(planify({
-    case req @ UFPath("/params") & Params(p) & (POST(_) | PUT(_)) =>
-      Ok ~> ResponseString(req.method + ":" + p.map { case (k, vs) => vs.map(k + "=" + _).mkString("&") }.mkString("&"))
-  }))
+  }).plan(planify { case req @ UFPath("/params") & Params(p) & (POST(_) | PUT(_)) =>
+    Ok ~> ResponseString(req.method + ":" + p.map { case (k, vs) => vs.map(k + "=" + _).mkString("&") }.mkString("&"))
+  })
 
   "A Server" should {
     "respond to requests" in {
@@ -34,7 +39,9 @@ class ServerSpec extends Specification with unfiltered.specs2.netty.Served {
       http(req(host / "addr")).as_string must_== "127.0.0.1"
     }
     "provide a remote address accounting for X-Forwarded-For header" in {
-      http(req(host / "addr_extractor") <:< Map("X-Forwarded-For" -> "66.108.150.228")).as_string must_== "66.108.150.228"
+      http(
+        req(host / "addr_extractor") <:< Map("X-Forwarded-For" -> "66.108.150.228")
+      ).as_string must_== "66.108.150.228"
     }
     "provide a remote address accounting for X-Forwarded-For header filtering private addresses" in {
       http(req(host / "addr_extractor") <:< Map("X-Forwarded-For" -> "172.31.255.255")).as_string must_== "127.0.0.1"
@@ -49,7 +56,7 @@ class ServerSpec extends Specification with unfiltered.specs2.netty.Served {
       http(req(host / "pass")).as_string must_== "pass"
     }
     "echo POST parameters encoded in the entity body" in {
-      http(req(host / "params") << Map("n0" -> "v0") ).as_string must_== "POST:n0=v0"
+      http(req(host / "params") << Map("n0" -> "v0")).as_string must_== "POST:n0=v0"
     }
     "echo PUT paremters encoded in the entity body" in {
       http(req(host / "params").<<(Map("n0" -> "v0"), PUT)).as_string must_== "PUT:n0=v0"

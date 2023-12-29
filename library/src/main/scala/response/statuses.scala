@@ -1,6 +1,5 @@
 package unfiltered.response
 
-
 case class Status(code: Int) extends Responder[Any] {
   def respond(res: HttpResponse[Any]): Unit = { res.status(code) }
 }
@@ -16,7 +15,7 @@ object Created extends Status(201)
 object Accepted extends Status(202)
 object NonAuthoritativeInformation extends Status(203)
 object NoContent extends Status(204)
-object ResetContent extends Status(205) 
+object ResetContent extends Status(205)
 object PartialContent extends Status(206)
 object MultiStatus extends Status(207)
 object AlreadyReported extends Status(208)
@@ -24,7 +23,7 @@ object IMUsed extends Status(226)
 
 object MultipleChoices extends Status(300)
 object MovedPermanently extends Status(301)
-object Found extends Status(302) 
+object Found extends Status(302)
 object SeeOther extends Status(303)
 object NotModified extends Status(304)
 object UseProxy extends Status(305)
@@ -46,7 +45,7 @@ object PreconditionFailed extends Status(412)
 object RequestEntityTooLarge extends Status(413)
 object RequestURITooLong extends Status(414)
 object UnsupportedMediaType extends Status(415)
-object RequestedRangeNotSatisfiable extends Status(416) 
+object RequestedRangeNotSatisfiable extends Status(416)
 object ExpectationFailed extends Status(417)
 object TeaPot extends Status(418)
 object TooManyConnections extends Status(421)

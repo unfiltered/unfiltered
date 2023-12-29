@@ -1,23 +1,16 @@
 package unfiltered.kit
 
 import org.specs2.mutable._
-
 import unfiltered.request._
 
-class RoutesSpecJetty
-extends Specification
-with unfiltered.specs2.jetty.Planned
-with RoutesSpec
+class RoutesSpecJetty extends Specification with unfiltered.specs2.jetty.Planned with RoutesSpec
 
-class RoutesSpecNetty
-extends Specification
-with unfiltered.specs2.netty.Planned
-with RoutesSpec
+class RoutesSpecNetty extends Specification with unfiltered.specs2.netty.Planned with RoutesSpec
 
 trait RoutesSpec extends Specification with unfiltered.specs2.Hosted {
   import unfiltered.response._
 
-  def intent[A,B]: unfiltered.Cycle.Intent[A,B] = Routes.specify(
+  def intent[A, B]: unfiltered.Cycle.Intent[A, B] = Routes.specify(
     "/widgets" -> contrivedPass,
     "/widgets" -> widgets,
     "/widgets/:widget_id" -> getWidget,
