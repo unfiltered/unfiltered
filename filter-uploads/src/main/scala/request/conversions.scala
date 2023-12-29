@@ -2,7 +2,8 @@ package unfiltered.filter.util
 
 object IteratorConversions {
   import org.apache.commons.{fileupload => fu}
-  import fu.{FileItemIterator, FileItemStream}
+  import fu.FileItemIterator
+  import fu.FileItemStream
   import java.util.{Iterator => JIterator}
 
   /** convert java iterator to scala iterator */

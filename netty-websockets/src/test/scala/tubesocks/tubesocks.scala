@@ -1,18 +1,21 @@
 package tubesocks
 
-import com.ning.http.client.{ AsyncHttpClient, AsyncHttpClientConfig }
-import com.ning.http.client.websocket.{
-  WebSocket, DefaultWebSocketListener, WebSocketUpgradeHandler }
+import com.ning.http.client.AsyncHttpClient
+import com.ning.http.client.AsyncHttpClientConfig
+import com.ning.http.client.websocket.WebSocket
+import com.ning.http.client.websocket.DefaultWebSocketListener
+import com.ning.http.client.websocket.WebSocketUpgradeHandler
 import java.net.URI
 
 /** A builder of sorts for (Web)Sockets */
 object Sock {
+
   /** A partial function signature for handing Socket events */
   type Handler = PartialFunction[Event, Any]
 
   object Listen {
-    lazy val discard: Handler = {
-      case e: Event => ()
+    lazy val discard: Handler = { case e: Event =>
+      ()
     }
 
     case class ReconnectingListen(times: Int, pausing: Int) {
@@ -33,7 +36,7 @@ object Sock {
 
     def reconnecting(times: Int, pausing: Int) = ReconnectingListen(times, pausing)
 
-    def apply(pf: Handler)  = {
+    def apply(pf: Handler) = {
       def complete(e: Event) = (pf orElse discard)(e)
       // note: we would just use the TextListener below BUT
       // it's very convenient to make #onMessage(m) respondable
@@ -55,7 +58,7 @@ object Sock {
    *  @param str string uri
    *  @return a function that takes a Handler and returns a Socket */
   def uri(str: String) =
-    apply(new URI(if (str.startsWith("ws")) str else s"ws://${str}"))_
+    apply(new URI(if (str.startsWith("ws")) str else s"ws://${str}")) _
 
   /** Default client-configured Socket
    *  @param uri websocket endpoint
@@ -67,19 +70,22 @@ object Sock {
    *  @param conf configuration building function
    *  @param uri websocket endpoint
    *  @param f Handler function */
-  def configure(conf: AsyncHttpClientConfig.Builder => AsyncHttpClientConfig.Builder)
-               (reconnectAttempts: Int = 0, pausing: Int = 0)
-               (uri: URI)(f: Handler): Socket =
-    new DefaultSocket(mkClient(conf(defaultConfig))
-                      .prepareGet(uri.toString)
-                      .execute(new WebSocketUpgradeHandler.Builder()
-                               .addWebSocketListener(Listen.reconnecting(reconnectAttempts, pausing)(f))
-                      .build())
-                      .get())
+  def configure(
+    conf: AsyncHttpClientConfig.Builder => AsyncHttpClientConfig.Builder
+  )(reconnectAttempts: Int = 0, pausing: Int = 0)(uri: URI)(f: Handler): Socket =
+    new DefaultSocket(
+      mkClient(conf(defaultConfig))
+        .prepareGet(uri.toString)
+        .execute(
+          new WebSocketUpgradeHandler.Builder()
+            .addWebSocketListener(Listen.reconnecting(reconnectAttempts, pausing)(f))
+            .build()
+        )
+        .get()
+    )
 
   private def defaultConfig =
-    new AsyncHttpClientConfig.Builder()
-      .setUserAgent("Tubesocks/0.1")
+    new AsyncHttpClientConfig.Builder().setUserAgent("Tubesocks/0.1")
 
   private def mkClient(config: AsyncHttpClientConfig.Builder) =
     new AsyncHttpClient(config.build())

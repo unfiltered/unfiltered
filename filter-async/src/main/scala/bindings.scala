@@ -15,9 +15,11 @@ trait AsyncBinding extends Async.Responder[HttpServletResponse] {
       case Pass =>
         filterChain.doFilter(self.underlying, async.getResponse)
       case rf =>
-        rf(new ResponseBinding(
-          async.getResponse.asInstanceOf[HttpServletResponse]
-        ))
+        rf(
+          new ResponseBinding(
+            async.getResponse.asInstanceOf[HttpServletResponse]
+          )
+        )
     }
     async.complete
   }

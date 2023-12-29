@@ -1,11 +1,12 @@
 package unfiltered.request
 
-
 object & {
+
   /** Used to bind extractors to a single request object */
   def unapply[A](a: A): Some[(A, A)] = Some((a, a))
+
   /** Used to extract nested tuples produced by directives anded together */
-  def unapply[A,B](tup: Tuple2[A,B]): Some[(A, B)] = Some(tup)
+  def unapply[A, B](tup: Tuple2[A, B]): Some[(A, B)] = Some(tup)
 }
 
 abstract class RequestExtractor[E] {
@@ -22,6 +23,6 @@ object RequestExtractor {
   final class Predicate[E] private[RequestExtractor] (reqExtract: RequestExtractor[E], predicate: E => Boolean) {
     def unapply[T](req: HttpRequest[T]): Option[HttpRequest[T]] =
       for (value <- reqExtract.unapply(req) if predicate(value))
-      yield req
+        yield req
   }
 }

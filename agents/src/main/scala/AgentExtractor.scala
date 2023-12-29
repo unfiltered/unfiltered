@@ -6,8 +6,10 @@ package unfiltered.request
  * for composing simple extractors into more complex ones.
  */
 trait AgentExtractor extends (HttpRequest[?] => Boolean) {
+
   /** Predicate for an agent string. */
   val test: String => Boolean
+
   /** Composition (f.g). */
   def &(e: AgentExtractor) = new AgentExtractor {
     val test = (ua: String) => AgentExtractor.this.test(ua) && e.test(ua)

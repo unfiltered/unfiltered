@@ -1,24 +1,28 @@
 package unfiltered.netty
 
-import unfiltered.util.{ PlanServer, RunnableServer }
-
+import unfiltered.util.PlanServer
+import unfiltered.util.RunnableServer
 import io.netty.bootstrap.ServerBootstrap
-import io.netty.channel.{ ChannelHandler, ChannelInitializer, ChannelOption, WriteBufferWaterMark }
-import io.netty.channel.epoll.{Epoll, EpollServerSocketChannel}
-import io.netty.channel.kqueue.{KQueue, KQueueServerSocketChannel}
-import io.netty.channel.socket.{ServerSocketChannel, SocketChannel}
+import io.netty.channel.ChannelHandler
+import io.netty.channel.ChannelInitializer
+import io.netty.channel.ChannelOption
+import io.netty.channel.WriteBufferWaterMark
+import io.netty.channel.epoll.Epoll
+import io.netty.channel.epoll.EpollServerSocketChannel
+import io.netty.channel.kqueue.KQueue
+import io.netty.channel.kqueue.KQueueServerSocketChannel
+import io.netty.channel.socket.ServerSocketChannel
+import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
-import io.netty.handler.codec.http.{
-  HttpObjectAggregator,
-  HttpRequestDecoder,
-  HttpResponseEncoder
-}
+import io.netty.handler.codec.http.HttpObjectAggregator
+import io.netty.handler.codec.http.HttpRequestDecoder
+import io.netty.handler.codec.http.HttpResponseEncoder
 import io.netty.handler.stream.ChunkedWriteHandler
-import java.lang.{ Boolean => JBoolean, Integer => JInteger }
-
+import java.lang.{Boolean => JBoolean}
+import java.lang.{Integer => JInteger}
 import java.net.URL
 
-object Server extends PortBindings {  
+object Server extends PortBindings {
   def bind(binding: PortBinding): Server =
     Server(binding :: Nil, Nil, () => (), 1048576, Engine.Default)
 }
@@ -36,13 +40,13 @@ case class Server(
   chunkSize: Int,
   engine: Engine
 ) extends RunnableServer
-  with PlanServer[ChannelHandler]
-  with PortBindings
-  with Engine.Builder[Server] {
+    with PlanServer[ChannelHandler]
+    with PortBindings
+    with Engine.Builder[Server] {
   type ServerBuilder = Server
 
   private[this] lazy val acceptorGrp = engine.acceptor
-  private[this] lazy val workerGrp  = engine.workers
+  private[this] lazy val workerGrp = engine.workers
   private[this] lazy val channelGrp = engine.channels
 
   def use(engine: Engine) =
@@ -63,8 +67,8 @@ case class Server(
 
   /** Starts server in the background after applying a function
    *  to each port bindings server bootstrap */
-  def start(prebind: ServerBootstrap => ServerBootstrap) = {    
-    val channelClz: Class[_ <: ServerSocketChannel] = if (Epoll.isAvailable) {
+  def start(prebind: ServerBootstrap => ServerBootstrap) = {
+    val channelClz: Class[? <: ServerSocketChannel] = if (Epoll.isAvailable) {
       classOf[EpollServerSocketChannel]
     } else if (KQueue.isAvailable) {
       classOf[KQueueServerSocketChannel]
@@ -73,10 +77,8 @@ case class Server(
     }
     val bindings = portBindings.map { binding =>
       val bootstrap = configure(
-        new ServerBootstrap()
-          .group(acceptorGrp, workerGrp)
-          .channel(channelClz)
-          .childHandler(initializer(binding)))
+        new ServerBootstrap().group(acceptorGrp, workerGrp).channel(channelClz).childHandler(initializer(binding))
+      )
       prebind(bootstrap).bind(binding.host, binding.port).sync
     }
     for (binding <- bindings)
@@ -117,7 +119,8 @@ case class Server(
     copy(beforeStopBlock = { () => beforeStopBlock(); block })
 
   def configure(bootstrap: ServerBootstrap): ServerBootstrap =
-     bootstrap.childOption(ChannelOption.TCP_NODELAY, JBoolean.TRUE)     
+    bootstrap
+      .childOption(ChannelOption.TCP_NODELAY, JBoolean.TRUE)
       /* http://normanmaurer.me/presentations/2014-facebook-eng-netty/slides.html#11.0 */
       .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(8 * 1024, 32 * 1024))
       .childOption(ChannelOption.SO_KEEPALIVE, JBoolean.TRUE)
@@ -128,23 +131,24 @@ case class Server(
 
   /** @param binding a binder which may contribute to channel initialization */
   def initializer(binding: PortBinding): ChannelInitializer[SocketChannel] =
-    (channel: SocketChannel) => handlers.reverse.zipWithIndex.foldLeft(
-      binding.init(channel).pipeline
-        .addLast("housekeeper", new HouseKeeper(channelGrp))
-        .addLast("decoder", new HttpRequestDecoder)
-        .addLast("encoder", new HttpResponseEncoder)
-        .addLast("chunker", new HttpObjectAggregator(chunkSize))
-    ) {
-      case (pipe, (handler, index)) =>
-        pipe.addLast(s"handler-$index", handler())
-    }.addLast("notfound", new NotFoundHandler)
+    (channel: SocketChannel) =>
+      handlers.reverse.zipWithIndex
+        .foldLeft(
+          binding
+            .init(channel)
+            .pipeline
+            .addLast("housekeeper", new HouseKeeper(channelGrp))
+            .addLast("decoder", new HttpRequestDecoder)
+            .addLast("encoder", new HttpResponseEncoder)
+            .addLast("chunker", new HttpObjectAggregator(chunkSize))
+        ) { case (pipe, (handler, index)) =>
+          pipe.addLast(s"handler-$index", handler())
+        }
+        .addLast("notfound", new NotFoundHandler)
 
   def chunked(size: Int) = copy(chunkSize = size)
 
-  def resources(
-    path: URL,
-    cacheSeconds: Int   = 60,
-    passOnFail: Boolean = true) = {
+  def resources(path: URL, cacheSeconds: Int = 60, passOnFail: Boolean = true) = {
     val resources = Resources(path, cacheSeconds, passOnFail)
     this.makePlan(new ChunkedWriteHandler).plan(resources)
   }

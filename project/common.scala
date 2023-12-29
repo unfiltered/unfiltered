@@ -6,9 +6,10 @@ object Common {
 
   private[this] val unusedWarnings = Def.setting(
     CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, _)) => Seq(
-        "-Ywarn-unused:imports"
-      )
+      case Some((2, _)) =>
+        Seq(
+          "-Ywarn-unused:imports"
+        )
       case _ =>
         Nil
     }
@@ -18,27 +19,22 @@ object Common {
 
   val settings: Seq[Setting[?]] = Def.settings(
     organization := "ws.unfiltered",
-
     crossScalaVersions := Seq(Scala213, "3.3.1"),
-
     scalaVersion := Scala213,
-
     scalacOptions ++=
       Seq("-encoding", "utf8", "-deprecation", "-unchecked", "-feature"),
-
-    scalacOptions ++= PartialFunction.condOpt(CrossVersion.partialVersion(scalaVersion.value)){
-      case Some((2, _)) =>
+    scalacOptions ++= PartialFunction
+      .condOpt(CrossVersion.partialVersion(scalaVersion.value)) { case Some((2, _)) =>
         Seq(
           "-Xcheckinit",
           "-Xsource:3",
           "-Wconf:msg=constructor modifiers are assumed by synthetic:info",
         )
-    }.toList.flatten,
-
+      }
+      .toList
+      .flatten,
     scalacOptions ++= unusedWarnings.value,
-
     Test / fork := true,
-
     Compile / doc / sources := {
       CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, _)) =>
@@ -47,7 +43,6 @@ object Common {
           Nil // TODO enable scaladoc for Scala 3
       }
     },
-
     (Compile / doc / scalacOptions) ++= {
       val hash = sys.process.Process("git rev-parse HEAD").lineStream_!.head
       val base = (LocalRootProject / baseDirectory).value.getAbsolutePath
@@ -63,19 +58,13 @@ object Common {
           )
       }
     },
-
     Compile / javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
-
     Test / parallelExecution := false, // :( test servers collide on same port
 
     homepage := Some(url("https://unfiltered.ws")),
-
     publishMavenStyle := true,
-
     publishTo := sonatypePublishToBundle.value,
-
     licenses := Seq("MIT" -> url("https://www.opensource.org/licenses/MIT")),
-
     pomExtra := (
       <scm>
         <url>git@github.com:unfiltered/unfiltered.git</url>
@@ -114,7 +103,5 @@ object Common {
         </developer>
       </developers>
     )
-  ) ++ Seq(Compile, Test).flatMap(c =>
-    (c / console / scalacOptions) --= unusedWarnings.value
-  )
+  ) ++ Seq(Compile, Test).flatMap(c => (c / console / scalacOptions) --= unusedWarnings.value)
 }

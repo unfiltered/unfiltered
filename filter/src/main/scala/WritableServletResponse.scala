@@ -1,8 +1,10 @@
 package unfiltered.filter
 
 import java.io.PrintWriter
-import jakarta.servlet.http.{HttpServletResponse, HttpServletResponseWrapper}
+import jakarta.servlet.http.HttpServletResponse
+import jakarta.servlet.http.HttpServletResponseWrapper
 import unfiltered.response.HttpResponse
+
 /**
  * The servlet API states that, for a given response, either the
  * getOutputStream or getWriter method may be called, but not both:
@@ -22,6 +24,6 @@ import unfiltered.response.HttpResponse
  */
 
 case class WritableServletResponse(res: HttpResponse[HttpServletResponse])
-extends HttpServletResponseWrapper(res.underlying) {
+    extends HttpServletResponseWrapper(res.underlying) {
   override lazy val getWriter = new PrintWriter(res.outputStream)
 }

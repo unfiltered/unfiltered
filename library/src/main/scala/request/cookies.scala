@@ -4,12 +4,12 @@ import unfiltered.Cookie
 
 /** An implementation of a function used to map cookie names to their value as an Option. If there
  *  is no associated Cookie value. None will always be returned. */
-private [request] object CookieValueParser extends (Iterator[String] => Map[String, Option[Cookie]]) {
+private[request] object CookieValueParser extends (Iterator[String] => Map[String, Option[Cookie]]) {
   def apply(values: Iterator[String]) = {
     val vs = values.toList
-    vs.flatMap(FromCookies.apply _).foldLeft(Map.empty[String, Option[Cookie]])(
-      (m, c) => m + (c.name -> Some(c))
-    ).withDefaultValue(None)
+    vs.flatMap(FromCookies.apply _)
+      .foldLeft(Map.empty[String, Option[Cookie]])((m, c) => m + (c.name -> Some(c)))
+      .withDefaultValue(None)
   }
 }
 
@@ -26,47 +26,56 @@ object FromCookies {
 
   def apply(cstr: String): Seq[Cookie] = {
     val (names, values) =
-      (Cutter.findAllIn(cstr).foldLeft((List.empty[String], List.empty[String], (None: Option[(String, String, String)]))) {
-        case ((names, values, prev), matchresult) =>
-          matchresult match {
-            case Cutter(cname, couldBeValue, cvalue, delim) =>
+      Cutter
+        .findAllIn(cstr)
+        .foldLeft((List.empty[String], List.empty[String], (None: Option[(String, String, String)]))) {
+          case ((names, values, prev), matchresult) =>
+            matchresult match {
+              case Cutter(cname, couldBeValue, cvalue, delim) =>
+                val (name, value, sep) = (
+                  cname,
+                  cvalue match {
+                    case null =>
+                      couldBeValue match {
+                        case null => cvalue
+                        case is => is.replace("\\\"", "\"").replace("\\\\", "\\")
+                      }
+                    case v => v
+                  },
+                  delim
+                )
 
-              val (name, value, sep) = (cname, cvalue match {
-                case null => couldBeValue match {
-                  case null => cvalue
-                  case is => is.replace("\\\"", "\"").replace("\\\\", "\\")
+                prev match {
+                  case None =>
+                    (names, values, Some((name, Option(value).getOrElse(""), sep)))
+                  case Some((n0, v0, s0)) =>
+                    if (
+                      value == null &&
+                      !KeyOnly.exists(_.equalsIgnoreCase(name))
+                    ) {
+                      (names, values, Some((n0, v0 + s0 + name, sep)))
+                    } else {
+                      (n0 :: names, v0 :: values, Some((name, value, delim)))
+                    }
                 }
-                case v => v
-              }, delim)
-
-              prev match {
-                case None =>
-                  (names, values, Some((name, Option(value).getOrElse(""), sep)))
-                case Some((n0, v0, s0)) =>
-                  if(value == null &&
-                     !KeyOnly.exists(_.equalsIgnoreCase(name))) {
-                    (names, values, Some((n0, v0 + s0 + name, sep)))
-                  } else {
-                    (n0 :: names, v0 :: values, Some((name, value, delim)))
-                  }
-              }
-          }
-      }) match {
+            }
+        } match {
         case (ns, vs, Some((n, v, _))) =>
-          if(n == null) (ns.reverse, vs.reverse)
+          if (n == null) (ns.reverse, vs.reverse)
           else ((n :: ns).reverse, (v :: vs).reverse)
         case _ => sys.error(s"Error parsing cookie string ${cstr}")
       }
 
-    if(names.isEmpty) { Seq.empty[Cookie] }
+    if (names.isEmpty) { Seq.empty[Cookie] }
     else {
       // version may appear before name-value
       val (version, startAt) =
-        if(names(0).equalsIgnoreCase(Version))
-          try { (Integer.parseInt(values(0)), 1) } catch { case _: NumberFormatException => (0, 1) }
+        if (names(0).equalsIgnoreCase(Version))
+          try { (Integer.parseInt(values(0)), 1) }
+          catch { case _: NumberFormatException => (0, 1) }
         else (0, 0)
 
-      if(names.isEmpty) Seq.empty[Cookie]
+      if (names.isEmpty) Seq.empty[Cookie]
       else {
         // baking the cookies.
         // Given a seq of names and a seq of values
@@ -79,47 +88,66 @@ object FromCookies {
         // scala does not have a way to break from a for comprehension while still returning
         // a value. scala.util.control.Breakable is not an option here
         val iter: Iterator[Int] = (startAt until names.size).iterator
-        (for(i <- iter) yield {
+        (for (i <- iter) yield {
           (i + 1 until names.size).foldLeft((false, Cookie(names(i), Option(values(i)).getOrElse("")))) { (a, j) =>
             val (complete, cookie) = a
-            if(complete) a
-            else (names(j).toLowerCase, values(j)) match {
-              case (LCDiscard,    _) => iter.next(); (false, cookie) // don't support
-              case (LCSecure,     v) => iter.next(); (false, cookie.copy(secure = Option(true)))
-              case (LCHTTPOnly,   v) => iter.next(); (false, cookie.copy(httpOnly = true))
-              case (LCComment,    _) => iter.next(); (false, cookie) // don't support
-              case (LCCommentURL, _) => iter.next(); (false, cookie) // don't support
-              case (LCDomain,     v) => iter.next(); (false, cookie.copy(domain = Option(v)))
-              case (LCPath,       v) => iter.next(); (false, cookie.copy(path = Option(v)))
-              case (LCExpires,    v) => iter.next(); (false, try {
-                val maxMils =
-                  unfiltered.request.DateFormatting.parseDate(v).get.getTime -
-                    System.currentTimeMillis
-                cookie.copy(maxAge = Option(
-                  if(maxMils < 1)  0
-                  else (maxMils / 1000).toInt + (if(maxMils % 1000 != 0) 1 else 0)))
-              } catch {
-                case _: Exception => cookie
-              })
-              case (LCMaxAge, v)     => iter.next();  (false, try {
-                cookie.copy(maxAge = Option(Integer.parseInt(v)))
-              } catch {
-                case _: Exception => cookie
-              })
-              case (LCVersion, v)    => iter.next();  (false, try {
-                cookie.copy(version = Integer.parseInt(v))
-              } catch {
-                case _: Exception => cookie
-              })
-              case (LCPort, _)    =>  iter.next(); (false, cookie) // don't support
-              case (pass, _)      =>  (true, cookie)
-            }
+            if (complete) a
+            else
+              (names(j).toLowerCase, values(j)) match {
+                case (LCDiscard, _) => iter.next(); (false, cookie) // don't support
+                case (LCSecure, v) => iter.next(); (false, cookie.copy(secure = Option(true)))
+                case (LCHTTPOnly, v) => iter.next(); (false, cookie.copy(httpOnly = true))
+                case (LCComment, _) => iter.next(); (false, cookie) // don't support
+                case (LCCommentURL, _) => iter.next(); (false, cookie) // don't support
+                case (LCDomain, v) => iter.next(); (false, cookie.copy(domain = Option(v)))
+                case (LCPath, v) => iter.next(); (false, cookie.copy(path = Option(v)))
+                case (LCExpires, v) =>
+                  iter.next();
+                  (
+                    false,
+                    try {
+                      val maxMils =
+                        unfiltered.request.DateFormatting.parseDate(v).get.getTime -
+                          System.currentTimeMillis
+                      cookie.copy(maxAge =
+                        Option(
+                          if (maxMils < 1) 0
+                          else (maxMils / 1000).toInt + (if (maxMils % 1000 != 0) 1 else 0)
+                        )
+                      )
+                    } catch {
+                      case _: Exception => cookie
+                    }
+                  )
+                case (LCMaxAge, v) =>
+                  iter.next();
+                  (
+                    false,
+                    try {
+                      cookie.copy(maxAge = Option(Integer.parseInt(v)))
+                    } catch {
+                      case _: Exception => cookie
+                    }
+                  )
+                case (LCVersion, v) =>
+                  iter.next();
+                  (
+                    false,
+                    try {
+                      cookie.copy(version = Integer.parseInt(v))
+                    } catch {
+                      case _: Exception => cookie
+                    }
+                  )
+                case (LCPort, _) => iter.next(); (false, cookie) // don't support
+                case (pass, _) => (true, cookie)
+              }
           }
         })
-        // discard completion statuses
-        .map(_._2).toSeq
+          // discard completion statuses
+          .map(_._2)
+          .toSeq
       }
     }
   }
 }
-

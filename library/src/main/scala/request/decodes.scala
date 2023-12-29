@@ -6,12 +6,12 @@ object Decodes {
     RequestExtractor.predicate(AcceptEncoding) { encs =>
       encs.exists { encA => encA.equalsIgnoreCase(encB) || encA == "*" }
     }
-  
+
   /* IANA encodings. See [[https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6]]. */
-  val Chunked   = decoding("chunked")
-  val Identity  = decoding("identity")
-  val GZip      = decoding("gzip")
-  val Compress  = decoding("compress")
-  val Deflate   = decoding("deflate")
+  val Chunked = decoding("chunked")
+  val Identity = decoding("identity")
+  val GZip = decoding("gzip")
+  val Compress = decoding("compress")
+  val Deflate = decoding("deflate")
 
 }

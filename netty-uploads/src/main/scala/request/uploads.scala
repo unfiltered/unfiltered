@@ -1,29 +1,25 @@
 package unfiltered.netty.request
 
-import unfiltered.netty.{ ReceivedMessage, RequestBinding }
-import unfiltered.request.{
-  AbstractDiskExtractor,
-  AbstractDiskFile,  
-  AbstractStreamedFile,  
-  DiskExtractor,
-  MultiPartMatcher,
-  MultipartData,
-  RequestContentType,
-  StreamedExtractor,
-  TupleGenerator
-}
+import unfiltered.netty.ReceivedMessage
+import unfiltered.netty.RequestBinding
+import unfiltered.request.AbstractDiskExtractor
+import unfiltered.request.AbstractDiskFile
+import unfiltered.request.AbstractStreamedFile
+import unfiltered.request.DiskExtractor
+import unfiltered.request.MultiPartMatcher
+import unfiltered.request.MultipartData
+import unfiltered.request.RequestContentType
+import unfiltered.request.StreamedExtractor
+import unfiltered.request.TupleGenerator
 import unfiltered.request.io.FileIO
 import scala.util.control.NonFatal
-
-import io.netty.handler.codec.http.multipart.{
-  Attribute,
-  FileUpload,
-  InterfaceHttpData
-}
-
+import io.netty.handler.codec.http.multipart.Attribute
+import io.netty.handler.codec.http.multipart.FileUpload
+import io.netty.handler.codec.http.multipart.InterfaceHttpData
 import scala.util.control.Exception.allCatch
-
-import java.io.{ File => JFile, FileInputStream, InputStream }
+import java.io.{File => JFile}
+import java.io.FileInputStream
+import java.io.InputStream
 
 // fixme(doug): there's only one concrete impl. is this really needed?
 trait MultiPartCallback
@@ -33,7 +29,7 @@ case class Decode(binding: MultiPartBinding) extends MultiPartCallback
 class MultiPartBinding(val decoder: Option[PostDecoder], msg: ReceivedMessage) extends RequestBinding(msg)
 
 /** Matches requests that have multipart content */
-object MultiPart extends MultiPartMatcher[RequestBinding] {  
+object MultiPart extends MultiPartMatcher[RequestBinding] {
   val Type = "multipart/form-data"
   val Boundary = "boundary"
   def unapply(req: RequestBinding) =
@@ -53,7 +49,7 @@ object MultiPart extends MultiPartMatcher[RequestBinding] {
   }
 
   /** Split the Content-Type header value into two strings */
-  private def splitContentTypeHeader(sb: String): (Option[String],Option[String]) = {
+  private def splitContentTypeHeader(sb: String): (Option[String], Option[String]) = {
     def nonEmpty(s: String) = if (s.isEmpty) None else Some(s)
 
     val (contentType, params) = sb.trim.span(!_.isWhitespace)
@@ -65,7 +61,7 @@ object MultiPart extends MultiPartMatcher[RequestBinding] {
 object MultiPartParams {
 
   /** Streamed multi-part data extractor */
-  object Streamed extends StreamedExtractor[RequestBinding] {    
+  object Streamed extends StreamedExtractor[RequestBinding] {
     def apply(req: RequestBinding) = {
 
       val decoder = req match {
@@ -84,7 +80,7 @@ object MultiPartParams {
       def extractFile(name: String): Seq[StreamedFileWrapper] = {
         files.withFilter(_.getName == name).map(new StreamedFileWrapper(_))
       }
-      MultipartData(extractParam _,extractFile _)
+      MultipartData(extractParam _, extractFile _)
     }
   }
 
@@ -115,35 +111,33 @@ object MultiPartParams {
       def extractFile(name: String): Seq[StreamedFileWrapper] = {
         files.withFilter(_.getName == name).map(new MemoryFileWrapper(_))
       }
-      MultipartData(extractParam _, extractFile _)      
+      MultipartData(extractParam _, extractFile _)
     }
   }
 }
 
 /** Netty extractor for multi-part data destined for disk. */
-trait AbstractDisk
-  extends AbstractDiskExtractor[RequestBinding]
-  with TupleGenerator {
+trait AbstractDisk extends AbstractDiskExtractor[RequestBinding] with TupleGenerator {
   def apply(req: RequestBinding) = {
     val items = req match {
       case r: MultiPartBinding => r.decoder.map(_.items).getOrElse(Nil).iterator
-      case _ => PostDecoder(req.underlying.request).map(_.items).getOrElse(Nil).iterator 
-    }  
+      case _ => PostDecoder(req.underlying.request).map(_.items).getOrElse(Nil).iterator
+    }
 
-    val (params, files) = genTuple[String, DiskFileWrapper, InterfaceHttpData](items) ((maps, item) => item match {
+    val (params, files) = genTuple[String, DiskFileWrapper, InterfaceHttpData](items)((maps, item) =>
+      item match {
         case file: FileUpload =>
           (maps._1, maps._2 + (file.getName -> (new DiskFileWrapper(file) :: maps._2(file.getName))))
         case attr: Attribute =>
           (maps._1 + (attr.getName -> (attr.getValue :: maps._1(attr.getName))), maps._2)
-      })
+      }
+    )
 
     MultipartData(params, files)
   }
 }
 
-class StreamedFileWrapper(item: FileUpload)
-  extends AbstractStreamedFile
-  with FileIO {
+class StreamedFileWrapper(item: FileUpload) extends AbstractStreamedFile with FileIO {
 
   val bstm = new FileInputStream(item.getFile)
 
@@ -155,13 +149,12 @@ class StreamedFileWrapper(item: FileUpload)
   }
 
   def stream[T]: (InputStream => T) => T =
-    MultiPartParams.Streamed.withStreamedFile[T](bstm)_
+    MultiPartParams.Streamed.withStreamedFile[T](bstm) _
   val name = item.getFilename
   val contentType = item.getContentType
 }
 
-class DiskFileWrapper(item: FileUpload)
-  extends AbstractDiskFile {
+class DiskFileWrapper(item: FileUpload) extends AbstractDiskFile {
   def write(out: JFile): Option[JFile] = try {
     item.renameTo(out)
     Some(out)
@@ -177,10 +170,9 @@ class DiskFileWrapper(item: FileUpload)
 }
 
 /** Wrapper for an uploaded file with write functionality disabled. */
-class MemoryFileWrapper(item: FileUpload)
-  extends StreamedFileWrapper(item) {  
+class MemoryFileWrapper(item: FileUpload) extends StreamedFileWrapper(item) {
   override def write(out: JFile): Option[JFile] = {
-    //error("File writing is not permitted") // todo: remove this
+    // error("File writing is not permitted") // todo: remove this
     None
   }
   def isInMemory = item.isInMemory

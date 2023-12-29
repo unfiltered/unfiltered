@@ -12,7 +12,8 @@ name := "unfiltered-all"
 artifacts := Classpaths.artifactDefs(Seq(Compile / packageDoc, Compile / makePom)).value
 packagedArtifacts := Classpaths.packaged(Seq(Compile / packageDoc, Compile / makePom)).value
 Defaults.packageTaskSettings(
-  Compile / packageDoc, (Compile / unidoc).map{_.flatMap(Path.allSubpaths)}
+  Compile / packageDoc,
+  (Compile / unidoc).map { _.flatMap(Path.allSubpaths) }
 )
 
 releaseCrossBuild := true
@@ -61,31 +62,37 @@ lazy val library: Project = module("unfiltered")(
   ),
 ).dependsOn(util)
 
-lazy val directives = module("directives")().settings(
-  description := "monadic api for unfiltered",
-  Test / sources := {
-    if (scalaBinaryVersion.value == "3") {
-      // TODO
-      val exclude = Set(
-        "DirectivesSpec.scala"
-      )
-      (Test / sources).value.filterNot(f => exclude(f.getName))
-    } else {
-      (Test / sources).value
+lazy val directives = module("directives")()
+  .settings(
+    description := "monadic api for unfiltered",
+    Test / sources := {
+      if (scalaBinaryVersion.value == "3") {
+        // TODO
+        val exclude = Set(
+          "DirectivesSpec.scala"
+        )
+        (Test / sources).value.filterNot(f => exclude(f.getName))
+      } else {
+        (Test / sources).value
+      }
     }
-  }
-).dependsOn(library, specs2 % "test")
+  )
+  .dependsOn(library, specs2 % "test")
 
-lazy val filters = module(filterProjectId)().settings(
-  description := "Server binding for Java Servlet filters",
-  libraryDependencies += servletApiDep,
-  dependsOnSpecs2InTest
-).dependsOn(library)
+lazy val filters = module(filterProjectId)()
+  .settings(
+    description := "Server binding for Java Servlet filters",
+    libraryDependencies += servletApiDep,
+    dependsOnSpecs2InTest
+  )
+  .dependsOn(library)
 
-lazy val filtersAsync = module("filter-async")().settings(
-  description := "Server binding for Java Servlet async filters",
-  libraryDependencies += servletApiDep
-).dependsOn(filters, specs2 % "test")
+lazy val filtersAsync = module("filter-async")()
+  .settings(
+    description := "Server binding for Java Servlet async filters",
+    libraryDependencies += servletApiDep
+  )
+  .dependsOn(filters, specs2 % "test")
 
 lazy val agents = module("agents")(
   srcPath = "unfiltered/request"
@@ -125,12 +132,14 @@ lazy val util = module("util")().settings(
   libraryDependencies += specs2Dep.value % "test"
 )
 
-lazy val jetty = module("jetty")().settings(
-  description := "Jetty server embedding module",
-  libraryDependencies := Seq(
-    "org.eclipse.jetty" % "jetty-webapp" % jettyVersion
+lazy val jetty = module("jetty")()
+  .settings(
+    description := "Jetty server embedding module",
+    libraryDependencies := Seq(
+      "org.eclipse.jetty" % "jetty-webapp" % jettyVersion
+    )
   )
-).dependsOn(util)
+  .dependsOn(util)
 
 lazy val nettyServer = module("netty-server")(
   srcPath = "unfiltered/netty"
@@ -142,34 +151,40 @@ lazy val nettyServer = module("netty-server")(
   libraryDependencies ++= integrationTestDeps.value
 ).dependsOn(netty, util)
 
-lazy val netty = module("netty")().settings(
-  description := "Netty server binding module",
-  dependsOnSpecs2InTest,
-  libraryDependencies ++= {
-    ("io.netty" % "netty-codec-http" % nettyVersion) +:
-    ("io.netty" % "netty-handler" % nettyVersion) +:
-    ("io.netty" % "netty-transport-native-epoll" % nettyVersion classifier "linux-x86_64") +:
-    ("io.netty" % "netty-transport-native-epoll" % nettyVersion classifier "linux-aarch_64") +:
-    ("io.netty" % "netty-transport-native-kqueue" % nettyVersion classifier "osx-x86_64") +:
-    ("io.netty" % "netty-transport-native-kqueue" % nettyVersion classifier "osx-aarch_64") +:
-    integrationTestDeps.value
-  }
-).dependsOn(library)
+lazy val netty = module("netty")()
+  .settings(
+    description := "Netty server binding module",
+    dependsOnSpecs2InTest,
+    libraryDependencies ++= {
+      ("io.netty" % "netty-codec-http" % nettyVersion) +:
+        ("io.netty" % "netty-handler" % nettyVersion) +:
+        ("io.netty" % "netty-transport-native-epoll" % nettyVersion classifier "linux-x86_64") +:
+        ("io.netty" % "netty-transport-native-epoll" % nettyVersion classifier "linux-aarch_64") +:
+        ("io.netty" % "netty-transport-native-kqueue" % nettyVersion classifier "osx-x86_64") +:
+        ("io.netty" % "netty-transport-native-kqueue" % nettyVersion classifier "osx-aarch_64") +:
+        integrationTestDeps.value
+    }
+  )
+  .dependsOn(library)
 
-lazy val specs2: Project = module(specs2ProjectId)().settings(
-  description := "Facilitates testing Unfiltered servers with Specs2",
-  libraryDependencies ++= {
-    specs2Dep.value :: okHttp
-  }
-).dependsOn(filters, jetty, nettyServer)
+lazy val specs2: Project = module(specs2ProjectId)()
+  .settings(
+    description := "Facilitates testing Unfiltered servers with Specs2",
+    libraryDependencies ++= {
+      specs2Dep.value :: okHttp
+    }
+  )
+  .dependsOn(filters, jetty, nettyServer)
 
-lazy val scalatest = module(scalatestProjectId)().settings(
-  description := "Facilitates testing Unfiltered servers with ScalaTest",
-  libraryDependencies ++= {
-    okHttp :+
-    ("org.scalatest" %% "scalatest-core" % scalatestVersion)
-  }
-).dependsOn(filters, jetty, nettyServer)
+lazy val scalatest = module(scalatestProjectId)()
+  .settings(
+    description := "Facilitates testing Unfiltered servers with ScalaTest",
+    libraryDependencies ++= {
+      okHttp :+
+        ("org.scalatest" %% "scalatest-core" % scalatestVersion)
+    }
+  )
+  .dependsOn(filters, jetty, nettyServer)
 
 lazy val json4s = module("json4s")(
   srcPath = "unfiltered"
@@ -180,25 +195,29 @@ lazy val json4s = module("json4s")(
   }
 ).dependsOn(library, filters % "test", specs2 % "test")
 
-lazy val websockets = module("netty-websockets")().settings(
-  description := "WebSockets plan support using Netty",
-  libraryDependencies ++= integrationTestDeps.value,
-  libraryDependencies += "com.ning" % "async-http-client" % asyncHttpClientVersion % "test"
-).dependsOn(nettyServer, specs2 % "test")
+lazy val websockets = module("netty-websockets")()
+  .settings(
+    description := "WebSockets plan support using Netty",
+    libraryDependencies ++= integrationTestDeps.value,
+    libraryDependencies += "com.ning" % "async-http-client" % asyncHttpClientVersion % "test"
+  )
+  .dependsOn(nettyServer, specs2 % "test")
 
-lazy val nettyUploads = module("netty-uploads")().settings(
-  description := "Uploads plan support using Netty",
-  Test / sources := {
-    if (scalaBinaryVersion.value == "3") {
-      // TODO
-      val exclude = Set(
-        "MixedPlanSpec.scala"
-      )
-      (Test / sources).value.filterNot(f => exclude(f.getName))
-    } else {
-      (Test / sources).value
-    }
-  },
-  libraryDependencies ++= integrationTestDeps.value,
-  Test / parallelExecution := false
-).dependsOn(nettyServer, uploads, specs2 % "test")
+lazy val nettyUploads = module("netty-uploads")()
+  .settings(
+    description := "Uploads plan support using Netty",
+    Test / sources := {
+      if (scalaBinaryVersion.value == "3") {
+        // TODO
+        val exclude = Set(
+          "MixedPlanSpec.scala"
+        )
+        (Test / sources).value.filterNot(f => exclude(f.getName))
+      } else {
+        (Test / sources).value
+      }
+    },
+    libraryDependencies ++= integrationTestDeps.value,
+    Test / parallelExecution := false
+  )
+  .dependsOn(nettyServer, uploads, specs2 % "test")

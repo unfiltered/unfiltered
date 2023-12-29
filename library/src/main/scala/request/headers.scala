@@ -1,12 +1,15 @@
 package unfiltered.request
 
-import scala.util.control.Exception.{ allCatch, catching }
+import scala.util.control.Exception.allCatch
+import scala.util.control.Exception.catching
 
 trait DateParser extends (String => java.util.Date)
 
 object DateFormatting {
   import java.text.SimpleDateFormat
-  import java.util.{ Date, Locale, TimeZone }
+  import java.util.Date
+  import java.util.Locale
+  import java.util.TimeZone
 
   def format(date: Date) =
     new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH) {
@@ -17,27 +20,29 @@ object DateFormatting {
     allCatch.opt(new SimpleDateFormat(fmt, Locale.US).parse(value))
 
   /** Preferred HTTP date format Sun, 06 Nov 1994 08:49:37 GMT */
-  def RFC1123 = parseAs("EEE, dd MMM yyyy HH:mm:ss z")_
+  def RFC1123 = parseAs("EEE, dd MMM yyyy HH:mm:ss z") _
 
   /** Sunday, 06-Nov-94 08:49:37 GMT */
-  def RFC1036 = parseAs("EEEEEE, dd-MMM-yy HH:mm:ss z")_
+  def RFC1036 = parseAs("EEEEEE, dd-MMM-yy HH:mm:ss z") _
 
   /** Sun Nov  6 08:49:37 1994 */
-  def ANSICTime = parseAs("EEE MMM  d HH:mm:ss yyyy")_
+  def ANSICTime = parseAs("EEE MMM  d HH:mm:ss yyyy") _
 
   /** @return various date coersion formats falling back on None value */
   def parseDate(raw: String) = RFC1123(raw) orElse RFC1036(raw) orElse ANSICTime(raw)
 }
 
 /** A header with values mapped to keys in a Map. */
-private [request] class MappedRequestHeader[A, B](val name: String)(parser: Iterator[String] => Map[A, B]) extends RequestExtractor[Map[A, B]] {
+private[request] class MappedRequestHeader[A, B](val name: String)(parser: Iterator[String] => Map[A, B])
+    extends RequestExtractor[Map[A, B]] {
   def unapply[T](req: HttpRequest[T]): Some[Map[A, B]] = Some(parser(req.headers(name)))
   def apply[T](req: HttpRequest[T]) = parser(req.headers(name))
 }
 
 /** A header with comma delimited values. Implementations of this extractor
  * will not match requests for which the header `name` is not present.*/
-private [request] class SeqRequestHeader[T](val name: String)(parser: Iterator[String] => List[T]) extends RequestExtractor[List[T]] {
+private[request] class SeqRequestHeader[T](val name: String)(parser: Iterator[String] => List[T])
+    extends RequestExtractor[List[T]] {
   def unapply[A](req: HttpRequest[A]) =
     Some(parser(req.headers(name))).filter { _.nonEmpty }
   def apply[T](req: HttpRequest[T]) = parser(req.headers(name))
@@ -45,30 +50,33 @@ private [request] class SeqRequestHeader[T](val name: String)(parser: Iterator[S
 
 /** A header with a single value. Implementations of this extractor
  * will not match requests for which the header `name` is not present.*/
-private [request] class RequestHeader[A](val name: String)(parser: Iterator[String] => List[A]) extends RequestExtractor[A] {
-   def unapply[T](req: HttpRequest[T]) = parser(req.headers(name)).headOption
-   def apply[T](req: HttpRequest[T]) = parser(req.headers(name)).headOption
+private[request] class RequestHeader[A](val name: String)(parser: Iterator[String] => List[A])
+    extends RequestExtractor[A] {
+  def unapply[T](req: HttpRequest[T]) = parser(req.headers(name)).headOption
+  def apply[T](req: HttpRequest[T]) = parser(req.headers(name)).headOption
 }
 
-private [request] object DateValueParser extends (Iterator[String] => List[java.util.Date]) {
+private[request] object DateValueParser extends (Iterator[String] => List[java.util.Date]) {
   import DateFormatting._
   def apply(values: Iterator[String]) =
     values.toList.flatMap(parseDate)
 }
 
-private [request] object IntValueParser extends (Iterator[String] => List[Int]) {
-   def tryInt(raw: String) = catching(classOf[NumberFormatException]).opt(raw.toInt)
-   def apply(values: Iterator[String]) =
-     values.toList.flatMap(tryInt)
+private[request] object IntValueParser extends (Iterator[String] => List[Int]) {
+  def tryInt(raw: String) = catching(classOf[NumberFormatException]).opt(raw.toInt)
+  def apply(values: Iterator[String]) =
+    values.toList.flatMap(tryInt)
 }
 
-private [request] object StringValueParser extends (Iterator[String] => List[String]) {
+private[request] object StringValueParser extends (Iterator[String] => List[String]) {
   def apply(values: Iterator[String]) =
     values.toList
 }
 
-private [request] object UriValueParser extends (Iterator[String] => List[java.net.URI]) {
-  import java.net.{ URI, URISyntaxException }
+private[request] object UriValueParser extends (Iterator[String] => List[java.net.URI]) {
+  import java.net.URI
+  import java.net.URISyntaxException
+
   def toUri(raw: String) =
     catching(classOf[URISyntaxException], classOf[NullPointerException]).opt(new URI(raw))
 
@@ -76,41 +84,43 @@ private [request] object UriValueParser extends (Iterator[String] => List[java.n
     values.toList.flatMap(toUri)
 }
 
-private [request] object SeqValueParser extends (Iterator[String] => List[String]) {
-   def apply(values: Iterator[String]) = {
-     def split(raw: String): List[String] =
-       (raw.split(",") map {
-         _.trim.takeWhile { _ != ';' }.mkString
-       }).toList
-     values.toList.flatMap(split)
-   }
+private[request] object SeqValueParser extends (Iterator[String] => List[String]) {
+  def apply(values: Iterator[String]) = {
+    def split(raw: String): List[String] =
+      (raw.split(",") map {
+        _.trim.takeWhile { _ != ';' }.mkString
+      }).toList
+    values.toList.flatMap(split)
+  }
 }
 
-private [request]  case class Conneg(value: String, qualifier: Double = 1.0)
+private[request] case class Conneg(value: String, qualifier: Double = 1.0)
 
-private [request]  object Conneg {
+private[request] object Conneg {
   val EqualsMatcher = """(\w*)="?([a-zA-Z\.0-9]*)"?""".r
 
   def apply(input: String): Conneg = {
     val split = input.trim().split(";").toList
-    val params = split.tail.foldLeft(Map[String, Option[String]]()) {
-      case (map, s) => {
-        val item = s.trim match {
-          case EqualsMatcher(a, b) => (a.trim, Some(b.trim))
-          case _ => (s, None)
+    val params = split.tail
+      .foldLeft(Map[String, Option[String]]()) {
+        case (map, s) => {
+          val item = s.trim match {
+            case EqualsMatcher(a, b) => (a.trim, Some(b.trim))
+            case _ => (s, None)
+          }
+          map + item
         }
-        map + item
       }
-    }.collect{case (a, Some(b)) => (a, b)}
+      .collect { case (a, Some(b)) => (a, b) }
 
     new Conneg(split.head, params.get("q").map(_.toDouble).getOrElse(1.0))
   }
 }
 
-private [request] object ConnegValueParser extends (Iterator[String] => List[String]) {
+private[request] object ConnegValueParser extends (Iterator[String] => List[String]) {
   def apply(values: Iterator[String]) = {
-    def parse: String => scala.List[Conneg] = {
-      raw => raw.split(",").map(Conneg(_)).toList
+    def parse: String => scala.List[Conneg] = { raw =>
+      raw.split(",").map(Conneg(_)).toList
     }
     values.toList.flatMap(parse).sortBy(_.qualifier)(implicitly[Ordering[Double]].reverse).map(_.value)
   }
@@ -120,14 +130,18 @@ private [request] object ConnegValueParser extends (Iterator[String] => List[Str
  * for formats defined in the DateFormatting object, in this order:
  * RFC1123, RFC1036,  ANSICTime. */
 class DateHeader(name: String) extends RequestHeader(name)(DateValueParser)
+
 /** A repeatable header may be specified in more than one header k-v pair and
  *  whose values are a list delimited by comma
  *  see also [[https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2]] */
 class RepeatableHeader(name: String) extends SeqRequestHeader(name)(SeqValueParser)
+
 /** Header whose value should be a valid URI. */
 class UriHeader(name: String) extends RequestHeader(name)(UriValueParser)
+
 /** Header whose value can be any string. */
 class StringHeader(name: String) extends RequestHeader(name)(StringValueParser)
+
 /** Header whose value should be an integer. (Is stored in an Int.) */
 class IntHeader(name: String) extends RequestHeader(name)(IntValueParser)
 /* Header where the value needs to be sorted by the qualifier attribute. */
@@ -139,6 +153,7 @@ object Accept extends ConnegHeader("Accept")
 object AcceptCharset extends ConnegHeader("Accept-Charset")
 object AcceptEncoding extends ConnegHeader("Accept-Encoding")
 object AcceptLanguage extends ConnegHeader("Accept-Language")
+
 /** To handle request body content encodings */
 object RequestContentEncoding extends ConnegHeader("Content-Encoding") {
   private def matching(t: String) =
@@ -166,11 +181,11 @@ object IfRange extends StringHeader("If-Range") // can also be an http date
 object IfUnmodifiedSince extends DateHeader("If-Unmodified-Since")
 object MaxForwards extends IntHeader("Max-Forwards")
 object ProxyAuthorization extends StringHeader("Proxy-Authorization")
-object Range extends RepeatableHeader("Range")// there more structure here
+object Range extends RepeatableHeader("Range") // there more structure here
 object Referer extends UriHeader("Referer")
 object TE extends RepeatableHeader("TE")
 object Upgrade extends RepeatableHeader("Upgrade")
-object UserAgent extends StringHeader("User-Agent")// maybe a bit more structure here
+object UserAgent extends StringHeader("User-Agent") // maybe a bit more structure here
 object Via extends RepeatableHeader("Via")
 object XForwardedFor extends RepeatableHeader("X-Forwarded-For")
 object XForwardedPort extends IntHeader("X-Forwarded-Port")
@@ -194,10 +209,11 @@ object HostPort {
   import unfiltered.util.Of
   def unapply[T](req: HttpRequest[T]): Option[(String, Int)] =
     req match {
-      case Host(hostname) => hostname.split(':') match {
-        case Array(host, Of.Int(port)) => Some((host, port))
-        case _ => Some((hostname, if(req.isSecure) 443 else 80))
-      }
+      case Host(hostname) =>
+        hostname.split(':') match {
+          case Array(host, Of.Int(port)) => Some((host, port))
+          case _ => Some((hostname, if (req.isSecure) 443 else 80))
+        }
       case _ => None
     }
 }

@@ -31,7 +31,13 @@ object CookieKeys {
   val KeyOnly = Seq(Discard, Secure, HTTPOnly)
 }
 
-case class Cookie(name: String, value: String, domain: Option[String] = None,
-                  path: Option[String] = None, maxAge: Option[Int] = None,
-                  secure: Option[Boolean] = None, httpOnly: Boolean = false,
-                  version: Int = 0)
+case class Cookie(
+  name: String,
+  value: String,
+  domain: Option[String] = None,
+  path: Option[String] = None,
+  maxAge: Option[Int] = None,
+  secure: Option[Boolean] = None,
+  httpOnly: Boolean = false,
+  version: Int = 0
+)

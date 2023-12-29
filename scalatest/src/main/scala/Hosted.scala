@@ -1,13 +1,13 @@
 package unfiltered
 package scalatest
 
-import java.util.concurrent.{Executors, ThreadFactory}
-
+import java.util.concurrent.Executors
+import java.util.concurrent.ThreadFactory
 import okhttp3._
 import okio.ByteString
-import org.scalatest.{BeforeAndAfterAll, Suite}
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.Suite
 import unfiltered.request.Method
-
 import scala.language.implicitConversions
 
 trait Hosted extends BeforeAndAfterAll { self: Suite =>
@@ -17,16 +17,21 @@ trait Hosted extends BeforeAndAfterAll { self: Suite =>
   private var dispatcher: Dispatcher = _
 
   override protected def beforeAll(): Unit = {
-    dispatcher = new Dispatcher(Executors.newFixedThreadPool(10, new ThreadFactory {
-      val counter = new java.util.concurrent.atomic.AtomicInteger()
-      val defaultThreadFactory = Executors.defaultThreadFactory()
-      override def newThread(r: Runnable) = {
-        val thread = defaultThreadFactory.newThread(r)
-        thread.setName("okhttp-dispatcher-" + counter.incrementAndGet())
-        thread.setDaemon(true)
-        thread
-      }
-    }))
+    dispatcher = new Dispatcher(
+      Executors.newFixedThreadPool(
+        10,
+        new ThreadFactory {
+          val counter = new java.util.concurrent.atomic.AtomicInteger()
+          val defaultThreadFactory = Executors.defaultThreadFactory()
+          override def newThread(r: Runnable) = {
+            val thread = defaultThreadFactory.newThread(r)
+            thread.setName("okhttp-dispatcher-" + counter.incrementAndGet())
+            thread.setDaemon(true)
+            thread
+          }
+        }
+      )
+    )
     super.beforeAll()
   }
 
@@ -57,10 +62,14 @@ trait Hosted extends BeforeAndAfterAll { self: Suite =>
     val client = builder.dispatcher(dispatcher).build()
     val res = client.newCall(req).execute()
     val headers = res.headers.toMultimap.asScala.view.mapValues(_.asScala.toList).toMap
-    val transformed = Response(res.code(), headers, Option(res.body()).map{ body =>
-      val bytes = body.bytes()
-      ByteString.of(bytes, 0, bytes.length)
-    })
+    val transformed = Response(
+      res.code(),
+      headers,
+      Option(res.body()).map { body =>
+        val bytes = body.bytes()
+        ByteString.of(bytes, 0, bytes.length)
+      }
+    )
     res.close()
     transformed
   }
@@ -74,7 +83,7 @@ trait Hosted extends BeforeAndAfterAll { self: Suite =>
 
     def <<?(query: Map[String, String]): HttpUrl = {
       val b = url.newBuilder()
-      query.foreach{case (k, v) => b.addQueryParameter(k, v)}
+      query.foreach { case (k, v) => b.addQueryParameter(k, v) }
       b.build()
     }
   }
@@ -82,13 +91,13 @@ trait Hosted extends BeforeAndAfterAll { self: Suite =>
   implicit class RequestExtensions(request: Request) {
     def <:<(headers: Map[String, String]): Request = {
       val builder = request.newBuilder()
-      headers.foreach{case (k, v) => builder.addHeader(k, v)}
+      headers.foreach { case (k, v) => builder.addHeader(k, v) }
       builder.build()
     }
 
     def <<?(query: Map[String, String]): Request = {
       val b = request.url().newBuilder()
-      query.foreach{case (k, v) => b.addQueryParameter(k, v)}
+      query.foreach { case (k, v) => b.addQueryParameter(k, v) }
       req(b.build())
     }
 
@@ -102,12 +111,14 @@ trait Hosted extends BeforeAndAfterAll { self: Suite =>
     def <<(data: Map[String, String], method: Method = unfiltered.request.POST): Request = {
       val builder = request.newBuilder()
       val form = new FormBody.Builder()
-      data.foreach{case (k,v) => form.add(k, v)}
+      data.foreach { case (k, v) => form.add(k, v) }
       builder.method(method.method, form.build())
       builder.build()
     }
 
-    def POST[A](data: A, mt: MediaType = MediaType.parse("application/octet-stream"))(implicit c: ByteStringToConverter[A]): Request = {
+    def POST[A](data: A, mt: MediaType = MediaType.parse("application/octet-stream"))(implicit
+      c: ByteStringToConverter[A]
+    ): Request = {
       val builder = request.newBuilder()
       builder.post(RequestBody.create(mt, c.toByteString(data))).build()
     }
@@ -118,13 +129,13 @@ trait Hosted extends BeforeAndAfterAll { self: Suite =>
     }
 
     def <<*(name: String, file: java.io.File, mt: String) = {
-      val mp = new MultipartBody.Builder().
-        setType(MultipartBody.FORM).
-        addFormDataPart(name, file.getName, RequestBody.create(MediaType.parse(mt), file)).build()
+      val mp = new MultipartBody.Builder()
+        .setType(MultipartBody.FORM)
+        .addFormDataPart(name, file.getName, RequestBody.create(MediaType.parse(mt), file))
+        .build()
       POST(mp)
     }
   }
-
 
   case class Response(code: Int, headers: Map[String, List[String]], body: Option[ByteString]) {
     def as_string = body.map(_.utf8()).getOrElse("")

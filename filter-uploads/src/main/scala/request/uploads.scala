@@ -1,15 +1,28 @@
 package unfiltered.filter.request
 
-import unfiltered.request.{AbstractDiskExtractor, AbstractDiskFile, AbstractStreamedFile, DiskExtractor, HttpRequest, MultiPartMatcher, MultipartData, StreamedExtractor, TupleGenerator}
+import unfiltered.request.AbstractDiskExtractor
+import unfiltered.request.AbstractDiskFile
+import unfiltered.request.AbstractStreamedFile
+import unfiltered.request.DiskExtractor
+import unfiltered.request.HttpRequest
+import unfiltered.request.MultiPartMatcher
+import unfiltered.request.MultipartData
+import unfiltered.request.StreamedExtractor
+import unfiltered.request.TupleGenerator
 import scala.util.control.NonFatal
-
-import org.apache.commons.fileupload.{FileItem, FileItemFactory, FileItemHeaders, FileItemStream}
+import org.apache.commons.fileupload.FileItem
+import org.apache.commons.fileupload.FileItemFactory
+import org.apache.commons.fileupload.FileItemHeaders
+import org.apache.commons.fileupload.FileItemStream
 import org.apache.commons.fileupload.disk.DiskFileItemFactory
-import org.apache.commons.fileupload.util.{FileItemHeadersImpl, Streams}
-
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File => JFile, InputStream, OutputStream }
+import org.apache.commons.fileupload.util.FileItemHeadersImpl
+import org.apache.commons.fileupload.util.Streams
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.{File => JFile}
+import java.io.InputStream
+import java.io.OutputStream
 import jakarta.servlet.http.HttpServletRequest
-
 import scala.util.control.Exception.allCatch
 
 /** Matches requests that have multipart content */
@@ -35,8 +48,7 @@ class DiskFileWrapper(item: FileItem) extends AbstractDiskFile {
 }
 
 /** Represents an uploaded file exposing a stream to read its contents */
-class StreamedFileWrapper(fstm: FileItemStream) extends AbstractStreamedFile
-  with unfiltered.request.io.FileIO {
+class StreamedFileWrapper(fstm: FileItemStream) extends AbstractStreamedFile with unfiltered.request.io.FileIO {
 
   def write(out: JFile): Option[JFile] = allCatch.opt {
     stream { stm =>
@@ -46,7 +58,7 @@ class StreamedFileWrapper(fstm: FileItemStream) extends AbstractStreamedFile
   }
 
   def stream[T]: (java.io.InputStream => T) => T =
-    MultiPartParams.Streamed.withStreamedFile[T](fstm)_
+    MultiPartParams.Streamed.withStreamedFile[T](fstm) _
   val name = fstm.getName
   val contentType = fstm.getContentType
 }
@@ -66,7 +78,8 @@ object MultiPartParams extends TupleGenerator {
 
     def withStreamedFile[T](fstm: FileItemStream)(f: java.io.InputStream => T): T = {
       val stm = fstm.openStream
-      try { f(stm) } finally { stm.close }
+      try { f(stm) }
+      finally { stm.close }
     }
 
     protected def extractStr(fstm: FileItemStream) = withStreamedFile[String](fstm) { stm =>
@@ -83,11 +96,13 @@ object MultiPartParams extends TupleGenerator {
       to disk is prohibited.
       */
   object Memory extends AbstractDisk {
-    class ByteArrayFileItem(var fieldName: String,
+    class ByteArrayFileItem(
+      var fieldName: String,
       val contentType: String,
       var formField: Boolean,
       val name: String,
-      val sizeThreshold: Int) extends FileItem {
+      val sizeThreshold: Int
+    ) extends FileItem {
 
       var headers: FileItemHeaders = new FileItemHeadersImpl
 
@@ -118,10 +133,18 @@ object MultiPartParams extends TupleGenerator {
     }
 
     class ByteArrayFileItemFactory extends FileItemFactory {
-      override def createItem(fieldName: String , contentType: String ,
-                            isFormField: Boolean , fileName: String ): FileItem = new ByteArrayFileItem(
-                              fieldName, contentType, isFormField, fileName, Int.MaxValue
-                            )
+      override def createItem(
+        fieldName: String,
+        contentType: String,
+        isFormField: Boolean,
+        fileName: String
+      ): FileItem = new ByteArrayFileItem(
+        fieldName,
+        contentType,
+        isFormField,
+        fileName,
+        Int.MaxValue
+      )
     }
 
     override def factory(writeAfter: Int, writeDir: JFile): FileItemFactory = new ByteArrayFileItemFactory
@@ -131,7 +154,7 @@ object MultiPartParams extends TupleGenerator {
 
   trait AbstractDisk extends AbstractDiskExtractor[HttpRequest[HttpServletRequest]] {
 
-     /** @return a configured FileItemFactory to parse a request */
+    /** @return a configured FileItemFactory to parse a request */
     def factory(writeAfter: Int, writeDir: JFile): FileItemFactory =
       new DiskFileItemFactory(writeAfter, writeDir)
 

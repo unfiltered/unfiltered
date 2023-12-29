@@ -4,6 +4,7 @@ import scala.util.control.Exception.allCatch
 import scala.util.control.NonFatal
 
 object Port {
+
   /** Finds any available port and returns it */
   def any = {
     val s = new java.net.ServerSocket(0)
@@ -14,6 +15,7 @@ object Port {
 }
 
 object Browser {
+
   /** Tries to open a web browser session, returns Some(exception) on failure */
   def open(loc: String) =
     try {

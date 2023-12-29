@@ -1,17 +1,23 @@
 package unfiltered.netty
 
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.{Executors, ThreadFactory}
-
+import java.util.concurrent.Executors
+import java.util.concurrent.ThreadFactory
 import org.specs2.mutable.Specification
-import unfiltered.response.{Pass, ResponseString}
-import unfiltered.request.{GET, Path => UFPath}
+import unfiltered.response.Pass
+import unfiltered.response.ResponseString
+import unfiltered.request.GET
+import unfiltered.request.{Path => UFPath}
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
-import scala.concurrent.{ExecutionContext, Future}
+class FutureServerSpec
+    extends Specification
+    with org.specs2.matcher.ThrownMessages
+    with unfiltered.specs2.netty.Served {
 
-class FutureServerSpec extends Specification with org.specs2.matcher.ThrownMessages with unfiltered.specs2.netty.Served {
-
-  implicit val executionContext: ExecutionContext = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(2, NamedDaemonTF.server))
+  implicit val executionContext: ExecutionContext =
+    ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(2, NamedDaemonTF.server))
 
   def setup = _.plan(future.Planify {
     case GET(UFPath("/ping")) =>

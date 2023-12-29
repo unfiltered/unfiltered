@@ -10,44 +10,45 @@ class PlanSpec extends Specification with unfiltered.specs2.jetty.Served {
   import request.ContextPath
 
   def setup = {
-    _.plan(Planify {
-      case UFPath("/filter") => Pass
-    }).plan(Planify {
-      case UFPath("/filter") => ResponseString("test")
+    _.plan(Planify { case UFPath("/filter") =>
+      Pass
+    }).plan(Planify { case UFPath("/filter") =>
+      ResponseString("test")
     }).context("/filter2") {
-      _.plan(Planify {
-        case ContextPath(_, "/test2") => ResponseString("test2")
+      _.plan(Planify { case ContextPath(_, "/test2") =>
+        ResponseString("test2")
       })
     }.context("/filter3") {
-      _.plan(new Plan { def intent = {
-        case ContextPath(_, Seg("aplan" :: Nil)) => ResponseString("Plan A")
-      }})
-      .plan(new Plan { def intent = {
-        case ContextPath(_, Seg("bplan" :: Nil)) => ResponseString("Plan B")
-      }})
+      _.plan(new Plan {
+        def intent = { case ContextPath(_, Seg("aplan" :: Nil)) =>
+          ResponseString("Plan A")
+        }
+      }).plan(new Plan {
+        def intent = { case ContextPath(_, Seg("bplan" :: Nil)) =>
+          ResponseString("Plan B")
+        }
+      })
     }.context("/filter4") {
-      _.plan(new unfiltered.filter.Planify({
-        case ContextPath(_, Seg("aplan" :: Nil)) =>  ResponseString("Plan A")
+      _.plan(new unfiltered.filter.Planify({ case ContextPath(_, Seg("aplan" :: Nil)) =>
+        ResponseString("Plan A")
       }))
-      .plan(new unfiltered.filter.Planify({
-        case ContextPath(_, Seg("bplan" :: Nil)) => ResponseString("Plan B")
-      }))
-      .plan(new unfiltered.filter.Planify({
-        case ContextPath(_, Seg("cplan" :: Nil)) => ResponseString("Plan C")
-      }))
+        .plan(new unfiltered.filter.Planify({ case ContextPath(_, Seg("bplan" :: Nil)) =>
+          ResponseString("Plan B")
+        }))
+        .plan(new unfiltered.filter.Planify({ case ContextPath(_, Seg("cplan" :: Nil)) =>
+          ResponseString("Plan C")
+        }))
     }.context("/filter5") {
-      _.plan(unfiltered.filter.Planify {
-        case ContextPath(_, Seg("aplan" :: Nil)) => ResponseString("Plan A")
-      })
-      .plan(unfiltered.filter.Planify {
-        case ContextPath(_, Seg("bplan" :: Nil)) => ResponseString("Plan B")
-      })
-      .plan(unfiltered.filter.Planify {
-        case ContextPath(_, Seg("cplan" :: Nil)) => ResponseString("Plan C")
+      _.plan(unfiltered.filter.Planify { case ContextPath(_, Seg("aplan" :: Nil)) =>
+        ResponseString("Plan A")
+      }).plan(unfiltered.filter.Planify { case ContextPath(_, Seg("bplan" :: Nil)) =>
+        ResponseString("Plan B")
+      }).plan(unfiltered.filter.Planify { case ContextPath(_, Seg("cplan" :: Nil)) =>
+        ResponseString("Plan C")
       })
     }.context("/query") {
-      _.plan(unfiltered.filter.Planify {
-        case ContextPath(_, "/qplan") & QueryString(qs) => ResponseString(qs)
+      _.plan(unfiltered.filter.Planify { case ContextPath(_, "/qplan") & QueryString(qs) =>
+        ResponseString(qs)
       })
     }
   }

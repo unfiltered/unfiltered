@@ -1,8 +1,7 @@
 package unfiltered.netty
 
-import io.netty.channel.{
-  ChannelHandlerContext, ChannelInboundHandlerAdapter
-}
+import io.netty.channel.ChannelHandlerContext
+import io.netty.channel.ChannelInboundHandlerAdapter
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.channel.group.ChannelGroup
 
@@ -11,8 +10,7 @@ import io.netty.channel.group.ChannelGroup
  * shutdown.
  */
 @Sharable
-class HouseKeeper(channels: ChannelGroup)
-  extends ChannelInboundHandlerAdapter {
+class HouseKeeper(channels: ChannelGroup) extends ChannelInboundHandlerAdapter {
   override def channelActive(ctx: ChannelHandlerContext) = {
     // Channels are automatically removed from the group on close
     channels.add(ctx.channel)

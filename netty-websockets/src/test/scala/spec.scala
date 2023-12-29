@@ -1,7 +1,8 @@
 package unfiltered.netty.websockets
 
 import org.specs2.mutable.Specification
-import unfiltered.request.{ GET, Path => UFPath }
+import unfiltered.request.GET
+import unfiltered.request.{Path => UFPath}
 import scala.collection.mutable
 
 class WebSocketPlanSpec extends Specification with unfiltered.specs2.netty.Served {

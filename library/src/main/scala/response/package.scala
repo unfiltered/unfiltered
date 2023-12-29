@@ -2,10 +2,11 @@ package unfiltered
 
 package object response {
   import Pass.RF
+
   /** Implicit methods on PartialFunction: onPass and onFold.
    *  See unfiltered.response.Pass the explicit versions. */
-  implicit class partialToPassing[A,B >: RF](
-    val intent: PartialFunction[A,B]
+  implicit class partialToPassing[A, B >: RF](
+    val intent: PartialFunction[A, B]
   ) extends AnyVal {
     def onPass[A1 <: A, B1 >: B](onPass: PartialFunction[A1, B1]) =
       Pass.onPass(intent, onPass)

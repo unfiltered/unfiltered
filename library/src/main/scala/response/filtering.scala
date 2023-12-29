@@ -3,7 +3,6 @@ package unfiltered.response
 import java.io.OutputStream
 import java.util.zip.{GZIPOutputStream => GZOS}
 
-
 /** Enclose the response's output stream in another stream,
  * typically a subclass of java.io.FilterOutputStream */
 object ResponseFilter {

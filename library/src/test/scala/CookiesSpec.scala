@@ -1,24 +1,18 @@
 package unfiltered.request
 
 import java.time.Instant
-
-import okhttp3.{Cookie, HttpUrl, OkHttpClient}
+import okhttp3.Cookie
+import okhttp3.HttpUrl
+import okhttp3.OkHttpClient
 import org.specs2.mutable._
 
-class CookiesSpecJetty
-  extends Specification
-    with unfiltered.specs2.jetty.Planned
-    with CookiesSpec
+class CookiesSpecJetty extends Specification with unfiltered.specs2.jetty.Planned with CookiesSpec
 
-class CookiesSpecNetty
-  extends Specification
-    with unfiltered.specs2.netty.Planned
-    with CookiesSpec
+class CookiesSpecNetty extends Specification with unfiltered.specs2.netty.Planned with CookiesSpec
 
 trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
 
   import scala.jdk.CollectionConverters._
-
   import unfiltered.response._
   import unfiltered.request.{Path => UFPath}
   import unfiltered.Cookie
@@ -56,7 +50,7 @@ trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
       http(req(host)).as_string must_== "foo who?"
     }
     "then add a cookie" in {
-      withCookieJar{jar =>
+      withCookieJar { jar =>
         val h = httpWithCookies(jar)
         h(req(host / "save") << Map("foo" -> "bar")).as_string must_== "foo bar!"
       }
@@ -64,7 +58,7 @@ trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
 
     // http://hc.apache.org/httpcomponents-client-ga/tutorial/html/statemgmt.html#d5e746
 
-     "and finally clear it when requested" in {
+    "and finally clear it when requested" in {
       withCookieJar { jar =>
         val h = httpWithCookies(jar)
         h(req(host / "save") << Map("foo" -> "bar")).as_string must_== "foo bar!"
@@ -80,8 +74,8 @@ trait CookiesSpec extends Specification with unfiltered.specs2.Hosted {
     "saves and deletes multiple cookies" in {
       withCookieJar { jar =>
         val h = httpWithCookies(jar)
-        h(req(host/ "save_multi") << Map("foo" -> "bar", "baz" -> "boom")).as_string must_== "foo bar baz boom!"
-        val someCookies = jar.loadForRequest(host/ "save_multi").asScala
+        h(req(host / "save_multi") << Map("foo" -> "bar", "baz" -> "boom")).as_string must_== "foo bar baz boom!"
+        val someCookies = jar.loadForRequest(host / "save_multi").asScala
         someCookies.size must_== 2
         someCookies.find(_.name == "foo") must beSome
         someCookies.find(_.name == "baz") must beSome
@@ -112,10 +106,10 @@ class MemoryJar extends okhttp3.CookieJar {
   val jar = collection.concurrent.TrieMap[String, List[Cookie]]()
 
   override def saveFromResponse(url: HttpUrl, cookies: java.util.List[Cookie]): Unit = {
-    val list = cookies.asScala.flatMap(p =>
-      if (Instant.ofEpochMilli(p.expiresAt()).isAfter(Instant.now())) List(p) else Nil
-    )
-    if (list.isEmpty) jar -= url.host() else {
+    val list =
+      cookies.asScala.flatMap(p => if (Instant.ofEpochMilli(p.expiresAt()).isAfter(Instant.now())) List(p) else Nil)
+    if (list.isEmpty) jar -= url.host()
+    else {
       jar += (url.host() -> list.toList)
     }
   }
