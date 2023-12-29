@@ -29,7 +29,7 @@ import scala.util.control.Exception.catching
 /** Serves the same purpose of unfiltered.netty.ServerErrorResponse, which is to
  *  satisfy ExceptionHandler#onException, except that it is not specific to the HTTP protocol.
  *  It will simply log the Throwable and close the Channel */
-trait CloseOnException { self: ExceptionHandler with ChannelInboundHandlerAdapter =>
+trait CloseOnException { self: ExceptionHandler & ChannelInboundHandlerAdapter =>
   def onException(ctx: ChannelHandlerContext, t: Throwable): Unit = {
     t.printStackTrace()
     ctx.channel.close()
