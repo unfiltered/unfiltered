@@ -22,7 +22,7 @@ object Cycle {
 
 object Async {
   type Intent[-A, -B] =
-    PartialFunction[HttpRequest[A] with Responder[B], Any]
+    PartialFunction[HttpRequest[A] & Responder[B], Any]
   object Intent {
     def apply[A, B](intent: Intent[A, B]) = intent
   }

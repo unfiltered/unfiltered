@@ -23,7 +23,7 @@ import scala.util.control.NonFatal
 
 class NoChunkAggregatorSpec extends Specification with Served {
 
-  trait ExpectedServerErrorResponse { self: ExceptionHandler with ChannelInboundHandler =>
+  trait ExpectedServerErrorResponse { self: ExceptionHandler & ChannelInboundHandler =>
     def onException(ctx: ChannelHandlerContext, t: Throwable): Unit = {
       val ch = ctx.channel
       if (ch.isOpen) try {
