@@ -2,11 +2,11 @@ package unfiltered.request
 
 object Path {
   def unapply[T](req: HttpRequest[T]): Some[String] = Some(req.uri.split('?')(0))
-  def apply[T](req: HttpRequest[T]) = req.uri.split('?')(0)
+  def apply[T](req: HttpRequest[T]): String = req.uri.split('?')(0)
 }
 
 object QueryString {
-  def unapply[T](req: HttpRequest[T]) = req.uri.split('?') match {
+  def unapply[T](req: HttpRequest[T]): Option[String] = req.uri.split('?') match {
     case Array(path) => None
     case Array(path, query) => Some(query)
   }

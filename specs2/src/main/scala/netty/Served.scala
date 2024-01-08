@@ -8,15 +8,16 @@ import unfiltered.netty.cycle.Plan
 import org.specs2.mutable._
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.util.ResourceLeakDetector
+import java.util.concurrent.ExecutorService
 
 trait Planned extends Served {
-  def setup = _.plan(planify(intent))
+  def setup: Server => Server = _.plan(planify(intent))
   def intent[A, B]: unfiltered.Cycle.Intent[A, B]
 }
 
 trait Served extends Started {
   def setup: Server => Server
-  lazy val server = setup(Server.http(port))
+  lazy val server: Server = setup(Server.http(port))
 }
 
 trait Started extends unfiltered.specs2.Hosted with SpecificationLike {
@@ -41,7 +42,7 @@ trait Started extends unfiltered.specs2.Hosted with SpecificationLike {
 
   // override def map(fs: =>Fragments) = Step(before) ^ fs ^ Step(after)
 
-  lazy val executor = java.util.concurrent.Executors.newCachedThreadPool()
+  lazy val executor: ExecutorService = java.util.concurrent.Executors.newCachedThreadPool()
 
   /** planify using a local executor. Global executor is problematic
    *  for tests since it is shutdown by each server instance.*/

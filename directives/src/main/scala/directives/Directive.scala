@@ -4,6 +4,7 @@ import unfiltered.request.HttpRequest
 import unfiltered.response.ResponseFunction
 import unfiltered.Cycle
 import annotation.implicitNotFound
+import unfiltered.response.HttpResponse
 
 object Directive {
   import Result.Success
@@ -35,7 +36,7 @@ object Directive {
     }
 
     /** Directive intent constructor for a partial function of path strings  */
-    def Path[T] = Mapping(unfiltered.request.Path[T])
+    def Path[T]: Mapping[T, String] = Mapping(unfiltered.request.Path[T])
 
     case class Mapping[T, X](from: HttpRequest[T] => X) {
       def apply[TT <: T, R](
@@ -59,7 +60,7 @@ object Directive {
 
 class Directive[-T, +R, +A](run: HttpRequest[T] => Result[R, A]) extends (HttpRequest[T] => Result[R, A]) {
 
-  def apply(request: HttpRequest[T]) = run(request)
+  def apply(request: HttpRequest[T]): Result[R, A] = run(request)
 
   def map[TT <: T, RR >: R, B](f: A => B): Directive[TT, RR, B] =
     Directive(r => run(r).map(f))
@@ -75,7 +76,7 @@ class Directive[-T, +R, +A](run: HttpRequest[T] => Result[R, A]) extends (HttpRe
 
   def and[TT <: T, E, B, RF](
     other: => Directive[TT, JoiningResponseFunction[E, RF], B]
-  )(implicit ev: R <:< JoiningResponseFunction[E, RF]) = {
+  )(implicit ev: R <:< JoiningResponseFunction[E, RF]): FilterDirective[TT, JoiningResponseFunction[E, RF], (A, B)] = {
     val runner = (req: HttpRequest[TT]) => this(req) and other(req)
     // A `filter` implementation is required for pattern matching, which we
     // use to extract joined successes. This is a no-op filter; an improved
@@ -118,7 +119,7 @@ class FilterDirective[-T, +R, +A](
 
 class JoiningResponseFunction[E, A](val elements: List[E], toResponseFunction: Seq[E] => ResponseFunction[A])
     extends ResponseFunction[A] {
-  def apply[B <: A](res: unfiltered.response.HttpResponse[B]) =
+  def apply[B <: A](res: unfiltered.response.HttpResponse[B]): HttpResponse[B] =
     toResponseFunction(elements)(res)
 
   def join(next: JoiningResponseFunction[E, A]) =

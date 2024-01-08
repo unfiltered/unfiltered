@@ -52,7 +52,7 @@ import scala.util.control.Exception.allCatch
 object Mimes {
   private lazy val types =
     new MimetypesFileTypeMap(getClass.getResourceAsStream("/mime.types"))
-  def apply(path: String) = types.getContentType(path)
+  def apply(path: String): String = types.getContentType(path)
 }
 
 object Dates {
@@ -71,7 +71,7 @@ object Dates {
 
 /** Extracts HttpRequest if a retrieval method */
 object Retrieval {
-  def unapply[T](r: HttpRequest[T]) =
+  def unapply[T](r: HttpRequest[T]): Option[HttpRequest[T]] =
     GET.unapply(r).orElse { HEAD.unapply(r) }
 }
 
@@ -95,7 +95,7 @@ case class Resources(base: java.net.URL, cacheSeconds: Int = 60, passOnFail: Boo
 
   def badRequest = passOr(BadRequest ~> PlainTextContent) _
 
-  def intent = {
+  def intent: Plan.Intent = {
     case Retrieval(Path(path)) & req =>
       safe(path.drop(1)) match {
         case Some(rsrc) =>

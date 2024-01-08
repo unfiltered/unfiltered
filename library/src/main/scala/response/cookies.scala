@@ -5,11 +5,11 @@ import unfiltered.Cookie
 /** Set-Cookie response header */
 object SetCookies {
   private[this] val Name = "Set-Cookie"
-  def apply(cookies: Cookie*) =
+  def apply(cookies: Cookie*): ResponseHeader =
     ResponseHeader(Name, cookies.foldLeft(Seq.empty[String])((a, e) => ToCookies(e) +: a))
 
   /** Call this method with a list of names to discard cookies */
-  def discarding(names: String*) =
+  def discarding(names: String*): ResponseHeader =
     apply(names.map(Cookie(_, "", maxAge = Some(0)))*)
 }
 

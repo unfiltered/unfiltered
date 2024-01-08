@@ -10,7 +10,7 @@ import org.eclipse.jetty.util.resource.Resource
 trait ContextAdder {
   def addToParent(parent: ContextHandlerCollection): Unit
   def filterAdder(filter: FilterAdder): ContextAdder
-  def plan(filter: Filter) = filterAdder(FilterAdder(BasicFilterHolder(filter)))
+  def plan(filter: Filter): ContextAdder = filterAdder(FilterAdder(BasicFilterHolder(filter)))
   def resources(path: java.net.URL): ContextAdder
   def allowAliases(aliases: Boolean): ContextAdder
 }
@@ -21,7 +21,7 @@ case class DefaultServletContextAdder(
   resourcePath: Option[java.net.URL],
   aliases: Boolean = false
 ) extends ContextAdder {
-  def addToParent(parent: ContextHandlerCollection) = {
+  def addToParent(parent: ContextHandlerCollection): Unit = {
     val ctx = new ServletContextHandler(parent, path, false, false)
     val holder = new ServletHolder(classOf[org.eclipse.jetty.servlet.DefaultServlet])
     holder.setName(CountedName.Servlet.name)

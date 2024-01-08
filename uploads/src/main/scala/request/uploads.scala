@@ -84,7 +84,9 @@ trait TupleGenerator {
   /** generates a tuple of `(Map[String, List[A]], Map[String, List[B]])` */
   protected def genTuple[A, B, C](
     iter: Iterator[C]
-  )(f: ((Map[String, List[A]], Map[String, List[B]]), C) => (Map[String, List[A]], Map[String, List[B]])) = {
+  )(
+    f: ((Map[String, List[A]], Map[String, List[B]]), C) => (Map[String, List[A]], Map[String, List[B]])
+  ): (Map[String, List[A]], Map[String, List[B]]) = {
     val a: Map[String, List[A]] = Map.empty[String, List[A]].withDefaultValue(Nil)
     val b: Map[String, List[B]] = Map.empty[String, List[B]].withDefaultValue(Nil)
     iter.foldLeft((a, b))(f)

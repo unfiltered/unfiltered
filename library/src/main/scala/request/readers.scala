@@ -4,7 +4,7 @@ package unfiltered.request
 object Body {
   def stream[T](req: HttpRequest[T]) = req.inputStream
   def reader[T](req: HttpRequest[T]) = req.reader
-  def bytes[T](req: HttpRequest[T]) = {
+  def bytes[T](req: HttpRequest[T]): Array[Byte] = {
     val in = stream(req)
     val bos = new java.io.ByteArrayOutputStream
     val ba = new Array[Byte](4096)
@@ -18,7 +18,7 @@ object Body {
     in.close
     bos.toByteArray
   }
-  def string[T](req: HttpRequest[T]) = {
+  def string[T](req: HttpRequest[T]): String = {
     val reader = Body.reader(req)
     val writer = new java.io.StringWriter
     val ca = new Array[Char](4096)

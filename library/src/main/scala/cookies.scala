@@ -28,7 +28,7 @@ object CookieKeys {
   val LCVersion = Version.toLowerCase
 
   /** Named properties that do not have an associated value */
-  val KeyOnly = Seq(Discard, Secure, HTTPOnly)
+  val KeyOnly: Seq[String] = Seq(Discard, Secure, HTTPOnly)
 }
 
 case class Cookie(

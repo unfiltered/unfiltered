@@ -8,10 +8,10 @@ package unfiltered.response.link
 final case class Ref private (uri: String, rel: Rel, params: List[Param]) {
 
   /** Yield "link-value" clause. */
-  def refClause = s"<$uri>; $paramsClause"
+  def refClause: String = s"<$uri>; $paramsClause"
 
   /** Yield a clause of all parameters given for a Ref. */
-  def paramsClause =
+  def paramsClause: String =
     params.foldLeft(Ref.paramClause(rel)) { (a, b) =>
       a + "; " + Ref.paramClause(b)
     }
@@ -37,9 +37,9 @@ object Ref {
     Ref(uri, actualRel, actualParams)
   }
 
-  def refClauses(rs: Ref*) = rs.map(_.refClause).mkString(", ")
+  def refClauses(rs: Ref*): String = rs.map(_.refClause).mkString(", ")
 
   /** Yield "link-param" clause. */
-  def paramClause(p: Param) =
+  def paramClause(p: Param): String =
     s"""${p.paramType.name}="${p.value}""""
 }

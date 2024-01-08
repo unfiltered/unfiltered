@@ -13,7 +13,7 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   def reader: java.io.Reader = req.getReader
   def protocol = req.getProtocol
   def method = req.getMethod.toUpperCase
-  def uri = Option(req.getRequestURI) ++ Option(req.getQueryString).map("?%s".format(_)) mkString ""
+  def uri: String = Option(req.getRequestURI) ++ Option(req.getQueryString).map("?%s".format(_)) mkString ""
   def parameterNames: Iterator[String] =
     req.getParameterNames.asScala
   def parameterValues(param: String): Seq[String] =
@@ -22,7 +22,7 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
     req.getHeaderNames.asScala
   def headers(name: String): Iterator[String] =
     req.getHeaders(name).asScala
-  lazy val cookies = req.getCookies match {
+  lazy val cookies: List[Cookie] = req.getCookies match {
     case null => Nil
     case jcookies =>
       jcookies.foldLeft(List[Cookie]())((l, c) =>
@@ -42,12 +42,12 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
 }
 
 class ResponseBinding(res: HttpServletResponse) extends HttpResponse(res) {
-  def status(statusCode: Int) = res.setStatus(statusCode)
+  def status(statusCode: Int): Unit = res.setStatus(statusCode)
   def status: Int = res.getStatus
   def outputStream: java.io.OutputStream = res.getOutputStream
-  def redirect(url: String) = res.sendRedirect(url)
-  def header(name: String, value: String) = res.addHeader(name, value)
-  def cookies(resCookies: Seq[Cookie]) = {
+  def redirect(url: String): Unit = res.sendRedirect(url)
+  def header(name: String, value: String): Unit = res.addHeader(name, value)
+  def cookies(resCookies: Seq[Cookie]): Unit = {
     import jakarta.servlet.http.{Cookie => JCookie}
     resCookies.foreach { c =>
       val jc = new JCookie(c.name, c.value)

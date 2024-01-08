@@ -1,6 +1,7 @@
 package unfiltered.response
 
 import java.io.OutputStream
+import java.nio.charset
 
 // T is covariant so e.g. a HttpResponse[HttpServletResponse] can be
 // supplied when HttpResponse[Any] is expected.
@@ -21,5 +22,5 @@ abstract class HttpResponse[+T](val underlying: T) {
 }
 
 object HttpResponse {
-  val UTF8 = java.nio.charset.Charset.forName("utf-8")
+  val UTF8: charset.Charset = java.nio.charset.Charset.forName("utf-8")
 }

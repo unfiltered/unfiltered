@@ -82,7 +82,7 @@ object MultiPartParams extends TupleGenerator {
       finally { stm.close }
     }
 
-    protected def extractStr(fstm: FileItemStream) = withStreamedFile[String](fstm) { stm =>
+    protected def extractStr(fstm: FileItemStream): String = withStreamedFile[String](fstm) { stm =>
       Streams.asString(stm)
     }
   }
@@ -109,7 +109,7 @@ object MultiPartParams extends TupleGenerator {
       var cache: Option[Array[Byte]] = None
       val out = new ByteArrayOutputStream()
       override def delete: Unit = {}
-      override def get = cache getOrElse {
+      override def get: Array[Byte] = cache getOrElse {
         val content = out.toByteArray
         cache = Some(content)
         content

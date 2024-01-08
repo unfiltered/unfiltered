@@ -37,10 +37,10 @@ trait Interpreter[A, B, +E] { self =>
 }
 
 object Interpreter {
-  def identity[A] = new Interpreter[A, A, Nothing] {
+  def identity[A]: Interpreter[A, A, Nothing] = new Interpreter[A, A, Nothing] {
     def interpret(seq: A, name: String): Either[Nothing, A] = Right(seq)
   }
-  def apply[A, B](f: A => B) = new Interpreter[A, B, Nothing] {
+  def apply[A, B](f: A => B): Interpreter[A, B, Nothing] = new Interpreter[A, B, Nothing] {
     def interpret(a: A, name: String): Either[Nothing, B] = Right(f(a))
   }
 }
@@ -59,7 +59,7 @@ class Strict[A, B, +E](cf: A => Option[B], handle: (String, A) => E) extends Int
     }.getOrElse(Right(None))
 }
 object Conditional {
-  def apply[A](f: A => Boolean) = Fallible[A, A](a => Some(a).filter(f))
+  def apply[A](f: A => Boolean): Fallible[A, A] = Fallible[A, A](a => Some(a).filter(f))
 }
 
 object Requiring {

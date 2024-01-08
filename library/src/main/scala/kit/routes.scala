@@ -2,6 +2,7 @@ package unfiltered.kit
 
 import unfiltered.request._
 import unfiltered.response._
+import unfiltered.Cycle
 
 /** Routing kits for directing requests to handlers based on paths  */
 object Routes {
@@ -10,7 +11,7 @@ object Routes {
    *  that take the request and the remaining path string as parameters */
   def startsWith[A, B](
     route: (String, (HttpRequest[A], String) => ResponseFunction[B])*
-  ) =
+  ): Cycle.Intent[A, B] =
     toIntent(route) { (req: HttpRequest[A], path, k, rf) =>
       if (path.startsWith(k))
         Some(rf(req, path.substring(k.length)))
@@ -22,7 +23,7 @@ object Routes {
    *  as parameters. */
   def regex[A, B](
     route: (String, (HttpRequest[A], List[String]) => ResponseFunction[B])*
-  ) =
+  ): Cycle.Intent[A, B] =
     toIntent(
       route.map { case (k, v) => k.r -> v }
     ) { (req: HttpRequest[A], path, regex, rf) =>
@@ -37,7 +38,9 @@ object Routes {
    * values. e.g. "/thing/:thing_id" for the path "/thing/1" would call
    * the corresponding function with a `Map("thing_id" -> "1")`.
    */
-  def specify[A, B](route: (String, ((HttpRequest[A], Map[String, String]) => ResponseFunction[B]))*) =
+  def specify[A, B](
+    route: (String, ((HttpRequest[A], Map[String, String]) => ResponseFunction[B]))*
+  ): Cycle.Intent[A, B] =
     toIntent(
       route.map { case (Seg(spec), f) =>
         spec -> f

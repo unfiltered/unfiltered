@@ -37,7 +37,7 @@ trait CloseOnException { self: ExceptionHandler & ChannelInboundHandlerAdapter =
 }
 
 private[websockets] object WSLocation {
-  def apply[T](r: HttpRequest[T]) = s"${if (r.isSecure) "wss" else "ws"}://${Host(r).get}${r.uri}"
+  def apply[T](r: HttpRequest[T]): String = s"${if (r.isSecure) "wss" else "ws"}://${Host(r).get}${r.uri}"
 }
 
 /** Provides an extension point for netty ChannelHandlers that wish to
@@ -53,10 +53,10 @@ trait Plan extends ChannelInboundHandlerAdapter with ExceptionHandler {
   /** Allow extensions to be used in the reserved bits of the web socket frame */
   def allowExtensions: Boolean = false
 
-  final override def channelReadComplete(ctx: ChannelHandlerContext) =
+  final override def channelReadComplete(ctx: ChannelHandlerContext): Unit =
     ctx.flush()
 
-  final override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object) =
+  final override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object): Unit =
     msg match {
       case http: FullHttpRequest => upgrade(ctx, http)
       case unexpected => pass(ctx, unexpected)
@@ -134,10 +134,10 @@ case class SocketPlan(
 
   def attempt = intent.lift
 
-  final override def channelReadComplete(ctx: ChannelHandlerContext) =
+  final override def channelReadComplete(ctx: ChannelHandlerContext): Unit =
     ctx.flush()
 
-  final override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object) =
+  final override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object): Unit =
     msg match {
       case c: CloseWebSocketFrame =>
         shaker.close(ctx.channel, c.retain())

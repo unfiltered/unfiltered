@@ -11,7 +11,7 @@ import io.netty.channel.group.ChannelGroup
  */
 @Sharable
 class HouseKeeper(channels: ChannelGroup) extends ChannelInboundHandlerAdapter {
-  override def channelActive(ctx: ChannelHandlerContext) = {
+  override def channelActive(ctx: ChannelHandlerContext): Unit = {
     // Channels are automatically removed from the group on close
     channels.add(ctx.channel)
     ctx.fireChannelActive()

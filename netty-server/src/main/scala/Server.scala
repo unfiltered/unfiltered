@@ -49,25 +49,25 @@ case class Server(
   private[this] lazy val workerGrp = engine.workers
   private[this] lazy val channelGrp = engine.channels
 
-  def use(engine: Engine) =
+  def use(engine: Engine): Server =
     copy(engine = engine)
 
-  def bind(binding: PortBinding) =
+  def bind(binding: PortBinding): Server =
     copy(portBindings = binding :: portBindings)
 
   def ports: Iterable[Int] = portBindings.map(_.port)
 
-  def makePlan(plan: => ChannelHandler) =
+  def makePlan(plan: => ChannelHandler): ServerBuilder =
     copy(handlers = { () => plan } :: handlers)
 
-  def handler(h: ChannelHandler) = makePlan(h)
+  def handler(h: ChannelHandler): ServerBuilder = makePlan(h)
 
   /** Starts server in the background */
-  def start() = start(identity)
+  def start(): ServerBuilder = start(identity)
 
   /** Starts server in the background after applying a function
    *  to each port bindings server bootstrap */
-  def start(prebind: ServerBootstrap => ServerBootstrap) = {
+  def start(prebind: ServerBootstrap => ServerBootstrap): Server = {
     val channelClz: Class[? <: ServerSocketChannel] = if (Epoll.isAvailable) {
       classOf[EpollServerSocketChannel]
     } else if (KQueue.isAvailable) {
@@ -92,7 +92,7 @@ case class Server(
    *  closing channel connections. Any listed cycle plans
    *  will be shutdown in the order provided. Lastly
    *  shared thread resources will be released. */
-  def stop() = {
+  def stop(): ServerBuilder = {
     beforeStopBlock()
     closeConnections()
     for (handler <- handlers) handler() match {
@@ -104,18 +104,18 @@ case class Server(
 
   /** Destroys the provided worker event loop group
    *  before destroying the acceptors event loop group */
-  def destroy() = {
+  def destroy(): ServerBuilder = {
     workerGrp.shutdownGracefully()
     acceptorGrp.shutdownGracefully()
     this
   }
 
-  def closeConnections() = {
+  def closeConnections(): Server = {
     channelGrp.close.awaitUninterruptibly()
     this
   }
 
-  def beforeStop(block: => Unit) =
+  def beforeStop(block: => Unit): Server =
     copy(beforeStopBlock = { () => beforeStopBlock(); block })
 
   def configure(bootstrap: ServerBootstrap): ServerBootstrap =
@@ -146,9 +146,9 @@ case class Server(
         }
         .addLast("notfound", new NotFoundHandler)
 
-  def chunked(size: Int) = copy(chunkSize = size)
+  def chunked(size: Int): Server = copy(chunkSize = size)
 
-  def resources(path: URL, cacheSeconds: Int = 60, passOnFail: Boolean = true) = {
+  def resources(path: URL, cacheSeconds: Int = 60, passOnFail: Boolean = true): Server = {
     val resources = Resources(path, cacheSeconds, passOnFail)
     this.makePlan(new ChunkedWriteHandler).plan(resources)
   }

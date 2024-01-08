@@ -12,7 +12,7 @@ import scala.language.implicitConversions
 
 trait Hosted extends BeforeAndAfterAll { self: Suite =>
   val port = unfiltered.util.Port.any
-  val host = HttpUrl.parse(s"http://localhost:$port")
+  val host: HttpUrl = HttpUrl.parse(s"http://localhost:$port")
 
   private var dispatcher: Dispatcher = _
 
@@ -138,7 +138,7 @@ trait Hosted extends BeforeAndAfterAll { self: Suite =>
   }
 
   case class Response(code: Int, headers: Map[String, List[String]], body: Option[ByteString]) {
-    def as_string = body.map(_.utf8()).getOrElse("")
+    def as_string: String = body.map(_.utf8()).getOrElse("")
     def header(name: String): Option[List[String]] = headers.get(name.toLowerCase)
     def firstHeader(name: String): Option[String] = header(name).flatMap(_.headOption)
   }

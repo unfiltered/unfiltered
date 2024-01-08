@@ -7,6 +7,8 @@ import java.io.InputStream
 import java.net.JarURLConnection
 import java.net.URL
 import scala.util.control.Exception.catching
+import java.util.jar.JarEntry
+import java.util.jar.JarFile
 
 // todo(doug): none of this is specific to unfiltered. consider factoring this out into its own library
 object Resolve {
@@ -18,7 +20,7 @@ object Resolve {
   val FsResolver: Resolver = {
     case fs if fs.startsWith("file:") => { u => Some(FileSystemResource(new File(u.toURI))) }
   }
-  val DefaultResolver = FsResolver orElse JarResolver orElse ({
+  val DefaultResolver: PartialFunction[String, URL => Option[Resource]] = FsResolver orElse JarResolver orElse ({
     case _ => { u => None }
   }: Resolver)
   def apply(url: URL, resolver: Resolver = DefaultResolver): Option[Resource] =
@@ -48,29 +50,29 @@ case class FileSystemResource(f: File) extends Resource {
 case class JarResource(url: URL) extends Resource {
 
   val urlstr = url.toString
-  val sep = urlstr.indexOf(Resolve.JarPathDelimiter)
-  val jarurl = urlstr.substring(0, sep + 2)
-  val path = urlstr.substring(sep + 2)
-  val directory = path.endsWith("/")
+  val sep: Int = urlstr.indexOf(Resolve.JarPathDelimiter)
+  val jarurl: String = urlstr.substring(0, sep + 2)
+  val path: String = urlstr.substring(sep + 2)
+  val directory: Boolean = path.endsWith("/")
   val hidden = false
-  lazy val entry = jarfile.flatMap { jar =>
+  lazy val entry: Option[JarEntry] = jarfile.flatMap { jar =>
     import scala.jdk.CollectionConverters._
     jar.entries.asScala.find(_.getName.replace("\\", "/") == path)
   }
   lazy val exists = entry.isDefined
-  lazy val lastModified = entry match {
+  lazy val lastModified: Long = entry match {
     case Some(e) => e.getTime
     case _ => jarfile.map(jar => new File(jar.getName).lastModified).getOrElse(-1L)
   }
 
-  lazy val size =
+  lazy val size: Long =
     if (exists && !directory) entry.get.getSize
     else -1
 
-  def jarfile = catching(classOf[FileNotFoundException]).opt {
+  def jarfile: Option[JarFile] = catching(classOf[FileNotFoundException]).opt {
     url.openConnection().asInstanceOf[JarURLConnection].getJarFile
   }
 
   /** users are expected to call close(). Netty's ChunkedStream writer does */
-  def in = url.openStream()
+  def in: InputStream = url.openStream()
 }

@@ -2,7 +2,7 @@ package unfiltered.request
 
 /** Extractor and util for common mime types */
 object Mime {
-  val types = Map(
+  val types: Map[String, String] = Map(
     ".3gp" -> "video/3gpp",
     ".a" -> "application/octet-stream",
     ".ai" -> "application/postscript",
@@ -180,7 +180,7 @@ object Mime {
   private[this] val Ext = """([.]\w+)$""".r
 
   /** given a file name, extract the extension and match its content type */
-  def unapply(name: String) = Ext.findFirstMatchIn(name) match {
+  def unapply(name: String): Option[String] = Ext.findFirstMatchIn(name) match {
     case Some(ext) => types.get(ext.subgroups(0))
     case _ => None
   }

@@ -8,7 +8,7 @@ object Accepts {
 
     def ext: String
 
-    def unapply[T](r: HttpRequest[T]) = {
+    def unapply[T](r: HttpRequest[T]): Option[HttpRequest[T]] = {
       val pathSuffix = Path(r).split("[.]").lastOption
       r match {
         case Accept(values) =>
@@ -36,7 +36,7 @@ object Accepts {
     val contentType = "text/javascript"
     val ext = "js"
 
-    override def unapply[T](r: HttpRequest[T]) =
+    override def unapply[T](r: HttpRequest[T]): Option[HttpRequest[T]] =
       AppJavaScript.unapply(r) orElse { super.unapply(r) }
   }
 
@@ -47,7 +47,7 @@ object Accepts {
 
   /** Lenient matcher for application/json, application/javascript, and text/javascript */
   object Jsonp {
-    def unapply[T](r: HttpRequest[T]) =
+    def unapply[T](r: HttpRequest[T]): Option[HttpRequest[T]] =
       Json.unapply(r) orElse { JavaScript.unapply(r) }
   }
 

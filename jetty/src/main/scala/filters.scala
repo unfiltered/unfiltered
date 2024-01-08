@@ -8,7 +8,7 @@ import org.eclipse.jetty.servlet.FilterHolder
 import org.eclipse.jetty.servlet.ServletContextHandler
 
 object BasicFilterHolder {
-  def apply(filter: Filter) = {
+  def apply(filter: Filter): FilterHolder = {
     val holder = new FilterHolder(filter)
     holder.setName(CountedName.Filter.name)
     holder
@@ -27,10 +27,10 @@ case class FilterAdder(
 
 case class CountedName(prefix: String) {
   private[this] val counter = new AtomicInteger
-  def name = prefix + " " + counter.incrementAndGet
+  def name: String = prefix + " " + counter.incrementAndGet
 }
 
 object CountedName {
-  val Servlet = CountedName("Servlet")
-  val Filter = CountedName("Filter")
+  val Servlet: CountedName = CountedName("Servlet")
+  val Filter: CountedName = CountedName("Filter")
 }
