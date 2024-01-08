@@ -2,6 +2,7 @@ package unfiltered.request
 
 import scala.util.control.Exception.allCatch
 import scala.util.control.Exception.catching
+import scala.util.matching.Regex
 
 trait DateParser extends (String => java.util.Date)
 
@@ -11,7 +12,7 @@ object DateFormatting {
   import java.util.Locale
   import java.util.TimeZone
 
-  def format(date: Date) =
+  def format(date: Date): String =
     new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH) {
       setTimeZone(TimeZone.getTimeZone("GMT"))
     }.format(date)
@@ -20,30 +21,30 @@ object DateFormatting {
     allCatch.opt(new SimpleDateFormat(fmt, Locale.US).parse(value))
 
   /** Preferred HTTP date format Sun, 06 Nov 1994 08:49:37 GMT */
-  def RFC1123 = parseAs("EEE, dd MMM yyyy HH:mm:ss z") _
+  def RFC1123: String => Option[Date] = parseAs("EEE, dd MMM yyyy HH:mm:ss z") _
 
   /** Sunday, 06-Nov-94 08:49:37 GMT */
-  def RFC1036 = parseAs("EEEEEE, dd-MMM-yy HH:mm:ss z") _
+  def RFC1036: String => Option[Date] = parseAs("EEEEEE, dd-MMM-yy HH:mm:ss z") _
 
   /** Sun Nov  6 08:49:37 1994 */
-  def ANSICTime = parseAs("EEE MMM  d HH:mm:ss yyyy") _
+  def ANSICTime: String => Option[Date] = parseAs("EEE MMM  d HH:mm:ss yyyy") _
 
   /** @return various date coersion formats falling back on None value */
-  def parseDate(raw: String) = RFC1123(raw) orElse RFC1036(raw) orElse ANSICTime(raw)
+  def parseDate(raw: String): Option[Date] = RFC1123(raw) orElse RFC1036(raw) orElse ANSICTime(raw)
 }
 
 /** A header with values mapped to keys in a Map. */
 private[request] class MappedRequestHeader[A, B](val name: String)(parser: Iterator[String] => Map[A, B])
     extends RequestExtractor[Map[A, B]] {
   def unapply[T](req: HttpRequest[T]): Some[Map[A, B]] = Some(parser(req.headers(name)))
-  def apply[T](req: HttpRequest[T]) = parser(req.headers(name))
+  def apply[T](req: HttpRequest[T]): Map[A, B] = parser(req.headers(name))
 }
 
 /** A header with comma delimited values. Implementations of this extractor
  * will not match requests for which the header `name` is not present.*/
 private[request] class SeqRequestHeader[T](val name: String)(parser: Iterator[String] => List[T])
     extends RequestExtractor[List[T]] {
-  def unapply[A](req: HttpRequest[A]) =
+  def unapply[A](req: HttpRequest[A]): Option[List[T]] =
     Some(parser(req.headers(name))).filter { _.nonEmpty }
   def apply[T](req: HttpRequest[T]) = parser(req.headers(name))
 }
@@ -52,19 +53,19 @@ private[request] class SeqRequestHeader[T](val name: String)(parser: Iterator[St
  * will not match requests for which the header `name` is not present.*/
 private[request] class RequestHeader[A](val name: String)(parser: Iterator[String] => List[A])
     extends RequestExtractor[A] {
-  def unapply[T](req: HttpRequest[T]) = parser(req.headers(name)).headOption
-  def apply[T](req: HttpRequest[T]) = parser(req.headers(name)).headOption
+  def unapply[T](req: HttpRequest[T]): Option[A] = parser(req.headers(name)).headOption
+  def apply[T](req: HttpRequest[T]): Option[A] = parser(req.headers(name)).headOption
 }
 
 private[request] object DateValueParser extends (Iterator[String] => List[java.util.Date]) {
   import DateFormatting._
-  def apply(values: Iterator[String]) =
+  def apply(values: Iterator[String]): List[java.util.Date] =
     values.toList.flatMap(parseDate)
 }
 
 private[request] object IntValueParser extends (Iterator[String] => List[Int]) {
-  def tryInt(raw: String) = catching(classOf[NumberFormatException]).opt(raw.toInt)
-  def apply(values: Iterator[String]) =
+  def tryInt(raw: String): Option[Int] = catching(classOf[NumberFormatException]).opt(raw.toInt)
+  def apply(values: Iterator[String]): List[Int] =
     values.toList.flatMap(tryInt)
 }
 
@@ -77,15 +78,15 @@ private[request] object UriValueParser extends (Iterator[String] => List[java.ne
   import java.net.URI
   import java.net.URISyntaxException
 
-  def toUri(raw: String) =
+  def toUri(raw: String): Option[URI] =
     catching(classOf[URISyntaxException], classOf[NullPointerException]).opt(new URI(raw))
 
-  def apply(values: Iterator[String]) =
+  def apply(values: Iterator[String]): List[URI] =
     values.toList.flatMap(toUri)
 }
 
 private[request] object SeqValueParser extends (Iterator[String] => List[String]) {
-  def apply(values: Iterator[String]) = {
+  def apply(values: Iterator[String]): List[String] = {
     def split(raw: String): List[String] =
       (raw.split(",") map {
         _.trim.takeWhile { _ != ';' }.mkString
@@ -97,7 +98,7 @@ private[request] object SeqValueParser extends (Iterator[String] => List[String]
 private[request] case class Conneg(value: String, qualifier: Double = 1.0)
 
 private[request] object Conneg {
-  val EqualsMatcher = """(\w*)="?([a-zA-Z\.0-9]*)"?""".r
+  val EqualsMatcher: Regex = """(\w*)="?([a-zA-Z\.0-9]*)"?""".r
 
   def apply(input: String): Conneg = {
     val split = input.trim().split(";").toList
@@ -118,7 +119,7 @@ private[request] object Conneg {
 }
 
 private[request] object ConnegValueParser extends (Iterator[String] => List[String]) {
-  def apply(values: Iterator[String]) = {
+  def apply(values: Iterator[String]): List[String] = {
     def parse: String => scala.List[Conneg] = { raw =>
       raw.split(",").map(Conneg(_)).toList
     }
@@ -161,11 +162,11 @@ object RequestContentEncoding extends ConnegHeader("Content-Encoding") {
       encs.exists { _.equalsIgnoreCase(t) }
     }
 
-  val GZip = matching("gzip")
-  val Deflate = matching("deflate")
-  val Compress = matching("compress")
-  val SDCH = matching("sdch")
-  val Identity = matching("identity")
+  val GZip: RequestExtractor.Predicate[List[String]] = matching("gzip")
+  val Deflate: RequestExtractor.Predicate[List[String]] = matching("deflate")
+  val Compress: RequestExtractor.Predicate[List[String]] = matching("compress")
+  val SDCH: RequestExtractor.Predicate[List[String]] = matching("sdch")
+  val Identity: RequestExtractor.Predicate[List[String]] = matching("identity")
 }
 
 object Authorization extends StringHeader("Authorization")
@@ -194,13 +195,13 @@ object XForwardedProto extends StringHeader("X-Forwarded-Proto")
 /** Extracts the charset value from the Content-Type header, if present */
 object Charset {
   import unfiltered.util.MIMEType
-  def unapply[T](req: HttpRequest[T]) = {
+  def unapply[T](req: HttpRequest[T]): Option[String] = {
     for {
       case MIMEType(mimeType) <- RequestContentType(req)
       charset <- mimeType.params.get("charset")
     } yield charset
   }
-  def apply[T](req: HttpRequest[T]) = unapply(req)
+  def apply[T](req: HttpRequest[T]): Option[String] = unapply(req)
 }
 
 /** Extracts hostname and port separately from the Host header, setting

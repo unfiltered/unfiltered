@@ -40,11 +40,11 @@ import java.nio.charset.{Charset => JNIOCharset}
 import scala.jdk.CollectionConverters._
 
 object HttpConfig {
-  val DEFAULT_CHARSET = CharsetUtil.UTF_8.name()
+  val DEFAULT_CHARSET: String = CharsetUtil.UTF_8.name()
 }
 
 object Content {
-  def unapply(msg: HttpMessage) =
+  def unapply(msg: HttpMessage): Option[HttpMessage with HttpContent] =
     msg match {
       case has: HttpContent => Some(has)
       case _ => None
@@ -82,7 +82,7 @@ class RequestBinding(msg: ReceivedMessage) extends HttpRequest(msg) with Async.R
   lazy val reader: BufferedReader =
     new BufferedReader(new InputStreamReader(inputStream, charset))
 
-  def protocol = req.protocolVersion.text()
+  def protocol: String = req.protocolVersion.text()
 
   def method = req.method.toString.toUpperCase
 
@@ -91,18 +91,18 @@ class RequestBinding(msg: ReceivedMessage) extends HttpRequest(msg) with Async.R
 
   def parameterNames = params.keySet.iterator
 
-  def parameterValues(param: String) = params.getOrElse(param, Seq.empty)
+  def parameterValues(param: String): Seq[String] = params.getOrElse(param, Seq.empty)
 
   def headerNames = req.headers.names.iterator.asScala
 
-  def headers(name: String) = req.headers.getAll(name).iterator.asScala
+  def headers(name: String): Iterator[String] = req.headers.getAll(name).iterator.asScala
 
-  def isSecure =
+  def isSecure: Boolean =
     Option(msg.context.pipeline.get(classOf[SslHandler])).isDefined
 
-  def remoteAddr = msg.context.channel.remoteAddress.asInstanceOf[InetSocketAddress].getAddress.getHostAddress
+  def remoteAddr: String = msg.context.channel.remoteAddress.asInstanceOf[InetSocketAddress].getAddress.getHostAddress
 
-  def respond(rf: ResponseFunction[NettyHttpResponse]) =
+  def respond(rf: ResponseFunction[NettyHttpResponse]): Unit =
     underlying.respond(rf)
 }
 
@@ -114,17 +114,21 @@ case class ReceivedMessage(request: NettyHttpRequest, context: ChannelHandlerCon
 
   /** Binds a Netty HttpResponse res to Unfiltered's HttpResponse to apply any
    * response function to it. */
-  def response[T <: NettyHttpResponse](res: T)(rf: ResponseFunction[T]) =
+  def response[T <: NettyHttpResponse](res: T)(rf: ResponseFunction[T]): T =
     rf(new ResponseBinding(res)).underlying
 
   /** @return a new Netty FullHttpResponse bound to an Unfiltered HttpResponse */
-  lazy val defaultResponse = response(new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)) _
+  lazy val defaultResponse: ResponseFunction[DefaultFullHttpResponse] => DefaultFullHttpResponse = response(
+    new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)
+  ) _
 
   /** @return a new partial Netty HttpResponse bound to an Unfiltered HttpResponse. */
-  lazy val partialResponse = response(new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)) _
+  lazy val partialResponse: ResponseFunction[DefaultHttpResponse] => DefaultHttpResponse = response(
+    new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK)
+  ) _
 
   /** @return a ChannelFutureListener which releases the NettyHttpRequest of this message */
-  lazy val releaser = new ChannelFutureListener {
+  lazy val releaser: ChannelFutureListener = new ChannelFutureListener {
     def operationComplete(f: ChannelFuture): Unit =
       ReferenceCountUtil.release(request)
   }
@@ -175,16 +179,16 @@ class ResponseBinding[U <: NettyHttpResponse](res: U) extends HttpResponse(res) 
   private lazy val outStream =
     content.map(httpContent => new ByteBufOutputStream(httpContent.content)).getOrElse(new ByteArrayOutputStream)
 
-  def status(code: Int) =
+  def status(code: Int): Unit =
     res.setStatus(HttpResponseStatus.valueOf(code))
 
   def status: Int =
     res.status.code()
 
-  def header(name: String, value: String) =
+  def header(name: String, value: String): Unit =
     res.headers.add(name, value)
 
-  def redirect(url: String) =
+  def redirect(url: String): Unit =
     res.setStatus(HttpResponseStatus.FOUND).headers.add(HttpHeaderNames.LOCATION, url)
 
   def outputStream = outStream

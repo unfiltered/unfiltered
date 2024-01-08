@@ -7,7 +7,7 @@ object Pass extends ResponseFunction[Any] {
 
   /** Promote given intent to one defined for all requests. Returns
     * Pass where given intent is not defined. */
-  def lift[A, B >: RF](intent: PartialFunction[A, B]) =
+  def lift[A, B >: RF](intent: PartialFunction[A, B]): PartialFunction[A, B] =
     onPass(intent, Function.const(Pass) _)
 
   /**
@@ -64,17 +64,17 @@ object Pass extends ResponseFunction[Any] {
   }
   private trait PassingAttempt[-A, +B] extends Attempt[A, B] {
     def attemptWithPass(x: A): Option[B]
-    def attempt(x: A) = attemptWithPass(x).filter { _ != Pass }
+    def attempt(x: A): Option[B] = attemptWithPass(x).filter { _ != Pass }
   }
   private class PartialAttempt[-A, +B](underlying: PartialFunction[A, B]) extends PassingAttempt[A, B] {
     val lifted = underlying.lift
-    def isDefinedAt(x: A) = underlying.isDefinedAt(x)
-    def apply(x: A) = underlying(x)
-    def attemptWithPass(x: A) = lifted(x)
+    def isDefinedAt(x: A): Boolean = underlying.isDefinedAt(x)
+    def apply(x: A): B = underlying(x)
+    def attemptWithPass(x: A): Option[B] = lifted(x)
   }
   private class FunctionAttempt[-A, +B](underlying: A => B) extends PassingAttempt[A, B] {
     def isDefinedAt(x: A) = true
-    def apply(x: A) = underlying(x)
+    def apply(x: A): B = underlying(x)
     def attemptWithPass(x: A): Option[B] = Some(underlying(x))
   }
   private class OnPassAttempt[A, B >: RF, A1 <: A, B1 >: B](

@@ -54,7 +54,7 @@ class Planify(val intent: Plan.Intent) extends Plan
 
 /** To create a filter instance with an independent function */
 object Planify {
-  def apply(intentIn: Plan.Intent) = new Plan {
+  def apply(intentIn: Plan.Intent): Plan = new Plan {
     val intent = intentIn
   }
 }

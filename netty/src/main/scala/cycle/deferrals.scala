@@ -14,7 +14,7 @@ trait ThreadPool extends DeferralExecutor with DeferredIntent {
 }
 
 object ThreadPool {
-  def executor = Executors.newCachedThreadPool()
+  def executor: ExecutorService = Executors.newCachedThreadPool()
 }
 
 /** Evaluates the intent and its response function on

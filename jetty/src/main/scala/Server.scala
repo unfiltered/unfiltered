@@ -9,6 +9,7 @@ import jakarta.servlet.Filter
 import org.eclipse.jetty.server.handler.ContextHandlerCollection
 import org.eclipse.jetty.server.handler.RequestLogHandler
 import org.eclipse.jetty.server.handler.HandlerCollection
+import org.eclipse.jetty.server
 
 /** Holds port bindings for selected ports and interfaces. The
   * PortBindings trait provides convenience methods for bindings. */
@@ -22,19 +23,20 @@ case class Server(
   type ServerBuilder = Server
 
   /** Add a port binding to this server. */
-  def portBinding(binding: PortBinding) = copy(
+  def portBinding(binding: PortBinding): Server = copy(
     portBindings = binding :: portBindings
   )
 
   /** Update the server's first-added context. */
-  def originalContext(replace: ContextAdder => ContextAdder) = copy(contextAdders = contextAdders.reverse match {
-    case head :: tail => (replace(head) :: tail).reverse
-    case _ => contextAdders
-  })
+  def originalContext(replace: ContextAdder => ContextAdder): Server =
+    copy(contextAdders = contextAdders.reverse match {
+      case head :: tail => (replace(head) :: tail).reverse
+      case _ => contextAdders
+    })
 
   /** The mutable underlying jetty server object. This is built
     * on-demand according to the described configuration. */
-  lazy val underlying = {
+  lazy val underlying: server.Server = {
     val server = new org.eclipse.jetty.server.Server()
     for (binding <- portBindings.reverseIterator)
       server.addConnector(binding.connector(server))
@@ -60,18 +62,18 @@ case class Server(
   }
 
   /** Add a servlet context with the given path */
-  def context(path: String)(block: ContextAdder => ContextAdder) = copy(
+  def context(path: String)(block: ContextAdder => ContextAdder): Server = copy(
     contextAdders = block(DefaultServletContextAdder(path, Nil, None)) :: contextAdders
   )
 
   /** Add a filter as a by-name parameter. Generally you should use
     * `plan(plan)` instead. */
-  def makePlan(plan: => Filter) = originalContext(
+  def makePlan(plan: => Filter): ServerBuilder = originalContext(
     _.filterAdder(FilterAdder(BasicFilterHolder(plan)))
   )
 
   /** Add a resource path to the original, root context */
-  def resources(path: java.net.URL) = originalContext(_.resources(path))
+  def resources(path: java.net.URL): Server = originalContext(_.resources(path))
 
   /** Configure global logging of requests to a logfile in Common or Extended log format.
     * [[https://en.wikipedia.org/wiki/Category:Log_file_formats]] */
@@ -82,7 +84,7 @@ case class Server(
     timezone: String = "GMT",
     retainDays: Int = 31,
     format: String
-  ) = copy(requestLogging = {
+  ): Server = copy(requestLogging = {
     Some(
       RequestLogging(
         filename = filename,
@@ -99,14 +101,14 @@ case class Server(
   def ports: Iterable[Int] = portBindings.reverse.map(_.port)
 
   /** Starts server in the background */
-  def start() = {
+  def start(): ServerBuilder = {
     underlying.setStopAtShutdown(true)
     underlying.start()
     this
   }
 
   /** Stops server running in the background */
-  def stop() = {
+  def stop(): ServerBuilder = {
     underlying.stop()
     this
   }
@@ -114,7 +116,7 @@ case class Server(
   /** Destroys the Jetty server instance and frees its resources.
    * Call after stopping a server, if finished with the instance,
    * to help avoid PermGen errors in an ongoing JVM session. */
-  def destroy() = {
+  def destroy(): ServerBuilder = {
     underlying.destroy()
     this
   }
@@ -124,6 +126,6 @@ case class Server(
   * PortBindings trait provides convenience methods for adding
   * bindings. */
 object Server extends PortBindings {
-  def portBinding(portBinding: PortBinding) =
+  def portBinding(portBinding: PortBinding): Server =
     Server(portBinding :: Nil, DefaultServletContextAdder("/", Nil, None) :: Nil)
 }

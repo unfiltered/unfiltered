@@ -57,11 +57,11 @@ trait Plan extends unfiltered.filter.InittedFilter {
 
 object Planify {
   val DEFAULT_ASYNC_REQUEST_TIMEOUT_MILLIS = 30000L
-  def apply(intentIn: Plan.Intent) = new Plan {
+  def apply(intentIn: Plan.Intent): Plan = new Plan {
     def intent = intentIn
     override val asyncRequestTimeoutMillis = DEFAULT_ASYNC_REQUEST_TIMEOUT_MILLIS
   }
-  def apply(intentIn: Plan.Intent, asyncRequestTimeoutMillisIn: Long) =
+  def apply(intentIn: Plan.Intent, asyncRequestTimeoutMillisIn: Long): Plan =
     new Plan {
       val intent = intentIn
 

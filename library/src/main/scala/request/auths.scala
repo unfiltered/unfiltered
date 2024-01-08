@@ -6,7 +6,7 @@ object BasicAuth {
   import unfiltered.request.{HttpRequest => Req}
 
   /** @return Some(user, pass) or None */
-  def unapply[T](r: Req[T]) = r match {
+  def unapply[T](r: Req[T]): Option[(String, String)] = r match {
     case Authorization(auth) if !auth.isEmpty => {
       val tok = new java.util.StringTokenizer(auth)
       tok.nextToken match {
@@ -20,5 +20,5 @@ object BasicAuth {
     }
     case _ => None
   }
-  def apply[T](r: Req[T]) = unapply(r)
+  def apply[T](r: Req[T]): Option[(String, String)] = unapply(r)
 }

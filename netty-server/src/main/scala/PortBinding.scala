@@ -19,6 +19,7 @@ import java.security.SecureRandom
 import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLEngine
+import io.netty.channel.ChannelFuture
 
 /** A PortBinding defines a binding for a ServerBootstrap for a given address  and port */
 trait PortBinding extends PortBindingInfo {
@@ -34,11 +35,11 @@ object PortBinding {
 
   trait Secure extends PortBinding with HttpsPortBinding {
     def handler(channel: SocketChannel): SslHandler
-    def init(channel: SocketChannel) = {
+    def init(channel: SocketChannel): SocketChannel = {
       channel.pipeline.addLast(handler(channel))
       channel
     }
-    def bind(boot: ServerBootstrap) =
+    def bind(boot: ServerBootstrap): ChannelFuture =
       boot.bind(host, port)
   }
 }
@@ -55,21 +56,21 @@ trait PortBindings {
   def http(
     port: Int = defaultHttpPort,
     host: String = allInterfacesHost
-  ) = bind(
+  ): Server = bind(
     SocketBinding(port, host)
   )
 
-  def local(port: Int) =
+  def local(port: Int): Server =
     http(port, localInterfaceHost)
 
-  def anylocal =
+  def anylocal: Server =
     local(Port.any)
 
   def https(
     port: Int = defaultHttpsPort,
     host: String = allInterfacesHost,
     ssl: SslContextProvider
-  ) = bind(
+  ): Server = bind(
     SecureContextSocketBinding(port, host, ssl)
   )
 
@@ -77,7 +78,7 @@ trait PortBindings {
     port: Int = defaultHttpsPort,
     host: String = allInterfacesHost,
     ssl: SslEngineProvider
-  ) = bind(
+  ): Server = bind(
     SecureEngineSocketBinding(port, host, ssl)
   )
 }
@@ -91,7 +92,7 @@ case class SecureContextSocketBinding(
   host: String,
   ssl: SslContextProvider
 ) extends PortBinding.Secure {
-  def handler(channel: SocketChannel) =
+  def handler(channel: SocketChannel): SslHandler =
     ssl.context.newHandler(channel.alloc)
 }
 
@@ -120,7 +121,7 @@ object SslEngineProvider {
   trait Path extends SslEngineProvider {
     def keyStorePath: String
     def keyStorePassword: String
-    def engine = {
+    def engine: SSLEngine = {
       val ctx = SSLContext.getInstance("TLS")
       ctx.init(keyManagers, null, new SecureRandom)
       val e = ctx.createSSLEngine
@@ -161,17 +162,17 @@ object SslEngineProvider {
       keyStorePasswordProperty: String
     ) extends Path {
       private lazy val props = new sys.SystemProperties
-      lazy val keyStorePath = props(keyStorePathProperty)
-      lazy val keyStorePassword = props(keyStorePasswordProperty)
+      lazy val keyStorePath: String = props(keyStorePathProperty)
+      lazy val keyStorePassword: String = props(keyStorePasswordProperty)
     }
   }
 
-  def apply(engine: SSLEngine) = Simple(engine)
+  def apply(engine: SSLEngine): Simple = Simple(engine)
 
   def path(
     keyStorePath: String,
     keyStorePassword: String
-  ) = Path.Simple(
+  ): Path.Simple = Path.Simple(
     keyStorePath,
     keyStorePassword
   )
@@ -179,7 +180,7 @@ object SslEngineProvider {
   def pathSysProperties(
     keyStorePathProperty: String = defaultKeystorePathProperty,
     keyStorePasswordProperty: String = defaultKeystorePasswordProperty
-  ) = Path.SysProperties(
+  ): Path.SysProperties = Path.SysProperties(
     keyStorePathProperty,
     keyStorePasswordProperty
   )
@@ -192,7 +193,7 @@ trait SslContextProvider {
 object SslContextProvider {
   def selfSigned(
     cert: SelfSignedCertificate
-  ) = new SslContextProvider {
+  ): SslContextProvider = new SslContextProvider {
     def context = SslContextBuilder.forServer(cert.certificate(), cert.privateKey()).build
   }
   def keys(
@@ -200,7 +201,7 @@ object SslContextProvider {
     key: File,
     password: Option[String] = None,
     nettyProvider: Option[SslProvider] = None
-  ) = new SslContextProvider {
+  ): SslContextProvider = new SslContextProvider {
     def context = SslContextBuilder.forServer(certChain, key, password.orNull).sslProvider(nettyProvider.orNull).build
   }
 }

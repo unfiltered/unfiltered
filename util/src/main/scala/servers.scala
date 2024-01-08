@@ -19,7 +19,7 @@ trait PortBindingInfo {
   def host: String
   def port: Int
   def scheme: String
-  def url = s"$scheme://$host:$port"
+  def url: String = s"$scheme://$host:$port"
 }
 trait HttpPortBinding {
   val scheme = "http"

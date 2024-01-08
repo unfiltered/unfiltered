@@ -8,11 +8,11 @@ package object response {
   implicit class partialToPassing[A, B >: RF](
     val intent: PartialFunction[A, B]
   ) extends AnyVal {
-    def onPass[A1 <: A, B1 >: B](onPass: PartialFunction[A1, B1]) =
+    def onPass[A1 <: A, B1 >: B](onPass: PartialFunction[A1, B1]): PartialFunction[A1, B1] =
       Pass.onPass(intent, onPass)
-    def onPass[A1 <: A, B1 >: B](onPass: Function[A1, B1]) =
+    def onPass[A1 <: A, B1 >: B](onPass: Function[A1, B1]): PartialFunction[A1, B1] =
       Pass.onPass(intent, onPass)
-    def fold[C](onPass: A => C, andThen: (A, B) => C) =
+    def fold[C](onPass: A => C, andThen: (A, B) => C): PartialFunction[A, C] =
       Pass.fold(intent, onPass, andThen)
   }
 }

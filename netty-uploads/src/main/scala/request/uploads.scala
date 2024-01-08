@@ -32,7 +32,7 @@ class MultiPartBinding(val decoder: Option[PostDecoder], msg: ReceivedMessage) e
 object MultiPart extends MultiPartMatcher[RequestBinding] {
   val Type = "multipart/form-data"
   val Boundary = "boundary"
-  def unapply(req: RequestBinding) =
+  def unapply(req: RequestBinding): Option[RequestBinding] =
     RequestContentType(req) match {
       case Some(r) if isMultipart(r) => Some(req)
       case _ => None
@@ -62,7 +62,7 @@ object MultiPartParams {
 
   /** Streamed multi-part data extractor */
   object Streamed extends StreamedExtractor[RequestBinding] {
-    def apply(req: RequestBinding) = {
+    def apply(req: RequestBinding): MultipartData[Seq[AbstractStreamedFile]] = {
 
       val decoder = req match {
         case r: MultiPartBinding => r.decoder
@@ -93,7 +93,7 @@ object MultiPartParams {
       to disk is prohibited.
       */
   object Memory extends StreamedExtractor[RequestBinding] {
-    def apply(req: RequestBinding) = {
+    def apply(req: RequestBinding): MultipartData[Seq[AbstractStreamedFile]] = {
 
       val decoder = req match {
         case r: MultiPartBinding => r.decoder
@@ -118,7 +118,7 @@ object MultiPartParams {
 
 /** Netty extractor for multi-part data destined for disk. */
 trait AbstractDisk extends AbstractDiskExtractor[RequestBinding] with TupleGenerator {
-  def apply(req: RequestBinding) = {
+  def apply(req: RequestBinding): MultipartData[Seq[AbstractDiskFile]] = {
     val items = req match {
       case r: MultiPartBinding => r.decoder.map(_.items).getOrElse(Nil).iterator
       case _ => PostDecoder(req.underlying.request).map(_.items).getOrElse(Nil).iterator

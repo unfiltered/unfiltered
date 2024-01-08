@@ -1,11 +1,12 @@
 package unfiltered.request
 
 import unfiltered.Cookie
+import scala.util.matching.Regex
 
 /** An implementation of a function used to map cookie names to their value as an Option. If there
  *  is no associated Cookie value. None will always be returned. */
 private[request] object CookieValueParser extends (Iterator[String] => Map[String, Option[Cookie]]) {
-  def apply(values: Iterator[String]) = {
+  def apply(values: Iterator[String]): Map[String, Option[Cookie]] = {
     val vs = values.toList
     vs.flatMap(FromCookies.apply _)
       .foldLeft(Map.empty[String, Option[Cookie]])((m, c) => m + (c.name -> Some(c)))
@@ -22,7 +23,7 @@ object Cookies extends MappedRequestHeader[String, Option[Cookie]]("Cookie")(Coo
  * deserialized cookie representation. This list includes `Comment`, `CommentURL`, `Discard`, and `Port` */
 object FromCookies {
   import unfiltered.CookieKeys._
-  val Cutter = "(?:\\s|[;,])*\\$*([^;=]+)(?:=(?:[\"']((?:\\\\.|[^\"])*)[\"']|([^;,]*)))?(\\s*(?:[;,]+\\s*|$))".r
+  val Cutter: Regex = "(?:\\s|[;,])*\\$*([^;=]+)(?:=(?:[\"']((?:\\\\.|[^\"])*)[\"']|([^;,]*)))?(\\s*(?:[;,]+\\s*|$))".r
 
   def apply(cstr: String): Seq[Cookie] = {
     val (names, values) =

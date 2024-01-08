@@ -23,7 +23,7 @@ object Param {
 
   /** Extractor for parameter types that cannot repeat within a `Ref`. */
   object NonRepeatable {
-    def unapply(param: Param) =
+    def unapply(param: Param): Option[Param] =
       param.paramType match {
         case Rel | Media | Title | TitleStar | ContentType => Some(param)
         case _ => None
@@ -61,7 +61,7 @@ sealed abstract class Media(val mediaType: String) extends Param(Param.Media, me
       `media` parameter. */
   def :+(that: Media) = CompositeMedia(this, that)
 
-  final override def toString = s"Media($mediaType)"
+  final override def toString: String = s"Media($mediaType)"
 }
 
 private[link] final case class CompositeMedia(a: Media, b: Media) extends Media(a.mediaType + ", " + b.mediaType)
@@ -90,7 +90,7 @@ sealed abstract class Rel(val relType: String) extends Param(Param.Rel, relType)
       `rel` parameter. */
   def :+(that: Rel) = CompositeRel(this, that)
 
-  final override def toString = s"Rel($relType)"
+  final override def toString: String = s"Rel($relType)"
 }
 
 private[link] final case class CompositeRel(a: Rel, b: Rel) extends Rel(a.relType + " " + b.relType)

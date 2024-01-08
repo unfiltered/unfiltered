@@ -23,7 +23,7 @@ trait ExceptionHandler { self: ChannelInboundHandler =>
  *  when an exception is thrown */
 @Sharable
 trait ServerErrorResponse extends ExceptionHandler { self: ChannelInboundHandler =>
-  def onException(ctx: ChannelHandlerContext, t: Throwable) = {
+  def onException(ctx: ChannelHandlerContext, t: Throwable): Unit = {
     val ch = ctx.channel
     if (ch.isOpen) try {
       System.err.println("Exception caught handling request:")

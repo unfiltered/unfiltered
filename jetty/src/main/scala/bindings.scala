@@ -19,7 +19,7 @@ trait PortBindings {
 
   def portBinding(portBinding: PortBinding): Server
 
-  def http(port: Int = defaultHttpPort, host: String = allInterfacesHost) =
+  def http(port: Int = defaultHttpPort, host: String = allInterfacesHost): Server =
     portBinding(SocketPortBinding(port, host))
 
   def local(port: Int): Server =
@@ -32,7 +32,7 @@ trait PortBindings {
     host: String = allInterfacesHost,
     keyStorePath: String,
     keyStorePassword: String
-  ) = portBinding(
+  ): Server = portBinding(
     SslSocketPortBinding(
       port,
       host,
@@ -48,7 +48,7 @@ trait PortBindings {
     host: String = allInterfacesHost,
     keyStorePathProperty: String = defaultKeystorePathProperty,
     keyStorePasswordProperty: String = defaultKeystorePasswordProperty
-  ) = portBinding(
+  ): Server = portBinding(
     SslSocketPortBinding(
       port,
       host,
@@ -80,7 +80,7 @@ case class SocketPortBinding(
 trait SslContextProvider {
   def keyStorePath: String
   def keyStorePassword: String
-  lazy val sslContextFactory = {
+  lazy val sslContextFactory: SslContextFactory.Server = {
     val factory = new SslContextFactory.Server()
     factory.setKeyStorePath(keyStorePath)
     factory.setKeyStorePassword(keyStorePassword)
@@ -100,8 +100,8 @@ case class PropertySslContextProvider(
   keyStorePasswordProperty: String
 ) extends SslContextProvider {
   private lazy val props = new sys.SystemProperties
-  lazy val keyStorePath = props(keyStorePathProperty)
-  lazy val keyStorePassword = props(keyStorePasswordProperty)
+  lazy val keyStorePath: String = props(keyStorePathProperty)
+  lazy val keyStorePassword: String = props(keyStorePasswordProperty)
 }
 
 case class SslSocketPortBinding(

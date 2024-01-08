@@ -14,8 +14,8 @@ trait AgentExtractor extends (HttpRequest[?] => Boolean) {
   def &(e: AgentExtractor) = new AgentExtractor {
     val test = (ua: String) => AgentExtractor.this.test(ua) && e.test(ua)
   }
-  def apply(req: HttpRequest[?]) =
+  def apply(req: HttpRequest[?]): Boolean =
     UserAgent.unapply(req).exists(test)
-  def unapply[A](req: HttpRequest[A]) =
+  def unapply[A](req: HttpRequest[A]): Option[Some[HttpRequest[A]]] =
     UserAgent.unapply(req).collect { case ua if test(ua) => Some(req) }
 }

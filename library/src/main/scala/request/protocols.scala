@@ -1,7 +1,7 @@
 package unfiltered.request
 
 abstract class Protocol(p: String) {
-  def unapply[T](req: HttpRequest[T]) =
+  def unapply[T](req: HttpRequest[T]): Option[HttpRequest[T]] =
     if (req.protocol.equalsIgnoreCase(p)) Some(req)
     else None
 }

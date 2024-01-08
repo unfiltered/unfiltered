@@ -19,8 +19,9 @@ object BigDecimal extends Fallible[String, BigDecimal](s => allCatch.opt { new j
 object String extends Interpreter[Seq[String], Option[String], Nothing] {
   def interpret(seq: Seq[String], name: String): Either[Nothing, Option[String]] = Right(seq.headOption)
 
-  val trimmed = Interpreter[Option[String], Option[String]](opt => opt.map { _.trim })
-  val nonEmpty = Conditional[String](_.nonEmpty)
+  val trimmed: Interpreter[Option[String], Option[String], Nothing] =
+    Interpreter[Option[String], Option[String]](opt => opt.map { _.trim })
+  val nonEmpty: Fallible[String, String] = Conditional[String](_.nonEmpty)
 }
 
 object Option {

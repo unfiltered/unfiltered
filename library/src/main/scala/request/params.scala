@@ -24,7 +24,7 @@ object Params {
    * A function Seq[String] => Option[B]  used to test and transform values
    * from the parameter map. Conditions may be chained with `~>` */
   class ParamMapper[B](f: Seq[String] => Option[B]) extends (Seq[String] => Option[B]) {
-    def apply(a: Seq[String]) = f(a)
+    def apply(a: Seq[String]): Option[B] = f(a)
     def ~>[C](that: Option[B] => Option[C]) = new ParamMapper({ f andThen that })
   }
 
@@ -37,30 +37,30 @@ object Params {
   class Extract[T](f: Map => Option[T]) {
     def this(name: String, f: Seq[String] => Option[T]) =
       this({ (params: Map) => f(params(name)) })
-    def unapply(params: Map) = f(params)
+    def unapply(params: Map): Option[T] = f(params)
   }
 
   /** Construct a parameter predicate */
   def pred[A](p: A => Boolean): Option[A] => Option[A] =
     opt => opt filter p
 
-  def int(os: Option[String]) =
+  def int(os: Option[String]): Option[Int] =
     os.flatMap { s => allCatch.opt { s.toInt } }
 
-  def long(os: Option[String]) =
+  def long(os: Option[String]): Option[Long] =
     os.flatMap { s => allCatch.opt { s.toLong } }
 
-  def float(os: Option[String]) =
+  def float(os: Option[String]): Option[Float] =
     os.flatMap { s => allCatch.opt { s.toFloat } }
 
-  def double(os: Option[String]) =
+  def double(os: Option[String]): Option[Double] =
     os.flatMap { s => allCatch.opt { s.toDouble } }
 
-  val even = pred { (_: Int) % 2 == 0 }
-  val odd = pred { (_: Int) % 2 == 1 }
+  val even: Option[Int] => Option[Int] = pred { (_: Int) % 2 == 0 }
+  val odd: Option[Int] => Option[Int] = pred { (_: Int) % 2 == 1 }
 
-  def trimmed(s: Option[String]) = s map { _.trim }
-  val nonempty = pred { !(_: String).isEmpty }
+  def trimmed(s: Option[String]): Option[String] = s map { _.trim }
+  val nonempty: Option[String] => Option[String] = pred { !(_: String).isEmpty }
 }
 
 /** Basic query parameter access. */

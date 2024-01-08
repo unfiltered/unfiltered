@@ -42,7 +42,7 @@ trait RequestPlan extends ChannelInboundHandlerAdapter with ExceptionHandler {
       req.underlying.context.fireChannelRead(req.underlying.message)
     }
 
-  final override def channelReadComplete(ctx: ChannelHandlerContext) =
+  final override def channelReadComplete(ctx: ChannelHandlerContext): Unit =
     ctx.flush()
 
   override def channelRead(ctx: ChannelHandlerContext, msg: java.lang.Object): Unit =

@@ -7,7 +7,7 @@ case class ResponseHeader(name: String, values: Iterable[String]) extends Respon
 }
 
 class HeaderName(val name: String) {
-  def apply(value: String*) = ResponseHeader(name, value)
+  def apply(value: String*): ResponseHeader = ResponseHeader(name, value)
 }
 
 // https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.10
@@ -19,7 +19,7 @@ object CacheControl extends HeaderName("Cache-Control")
 object Connection extends HeaderName("Connection")
 object ContentDisposition extends HeaderName("Content-Disposition")
 object ContentEncoding extends HeaderName("Content-Encoding") {
-  val GZip = apply("gzip")
+  val GZip: ResponseHeader = apply("gzip")
 }
 object ContentLanguage extends HeaderName("Content-Language")
 object ContentLength extends HeaderName("Content-Length")
@@ -47,7 +47,7 @@ object AccessControlAllowOrigin extends HeaderName("Access-Control-Allow-Origin"
 object AccessControlExposeHeaders extends HeaderName("Access-Control-Expose-Headers")
 object AccessControlMaxAge extends HeaderName("Access-Control-Max-Age")
 object AccessControlAllowCredentials extends HeaderName("Access-Control-Allow-Credentials") {
-  val True = apply("true")
+  val True: ResponseHeader = apply("true")
 }
 object AccessControlAllowMethods extends HeaderName("Access-Control-Allow-Methods")
 object AccessControlAllowHeaders extends HeaderName("Access-Control-Allow-Headers")

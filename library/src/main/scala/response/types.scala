@@ -8,7 +8,7 @@ trait BaseContentType extends Responder[Any] {
 }
 
 case class CharContentType(contentType: String) extends BaseContentType {
-  def contentType(res: HttpResponse[Any]) =
+  def contentType(res: HttpResponse[Any]): String =
     s"${contentType}; charset=${res.charset.name.toLowerCase}"
 }
 

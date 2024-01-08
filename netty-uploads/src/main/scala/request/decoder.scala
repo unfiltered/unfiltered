@@ -19,6 +19,7 @@ import io.netty.util.AttributeKey
 import io.netty.util.AttributeMap
 import scala.jdk.CollectionConverters._
 import scala.util.Try
+import io.netty.handler.codec.http.multipart.InterfaceHttpPostRequestDecoder
 
 /** A PostDecoder wraps a HttpPostRequestDecoder. */
 class PostDecoder(req: HttpRequest, useDisk: Boolean = true) {
@@ -49,26 +50,26 @@ class PostDecoder(req: HttpRequest, useDisk: Boolean = true) {
   }
 
   /** Returns a collection of uploaded files found in the parsed request */
-  lazy val fileUploads = items collect { case file: FileUpload => file }
+  lazy val fileUploads: List[FileUpload] = items collect { case file: FileUpload => file }
 
   /** Returns a collection of all the parts excluding file uploads from the parsed request */
-  lazy val parameters = items collect { case param: Attribute => param }
+  lazy val parameters: List[Attribute] = items collect { case param: Attribute => param }
 
   /** Add a received HttpContent to the decoder */
-  def offer(chunk: HttpContent) = decoder.map(_.offer(chunk))
+  def offer(chunk: HttpContent): Option[InterfaceHttpPostRequestDecoder] = decoder.map(_.offer(chunk))
 
   /** Clean all HttpDatas (on Disk) for the current request */
-  def cleanFiles() = decoder.map(_.cleanFiles())
+  def cleanFiles(): Option[Unit] = decoder.map(_.cleanFiles())
 
   /** Release underlying resources. this should cleanFiles, undecodedChunk, release bodyListHttpData.
    *  Once called, this decoder's behavior is undefined. (should submit patch to netty project to check decoder.isDestoryed) */
-  def destroy() = decoder.map(_.destroy())
+  def destroy(): Option[Unit] = decoder.map(_.destroy())
 }
 
 object PostDecoder {
 
   // todo(doug): reduce scope
-  val State = AttributeKey.valueOf[MultiPartChannelState]("PostDecoder.state")
+  val State: AttributeKey[MultiPartChannelState] = AttributeKey.valueOf[MultiPartChannelState]("PostDecoder.state")
 
   def apply(req: HttpRequest, useDisk: Boolean = true): Option[PostDecoder] = {
     val postDecoder = new PostDecoder(req, useDisk)
@@ -92,7 +93,7 @@ object MultiPartPass {
   type PassHandler = (ChannelHandlerContext, java.lang.Object) => Unit
 
   /** A default implementation of a PassHandler which sends the message upstream. todo(doug): does anything need released here? */
-  val DefaultPassHandler = { _.fireChannelRead(_) }: PassHandler
+  val DefaultPassHandler: PassHandler = { _.fireChannelRead(_) }: PassHandler
 }
 
 /** Enriches a netty plan with multipart decoding capabilities. */
@@ -115,7 +116,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
 
   /** Provides multipart request handling common to both cycle and async plans.
       Should be called by onMessageReceived. */
-  protected def upgrade(ctx: ChannelHandlerContext, msg: java.lang.Object) =
+  protected def upgrade(ctx: ChannelHandlerContext, msg: java.lang.Object): Unit =
     msg match {
       case request: HttpRequest =>
         val binding = new RequestBinding(ReceivedMessage(request, ctx, request))
@@ -155,7 +156,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
     channelState: MultiPartChannelState,
     ctx: ChannelHandlerContext,
     msg: java.lang.Object
-  ) = { // TODO: remove msg param. its probably not needed
+  ): Unit = { // TODO: remove msg param. its probably not needed
     if (!channelState.readingChunks) {
       // Initialise the decoder
       val decoder = PostDecoder(request, useDisk)
@@ -184,7 +185,7 @@ trait AbstractMultiPartDecoder extends CleanUp {
     channelState: MultiPartChannelState,
     ctx: ChannelHandlerContext,
     msg: java.lang.Object
-  ) = { // todo: remove msg param, its probably no longer needed
+  ): Unit = { // todo: remove msg param, its probably no longer needed
     // Should be reading chunks here
     if (channelState.readingChunks) {
       // Give the chunk to the decoder
@@ -233,7 +234,7 @@ trait CleanUp {
 
 /** Ensure any state cleanup is done when an exception is caught */
 trait TidyExceptionHandler extends ExceptionHandler with CleanUp { self: ChannelInboundHandler =>
-  override def exceptionCaught(ctx: ChannelHandlerContext, thrown: Throwable) = {
+  override def exceptionCaught(ctx: ChannelHandlerContext, thrown: Throwable): Unit = {
     Try {
       cleanUp(ctx)
     }

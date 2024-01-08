@@ -48,28 +48,28 @@ object Engine {
     def use(engine: Engine): T
 
     /** Specifies the EventLoopGroup use to handle incoming connections */
-    def acceptor(group: EventLoopGroup) = use(new Engine {
+    def acceptor(group: EventLoopGroup): T = use(new Engine {
       lazy val acceptor = group
       lazy val workers = engine.workers
       lazy val channels = engine.channels
     })
 
     /** Specifies the EventLoopGroup use to handle processing of registered channels */
-    def workers(group: EventLoopGroup) = use(new Engine {
+    def workers(group: EventLoopGroup): T = use(new Engine {
       lazy val acceptor = engine.acceptor
       lazy val workers = group
       lazy val channels = engine.channels
     })
 
     /** Specifies the ChannelGroup used for collecting connected channels */
-    def channels(group: ChannelGroup) = use(new Engine {
+    def channels(group: ChannelGroup): T = use(new Engine {
       lazy val acceptor = engine.acceptor
       lazy val workers = engine.workers
       lazy val channels = group
     })
 
     /** Sets channels to a DefaultChannelGroup using the given executor */
-    def channelsExecutor(executor: EventExecutor) =
+    def channelsExecutor(executor: EventExecutor): T =
       channels(defaultChannels(executor))
   }
 }

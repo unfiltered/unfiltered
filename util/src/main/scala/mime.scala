@@ -1,7 +1,7 @@
 package unfiltered.util
 
 case class MIMEType(major: String, minor: String, params: Map[String, String] = Map.empty) {
-  def includes(mt: MIMEType) = {
+  def includes(mt: MIMEType): Boolean = {
     (major, minor) match {
       case ("*", "*") => true
       case (maj, "*") => mt.major == maj
@@ -9,7 +9,7 @@ case class MIMEType(major: String, minor: String, params: Map[String, String] = 
     }
   }
 
-  override def toString =
+  override def toString: String =
     "%s/%s%s".format(
       major,
       minor,
@@ -20,7 +20,7 @@ case class MIMEType(major: String, minor: String, params: Map[String, String] = 
 }
 
 object MIMEType {
-  val ALL = MIMEType("*", "*", Map.empty)
+  val ALL: MIMEType = MIMEType("*", "*", Map.empty)
 
   private[this] val EqualPattern = "(?sm)(.*)=(.*)".r
   private[this] val MimeMatcher = "(?sm)([\\w-*]+)/([\\w-*+.]+);?(.*)?".r

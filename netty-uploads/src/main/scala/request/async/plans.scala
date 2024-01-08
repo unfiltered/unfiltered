@@ -32,7 +32,7 @@ trait MultiPartDecoder extends async.Plan with AbstractMultiPartDecoder with Tid
   /** Decide if the intent could handle the request */
   protected def handleOrPass(ctx: ChannelHandlerContext, e: java.lang.Object, binding: RequestBinding)(
     thunk: => Unit
-  ) = {
+  ): Unit = {
     intent.orElse(MultipartPlan.PassAlong)(binding) match {
       case MultipartPlan.Pass => pass(ctx, e)
       case _ => thunk
@@ -40,7 +40,7 @@ trait MultiPartDecoder extends async.Plan with AbstractMultiPartDecoder with Tid
   }
 
   /** Called when the chunked request has been fully received. Executes the intent */
-  protected def complete(ctx: ChannelHandlerContext, nmsg: java.lang.Object)(cleanUp: => Unit) = {
+  protected def complete(ctx: ChannelHandlerContext, nmsg: java.lang.Object)(cleanUp: => Unit): Unit = {
     val channelState = Helpers.channelStateOrCreate(ctx)
     val res = channelState.originalReq match {
       case Some(req) =>
@@ -62,7 +62,7 @@ trait MultiPartDecoder extends async.Plan with AbstractMultiPartDecoder with Tid
     res
   }
 
-  final override def channelRead(ctx: ChannelHandlerContext, obj: java.lang.Object) =
+  final override def channelRead(ctx: ChannelHandlerContext, obj: java.lang.Object): Unit =
     upgrade(ctx, obj)
 
   final override def channelInactive(ctx: ChannelHandlerContext): Unit = {
@@ -88,7 +88,7 @@ object MultiPartDecoder {
 object MemoryMultiPartDecoder {
   def apply(intent: MultipartPlan.Intent): async.Plan =
     MemoryMultiPartDecoder(intent, MultiPartPass.DefaultPassHandler)
-  def apply(intent: MultipartPlan.Intent, pass: MultiPartPass.PassHandler) =
+  def apply(intent: MultipartPlan.Intent, pass: MultiPartPass.PassHandler): MultiPartPlanifier =
     new MultiPartPlanifier(intent, pass) {
       override protected val useDisk = false
     }

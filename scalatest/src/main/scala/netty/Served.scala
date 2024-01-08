@@ -6,7 +6,7 @@ import unfiltered.netty.Server
 import unfiltered.scalatest.Hosted
 
 trait Planned extends Served { self: Hosted =>
-  def setup = _.plan(unfiltered.netty.cycle.Planify(intent))
+  def setup: Server => Server = _.plan(unfiltered.netty.cycle.Planify(intent))
   def intent[A, B]: unfiltered.Cycle.Intent[A, B]
 }
 
@@ -16,7 +16,7 @@ trait Served extends TestSuite with Hosted {
   ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID)
 
   def setup: Server => Server
-  def getServer = setup(Server.http(port))
+  def getServer: Server = setup(Server.http(port))
 
   override protected def withFixture(test: NoArgTest): Outcome = {
     val server = getServer

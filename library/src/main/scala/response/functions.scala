@@ -15,7 +15,7 @@ trait ResponseFunction[-A] { self =>
 
 /** Responders always return the provided instance of HttpResponse */
 trait Responder[A] extends ResponseFunction[A] {
-  def apply[B <: A](res: HttpResponse[B]) = {
+  def apply[B <: A](res: HttpResponse[B]): HttpResponse[B] = {
     respond(res)
     res
   }
@@ -32,5 +32,5 @@ class ComposeResponse[A](rf: ResponseFunction[A]) extends Responder[A] {
   * equivalence, so that (a ~> b == a ~> b) */
 private case class ComposedResponseFunction[F, G <: F](f: ResponseFunction[F], g: ResponseFunction[G])
     extends ResponseFunction[G] {
-  def apply[R <: G](res: HttpResponse[R]) = g(f(res))
+  def apply[R <: G](res: HttpResponse[R]): HttpResponse[R] = g(f(res))
 }

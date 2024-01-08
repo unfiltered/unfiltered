@@ -2,10 +2,11 @@ package unfiltered.specs2
 package jetty
 
 import org.specs2.mutable._
+import unfiltered.jetty.Server
 
 trait Planned extends Served {
 
-  def setup = _.plan(unfiltered.filter.Planify(intent))
+  def setup: Server => Server = _.plan(unfiltered.filter.Planify(intent))
 
   def intent[A, B]: unfiltered.Cycle.Intent[A, B]
 }
@@ -16,7 +17,7 @@ trait Served extends Hosted with SpecificationLike {
 
   def setup: (Server => Server)
 
-  lazy val server = setup(Server.http(port))
+  lazy val server: Server = setup(Server.http(port))
 
   override def afterAll(): Unit = {
     server.stop()

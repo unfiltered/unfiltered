@@ -5,7 +5,7 @@ package unfiltered.response
  * blocking I/O, and other undesirable activity that would occur upon the
  * eager application of an intent. A Pass can not be deferred*/
 object Defer {
-  def apply[A](rf: => ResponseFunction[A]) = new Responder[A] {
+  def apply[A](rf: => ResponseFunction[A]): Responder[A] = new Responder[A] {
     def respond(res: HttpResponse[A]): Unit = { rf(res) }
   }
 }

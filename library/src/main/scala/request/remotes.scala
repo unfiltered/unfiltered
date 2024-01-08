@@ -1,5 +1,6 @@
 package unfiltered.request
 
+import scala.util.matching.Regex
 object RemoteAddr {
 
   /** @see [[https://en.wikipedia.org/wiki/Private_network#Private_IPv4_address_spaces]]
@@ -9,7 +10,7 @@ object RemoteAddr {
     * private IP in the range 172.16.0.0 .. 172.31.255.255
     * private IP 192.168.x.x
     */
-  val TrustedProxies = """(^127\.0\.0\.1$|^(10|172\.(1[6-9]|2[0-9]|3[0-1])|192\.168)\.\S+)""".r
+  val TrustedProxies: Regex = """(^127\.0\.0\.1$|^(10|172\.(1[6-9]|2[0-9]|3[0-1])|192\.168)\.\S+)""".r
   def unapply[T](req: HttpRequest[T]): Some[String] = Some(req match {
     case XForwardedFor(forwarded) =>
       forwarded.filter(TrustedProxies.findFirstMatchIn(_).isEmpty) match {
