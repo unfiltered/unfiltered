@@ -11,7 +11,7 @@ object Dependencies {
 
   def integrationTestDeps = Def.setting((specs2Dep.value :: okHttp) map { _ % "test" })
 
-  val commonsCodecVersion = "1.16.0"
+  val commonsCodecVersion = "1.16.1"
   val scalaXmlVersion = Def.setting(
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, _)) =>
