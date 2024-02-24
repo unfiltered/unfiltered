@@ -15,7 +15,7 @@ object Common {
     }
   )
 
-  val Scala213 = "2.13.12"
+  val Scala213 = "2.13.13"
 
   val settings: Seq[Setting[?]] = Def.settings(
     organization := "ws.unfiltered",
@@ -28,7 +28,7 @@ object Common {
         Seq(
           "-Xcheckinit",
           "-Xsource:3",
-          "-Wconf:msg=constructor modifiers are assumed by synthetic:info",
+          "-Wconf:msg=method are copied from the case class constructor:silent",
         )
       }
       .toList
