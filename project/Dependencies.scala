@@ -20,7 +20,7 @@ object Dependencies {
         "2.0.1"
     }
   )
-  val commonsIoVersion = "2.11.0"
+  val commonsIoVersion = "2.16.1"
   val commonsFileUploadVersion = "1.4"
   val jettyVersion = "9.4.50.v20221201"
   val nettyVersion = "4.1.85.Final"
