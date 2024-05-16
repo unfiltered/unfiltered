@@ -16,7 +16,7 @@ object Dependencies {
   val scalaXmlVersion = "2.3.0"
   val commonsIoVersion = "2.16.1"
   val commonsFileUploadVersion = "1.5"
-  val jettyVersion = "11.0.20"
+  val jettyVersion = "11.0.21"
   val nettyVersion = "4.1.109.Final"
   val scalatestVersion = "3.2.18"
   val scalatestScalacheckVersion = s"${scalatestVersion}.0"
