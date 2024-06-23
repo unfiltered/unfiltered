@@ -57,7 +57,7 @@ lazy val library: Project = module("unfiltered")(
     "org.scalatest" %% "scalatest-wordspec" % scalatestVersion % "test",
     "org.scalatest" %% "scalatest-shouldmatchers" % scalatestVersion % "test",
     "org.scalatest" %% "scalatest-propspec" % scalatestVersion % "test",
-    "org.scalatestplus" %% "scalacheck-1-17" % scalatestScalacheckVersion % "test",
+    "org.scalatestplus" %% "scalacheck-1-18" % scalatestScalacheckVersion % "test",
     "org.scala-lang.modules" %% "scala-xml" % scalaXmlVersion,
   ),
 ).dependsOn(util)
