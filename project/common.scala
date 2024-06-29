@@ -27,8 +27,7 @@ object Common {
       .condOpt(CrossVersion.partialVersion(scalaVersion.value)) { case Some((2, _)) =>
         Seq(
           "-Xcheckinit",
-          "-Xsource:3",
-          "-Wconf:msg=method are copied from the case class constructor:silent",
+          "-Xsource:3-cross",
         )
       }
       .toList
