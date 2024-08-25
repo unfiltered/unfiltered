@@ -44,7 +44,7 @@ object HttpConfig {
 }
 
 object Content {
-  def unapply(msg: HttpMessage): Option[HttpMessage with HttpContent] =
+  def unapply(msg: HttpMessage): Option[HttpMessage & HttpContent] =
     msg match {
       case has: HttpContent => Some(has)
       case _ => None
