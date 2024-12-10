@@ -4,3 +4,24 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    target-branch: "0.12.x"
+    commit-message:
+      prefix: "[0.12] "
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    target-branch: "0.11.x"
+    commit-message:
+      prefix: "[0.11] "
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    target-branch: "0.10.x"
+    commit-message:
+      prefix: "[0.10] "
