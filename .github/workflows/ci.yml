@@ -23,7 +23,7 @@ jobs:
       with:
         java-version: ${{matrix.java}}
         distribution: adopt
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: sbt/setup-sbt@v1
     - shell: bash
       run: sbt -v "+ mimaReportBinaryIssues" "+ test" "+ publishLocal"
