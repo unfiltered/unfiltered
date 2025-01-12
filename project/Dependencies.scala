@@ -7,11 +7,11 @@ object Dependencies {
     "org.specs2" %% "specs2-core" % "4.10.6" cross CrossVersion.for3Use2_13
   }
 
-  def okHttp = "com.squareup.okhttp3" % "okhttp" % "4.10.0" :: Nil
+  def okHttp = "com.squareup.okhttp3" % "okhttp" % "4.12.0" :: Nil
 
   def integrationTestDeps = Def.setting((specs2Dep.value :: okHttp) map { _ % "test" })
 
-  val commonsCodecVersion = "1.15"
+  val commonsCodecVersion = "1.16.0"
   val scalaXmlVersion = Def.setting(
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, _)) =>
@@ -22,7 +22,7 @@ object Dependencies {
   )
   val commonsIoVersion = "2.11.0"
   val commonsFileUploadVersion = "1.5"
-  val jettyVersion = "9.4.50.v20221201"
+  val jettyVersion = "9.4.57.v20241219"
   val nettyVersion = "4.1.85.Final"
   val scalatestVersion = "3.2.15"
   val scalatestScalacheck = Def.setting(
