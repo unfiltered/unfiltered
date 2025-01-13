@@ -104,73 +104,77 @@ class ChunkAggregatedUploadSpec extends Specification with Served {
             }
           case _ => req.respond(ResponseString("what's f?"))
         }
-    }).plan(netty.cycle.Planify {
-      case POST(UFPath("/cycle/disk-upload") & MultiPart(req)) =>
-        MultiPartParams.Disk(req).files("f") match {
-          case Seq(f, _*) => ResponseString(s"disk read file f named ${f.name} with content type ${f.contentType}")
-          case f => ResponseString("what's f?")
-        }
-      case POST(UFPath("/cycle/disk-upload/write") & MultiPart(req)) =>
-        MultiPartParams.Disk(req).files("f") match {
-          case Seq(f, _*) =>
-            f.write(new JFile(directory, "1upload-test-out.txt")) match {
-              case Some(outFile) =>
-                if (Arrays.equals(IOU.toByteArray(new FIS(outFile)), f.bytes))
+    }).plan(
+      netty.cycle.Planify {
+        case POST(UFPath("/cycle/disk-upload") & MultiPart(req)) =>
+          MultiPartParams.Disk(req).files("f") match {
+            case Seq(f, _*) => ResponseString(s"disk read file f named ${f.name} with content type ${f.contentType}")
+            case f => ResponseString("what's f?")
+          }
+        case POST(UFPath("/cycle/disk-upload/write") & MultiPart(req)) =>
+          MultiPartParams.Disk(req).files("f") match {
+            case Seq(f, _*) =>
+              f.write(new JFile(directory, "1upload-test-out.txt")) match {
+                case Some(outFile) =>
+                  if (Arrays.equals(IOU.toByteArray(new FIS(outFile)), f.bytes))
+                    ResponseString(
+                      s"wrote disk read file f named ${f.name} with content type ${f.contentType} with correct contents"
+                    )
+                  else
+                    ResponseString(
+                      s"wrote disk read file f named ${f.name} with content type ${f.contentType}, with differing contents"
+                    )
+                case None =>
+                  ResponseString(s"did not write disk read file f named ${f.name} with content type ${f.contentType}")
+              }
+            case _ => ResponseString("what's f?")
+          }
+        case POST(UFPath("/cycle/stream-upload") & MultiPart(req)) =>
+          MultiPartParams.Streamed(req).files("f") match {
+            case Seq(f, _*) =>
+              ResponseString(s"stream read file f is named ${f.name} with content type ${f.contentType}")
+            case _ => ResponseString("what's f?")
+          }
+        case POST(UFPath("/cycle/stream-upload/write") & MultiPart(req)) =>
+          MultiPartParams.Streamed(req).files("f") match {
+            case Seq(f, _*) =>
+              val src = IOU.toByteArray(getClass.getResourceAsStream("/netty-upload-big-text-test.txt"))
+              f.write(new JFile(directory, "2upload-test-out.txt")) match {
+                case Some(outFile) =>
+                  if (Arrays.equals(IOU.toByteArray(new FIS(outFile)), src))
+                    ResponseString(
+                      s"wrote stream read file f named ${f.name} with content type ${f.contentType} with correct contents"
+                    )
+                  else
+                    ResponseString(
+                      s"wrote stream read file f named ${f.name} with content type ${f.contentType}, with differing contents"
+                    )
+                case None =>
+                  ResponseString(s"did not write stream read file f named ${f.name} with content type ${f.contentType}")
+              }
+            case _ => ResponseString("what's f?")
+          }
+        case POST(UFPath("/cycle/mem-upload") & MultiPart(req)) =>
+          MultiPartParams.Memory(req).files("f") match {
+            case Seq(f, _*) =>
+              ResponseString(s"memory read file f is named ${f.name} with content type ${f.contentType}")
+            case _ => ResponseString("what's f?")
+          }
+        case POST(UFPath("/cycle/mem-upload/write") & MultiPart(req)) =>
+          MultiPartParams.Memory(req).files("f") match {
+            case Seq(f, _*) =>
+              f.write(new JFile(directory, "3upload-test-out.txt")) match {
+                case Some(outFile) =>
+                  ResponseString(s"wrote memory read file f is named ${f.name} with content type ${f.contentType}")
+                case None =>
                   ResponseString(
-                    s"wrote disk read file f named ${f.name} with content type ${f.contentType} with correct contents"
+                    s"did not write memory read file f is named ${f.name} with content type ${f.contentType}"
                   )
-                else
-                  ResponseString(
-                    s"wrote disk read file f named ${f.name} with content type ${f.contentType}, with differing contents"
-                  )
-              case None =>
-                ResponseString(s"did not write disk read file f named ${f.name} with content type ${f.contentType}")
-            }
-          case _ => ResponseString("what's f?")
-        }
-      case POST(UFPath("/cycle/stream-upload") & MultiPart(req)) =>
-        MultiPartParams.Streamed(req).files("f") match {
-          case Seq(f, _*) => ResponseString(s"stream read file f is named ${f.name} with content type ${f.contentType}")
-          case _ => ResponseString("what's f?")
-        }
-      case POST(UFPath("/cycle/stream-upload/write") & MultiPart(req)) =>
-        MultiPartParams.Streamed(req).files("f") match {
-          case Seq(f, _*) =>
-            val src = IOU.toByteArray(getClass.getResourceAsStream("/netty-upload-big-text-test.txt"))
-            f.write(new JFile(directory, "2upload-test-out.txt")) match {
-              case Some(outFile) =>
-                if (Arrays.equals(IOU.toByteArray(new FIS(outFile)), src))
-                  ResponseString(
-                    s"wrote stream read file f named ${f.name} with content type ${f.contentType} with correct contents"
-                  )
-                else
-                  ResponseString(
-                    s"wrote stream read file f named ${f.name} with content type ${f.contentType}, with differing contents"
-                  )
-              case None =>
-                ResponseString(s"did not write stream read file f named ${f.name} with content type ${f.contentType}")
-            }
-          case _ => ResponseString("what's f?")
-        }
-      case POST(UFPath("/cycle/mem-upload") & MultiPart(req)) =>
-        MultiPartParams.Memory(req).files("f") match {
-          case Seq(f, _*) => ResponseString(s"memory read file f is named ${f.name} with content type ${f.contentType}")
-          case _ => ResponseString("what's f?")
-        }
-      case POST(UFPath("/cycle/mem-upload/write") & MultiPart(req)) =>
-        MultiPartParams.Memory(req).files("f") match {
-          case Seq(f, _*) =>
-            f.write(new JFile(directory, "3upload-test-out.txt")) match {
-              case Some(outFile) =>
-                ResponseString(s"wrote memory read file f is named ${f.name} with content type ${f.contentType}")
-              case None =>
-                ResponseString(
-                  s"did not write memory read file f is named ${f.name} with content type ${f.contentType}"
-                )
-            }
-          case _ => ResponseString("what's f?")
-        }
-    }).plan(planify { case _ =>
+              }
+            case _ => ResponseString("what's f?")
+          }
+      }
+    ).plan(planify { case _ =>
       NotFound
     })
   }
