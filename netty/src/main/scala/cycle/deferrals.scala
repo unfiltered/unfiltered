@@ -58,6 +58,7 @@ trait DeferralExecutor extends Deferral {
         def run: Unit = { f }
       })
     } catch {
+
       /** Our underlying executor has already shutdown or has already completed all of its tasks following shutdown */
       case e: RejectedExecutionException if underlying.isShutdown || underlying.isTerminated => // no-op
     }

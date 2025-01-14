@@ -28,6 +28,7 @@ class PostDecoder(req: HttpRequest, useDisk: Boolean = true) {
   private lazy val decoder: Option[HttpPostRequestDecoder] = // [InterfaceHttpPostRequestDecoder] in 4.0.14
     try Some(new HttpPostRequestDecoder(new DefaultHttpDataFactory(useDisk), req))
     catch {
+
       /** Would it be more useful to throw errors here? */
       case e: HttpPostRequestDecoder.ErrorDataDecoderException =>
         None
