@@ -1,5 +1,4 @@
 import sbt._
-import xerial.sbt.Sonatype.autoImport.sonatypePublishToBundle
 
 object Common {
   import Keys._
@@ -62,7 +61,7 @@ object Common {
 
     homepage := Some(url("https://unfiltered.ws")),
     publishMavenStyle := true,
-    publishTo := sonatypePublishToBundle.value,
+    publishTo := (if (isSnapshot.value) None else localStaging.value),
     licenses := Seq("MIT" -> url("https://www.opensource.org/licenses/MIT")),
     pomExtra := (
       <scm>
