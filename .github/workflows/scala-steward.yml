@@ -24,4 +24,4 @@ jobs:
         github-token: ${{ steps.generate_token.outputs.token }}
         author-email: "74865306+unfiltered-app[bot]@users.noreply.github.com"
         author-name: "unfiltered-app[bot]"
-        branches: "main,0.12.x,0.11.x,0.10.x"
+        branches: "0.12.x,0.11.x,0.10.x"
