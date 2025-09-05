@@ -10,7 +10,7 @@ object Unfiltered {
   def local(name: String) = LocalProject(id(name))
 
   def srcPathSetting(projectId: String, rootPkg: String) =
-    (LocalProject(projectId) / Compile / packageSrc / mappings) ~= { defaults: Seq[(File, String)] =>
+    (LocalProject(projectId) / Compile / packageSrc / mappings) ~= { defaults =>
       defaults.map { case (file, path) =>
         (file, rootPkg + "/" + path)
       }
