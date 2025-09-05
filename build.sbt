@@ -3,35 +3,52 @@ import Unfiltered._
 import Dependencies._
 import ReleaseTransformations._
 
-Common.settings
-
-enablePlugins(ScalaUnidocPlugin)
-
-// unidoc publish settings
-name := "unfiltered-all"
-artifacts := Classpaths.artifactDefs(Seq(Compile / packageDoc, Compile / makePom)).value
-packagedArtifacts := Classpaths.packaged(Seq(Compile / packageDoc, Compile / makePom)).value
-Defaults.packageTaskSettings(
-  Compile / packageDoc,
-  (Compile / unidoc).map { _.flatMap(Path.allSubpaths) }
-)
-
-releaseCrossBuild := true
-
-releaseProcess := Seq[ReleaseStep](
-  checkSnapshotDependencies,
-  inquireVersions,
-  runClean,
-  runTest,
-  setReleaseVersion,
-  commitReleaseVersion,
-  tagRelease,
-  releaseStepCommandAndRemaining("+publishSigned"),
-  releaseStepCommandAndRemaining("sonaRelease"),
-  setNextVersion,
-  commitNextVersion,
-  pushChanges,
-)
+lazy val root = project
+  .in(file("."))
+  .enablePlugins(ScalaUnidocPlugin)
+  .settings(
+    Common.settings,
+    name := "unfiltered-all",
+    artifacts := Classpaths.artifactDefs(Seq(Compile / packageDoc, Compile / makePom)).value,
+    packagedArtifacts := Classpaths.packaged(Seq(Compile / packageDoc, Compile / makePom)).value,
+    Defaults.packageTaskSettings(
+      Compile / packageDoc,
+      (Compile / unidoc).map { _.flatMap(Path.allSubpaths) }
+    ),
+    releaseCrossBuild := true,
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      runClean,
+      runTest,
+      setReleaseVersion,
+      commitReleaseVersion,
+      tagRelease,
+      releaseStepCommandAndRemaining("+publishSigned"),
+      releaseStepCommandAndRemaining("sonaRelease"),
+      setNextVersion,
+      commitNextVersion,
+      pushChanges,
+    ),
+  )
+  .aggregate(
+    library,
+    directives,
+    filters,
+    filtersAsync,
+    agents,
+    uploads,
+    filterUploads,
+    util,
+    jetty,
+    nettyServer,
+    netty,
+    specs2,
+    scalatest,
+    json4s,
+    websockets,
+    nettyUploads,
+  )
 
 val specs2ProjectId = "specs2"
 val scalatestProjectId = "scalatest"
