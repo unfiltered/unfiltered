@@ -62,7 +62,7 @@ object Common {
     homepage := Some(url("https://unfiltered.ws")),
     publishMavenStyle := true,
     publishTo := (if (isSnapshot.value) None else localStaging.value),
-    licenses := Seq("MIT" -> url("https://www.opensource.org/licenses/MIT")),
+    licenses := Seq(License.MIT),
     pomExtra := (
       <scm>
         <url>git@github.com:unfiltered/unfiltered.git</url>
