@@ -164,7 +164,7 @@ lazy val nettyServer = module("netty-server")(
   description := "Netty server embedding module",
   dependsOnSpecs2InTest,
   libraryDependencies += "jakarta.activation" % "jakarta.activation-api" % activationVersion,
-  libraryDependencies += "org.eclipse.angus" % "angus-core" % "2.0.4" % Test,
+  libraryDependencies += "org.eclipse.angus" % "angus-core" % "2.0.5" % Test,
   libraryDependencies ++= integrationTestDeps.value
 ).dependsOn(netty, util)
 
