@@ -153,7 +153,7 @@ trait DirectivesSpec extends SpecificationLike with unfiltered.specs2.Hosted {
     "respond with not acceptable accepts header missing" in {
       val resp = httpx(
         req(host / "accept_json" / "123")
-        // <:< Map("Content-Type" -> "application/json")
+          // <:< Map("Content-Type" -> "application/json")
           POST (someJson, JSONContentType)
       )
       resp.code must_== 406
