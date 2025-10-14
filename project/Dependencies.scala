@@ -23,7 +23,7 @@ object Dependencies {
   val commonsIoVersion = "2.11.0"
   val commonsFileUploadVersion = "1.5"
   val jettyVersion = "9.4.58.v20250814"
-  val nettyVersion = "4.1.85.Final"
+  val nettyVersion = "4.1.128.Final"
   val scalatestVersion = "3.2.15"
   val scalatestScalacheck = Def.setting(
     CrossVersion.partialVersion(scalaVersion.value) match {
