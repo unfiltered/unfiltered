@@ -5,7 +5,7 @@ object Dependencies {
   val servletApiDep = "jakarta.servlet" % "jakarta.servlet-api" % "5.0.0"
 
   val specs2Dep = Def.setting {
-    "org.specs2" %% "specs2-core" % "4.22.0"
+    "org.specs2" %% "specs2-core" % "4.23.0"
   }
 
   def okHttp = "com.squareup.okhttp3" % "okhttp-jvm" % "5.2.1" :: Nil
