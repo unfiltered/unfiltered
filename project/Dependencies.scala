@@ -8,7 +8,7 @@ object Dependencies {
     "org.specs2" %% "specs2-core" % "4.23.0"
   }
 
-  def okHttp = "com.squareup.okhttp3" % "okhttp-jvm" % "5.2.1" :: Nil
+  def okHttp = "com.squareup.okhttp3" % "okhttp-jvm" % "5.3.0" :: Nil
 
   def integrationTestDeps = Def.setting((specs2Dep.value :: okHttp) map { _ % "test" })
 
