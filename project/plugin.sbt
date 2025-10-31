@@ -1,6 +1,6 @@
 addSbtPlugin("com.github.xuwei-k" % "sbt-root-aggregate" % "0.1.0")
 
-addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.5")
+addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.6")
 
 addSbtPlugin("com.github.sbt" % "sbt-unidoc" % "0.6.0")
 
