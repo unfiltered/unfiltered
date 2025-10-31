@@ -1,7 +1,5 @@
 # Unfiltered
 
-[![Join the chat at https://gitter.im/unfiltered/unfiltered](https://badges.gitter.im/unfiltered/unfiltered.svg)](https://gitter.im/unfiltered/unfiltered?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
 See the [Unfiltered documentation](https://unfiltered.ws) for instructions on using the project.
 
 ## Modules
