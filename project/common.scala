@@ -16,7 +16,7 @@ object Common {
     }
   )
 
-  val Scala212 = "2.12.20"
+  val Scala212 = "2.12.21"
 
   val settings: Seq[Setting[_]] = Def.settings(
     mimaPreviousArtifacts := Set(
