@@ -62,7 +62,7 @@ class JsonpSpec extends Specification with unfiltered.specs2.jetty.Served {
 
       resp.as_string must_== """onResp([42])"""
       val headers = resp.headers
-      headers("content-type") must_== (List("text/javascript; charset=utf-8"))
+      headers("content-type") must_== List("text/javascript; charset=utf-8")
     }
     "optionally produce a json response when callback is missing" in {
       val resp = http(
@@ -73,7 +73,7 @@ class JsonpSpec extends Specification with unfiltered.specs2.jetty.Served {
       val headers = resp.headers
 
       resp.as_string must_== """{"answer":[42]}"""
-      headers("content-type") must_== (List("application/json;charset=utf-8"))
+      headers("content-type") must_== List("application/json;charset=utf-8")
     }
   }
 }
