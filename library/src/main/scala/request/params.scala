@@ -83,7 +83,7 @@ object QueryParams {
         case _ => Nil
       }
     }
-    pairs.groupBy(_._1).map(t => (t._1, t._2.map(_._2))).toMap.withDefault { _ => Nil }
+    pairs.groupBy(_._1).map(t => (t._1, t._2.map(_._2))).withDefault { _ => Nil }
   }
 
 }
