@@ -128,10 +128,8 @@ case class ReceivedMessage(request: NettyHttpRequest, context: ChannelHandlerCon
   ) _
 
   /** @return a ChannelFutureListener which releases the NettyHttpRequest of this message */
-  lazy val releaser: ChannelFutureListener = new ChannelFutureListener {
-    def operationComplete(f: ChannelFuture): Unit =
-      ReferenceCountUtil.release(request)
-  }
+  lazy val releaser: ChannelFutureListener =
+    (f: ChannelFuture) => ReferenceCountUtil.release(request)
 
   /** Applies rf to a new `defaultResponse` and writes it out */
   def respond: (ResponseFunction[NettyHttpResponse] => Unit) = {
