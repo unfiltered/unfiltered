@@ -37,12 +37,11 @@ trait Interpreter[A, B, +E] { self =>
 }
 
 object Interpreter {
-  def identity[A]: Interpreter[A, A, Nothing] = new Interpreter[A, A, Nothing] {
-    def interpret(seq: A, name: String): Either[Nothing, A] = Right(seq)
-  }
-  def apply[A, B](f: A => B): Interpreter[A, B, Nothing] = new Interpreter[A, B, Nothing] {
-    def interpret(a: A, name: String): Either[Nothing, B] = Right(f(a))
-  }
+  def identity[A]: Interpreter[A, A, Nothing] =
+    (seq: A, name: String) => Right(seq)
+
+  def apply[A, B](f: A => B): Interpreter[A, B, Nothing] =
+    (a: A, name: String) => Right(f(a))
 }
 
 case class Fallible[A, B](cf: A => Option[B]) extends Interpreter[Option[A], Option[B], Nothing] {
