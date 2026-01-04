@@ -5,7 +5,7 @@ object Unfiltered {
   import Common._
   import java.lang.{Boolean => JBoolean}
 
-  def id(name: String) = "unfiltered-%s" format name
+  def id(name: String) = s"unfiltered-$name"
 
   def local(name: String) = LocalProject(id(name))
 

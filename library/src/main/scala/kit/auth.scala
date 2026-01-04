@@ -7,7 +7,7 @@ import unfiltered.request.HttpRequest
 /** Self-contained basic auth */
 object Auth {
   def defaultFail(realm: String): ResponseFunction[Any] =
-    Unauthorized ~> WWWAuthenticate("""Basic realm="%s"""" format realm)
+    Unauthorized ~> WWWAuthenticate(s"Basic realm=\"$realm\"")
   def basic[A, B](
     is: (String, String) => Boolean,
     realm: String = "secret"

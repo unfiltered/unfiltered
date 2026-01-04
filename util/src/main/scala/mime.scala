@@ -10,13 +10,7 @@ case class MIMEType(major: String, minor: String, params: Map[String, String] = 
   }
 
   override def toString: String =
-    "%s/%s%s".format(
-      major,
-      minor,
-      params.map { case (a, b) =>
-        "; %s=%s".format(a, b)
-      }.mkString("")
-    )
+    s"$major/$minor${params.map { case (a, b) => s"; $a=$b" }.mkString("")}"
 }
 
 object MIMEType {
