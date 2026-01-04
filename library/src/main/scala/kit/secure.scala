@@ -15,7 +15,7 @@ object Secure {
         case (req @ HostPort(host, _), rf) =>
           Redirect(
             if (port > -1)
-              "https://%s:%d%s".format(host, port, req.uri)
+              s"https://${host}:${port}${req.uri}"
             else
               s"https://${host}${req.uri}"
           )

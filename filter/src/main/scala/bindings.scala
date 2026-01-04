@@ -13,7 +13,7 @@ class RequestBinding(req: HttpServletRequest) extends HttpRequest(req) {
   def reader: java.io.Reader = req.getReader
   def protocol = req.getProtocol
   def method = req.getMethod.toUpperCase
-  def uri: String = Option(req.getRequestURI) ++ Option(req.getQueryString).map("?%s".format(_)) mkString ""
+  def uri: String = Option(req.getRequestURI) ++ Option(req.getQueryString).map(q => s"?${q}") mkString ""
   def parameterNames: Iterator[String] =
     req.getParameterNames.asScala
   def parameterValues(param: String): Seq[String] =
