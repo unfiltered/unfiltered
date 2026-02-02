@@ -71,7 +71,7 @@ class SslServerSpec extends Specification with unfiltered.specs2.netty.Started w
         https(host)
         sys.error("unexpected")
       } catch {
-        case (_: java.net.ConnectException) | (_: java.io.IOException) =>
+        case _: java.net.ConnectException | _: java.io.IOException =>
           ok
       }
     }
