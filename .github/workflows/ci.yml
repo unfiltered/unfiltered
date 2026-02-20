@@ -13,9 +13,9 @@ jobs:
         include:
           - java: 25
             os: ubuntu-latest
-          - java: 11
+          - java: 17
             os: ubuntu-latest
-          - java: 11
+          - java: 17
             os: windows-latest
     runs-on: ${{ matrix.os }}
     steps:
@@ -26,8 +26,8 @@ jobs:
     - uses: actions/checkout@v6
     - uses: sbt/setup-sbt@ae54f7cfe46ec0d24ade661d77f007360ab48bda # v1.1.16
     - if: matrix.os != 'windows-latest'
-      run: sbt -v scalafmtSbtCheck "+ scalafmtCheckAll"
+      run: sbt -v --server scalafmtSbtCheck "+ scalafmtCheckAll"
     - shell: bash
-      run: sbt -v "+ test" "+ publishLocal"
+      run: sbt -v --server "+ test" "+ publishLocal"
     - shell: bash
       run: rm -rf "$HOME/.ivy2/local" || true
