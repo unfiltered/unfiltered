@@ -3,7 +3,7 @@ import sbt._
 object Common {
   import Keys._
 
-  private[this] val unusedWarnings = Def.setting(
+  private val unusedWarnings = Def.setting(
     CrossVersion.partialVersion(scalaVersion.value) match {
       case Some((2, _)) =>
         Seq(
@@ -19,6 +19,7 @@ object Common {
   val settings: Seq[Setting[?]] = Def.settings(
     organization := "ws.unfiltered",
     crossScalaVersions := Seq(Scala213, "3.3.7"),
+    exportJars := false,
     scalaVersion := Scala213,
     scalacOptions ++=
       Seq("-encoding", "utf8", "-deprecation", "-unchecked", "-feature"),
@@ -42,7 +43,7 @@ object Common {
       }
     },
     (Compile / doc / scalacOptions) ++= {
-      val hash = sys.process.Process("git rev-parse HEAD").lineStream_!.head
+      val hash = sys.process.Process("git rev-parse HEAD").lazyLines_!.head
       val base = (LocalRootProject / baseDirectory).value.getAbsolutePath
       CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((3, _)) =>

@@ -10,10 +10,16 @@ lazy val root = project
     Common.settings,
     name := "unfiltered-all",
     artifacts := Classpaths.artifactDefs(Seq(Compile / packageDoc, Compile / makePom)).value,
-    packagedArtifacts := Classpaths.packaged(Seq(Compile / packageDoc, Compile / makePom)).value,
+    packagedArtifacts := Def.uncached(
+      Classpaths.packaged(Seq(Compile / packageDoc, Compile / makePom)).value
+    ),
     Defaults.packageTaskSettings(
       Compile / packageDoc,
-      (Compile / unidoc).map { _.flatMap(Path.allSubpaths) }
+      Def.task {
+        (Compile / unidoc).value.flatMap(Path.allSubpaths).toSeq.withFilter(_._1.isFile()).map { (p, path) =>
+          fileConverter.value.toVirtualFile(p.toPath()) -> path
+        }
+      }
     ),
     releaseCrossBuild := true,
     releaseProcess := Seq[ReleaseStep](
@@ -31,24 +37,7 @@ lazy val root = project
       pushChanges,
     ),
   )
-  .aggregate(
-    library,
-    directives,
-    filters,
-    filtersAsync,
-    agents,
-    uploads,
-    filterUploads,
-    util,
-    jetty,
-    nettyServer,
-    netty,
-    specs2,
-    scalatest,
-    json4s,
-    websockets,
-    nettyUploads,
-  )
+  .autoAggregate
 
 val specs2ProjectId = "specs2"
 val scalatestProjectId = "scalatest"
