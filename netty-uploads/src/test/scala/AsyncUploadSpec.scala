@@ -13,9 +13,7 @@ import java.io.{FileInputStream => FIS}
 import java.util.Arrays
 import org.apache.commons.io.{IOUtils => IOU}
 
-class AsyncUploadSpec extends Specification with Served {
-
-  private val directory = java.nio.file.Files.createTempDirectory(new JFile("target").toPath, "AsyncUploadSpec").toFile
+class AsyncUploadSpec extends Specification with Served with WithTempDirectory {
 
   def setup = {
     val plan = async.MultiPartDecoder {

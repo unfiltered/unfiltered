@@ -13,10 +13,7 @@ import java.io.{FileInputStream => FIS}
 import java.util.Arrays
 import org.apache.commons.io.{IOUtils => IOU}
 
-class ChunkAggregatedUploadSpec extends Specification with Served {
-
-  private val directory =
-    java.nio.file.Files.createTempDirectory(new JFile("target").toPath, "ChunkAggregatedUploadSpec").toFile
+class ChunkAggregatedUploadSpec extends Specification with Served with WithTempDirectory {
 
   def setup = {
     _.plan(netty.async.Planify {

@@ -18,8 +18,7 @@ import okhttp3.MultipartBody
 import okhttp3.Request
 import okhttp3.RequestBody
 
-class CycleUploadSpec extends Specification with Served {
-  private val directory = java.nio.file.Files.createTempDirectory(new JFile("target").toPath, "CycleUploadSpec").toFile
+class CycleUploadSpec extends Specification with Served with WithTempDirectory {
 
   def setup = {
     val plan = cycle.MultiPartDecoder {
