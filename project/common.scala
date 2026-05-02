@@ -18,11 +18,22 @@ object Common {
 
   val settings: Seq[Setting[?]] = Def.settings(
     organization := "ws.unfiltered",
-    crossScalaVersions := Seq(Scala213, "3.3.7"),
+    crossScalaVersions := Seq(Scala213, "3.3.8-RC1"),
     exportJars := false,
     scalaVersion := Scala213,
     scalacOptions ++=
       Seq("-encoding", "utf8", "-deprecation", "-unchecked", "-feature"),
+    scalacOptions ++= {
+      scalaBinaryVersion.value match {
+        case "3" =>
+          Seq(
+            "-release:11",
+            "-Yfuture-lazy-vals",
+          )
+        case _ =>
+          Nil
+      }
+    },
     scalacOptions ++= PartialFunction
       .condOpt(CrossVersion.partialVersion(scalaVersion.value)) { case Some((2, _)) =>
         Seq(
