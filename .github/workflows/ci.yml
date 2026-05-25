@@ -28,6 +28,6 @@ jobs:
     - if: matrix.os != 'windows-latest'
       run: sbt -v --server scalafmtSbtCheck "+ scalafmtCheckAll"
     - shell: bash
-      run: sbt -v --server "+ test" "+ publishLocal"
+      run: sbt -v --server "+ testFull" "+ publishLocal"
     - shell: bash
       run: rm -rf "$HOME/.ivy2/local" || true
