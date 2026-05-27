@@ -24,6 +24,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import jakarta.servlet.http.HttpServletRequest
 import scala.util.control.Exception.allCatch
+import scala.util.Using
 
 /** Matches requests that have multipart content */
 object MultiPart extends MultiPartMatcher[HttpRequest[HttpServletRequest]] {
@@ -76,11 +77,8 @@ object MultiPartParams extends TupleGenerator {
       ???
     }
 
-    def withStreamedFile[T](fstm: FileItemStream)(f: java.io.InputStream => T): T = {
-      val stm = fstm.openStream
-      try { f(stm) }
-      finally { stm.close }
-    }
+    def withStreamedFile[T](fstm: FileItemStream)(f: java.io.InputStream => T): T =
+      Using.resource(fstm.openStream)(f)
 
     protected def extractStr(fstm: FileItemStream): String = withStreamedFile[String](fstm) { stm =>
       Streams.asString(stm)
