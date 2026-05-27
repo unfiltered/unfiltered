@@ -1,12 +1,11 @@
 package unfiltered.response
 
 import java.io.OutputStreamWriter
+import scala.util.Using
 
 trait ResponseWriter extends Responder[Any] {
   def respond(res: HttpResponse[Any]): Unit = {
-    val writer = new OutputStreamWriter(res.outputStream, res.charset)
-    try { write(writer) }
-    finally { writer.close() }
+    Using.resource(new OutputStreamWriter(res.outputStream, res.charset))(write)
   }
   def write(writer: OutputStreamWriter): Unit
 }
