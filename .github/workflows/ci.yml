@@ -1,9 +1,9 @@
 name: ci
 on:
   push:
+    branches:
+      - main
   pull_request:
-  schedule:
-  - cron: '0 3 * * *'
 jobs:
   test:
     timeout-minutes: 60
