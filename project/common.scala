@@ -1,5 +1,4 @@
 import sbt._
-import xerial.sbt.Sonatype.autoImport.sonatypePublishToBundle
 import com.typesafe.tools.mima.plugin.MimaKeys.mimaPreviousArtifacts
 import com.typesafe.tools.mima.plugin.MimaKeys.mimaReportSignatureProblems
 
@@ -81,7 +80,7 @@ object Common {
 
     publishMavenStyle := true,
 
-    publishTo := sonatypePublishToBundle.value,
+    publishTo := (if (isSnapshot.value) None else localStaging.value),
 
     licenses := Seq("MIT" -> url("https://www.opensource.org/licenses/MIT")),
 
