@@ -71,7 +71,7 @@ object Common {
     Compile / javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
     Test / parallelExecution := false, // :( test servers collide on same port
 
-    homepage := Some(url("https://unfiltered.ws")),
+    homepage := Some(uri("https://unfiltered.ws")),
     publishMavenStyle := true,
     publishTo := (if (isSnapshot.value) None else localStaging.value),
     licenses := Seq(License.MIT),
