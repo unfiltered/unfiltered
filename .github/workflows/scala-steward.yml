@@ -20,7 +20,7 @@ jobs:
         client-id: 89698
         private-key: ${{ secrets.UNFILTERED_APP_KEY }}
     - name: scala-steward
-      uses: scala-steward-org/scala-steward-action@v2
+      uses: scala-steward-org/scala-steward-action@v2.92.0
       with:
         github-token: ${{ steps.generate_token.outputs.token }}
         author-email: "74865306+unfiltered-app[bot]@users.noreply.github.com"
