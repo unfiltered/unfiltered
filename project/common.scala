@@ -14,7 +14,7 @@ object Common {
     }
   )
 
-  val Scala213 = "2.13.18"
+  val Scala213 = "3.9.0"
 
   val settings: Seq[Setting[?]] = Def.settings(
     organization := "ws.unfiltered",
