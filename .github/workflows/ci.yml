@@ -24,6 +24,6 @@ jobs:
     - uses: actions/checkout@v7
     - uses: sbt/setup-sbt@v1
     - shell: bash
-      run: sbt -v -Xmx4G "+ mimaReportBinaryIssues" "+ test" "+ publishLocal"
+      run: sbt -v -J-Xmx4G "+ mimaReportBinaryIssues" "+ test" "+ publishLocal"
     - shell: bash
       run: rm -rf "$HOME/.ivy2/local" || true
