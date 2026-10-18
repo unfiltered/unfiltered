@@ -20,7 +20,7 @@ object Common {
   val settings: Seq[Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "ws.unfiltered",
 
-    crossScalaVersions := Seq("2.13.18", Scala212),
+    crossScalaVersions := Seq("3.10.0", Scala212),
 
     scalaVersion := Scala212,
 
