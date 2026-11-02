@@ -24,7 +24,7 @@ jobs:
         java-version: ${{matrix.java}}
         distribution: zulu
     - uses: actions/checkout@v7
-    - uses: sbt/setup-sbt@ecad189dd245444b9ae0a0cd5922fd938b88906f # v1.5.12
+    - uses: sbt/setup-sbt@b113b960ba361e87e08ce02a390d51871b7ee459 # v1.5.13
     - if: matrix.os != 'windows-latest'
       run: sbt -v --server scalafmtSbtCheck "+ scalafmtCheckAll"
     - shell: bash
