@@ -15,12 +15,12 @@ jobs:
     steps:
     - name: generate token
       id: generate_token
-      uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+      uses: actions/create-github-app-token@v3.3.0
       with:
         client-id: 89698
         private-key: ${{ secrets.UNFILTERED_APP_KEY }}
     - name: scala-steward
-      uses: scala-steward-org/scala-steward-action@v2
+      uses: scala-steward-org/scala-steward-action@v2.97.0
       with:
         github-token: ${{ steps.generate_token.outputs.token }}
         author-email: "74865306+unfiltered-app[bot]@users.noreply.github.com"
