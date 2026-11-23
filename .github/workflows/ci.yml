@@ -28,7 +28,7 @@ jobs:
     - run: gh actions-lock --verify
       env:
         GH_TOKEN: ${{ github.token }}
-    - uses: sbt/setup-sbt@v1.5.14
+    - uses: sbt/setup-sbt@v1.5.15
     - if: matrix.os != 'windows-latest'
       run: sbt -v --server scalafmtSbtCheck "+ scalafmtCheckAll"
     - shell: bash
