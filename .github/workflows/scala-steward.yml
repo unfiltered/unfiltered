@@ -15,7 +15,7 @@ jobs:
     steps:
     - name: generate token
       id: generate_token
-      uses: actions/create-github-app-token@v3.3.0
+      uses: actions/create-github-app-token@v3.4.0
       with:
         client-id: 89698
         private-key: ${{ secrets.UNFILTERED_APP_KEY }}
