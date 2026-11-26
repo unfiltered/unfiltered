@@ -4,7 +4,7 @@ object Dependencies {
   val servletApiDep = "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided"
 
   val specs2Dep = Def.setting {
-    "org.specs2" %% "specs2-core" % "4.10.6" cross CrossVersion.for3Use2_13
+    "org.specs2" %% "specs2-core" % "4.23.0" cross CrossVersion.for3Use2_13
   }
 
   def okHttp = "com.squareup.okhttp3" % "okhttp" % "4.12.0" :: Nil
